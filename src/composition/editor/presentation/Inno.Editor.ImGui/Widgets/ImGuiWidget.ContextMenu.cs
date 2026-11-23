@@ -3,9 +3,11 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Inno.Native.ImGui;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
+
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
@@ -13,6 +15,7 @@ public sealed unsafe partial class ImGuiWidget
 {
     private const float C_TOOLTIP_MINIMUM_WIDTH = 300f;
     private const float C_TOOLTIP_WRAP_WIDTH = 440f;
+
     /// <summary>
     /// Begins an explicitly opened popup using the editor context-menu presentation contract.
     /// The popup stays in its parent viewport, sizes itself to submitted content, and scrolls when
@@ -36,7 +39,9 @@ public sealed unsafe partial class ImGuiWidget
         NativeImGui.SetNextWindowViewport(NativeImGui.Raw.GetWindowViewport()->ID);
         ImGuiWindowFlags flags = ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoSavedSettings;
         if (NativeImGui.BeginPopup(id, (int)(flags)))
+        {
             return true;
+        }
         PopContextMenuStyle();
         return false;
     }
@@ -64,7 +69,9 @@ public sealed unsafe partial class ImGuiWidget
         PushContextMenuStyle();
         NativeImGui.SetNextWindowViewport(NativeImGui.Raw.GetWindowViewport()->ID);
         if (NativeImGui.BeginTooltip())
+        {
             return true;
+        }
         PopContextMenuStyle();
         return false;
     }
@@ -106,31 +113,42 @@ public sealed unsafe partial class ImGuiWidget
     {
         m_session.EnsureDrawing();
         if (string.IsNullOrWhiteSpace(text))
+        {
             return;
+        }
         ImGuiViewport* viewport = NativeImGui.Raw.GetWindowViewport();
-        Vector2 margin = new(6f * style.zoom);
+        var margin = new Vector2(6f * style.zoom);
         Vector2 available = Vector2.Max(Vector2.One, ImGui.FromNative(viewport->WorkSize) - margin * 2f);
         Vector2 padding = style.menuWindowPadding;
         float outerWidth = MathF.Min(C_TOOLTIP_WRAP_WIDTH * style.zoom, available.X);
         float innerWidth = MathF.Max(1f, outerWidth - padding.X * 2f - style.menuBorderSize * 2f);
         Vector2 textSize = NativeImGui.CalcTextSize(text, false, innerWidth);
-        outerWidth = MathF.Min(outerWidth, MathF.Max(MathF.Min(C_TOOLTIP_MINIMUM_WIDTH * style.zoom, available.X), textSize.X + padding.X * 2f + style.menuBorderSize * 2f));
+        outerWidth = MathF.Min(
+            outerWidth,
+            MathF.Max(MathF.Min(C_TOOLTIP_MINIMUM_WIDTH * style.zoom, available.X), textSize.X + padding.X * 2f + style.menuBorderSize * 2f)
+        );
         innerWidth = MathF.Max(1f, outerWidth - padding.X * 2f - style.menuBorderSize * 2f);
         textSize = NativeImGui.CalcTextSize(text, false, innerWidth);
-        Vector2 size = new(outerWidth, MathF.Min(available.Y, textSize.Y + padding.Y * 2f + style.menuBorderSize * 2f));
+        var size = new Vector2(outerWidth, MathF.Min(available.Y, textSize.Y + padding.Y * 2f + style.menuBorderSize * 2f));
         Vector2 workMin = ImGui.FromNative(viewport->WorkPos) + margin;
         Vector2 workMax = workMin + available;
         Vector2 mouse = NativeImGui.GetMousePos();
         Vector2 position = mouse + new Vector2(16f, 20f) * style.zoom;
         if (position.X + size.X > workMax.X)
+        {
             position.X = mouse.X - size.X - 12f * style.zoom;
+        }
         if (position.Y + size.Y > workMax.Y)
+        {
             position.Y = mouse.Y - size.Y - 12f * style.zoom;
+        }
         position = Vector2.Clamp(position, workMin, Vector2.Max(workMin, workMax - size));
         NativeImGui.SetNextWindowPos(position);
         NativeImGui.SetNextWindowSize(size);
         if (!BeginMenuTooltip())
+        {
             return;
+        }
         try
         {
             NativeImGui.PushTextWrapPos(NativeImGui.GetCursorPosX() + MathF.Max(1f, NativeImGui.GetContentRegionAvail().X));
@@ -166,7 +184,9 @@ public sealed unsafe partial class ImGuiWidget
         NativeImGui.SetNextWindowViewport(NativeImGui.Raw.GetWindowViewport()->ID);
         ConstrainContextMenu();
         if (NativeImGui.BeginPopupContextItem(id, (int)(ImGuiPopupFlags.MouseButtonRight)))
+        {
             return true;
+        }
         PopContextMenuStyle();
         return false;
     }
@@ -206,6 +226,7 @@ public sealed unsafe partial class ImGuiWidget
     }
 
     private bool IsPopupBlockingInteraction() => ImGui.IsAnyPopupOpen();
+
     private void ConstrainContextMenu()
     {
         Vector2 workSize = ImGui.FromNative(NativeImGui.Raw.GetWindowViewport()->WorkSize);
@@ -220,14 +241,6 @@ public sealed unsafe partial class ImGuiWidget
         Vector2 pixelMaximum = Vector2.Max(Vector2.One, new Vector2(MathF.Floor(maximum.X), MathF.Floor(maximum.Y)));
         Vector2 pixelMinimum = Vector2.Min(pixelMaximum, new Vector2(MathF.Ceiling(minimum.X), MathF.Ceiling(minimum.Y)));
         ImGui.ConstrainNativeWindowSize(pixelMinimum, pixelMaximum, &RoundMenuPopupSize, null);
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static unsafe void RoundMenuPopupSize(ImGuiSizeCallbackData* data)
-    {
-        // ImGui truncates constrained sizes. Round content upward within integer bounds so
-        // fractional padding cannot turn a fully fitting menu into a scrolling window.
-        data->DesiredSize = ImGui.ToNative(new Vector2(MathF.Ceiling(data->DesiredSize.X), MathF.Ceiling(data->DesiredSize.Y)));
     }
 
     private void PushContextMenuStyle()
@@ -251,4 +264,10 @@ public sealed unsafe partial class ImGuiWidget
         NativeImGui.PopStyleVar(5);
         NativeImGui.PopStyleColor(7);
     }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static unsafe void RoundMenuPopupSize(ImGuiSizeCallbackData* data) =>
+        // ImGui truncates constrained sizes. Round content upward within integer bounds so
+        // fractional padding cannot turn a fully fitting menu into a scrolling window.
+        data->DesiredSize = ImGui.ToNative(new Vector2(MathF.Ceiling(data->DesiredSize.X), MathF.Ceiling(data->DesiredSize.Y)));
 }

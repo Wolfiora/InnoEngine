@@ -1,26 +1,33 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Linq;
 using Inno.Rendering;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
 using Inno.Rendering.Assets;
 
+using EditorImGui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+
 namespace Inno.Editor.Panel.ShaderEditor;
+
 internal sealed partial class ShaderEditorCanvas
 {
     private bool TechniqueControls(ShaderDefinition definition)
     {
         if (!EditorImGui.CollapsingHeader("Techniques & Roles"))
+        {
             return false;
-        EditorUI.current.widgets.WrappedText("Techniques map pipeline-defined roles to this shader's passes. Contract and role identities are supplied by the rendering pipeline.");
+        }
+        EditorUI.current.widgets.WrappedText(
+            "Techniques map pipeline-defined roles to this shader's passes. Contract and role identities are supplied by the rendering pipeline."
+        );
         bool changed = false;
         for (int i = 0; i < definition.techniques.Length; i++)
         {
-            EditorImGui.PushId("technique-" + i);
+            EditorImGui.PushID("technique-" + i);
             try
             {
                 ShaderTechniqueDefinition technique = definition.techniques[i];
-                string id = technique.id.value ?? "", contract = technique.contract.value ?? "";
+                string id = technique.id.value ?? string.Empty;
+                string contract = technique.contract.value ?? string.Empty;
                 bool idChanged = false;
                 InspectorRow("technique.id", "ID", () => idChanged = EditorImGui.InputText("##id", ref id, 128));
                 if (idChanged)
@@ -34,7 +41,11 @@ internal sealed partial class ShaderEditorCanvas
 
                 Gesture();
                 bool contractChanged = false;
-                InspectorRow("technique.contract", "Contract", () => contractChanged = EditorImGui.InputText("##contract", ref contract, 256));
+                InspectorRow(
+                    "technique.contract",
+                    "Contract",
+                    () => contractChanged = EditorImGui.InputText("##contract", ref contract, 256)
+                );
                 if (contractChanged)
                 {
                     technique.contract = new()
@@ -54,11 +65,11 @@ internal sealed partial class ShaderEditorCanvas
 
                 for (int j = 0; j < technique.passes.Length; j++)
                 {
-                    EditorImGui.PushId(j);
+                    EditorImGui.PushID(j);
                     try
                     {
                         ShaderTechniquePass mapping = technique.passes[j];
-                        string role = mapping.role.value ?? "";
+                        string role = mapping.role.value ?? string.Empty;
                         bool roleChanged = false;
                         InspectorRow("technique.role", "Role", () => roleChanged = EditorImGui.InputText("##role", ref role, 128));
                         if (roleChanged)
@@ -75,15 +86,19 @@ internal sealed partial class ShaderEditorCanvas
                         InspectorRow("technique.pass", "Pass", () =>
                         {
                             if (!EditorUI.current.widgets.BeginBoundedCombo("##pass", mapping.passName))
+                            {
                                 return;
+                            }
                             try
                             {
                                 foreach (ShaderPassDefinition pass in definition.passes)
+                                {
                                     if (EditorImGui.Selectable(pass.name, pass.name == mapping.passName))
                                     {
                                         mapping.passName = pass.name;
                                         passChanged = true;
                                     }
+                                }
                             }
                             finally
                             {
@@ -104,18 +119,20 @@ internal sealed partial class ShaderEditorCanvas
                     }
                     finally
                     {
-                        EditorImGui.PopId();
+                        EditorImGui.PopID();
                     }
                 }
 
                 if (CenteredAddButton("Add Role"))
                 {
-                    technique.passes = [..technique.passes, new()
-                    {
-                        role = new("role-" + technique.passes.Length),
-                        passName = definition.passes.FirstOrDefault().name ?? ""
-                    }
-
+                    technique.passes =
+                    [
+                        ..technique.passes,
+                        new ShaderTechniquePass()
+                        {
+                            role = new("role-" + technique.passes.Length),
+                            passName = definition.passes.FirstOrDefault().name ?? string.Empty
+                        }
                     ];
                     changed = true;
                 }
@@ -135,19 +152,21 @@ internal sealed partial class ShaderEditorCanvas
             }
             finally
             {
-                EditorImGui.PopId();
+                EditorImGui.PopID();
             }
         }
 
         if (CenteredAddButton("Add Technique"))
         {
-            definition.techniques = [..definition.techniques, new()
-            {
-                id = new("technique-" + Guid.NewGuid().ToString("N")),
-                contract = default,
-                passes = []
-            }
-
+            definition.techniques =
+            [
+                ..definition.techniques,
+                new ShaderTechniqueDefinition()
+                {
+                    id = new("technique-" + Guid.NewGuid().ToString("N")),
+                    contract = default,
+                    passes = []
+                }
             ];
             changed = true;
         }
@@ -158,7 +177,9 @@ internal sealed partial class ShaderEditorCanvas
     private static bool FeatureControls(ref GraphicsCapability features)
     {
         if (!EditorImGui.TreeNode("Required Capabilities", 0))
+        {
             return false;
+        }
         try
         {
             bool changed = false;
@@ -167,10 +188,16 @@ internal sealed partial class ShaderEditorCanvas
             {
                 ulong bits = Convert.ToUInt64(feature);
                 if (bits == 0 || (bits & (bits - 1)) != 0)
+                {
                     continue;
+                }
                 bool enabled = (updated & feature) != 0;
                 bool featureChanged = false;
-                InspectorRow("feature." + feature, feature.ToString(), () => featureChanged = EditorImGui.Checkbox("##enabled", ref enabled));
+                InspectorRow(
+                    "feature." + feature,
+                    feature.ToString(),
+                    () => featureChanged = EditorImGui.Checkbox("##enabled", ref enabled)
+                );
                 if (featureChanged)
                 {
                     updated = enabled ? updated | feature : updated & ~feature;

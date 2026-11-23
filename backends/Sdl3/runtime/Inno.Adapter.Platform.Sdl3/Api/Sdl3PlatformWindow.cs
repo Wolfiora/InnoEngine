@@ -1,5 +1,5 @@
-using Inno.Adapter.Platform;
 using System;
+using Inno.Adapter.Platform;
 using Inno.Platform;
 
 namespace Inno.Adapter.Platform.Sdl3;
@@ -12,7 +12,7 @@ public sealed unsafe partial class Sdl3PlatformWindow : IPlatformWindow, INative
     /// <summary>
     /// Gets the platform window identifier.
     /// </summary>
-    public uint windowId => m_windowId;
+    public uint windowID => m_windowID;
 
     /// <summary>
     /// Gets the window title.

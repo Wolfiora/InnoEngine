@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Core.IO;
 using Inno.Build.Toolchains;
+using Inno.Core.IO;
 
 namespace Inno.Build.Distribution.Standard;
 
@@ -42,9 +42,17 @@ public static class StandardBuildCaches
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(engineRoot);
         if (!Path.IsPathFullyQualified(engineRoot))
+        {
             throw new ArgumentException("Shader workspaces require an absolute checkout root.", nameof(engineRoot));
+        }
         string root = Path.Combine(engineRoot, "artifacts", "build-tools", "shaders", "requests");
-        BuildCacheOwnerCatalog.Register(engineRoot, root, "shader-requests", BuildCacheArtifactRole.ProcessWorkingDirectory, cancellationToken);
+        BuildCacheOwnerCatalog.Register(
+            engineRoot,
+            root,
+            "shader-requests",
+            BuildCacheArtifactRole.ProcessWorkingDirectory,
+            cancellationToken
+        );
         return ProcessOwnedDirectory.CreateAsync(root, cancellationToken);
     }
 
@@ -71,30 +79,116 @@ public static class StandardBuildCaches
         ArgumentException.ThrowIfNullOrWhiteSpace(engineRoot);
         ArgumentNullException.ThrowIfNull(components);
         if (!Path.IsPathFullyQualified(engineRoot))
+        {
             throw new ArgumentException("Cache registration requires an absolute checkout.", nameof(engineRoot));
-        var owners = new List<BuildCacheOwnerDescriptor>
-        {
-            Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "native"), BuildCacheArtifactRole.ImmutableArtifact), "native"),
-            Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "bindings"), BuildCacheArtifactRole.ImmutableArtifact), "bindings"),
-            Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "support-packs"), BuildCacheArtifactRole.ImmutableArtifact), "support-packs"),
-            Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "shaders", "requests"), BuildCacheArtifactRole.ProcessWorkingDirectory), "shader-requests"),
-            Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "managed", "workspaces"), BuildCacheArtifactRole.ReusableWorkspace), "managed-workspaces"),
-            Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "managed-inputs", "evaluators"), BuildCacheArtifactRole.ImmutableArtifact), "managed-evaluators"),
-            Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "managed-inputs", "requests"), BuildCacheArtifactRole.ProcessWorkingDirectory), "managed-input-requests"),
-            Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "bindings", "extensions"), BuildCacheArtifactRole.ImmutableArtifact), "binding-extensions"),
-            Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "bindings", "intermediate"), BuildCacheArtifactRole.ReusableWorkspace), "binding-workspaces"),
-            Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "bindings", "sdk-workspaces"), BuildCacheArtifactRole.ReusableWorkspace), "bgcs-workspaces"),
-            Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "hosts"), BuildCacheArtifactRole.ImmutableArtifact), "task-hosts"),
-            Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "loads"), BuildCacheArtifactRole.ProcessWorkingDirectory), "task-loads"),
-            Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "publishers"), BuildCacheArtifactRole.ProcessWorkingDirectory), "task-publishers"),
-            Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "workspaces"), BuildCacheArtifactRole.ReusableWorkspace), "task-workspaces")
-        };
+        }
+        List<BuildCacheOwnerDescriptor> owners =
+        [
+            Describe(
+                new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "native"), BuildCacheArtifactRole.ImmutableArtifact),
+                "native"
+            ),
+            Describe(
+                new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "bindings"), BuildCacheArtifactRole.ImmutableArtifact),
+                "bindings"
+            ),
+            Describe(
+                new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "support-packs"), BuildCacheArtifactRole.ImmutableArtifact),
+                "support-packs"
+            ),
+            Describe(
+                new BuildCachePublisher(
+                    Path.Combine(engineRoot, "artifacts", "build-tools", "shaders", "requests"),
+                    BuildCacheArtifactRole.ProcessWorkingDirectory
+                ),
+                "shader-requests"
+            ),
+            Describe(
+                new BuildCachePublisher(
+                    Path.Combine(engineRoot, "artifacts", "managed", "workspaces"),
+                    BuildCacheArtifactRole.ReusableWorkspace
+                ),
+                "managed-workspaces"
+            ),
+            Describe(
+                new BuildCachePublisher(
+                    Path.Combine(engineRoot, "artifacts", "build-tools", "managed-inputs", "evaluators"),
+                    BuildCacheArtifactRole.ImmutableArtifact
+                ),
+                "managed-evaluators"
+            ),
+            Describe(
+                new BuildCachePublisher(
+                    Path.Combine(engineRoot, "artifacts", "build-tools", "managed-inputs", "requests"),
+                    BuildCacheArtifactRole.ProcessWorkingDirectory
+                ),
+                "managed-input-requests"
+            ),
+            Describe(
+                new BuildCachePublisher(
+                    Path.Combine(engineRoot, "artifacts", "build-tools", "bindings", "extensions"),
+                    BuildCacheArtifactRole.ImmutableArtifact
+                ),
+                "binding-extensions"
+            ),
+            Describe(
+                new BuildCachePublisher(
+                    Path.Combine(engineRoot, "artifacts", "build-tools", "bindings", "intermediate"),
+                    BuildCacheArtifactRole.ReusableWorkspace
+                ),
+                "binding-workspaces"
+            ),
+            Describe(
+                new BuildCachePublisher(
+                    Path.Combine(engineRoot, "artifacts", "build-tools", "bindings", "sdk-workspaces"),
+                    BuildCacheArtifactRole.ReusableWorkspace
+                ),
+                "bgcs-workspaces"
+            ),
+            Describe(
+                new BuildCachePublisher(
+                    Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "hosts"),
+                    BuildCacheArtifactRole.ImmutableArtifact
+                ),
+                "task-hosts"
+            ),
+            Describe(
+                new BuildCachePublisher(
+                    Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "loads"),
+                    BuildCacheArtifactRole.ProcessWorkingDirectory
+                ),
+                "task-loads"
+            ),
+            Describe(
+                new BuildCachePublisher(
+                    Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "publishers"),
+                    BuildCacheArtifactRole.ProcessWorkingDirectory
+                ),
+                "task-publishers"
+            ),
+            Describe(
+                new BuildCachePublisher(
+                    Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "workspaces"),
+                    BuildCacheArtifactRole.ReusableWorkspace
+                ),
+                "task-workspaces"
+            )
+        ];
         NativeComponentDescriptor[] workspaceComponents = components.ToArray();
-        foreach (string project in workspaceComponents.Select(static component => component.toolchainProject).Distinct(StringComparer.Ordinal))
-        {
+        foreach (string project in workspaceComponents
+            .Select(static component => component.toolchainProject)
+            .Distinct(StringComparer.Ordinal)
+        ) {
             NativeComponentDescriptor component = workspaceComponents.First(value => value.toolchainProject == project);
-            owners.Add(Describe(new BuildCachePublisher(Path.Combine(component.GetToolchainRoot(engineRoot), "obj", "native"), BuildCacheArtifactRole.ReusableWorkspace),
-                "workspace:" + project));
+            owners.Add(
+                Describe(
+                    new BuildCachePublisher(
+                        Path.Combine(component.GetToolchainRoot(engineRoot), "obj", "native"),
+                        BuildCacheArtifactRole.ReusableWorkspace
+                    ),
+                    "workspace:" + project
+                )
+            );
         }
         return owners.AsReadOnly();
 

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Serialization;
@@ -16,12 +15,12 @@ namespace Inno.Scene.Assets.Importers;
 [AssetImporter("inno.engine.scene")]
 internal sealed class SceneAssetImporter : AssetImporter<SceneAsset>
 {
-    private static readonly IReadOnlyList<string> s_extensions = new[] { ".iscene" };
+    private static readonly IReadOnlyList<string> EXTENSIONS = new[] { ".iscene" };
 
     /// <summary>
     /// Gets the normalized source extensions accepted by this importer.
     /// </summary>
-    public override IReadOnlyList<string> supportedExtensions => s_extensions;
+    public override IReadOnlyList<string> supportedExtensions => EXTENSIONS;
 
     /// <summary>
     /// Imports source content into a validated runtime asset and artifact set.
@@ -44,43 +43,49 @@ internal sealed class SceneAssetImporter : AssetImporter<SceneAsset>
         CancellationToken cancellationToken
     ) {
         EngineResourceEnvelope envelope = context.serialization.Deserialize<EngineResourceEnvelope>(
-            context.sourceBytes.ToArray());
+            context.sourceBytes.ToArray()
+        );
         envelope.Validate(EngineResourceEnvelope.C_SCENE_KIND);
         AssetDependency[] dependencies = envelope.dependencies;
         SceneAsset asset = SceneAsset.CreateImported(envelope.payload, dependencies);
         for (int i = 0; i < dependencies.Length; i++)
+        {
             output.DependsOnAsset(dependencies[i]);
+        }
         output.SetAsset(asset);
-        await output.WriteArtifactAsync("runtime", envelope.payload, cancellationToken).ConfigureAwait(false);
+        await output.WriteArtifactAsync("runtime", envelope.payload, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
     /// Writes a validated asset representation to its writable source mount.
     /// </summary>
+    /// <param name="context">
+    /// The generation-bound source export services.
+    /// </param>
     /// <param name="asset">
     /// The validated asset instance exported by this operation.
     /// </param>
-    /// <param name="context">
-    /// The generation-bound source export services.
+    /// <param name="cancellationToken">
+    /// The token that cancels the operation before it commits.
     /// </param>
     /// <returns>
     /// An asynchronous operation that completes after all requested work has finished.
     /// </returns>
-    /// <param name="cancellationToken">
-    /// The token that cancels the operation before it commits.
-    /// </param>
     protected override ValueTask<ReadOnlyMemory<byte>?> ExportAsync(
         AssetExportContext context,
         SceneAsset asset,
         CancellationToken cancellationToken
     ) {
         EngineAssetContent content = asset.CaptureContent();
-        return ValueTask.FromResult<ReadOnlyMemory<byte>?>(context.serialization.Serialize(
-            new EngineResourceEnvelope
-            {
-                resourceKind = EngineResourceEnvelope.C_SCENE_KIND,
-                payload = content.GetPayload(),
-                dependencies = content.GetDependencies()
-            }));
+        return ValueTask.FromResult<ReadOnlyMemory<byte>?>(
+            context.serialization.Serialize(
+                new EngineResourceEnvelope
+                {
+                    resourceKind = EngineResourceEnvelope.C_SCENE_KIND,
+                    payload = content.GetPayload(),
+                    dependencies = content.GetDependencies()
+                }
+            )
+        );
     }
 }

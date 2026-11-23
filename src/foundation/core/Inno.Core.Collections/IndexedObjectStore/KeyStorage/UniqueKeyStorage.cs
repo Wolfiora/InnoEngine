@@ -4,7 +4,9 @@ using System.Runtime.CompilerServices;
 
 namespace Inno.Core.Collections;
 
-internal sealed class UniqueKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T : class where TKey : notnull
+internal sealed class UniqueKeyStorage<TKey, T> : IKeyStorage<TKey, T>
+    where T : class
+    where TKey : notnull
 {
     private readonly Dictionary<TKey, T> m_map = new(EqualityComparer<TKey>.Default);
 
@@ -24,8 +26,10 @@ internal sealed class UniqueKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T :
         TKey key,
         T item
     ) {
-        if (m_map.TryGetValue(key, out var existing) && !ReferenceEquals(existing, item))
+        if (m_map.TryGetValue(key, out T? existing) && !ReferenceEquals(existing, item))
+        {
             throw new InvalidOperationException($"Duplicate key '{key}' in unique index.");
+        }
 
         m_map[key] = item;
         return true;
@@ -44,8 +48,10 @@ internal sealed class UniqueKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T :
         TKey key,
         T item
     ) {
-        if (m_map.TryGetValue(key, out var existing) && ReferenceEquals(existing, item))
+        if (m_map.TryGetValue(key, out T? existing) && ReferenceEquals(existing, item))
+        {
             m_map.Remove(key);
+        }
     }
 
     /// <summary>
@@ -93,7 +99,7 @@ internal sealed class UniqueKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T :
     public bool Contains(
         TKey key,
         T item
-    ) => m_map.TryGetValue(key, out var existing) && ReferenceEquals(existing, item);
+    ) => m_map.TryGetValue(key, out T? existing) && ReferenceEquals(existing, item);
 
     /// <summary>
     /// Determines whether a key currently has no indexed values.

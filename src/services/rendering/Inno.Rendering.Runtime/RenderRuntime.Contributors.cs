@@ -1,20 +1,20 @@
-using Inno.References;
-using Inno.Runtime.Contracts;
-using Inno.Core.Diagnostics;
-using Inno.Core.Execution;
-using Inno.Core.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Inno.Extensibility.Types;
-using Inno.Rendering;
-using Inno.Input;
+using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
+using Inno.Core.Identity;
 using Inno.Core.Mathematics;
+using Inno.Extensibility.Types;
+using Inno.Input;
+using Inno.References;
+using Inno.Rendering;
 using Inno.Rendering.Assets;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Rendering.Runtime;
 
-sealed partial class RenderRuntime
+public sealed partial class RenderRuntime
 {
     /// <summary>
     /// Registers frame-final work without transferring frame ownership.
@@ -35,7 +35,9 @@ sealed partial class RenderRuntime
         lock (m_contributorLock)
         {
             if (m_contributors.Contains(contributor))
+            {
                 throw new ArgumentException("Frame graph contributor is already registered.", nameof(contributor));
+            }
             m_contributors.Add(contributor);
             m_contributorSnapshot = new RenderContributorSnapshot(m_contributors);
         }
@@ -56,7 +58,9 @@ sealed partial class RenderRuntime
         lock (m_contributorLock)
         {
             if (!m_contributors.Remove(contributor))
+            {
                 return false;
+            }
             m_contributorSnapshot = new RenderContributorSnapshot(m_contributors);
             return true;
         }
@@ -114,5 +118,4 @@ sealed partial class RenderRuntime
             }
         }
     }
-
 }

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Inno.Assets.Pipeline;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Inno.Assets.Pipeline;
 
 namespace Inno.Scripting.Compiler;
 
@@ -26,24 +26,34 @@ public sealed class CSharpSampleSourceRewriter : IAssetSampleSourceRewriter
     {
         ArgumentNullException.ThrowIfNull(context);
         foreach (string path in Directory.GetFiles(context.stagedRoot, "*.cs", SearchOption.AllDirectories)
-                     .Order(StringComparer.Ordinal))
-        {
+            .Order(StringComparer.Ordinal)
+        ) {
             context.cancellationToken.ThrowIfCancellationRequested();
             string relative = Path.GetRelativePath(context.stagedRoot, path).Replace('\\', '/');
-            if (!context.TryGetSourceIdentity(relative, out Guid oldSourceId, out Guid newSourceId))
+            if (!context.TryGetSourceIdentity(relative, out Guid oldSourceID, out Guid newSourceID))
+            {
                 throw new InvalidDataException($"Sample C# source '{relative}' has no asset identity metadata.");
-            context.MapType(ScriptTypeIdentity.CreateCanonical(oldSourceId),
-                ScriptTypeIdentity.CreateCanonical(newSourceId));
+            }
+            context.MapType(
+                ScriptTypeIdentity.CreateCanonical(oldSourceID),
+                ScriptTypeIdentity.CreateCanonical(newSourceID)
+            );
 
             byte[] bytes = File.ReadAllBytes(path);
             bool hasBom = bytes.AsSpan().StartsWith(Encoding.UTF8.GetPreamble());
             string source = File.ReadAllText(path, Encoding.UTF8);
             SyntaxNode root = CSharpSyntaxTree.ParseText(
-                source, cancellationToken: context.cancellationToken).GetRoot(context.cancellationToken);
-            AttributeSyntax[] attributes = root.DescendantNodes().OfType<AttributeSyntax>()
-                .Where(static attribute => IsStableTypeId(attribute.Name.ToString())).ToArray();
+                source,
+                cancellationToken: context.cancellationToken
+            ).GetRoot(context.cancellationToken);
+            AttributeSyntax[] attributes = root.DescendantNodes()
+                .OfType<AttributeSyntax>()
+                .Where(static attribute => IsStableTypeID(attribute.Name.ToString()))
+                .ToArray();
             if (attributes.Length == 0)
+            {
                 continue;
+            }
             SyntaxNode rewritten = root.ReplaceNodes(attributes, (
                 original,
                 _
@@ -53,23 +63,28 @@ public sealed class CSharpSampleSourceRewriter : IAssetSampleSourceRewriter
                 if (attribute.ArgumentList?.Arguments is not { Count: 1 } arguments
                     || arguments[0].Expression is not LiteralExpressionSyntax literal
                     || !literal.IsKind(SyntaxKind.StringLiteralExpression)
-                    || !Guid.TryParse(literal.Token.ValueText, out Guid oldId))
-                {
+                    || !Guid.TryParse(literal.Token.ValueText, out Guid oldID)
+                ) {
                     throw new InvalidDataException(
-                        $"Sample C# source '{relative}' has a StableTypeId that cannot be cloned safely.");
+                        $"Sample C# source '{relative}' has a StableTypeID that cannot be cloned safely."
+                    );
                 }
-                Guid newId = context.identityMap.TryGetValue(oldId, out Guid mapped)
-                    ? mapped : Guid.NewGuid();
-                context.MapType(oldId, newId);
-                LiteralExpressionSyntax replacement = SyntaxFactory.LiteralExpression(
-                    SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(newId.ToString("D")))
+                Guid newID = context.identityMap.TryGetValue(oldID, out Guid mapped)
+                             ? mapped
+                             : Guid.NewGuid();
+                context.MapType(oldID, newID);
+                LiteralExpressionSyntax replacement = SyntaxFactory
+                    .LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(newID.ToString("D")))
                     .WithTriviaFrom(literal);
-                return attribute.WithArgumentList(attribute.ArgumentList.WithArguments(
-                    SyntaxFactory.SingletonSeparatedList(arguments[0].WithExpression(replacement))));
+                return attribute.WithArgumentList(
+                    attribute.ArgumentList.WithArguments(
+                        SyntaxFactory.SingletonSeparatedList(arguments[0].WithExpression(replacement))
+                    )
+                );
             });
             File.WriteAllText(path, rewritten.ToFullString(), new UTF8Encoding(hasBom));
         }
     }
 
-    private static bool IsStableTypeId(string name) => name.Split('.').Last() is "StableTypeId" or "StableTypeIdAttribute";
+    private static bool IsStableTypeID(string name) => name.Split('.').Last() is "StableTypeID" or "StableTypeIDAttribute";
 }

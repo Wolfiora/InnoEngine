@@ -21,17 +21,19 @@ public abstract class StorageBackendProvider
     /// <exception cref="ArgumentException">
     /// The identity is unassigned.
     /// </exception>
-    protected StorageBackendProvider(StorageBackendId id)
+    protected StorageBackendProvider(StorageBackendID id)
     {
         if (!id.isValid)
+        {
             throw new ArgumentException("A provider requires an assigned backend ID.", nameof(id));
+        }
         this.id = id;
     }
 
     /// <summary>
     /// Gets this registration's immutable implementation identity.
     /// </summary>
-    public StorageBackendId id { get; }
+    public StorageBackendID id { get; }
 
     /// <summary>
     /// Creates a caller-owned storage service using this implementation.
@@ -44,4 +46,3 @@ public abstract class StorageBackendProvider
     /// </returns>
     public abstract IApplicationStorage CreateStorage(StorageScope scope);
 }
-

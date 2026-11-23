@@ -1,15 +1,16 @@
-using Inno.Core.Mathematics;
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Inno.Core.Mathematics;
+using Inno.Extensibility.Types;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
 /// <summary>
 /// Stores one normalized vertex shared by all rendering backends.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("cfce5c30-dee4-5d62-9aa3-3e32ea5e7355")]
+[StableTypeID("cfce5c30-dee4-5d62-9aa3-3e32ea5e7355")]
 public readonly record struct GeometryVertex
 {
     /// <summary>
@@ -59,4 +60,3 @@ public readonly record struct GeometryVertex
     /// </summary>
     public Vector2 textureCoordinate { get; }
 }
-

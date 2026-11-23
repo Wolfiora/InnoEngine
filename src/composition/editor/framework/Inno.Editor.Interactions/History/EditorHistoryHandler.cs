@@ -73,6 +73,24 @@ public abstract class EditorHistoryHandler
         return false;
     }
 
+    internal EditorHistoryAvailability QueryInternal(
+        EditorHistoryContext context,
+        EditorHistoryChange change,
+        EditorHistoryDirection direction
+    ) => Query(context, change, direction);
+
+    internal EditorHistoryResult ApplyInternal(
+        EditorHistoryContext context,
+        EditorHistoryChange change,
+        EditorHistoryDirection direction
+    ) => Apply(context, change, direction);
+
+    internal bool TryMergeInternal(
+        EditorHistoryChange older,
+        EditorHistoryChange newer,
+        out EditorHistoryChange? merged
+    ) => TryMerge(older, newer, out merged);
+
     /// <summary>
     /// Creates a failed result for a transition whose compensation also failed.
     /// </summary>
@@ -83,25 +101,4 @@ public abstract class EditorHistoryHandler
     /// A failure that faults the owning history.
     /// </returns>
     protected static EditorHistoryResult StateIntegrityFailure(string message) => EditorHistoryResult.StateIntegrityLost(message);
-
-    internal EditorHistoryAvailability QueryInternal(
-        EditorHistoryContext context,
-        EditorHistoryChange change,
-        EditorHistoryDirection direction
-    )
-        => Query(context, change, direction);
-
-    internal EditorHistoryResult ApplyInternal(
-        EditorHistoryContext context,
-        EditorHistoryChange change,
-        EditorHistoryDirection direction
-    )
-        => Apply(context, change, direction);
-
-    internal bool TryMergeInternal(
-        EditorHistoryChange older,
-        EditorHistoryChange newer,
-        out EditorHistoryChange? merged
-    )
-        => TryMerge(older, newer, out merged);
 }

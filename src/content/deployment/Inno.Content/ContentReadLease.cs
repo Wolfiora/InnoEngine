@@ -29,9 +29,12 @@ public sealed class ContentReadLease : IDisposable
         Func<Stream> openRead,
         Action release
     ) {
-        this.entry = entry ?? throw new ArgumentNullException(nameof(entry));
-        m_openRead = openRead ?? throw new ArgumentNullException(nameof(openRead));
-        m_release = release ?? throw new ArgumentNullException(nameof(release));
+        ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(openRead);
+        ArgumentNullException.ThrowIfNull(release);
+        this.entry = entry;
+        m_openRead = openRead;
+        m_release = release;
     }
 
     /// <summary>
@@ -57,7 +60,7 @@ public sealed class ContentReadLease : IDisposable
         {
             Func<Stream> openRead = m_openRead ?? throw new ObjectDisposedException(nameof(ContentReadLease));
             Stream input = openRead()
-                ?? throw new InvalidOperationException("The content provider returned a null stream.");
+                           ?? throw new InvalidOperationException("The content provider returned a null stream.");
             if (!input.CanRead)
             {
                 input.Dispose();

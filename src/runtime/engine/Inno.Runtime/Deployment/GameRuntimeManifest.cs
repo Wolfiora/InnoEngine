@@ -72,52 +72,71 @@ public sealed class GameRuntimeManifest : ISerializable
             || applicationId.Any(static character =>
                 !(character is >= 'a' and <= 'z'
                   || character is >= '0' and <= '9'
-                  || character is '.' or '_' or '-')))
-        {
+                  || character is '.' or '_' or '-'))
+        ) {
             throw new InvalidDataException("A game application ID must use lowercase portable identifier characters.");
         }
         if (string.IsNullOrWhiteSpace(productName))
+        {
             throw new InvalidDataException("A game product name is required.");
+        }
         if (persistentDataPath is null)
+        {
             throw new InvalidDataException("Game persistent data path cannot be null.");
+        }
         RuntimeManifestEnvelope.ValidatePersistentDataPath(
-            persistentDataPath.Length == 0 ? applicationId : persistentDataPath);
+            persistentDataPath.Length == 0 ? applicationId : persistentDataPath
+        );
         if (string.IsNullOrWhiteSpace(startupScene))
+        {
             throw new InvalidDataException("A game startup scene is required.");
+        }
         if (windowWidth <= 0 || windowHeight <= 0)
+        {
             throw new InvalidDataException("Game window dimensions must be positive.");
+        }
         if (plugins is null || modules is null)
+        {
             throw new InvalidDataException("Game Plugin contributions and runtime modules cannot be null.");
+        }
 
         var accepted = new HashSet<string>(StringComparer.Ordinal);
         foreach (GameRuntimePlugin plugin in plugins)
         {
             plugin.Validate();
             if (!accepted.Add(plugin.id))
+            {
                 throw new InvalidDataException($"Game Plugin '{plugin.id}' is declared more than once.");
+            }
             string? missing = plugin.dependencies.FirstOrDefault(dependency => !accepted.Contains(dependency));
             if (missing is not null)
             {
-                throw new InvalidDataException(
-                    $"Game Plugin '{plugin.id}' appears before dependency '{missing}'.");
+                throw new InvalidDataException($"Game Plugin '{plugin.id}' appears before dependency '{missing}'.");
             }
         }
 
         if (modules.Length == 0)
+        {
             throw new InvalidDataException("A game runtime manifest requires a managed module generation.");
+        }
         accepted.Clear();
         foreach (GameRuntimeModule module in modules)
         {
             if (module is null)
+            {
                 throw new InvalidDataException("A game runtime manifest contains a null module.");
+            }
             module.Validate();
             if (!accepted.Add(module.name))
+            {
                 throw new InvalidDataException($"Runtime module '{module.name}' is declared more than once.");
+            }
             string? missing = module.dependencies.FirstOrDefault(dependency => !accepted.Contains(dependency));
             if (missing is not null)
             {
                 throw new InvalidDataException(
-                    $"Runtime module '{module.name}' appears before dependency '{missing}'.");
+                    $"Runtime module '{module.name}' appears before dependency '{missing}'."
+                );
             }
         }
         _ = GameCodeDeployment.FromManifest(modules);
@@ -136,6 +155,7 @@ public sealed class GameRuntimeManifest : ISerializable
             plugin.id,
             plugin.dependencies,
             plugin.overrides,
-            plugin.settings)).ToArray();
+            plugin.settings
+        )).ToArray();
     }
 }

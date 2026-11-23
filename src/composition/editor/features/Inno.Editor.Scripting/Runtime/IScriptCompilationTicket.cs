@@ -10,7 +10,7 @@ public interface IScriptCompilationTicket
     /// <summary>
     /// Gets the producer-local monotonic identifier of this request.
     /// </summary>
-    long requestId { get; }
+    long requestID { get; }
 
     /// <summary>
     /// Gets the current lifecycle state of this exact request.

@@ -9,7 +9,6 @@ public enum MouseCursor
     /// No concrete cursor shape; the consuming host defines visibility behavior.
     /// </summary>
     None = -1,
-        
     /// <summary>
     /// The standard arrow pointer.
     /// </summary>
@@ -45,5 +44,5 @@ public enum MouseCursor
     /// <summary>
     /// A cursor indicating that an operation is unavailable.
     /// </summary>
-    NotAllowed = 8,
+    NotAllowed = 8
 }

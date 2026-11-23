@@ -11,39 +11,36 @@ namespace Inno.Integration.MacOSArm64.Sdl3;
 /// </summary>
 public sealed class MacOSArm64Sdl3HostIntegration : ISdl3HostIntegration
 {
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public Sdl3HostCapabilities capabilities { get; } = new(multipleWindows: true, liveResize: true);
 
-    /// <inheritdoc />
-    public void ConfigureInitialization()
-    {
-        _ = SDL.SetHint("SDL_MAC_PRESS_AND_HOLD", "0");
-    }
+    /// <inheritdoc/>
+    public void ConfigureInitialization() => _ = SDL.SetHint("SDL_MAC_PRESS_AND_HOLD", "0");
 
-    /// <inheritdoc />
-    public nint CreateWindow(PlatformWindowOptions options)
-    {
-        return Sdl3WindowOperations.CreateWindow(options, requireOpenGl: false);
-    }
+    /// <inheritdoc/>
+    public nint CreateWindow(PlatformWindowOptions options) => Sdl3WindowOperations.CreateWindow(options, requireOpenGl: false);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public unsafe PlatformNativeHandles ResolveNativeSurface(nint windowHandle)
     {
         if (windowHandle == 0)
+        {
             throw new ArgumentException("A live SDL window is required.", nameof(windowHandle));
+        }
         uint properties = SDL.Raw.GetWindowProperties((SDLWindow*)windowHandle);
         ReadOnlySpan<byte> propertyName = "SDL.window.cocoa.window\0"u8;
         nint surface;
         fixed (byte* name = propertyName)
+        {
             surface = (nint)SDL.Raw.GetPointerProperty(properties, (sbyte*)name, null);
+        }
         if (surface == 0)
+        {
             throw new InvalidOperationException("SDL did not provide the required MacOS surface.");
-        return new PlatformNativeHandles(surface, handleKind: PlatformNativeHandleId.cocoa);
+        }
+        return new PlatformNativeHandles(surface, handleKind: PlatformNativeHandleID.cocoa);
     }
 
-    /// <inheritdoc />
-    public bool GetInitialFocus(nint windowHandle)
-    {
-        return Sdl3WindowOperations.ReadFocus(windowHandle);
-    }
+    /// <inheritdoc/>
+    public bool GetInitialFocus(nint windowHandle) => Sdl3WindowOperations.ReadFocus(windowHandle);
 }

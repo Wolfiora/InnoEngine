@@ -6,27 +6,14 @@ using System.Text.RegularExpressions;
 namespace Inno.Build.Toolchains;
 
 /// <summary>
-/// Specifies the linkage required by a product's native component operation.
-/// </summary>
-public enum NativeLibraryKind
-{
-    /// <summary>
-    /// Produces archives for the selected final linker.
-    /// </summary>
-    Static,
-
-    /// <summary>
-    /// Produces libraries loaded by the deployed product.
-    /// </summary>
-    Shared
-}
-
-/// <summary>
 /// Freezes product-owned linkage, ordered component definitions and their configuration inputs.
 /// </summary>
 public sealed class NativeComponentBuildOptions
 {
-    private static readonly Regex S_DEFINITION = new("^-D[A-Za-z_][A-Za-z0-9_]*(?::(?:BOOL|STRING|PATH|FILEPATH|INTERNAL))?=", RegexOptions.CultureInvariant);
+    private static readonly Regex DEFINITION = new(
+        "^-D[A-Za-z_][A-Za-z0-9_]*(?::(?:BOOL|STRING|PATH|FILEPATH|INTERNAL))?=",
+        RegexOptions.CultureInvariant
+    );
 
     /// <summary>
     /// Captures component configuration without selecting an SDK or starting a build.
@@ -40,14 +27,14 @@ public sealed class NativeComponentBuildOptions
     /// <param name="inputPaths">
     /// Portable checkout-relative configuration files included in content hashing and stability checks.
     /// </param>
-    /// <param name="linkPlan">
-    /// Component-specific platform link settings, or null for the selected SDK plan.
-    /// </param>
     /// <param name="bindingLibraryName">
     /// The explicit native import identity, or null to retain the component identity.
     /// </param>
     /// <param name="bindingIncludeDirectories">
     /// Additional checkout-relative binding headers owned by an integration.
+    /// </param>
+    /// <param name="linkPlan">
+    /// Component-specific platform link settings, or null for the selected SDK plan.
     /// </param>
     /// <exception cref="ArgumentException">
     /// Linkage is invalid, definitions are ambiguous or override SDK selection, or an input escapes the checkout.
@@ -61,25 +48,37 @@ public sealed class NativeComponentBuildOptions
         NativeLinkPlan? linkPlan = null
     ) {
         if (!Enum.IsDefined(libraryKind))
+        {
             throw new ArgumentException("A supported native library kind is required.", nameof(libraryKind));
+        }
         string[] arguments = (cmakeArguments ?? []).ToArray();
         var names = new HashSet<string>(StringComparer.Ordinal);
         foreach (string argument in arguments)
         {
-            if (argument is null || !S_DEFINITION.IsMatch(argument) || argument.Contains('\0'))
+            if (argument is null || !DEFINITION.IsMatch(argument) || argument.Contains('\0'))
+            {
                 throw new ArgumentException("Component arguments must be explicit CMake definitions.", nameof(cmakeArguments));
+            }
             string name = argument[2..argument.IndexOf('=')].Split(':')[0];
             if (name.StartsWith("CMAKE_", StringComparison.Ordinal) || name is "INNO_ROOT" or "INNO_NATIVE_TARGET" or "INNO_LIBRARY_KIND"
                 || name.StartsWith("INNO_COMPONENT_", StringComparison.Ordinal)
-                || !names.Add(name))
-                throw new ArgumentException("Component definitions must be unique and cannot override SDK or linkage selection.", nameof(cmakeArguments));
+                || !names.Add(name)
+            ) {
+                throw new ArgumentException(
+                    "Component definitions must be unique and cannot override SDK or linkage selection.",
+                    nameof(cmakeArguments)
+                );
+            }
         }
         string[] inputs = (inputPaths ?? []).Select(ValidatePath).Distinct(StringComparer.Ordinal).ToArray();
         this.libraryKind = libraryKind;
         this.cmakeArguments = Array.AsReadOnly(arguments);
         this.inputPaths = Array.AsReadOnly(inputs);
-        if (bindingLibraryName is not null && (string.IsNullOrWhiteSpace(bindingLibraryName) || bindingLibraryName.IndexOfAny(['/', '\\', ':']) >= 0))
+        if (bindingLibraryName is not null
+            && (string.IsNullOrWhiteSpace(bindingLibraryName) || bindingLibraryName.IndexOfAny(['/', '\\', ':']) >= 0)
+        ) {
             throw new ArgumentException("A binding import identity must be a library name.", nameof(bindingLibraryName));
+        }
         this.bindingLibraryName = bindingLibraryName;
         this.linkPlan = linkPlan;
         this.bindingIncludeDirectories = Array.AsReadOnly((bindingIncludeDirectories ?? []).Select(ValidatePath).ToArray());
@@ -115,18 +114,36 @@ public sealed class NativeComponentBuildOptions
     /// </summary>
     public IReadOnlyList<string> bindingIncludeDirectories { get; }
 
-    internal IEnumerable<string> declarations => new[] { "libraryKind=" + libraryKind }
-        .Concat(cmakeArguments.Select(static argument => "componentArgument=" + argument))
-        .Concat(linkPlan?.declarations ?? [])
-        .Append("bindingLibrary=" + bindingLibraryName)
-        .Concat(bindingIncludeDirectories.Select(static path => "bindingInclude=" + path));
+    internal IEnumerable<string> declarations
+        => new[] { "libraryKind=" + libraryKind }
+            .Concat(cmakeArguments.Select(static argument => "componentArgument=" + argument))
+            .Concat(linkPlan?.declarations ?? [])
+            .Append("bindingLibrary=" + bindingLibraryName)
+            .Concat(bindingIncludeDirectories.Select(static path => "bindingInclude=" + path));
 
     private static string ValidatePath(string path)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         string portable = path.Replace('\\', '/');
         if (portable.StartsWith('/') || portable.Contains(':') || portable.Split('/').Any(static segment => segment is "" or "." or ".."))
+        {
             throw new ArgumentException("A component input must be a portable checkout-relative path.", nameof(path));
+        }
         return portable;
     }
+}
+
+/// <summary>
+/// Specifies the linkage required by a product's native component operation.
+/// </summary>
+public enum NativeLibraryKind
+{
+    /// <summary>
+    /// Produces archives for the selected final linker.
+    /// </summary>
+    Static,
+    /// <summary>
+    /// Produces libraries loaded by the deployed product.
+    /// </summary>
+    Shared
 }

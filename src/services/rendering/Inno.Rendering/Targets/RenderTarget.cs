@@ -3,21 +3,6 @@ using System;
 namespace Inno.Rendering;
 
 /// <summary>
-/// Identifies whether a request renders to the main swapchain or an offscreen target.
-/// </summary>
-public enum RenderTargetKind
-{
-    /// <summary>
-    /// Main application window swapchain.
-    /// </summary>
-    Backbuffer,
-    /// <summary>
-    /// Persistent offscreen render texture.
-    /// </summary>
-    Texture
-}
-
-/// <summary>
 /// Selects one render destination without exposing a swapchain or framebuffer handle.
 /// </summary>
 public readonly record struct RenderTarget
@@ -61,3 +46,17 @@ public readonly record struct RenderTarget
     }
 }
 
+/// <summary>
+/// Identifies whether a request renders to the main swapchain or an offscreen target.
+/// </summary>
+public enum RenderTargetKind
+{
+    /// <summary>
+    /// Main application window swapchain.
+    /// </summary>
+    Backbuffer,
+    /// <summary>
+    /// Persistent offscreen render texture.
+    /// </summary>
+    Texture
+}

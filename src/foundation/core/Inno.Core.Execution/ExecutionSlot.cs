@@ -36,9 +36,10 @@ public sealed class ExecutionSlot<TValue>
     /// <exception cref="InvalidOperationException">
     /// No live binding exists on the permitted thread.
     /// </exception>
-    public TValue current => TryGet(out TValue? value)
-        ? value
-        : throw new InvalidOperationException($"No active '{m_name}' execution scope is available to this caller.");
+    public TValue current
+        => TryGet(out TValue? value)
+           ? value
+           : throw new InvalidOperationException($"No active '{m_name}' execution scope is available to this caller.");
 
     /// <summary>
     /// Binds a value until the returned scope is retired in strict last-in-first-out order.
@@ -91,7 +92,9 @@ public sealed class ExecutionSlot<TValue>
     {
         Binding? binding = m_current.Value;
         if (binding is not null)
+        {
             return binding.TryGet(out value);
+        }
         value = default;
         return false;
     }
@@ -100,7 +103,7 @@ public sealed class ExecutionSlot<TValue>
     {
         private readonly ExecutionSlot<TValue> m_slot;
         private readonly object m_sync = new();
-        private readonly int m_threadId;
+        private readonly int m_threadID;
         private readonly bool m_assigned;
         private Binding? m_parent;
         private TValue m_value;
@@ -116,22 +119,8 @@ public sealed class ExecutionSlot<TValue>
             m_slot = slot;
             m_value = value;
             m_parent = parent;
-            m_threadId = threadAffine ? Environment.CurrentManagedThreadId : 0;
+            m_threadID = threadAffine ? Environment.CurrentManagedThreadId : 0;
             m_assigned = assigned;
-        }
-
-        internal bool TryGet([MaybeNullWhen(false)] out TValue value)
-        {
-            lock (m_sync)
-            {
-                if (m_active && m_assigned && (m_threadId == 0 || m_threadId == Environment.CurrentManagedThreadId))
-                {
-                    value = m_value;
-                    return true;
-                }
-                value = default;
-                return false;
-            }
         }
 
         /// <summary>
@@ -145,15 +134,35 @@ public sealed class ExecutionSlot<TValue>
             lock (m_sync)
             {
                 if (!m_active)
+                {
                     return;
+                }
                 if (!ReferenceEquals(m_slot.m_current.Value, this))
+                {
                     throw new InvalidOperationException($"'{m_slot.m_name}' scopes must retire in last-in-first-out order.");
-                if (m_threadId != 0 && m_threadId != Environment.CurrentManagedThreadId)
+                }
+                if (m_threadID != 0 && m_threadID != Environment.CurrentManagedThreadId)
+                {
                     throw new InvalidOperationException($"'{m_slot.m_name}' must retire on its owner thread.");
+                }
                 m_slot.m_current.Value = m_parent;
                 m_active = false;
                 m_value = default!;
                 m_parent = null;
+            }
+        }
+
+        internal bool TryGet([MaybeNullWhen(false)] out TValue value)
+        {
+            lock (m_sync)
+            {
+                if (m_active && m_assigned && (m_threadID == 0 || m_threadID == Environment.CurrentManagedThreadId))
+                {
+                    value = m_value;
+                    return true;
+                }
+                value = default;
+                return false;
             }
         }
     }

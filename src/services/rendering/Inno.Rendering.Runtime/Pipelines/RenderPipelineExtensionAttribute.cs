@@ -1,10 +1,11 @@
+using System;
+using System.Collections.Generic;
 using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
-using System;
-using System.Collections.Generic;
 
 namespace Inno.Rendering.Runtime;
 
@@ -12,7 +13,7 @@ namespace Inno.Rendering.Runtime;
 /// Marks a reloadable render pipeline implementation with a stable extension identifier.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-[Inno.Extensibility.Types.StableTypeId("bbaa3835-1ee7-5e0f-b690-304d4f6f98ed")]
+[StableTypeID("bbaa3835-1ee7-5e0f-b690-304d4f6f98ed")]
 public sealed class RenderPipelineExtensionAttribute : Attribute
 {
     /// <summary>
@@ -32,4 +33,3 @@ public sealed class RenderPipelineExtensionAttribute : Attribute
     /// </summary>
     public string id { get; }
 }
-

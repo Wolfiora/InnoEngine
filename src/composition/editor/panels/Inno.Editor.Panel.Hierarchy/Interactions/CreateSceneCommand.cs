@@ -4,8 +4,8 @@ using Inno.Scene;
 
 namespace Inno.Editor.Panel.Hierarchy;
 
-[EditorAction(HierarchyInteractionIds.C_CREATE_SCENE)]
-[EditorMenu(HierarchyInteractionIds.C_AREA, "Create/Scene", order: 300)]
+[EditorAction(HierarchyInteractionIDs.C_CREATE_SCENE)]
+[EditorMenu(HierarchyInteractionIDs.C_AREA, "Create/Scene", order: 300)]
 internal sealed class CreateSceneCommand(SceneEdits edits) : EditorAction
 {
     /// <summary>
@@ -17,8 +17,8 @@ internal sealed class CreateSceneCommand(SceneEdits edits) : EditorAction
     protected override void Execute(EditorActionContext context)
     {
         GameScene scene = edits.CreateScene();
-        EditorInteraction interaction = context.interactions.For(HierarchyInteractionIds.C_AREA, scene);
+        EditorInteraction interaction = context.interactions.For(HierarchyInteractionIDs.C_AREA, scene);
         _ = interaction.Select();
-        _ = interaction.Execute(HierarchyInteractionIds.C_RENAME);
+        _ = interaction.Execute(HierarchyInteractionIDs.C_RENAME);
     }
 }

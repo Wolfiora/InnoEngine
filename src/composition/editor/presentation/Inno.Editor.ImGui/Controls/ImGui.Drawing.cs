@@ -1,8 +1,10 @@
 using System.Numerics;
 using Inno.Native.ImGui;
+
 using RawImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Provides frame-bounded drawing access and copied presentation values.
 /// </summary>
@@ -19,7 +21,7 @@ public static partial class ImGui
     /// </returns>
     public static uint GetStyleColor(ImGuiCol color)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.GetColorU32((int)color);
     }
 
@@ -32,9 +34,9 @@ public static partial class ImGui
     /// <returns>
     /// A copied value from the active presentation context.
     /// </returns>
-    public static uint GetControlId(string label)
+    public static uint GetControlID(string label)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.GetID(label);
     }
 
@@ -55,7 +57,7 @@ public static partial class ImGui
         Vector2 maximum,
         bool intersect
     ) {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.PushClipRect(minimum, maximum, intersect);
     }
 
@@ -64,7 +66,7 @@ public static partial class ImGui
     /// </summary>
     public static void PopClipRect()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.PopClipRect();
     }
 }

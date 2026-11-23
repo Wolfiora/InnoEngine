@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Core.Identity;
 using Inno.Core.Logging;
 
@@ -8,7 +7,7 @@ namespace Inno.Editor.Interactions;
 
 internal sealed class EditorDropRouter(
     EditorExtensionCatalog catalog,
-    IReadOnlyDictionary<IdentityDomainId, IdentityAllocator> identityDomains,
+    IReadOnlyDictionary<IdentityDomainID, IdentityAllocator> identityDomains,
     Logger log
 ) {
     private readonly HashSet<string> m_queryFailures = new(StringComparer.Ordinal);
@@ -19,7 +18,9 @@ internal sealed class EditorDropRouter(
         ArgumentNullException.ThrowIfNull(context);
         RuntimeIdentity identity = context.data.sourceIdentity;
         if (Resolve(identity) is null)
+        {
             throw new InvalidOperationException("The editor drag source is no longer registered.");
+        }
         m_activeIdentity = identity;
         return identity;
     }
@@ -29,20 +30,24 @@ internal sealed class EditorDropRouter(
         out IdentityObject? source
     ) {
         source = m_activeIdentity == identity
-            ? Resolve(identity)
-            : null;
+                 ? Resolve(identity)
+                 : null;
         if (source is not null)
+        {
             return true;
+        }
         if (m_activeIdentity == identity)
+        {
             Cancel();
+        }
         return false;
     }
 
     internal bool TryGetActiveIdentity(out RuntimeIdentity identity)
     {
-        if (m_activeIdentity is not RuntimeIdentity active ||
-            Resolve(active) is null)
-        {
+        if (m_activeIdentity is not RuntimeIdentity active
+            || Resolve(active) is null
+        ) {
             Cancel();
             identity = default;
             return false;
@@ -55,9 +60,11 @@ internal sealed class EditorDropRouter(
         RuntimeIdentity identity,
         EditorDropContext context
     ) {
-        if (!TryResolve(identity, context, out EditorExtensionCatalog.DropRegistration? registration) ||
-            registration is null)
+        if (!TryResolve(identity, context, out EditorExtensionCatalog.DropRegistration? registration)
+            || registration is null
+        ) {
             return EditorDropStatus.rejected;
+        }
         try
         {
             EditorDropStatus status = registration.drop.Query(context);
@@ -69,7 +76,9 @@ internal sealed class EditorDropRouter(
         {
             string dropName = registration.type.FullName ?? registration.type.Name;
             if (m_queryFailures.Add(dropName))
+            {
                 log.Write(LogLevel.Error, "Editor drop query failed: {0}", [exception]);
+            }
             return EditorDropStatus.rejected;
         }
     }
@@ -78,16 +87,22 @@ internal sealed class EditorDropRouter(
         RuntimeIdentity identity,
         EditorDropContext context
     ) {
-        if (!TryResolve(identity, context, out EditorExtensionCatalog.DropRegistration? registration) ||
-            registration is null)
+        if (!TryResolve(identity, context, out EditorExtensionCatalog.DropRegistration? registration)
+            || registration is null
+        ) {
             return EditorDropResult.rejected;
+        }
         try
         {
             if (!registration.drop.Query(context).canDrop)
+            {
                 return EditorDropResult.rejected;
+            }
             EditorDropResult result = registration.drop.Drop(context);
             if (result.accepted)
+            {
                 Cancel();
+            }
             return result;
         }
         catch (Exception exception)
@@ -124,20 +139,22 @@ internal sealed class EditorDropRouter(
         {
             bool exactArea = !string.IsNullOrEmpty(registration.area);
             if (exactArea && !string.Equals(registration.area, context.area, StringComparison.Ordinal))
-                continue;
-            if (!EditorTypeDistance.TryGet(sourceType, registration.sourceType, out int sourceDistance) ||
-                !EditorTypeDistance.TryGet(targetType, registration.targetType, out int targetDistance))
             {
                 continue;
             }
-            if (best is null ||
-                exactArea && string.IsNullOrEmpty(best.area) ||
-                exactArea == !string.IsNullOrEmpty(best.area) &&
-                (sourceDistance < bestSourceDistance ||
-                 sourceDistance == bestSourceDistance && targetDistance < bestTargetDistance ||
-                 sourceDistance == bestSourceDistance && targetDistance == bestTargetDistance &&
-                 registration.priority > best.priority))
-            {
+            if (!EditorTypeDistance.TryGet(sourceType, registration.sourceType, out int sourceDistance)
+                || !EditorTypeDistance.TryGet(targetType, registration.targetType, out int targetDistance)
+            ) {
+                continue;
+            }
+            if (best is null
+                || exactArea && string.IsNullOrEmpty(best.area)
+                || exactArea == !string.IsNullOrEmpty(best.area)
+                   && (sourceDistance < bestSourceDistance
+                       || sourceDistance == bestSourceDistance && targetDistance < bestTargetDistance
+                       || sourceDistance == bestSourceDistance && targetDistance == bestTargetDistance
+                          && registration.priority > best.priority)
+            ) {
                 best = registration;
                 bestSourceDistance = sourceDistance;
                 bestTargetDistance = targetDistance;
@@ -147,7 +164,7 @@ internal sealed class EditorDropRouter(
     }
 
     private IdentityObject? Resolve(RuntimeIdentity identity)
-        => identityDomains.TryGetValue(identity.domainId, out IdentityAllocator? allocator)
-            ? allocator.Get<IdentityObject>(identity)
-            : null;
+        => identityDomains.TryGetValue(identity.domainID, out IdentityAllocator? allocator)
+           ? allocator.Get<IdentityObject>(identity)
+           : null;
 }

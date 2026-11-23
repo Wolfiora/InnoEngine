@@ -1,65 +1,12 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering;
-
-/// <summary>
-/// Selects texture filtering independently from a graphics backend.
-/// </summary>
-public enum RenderSamplerFilter
-{
-    /// <summary>
-    /// Uses nearest-neighbor filtering.
-    /// </summary>
-    Point,
-    /// <summary>
-    /// Uses linear filtering.
-    /// </summary>
-    Linear,
-    /// <summary>
-    /// Uses anisotropic filtering when supported.
-    /// </summary>
-    Anisotropic
-}
-
-/// <summary>
-/// Selects texture addressing independently for each coordinate axis.
-/// </summary>
-public enum RenderSamplerAddressMode
-{
-    /// <summary>
-    /// Repeats texture coordinates.
-    /// </summary>
-    Repeat,
-    /// <summary>
-    /// Mirrors repeated texture coordinates.
-    /// </summary>
-    Mirror,
-    /// <summary>
-    /// Clamps coordinates to the texture edge.
-    /// </summary>
-    Clamp,
-    /// <summary>
-    /// Samples the backend border color outside the texture.
-    /// </summary>
-    Border
-}
 
 /// <summary>
 /// Describes one native-serializable backend-neutral sampler binding.
 /// </summary>
 public struct RenderSamplerState : IEquatable<RenderSamplerState>
 {
-    /// <summary>
-    /// Gets linear filtering with clamped addressing.
-    /// </summary>
-    public static RenderSamplerState linearClamp => new(
-        RenderSamplerFilter.Linear,
-        RenderSamplerAddressMode.Clamp,
-        RenderSamplerAddressMode.Clamp,
-        RenderSamplerAddressMode.Clamp);
-
     /// <summary>
     /// Creates a sampler state.
     /// </summary>
@@ -86,6 +33,17 @@ public struct RenderSamplerState : IEquatable<RenderSamplerState>
         this.addressV = addressV;
         this.addressW = addressW;
     }
+
+    /// <summary>
+    /// Gets linear filtering with clamped addressing.
+    /// </summary>
+    public static RenderSamplerState linearClamp
+        => new(
+            RenderSamplerFilter.Linear,
+            RenderSamplerAddressMode.Clamp,
+            RenderSamplerAddressMode.Clamp,
+            RenderSamplerAddressMode.Clamp
+        );
 
     /// <summary>
     /// Gets the filter contract.
@@ -125,12 +83,12 @@ public struct RenderSamplerState : IEquatable<RenderSamplerState>
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
-    /// </returns>
     /// <param name="obj">
     /// The object to compare with this instance.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
+    /// </returns>
     public override readonly bool Equals(object? obj) => obj is RenderSamplerState other && Equals(other);
 
     /// <summary>
@@ -176,3 +134,44 @@ public struct RenderSamplerState : IEquatable<RenderSamplerState>
     ) => !left.Equals(right);
 }
 
+/// <summary>
+/// Selects texture filtering independently from a graphics backend.
+/// </summary>
+public enum RenderSamplerFilter
+{
+    /// <summary>
+    /// Uses nearest-neighbor filtering.
+    /// </summary>
+    Point,
+    /// <summary>
+    /// Uses linear filtering.
+    /// </summary>
+    Linear,
+    /// <summary>
+    /// Uses anisotropic filtering when supported.
+    /// </summary>
+    Anisotropic
+}
+
+/// <summary>
+/// Selects texture addressing independently for each coordinate axis.
+/// </summary>
+public enum RenderSamplerAddressMode
+{
+    /// <summary>
+    /// Repeats texture coordinates.
+    /// </summary>
+    Repeat,
+    /// <summary>
+    /// Mirrors repeated texture coordinates.
+    /// </summary>
+    Mirror,
+    /// <summary>
+    /// Clamps coordinates to the texture edge.
+    /// </summary>
+    Clamp,
+    /// <summary>
+    /// Samples the backend border color outside the texture.
+    /// </summary>
+    Border
+}

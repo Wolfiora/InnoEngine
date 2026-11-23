@@ -1,11 +1,12 @@
-using Inno.Editor.Shaders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Inno.Editor.Shaders;
 using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Shaders.ImGui;
+
 /// <summary>
 /// Shares generation-scoped node presentation between graph and Inspector hosts.
 /// </summary>
@@ -13,6 +14,7 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
 {
     private readonly TypeCatalog m_types;
     private readonly Registry m_registry;
+
     /// <summary>
     /// Creates a presentation registry owned by the current editor feature lifetime.
     /// </summary>
@@ -21,14 +23,15 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
     /// </param>
     public ShaderNodeDrawerRegistry(TypeCatalog types)
     {
-        m_types = types ?? throw new ArgumentNullException(nameof(types));
+        ArgumentNullException.ThrowIfNull(types);
+        m_types = types;
         m_registry = new(types);
     }
 
     /// <summary>
     /// Invokes optional node controls within one generation lease.
     /// </summary>
-    /// <param name="definitionId">
+    /// <param name="definitionID">
     /// Stable node definition identity.
     /// </param>
     /// <param name="context">
@@ -38,12 +41,14 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
     /// True when a registered drawer rendered the controls; false leaves presentation to the host.
     /// </returns>
     public bool TryDraw(
-        string definitionId,
+        string definitionID,
         ShaderNodeDrawContext context
     ) {
         using IDisposable operation = m_types.AcquireOperation("Draw shader node controls");
-        if (!m_registry.snapshot.drawers.TryGetValue(definitionId, out ShaderNodeDrawer? drawer))
+        if (!m_registry.snapshot.drawers.TryGetValue(definitionID, out ShaderNodeDrawer? drawer))
+        {
             return false;
+        }
         drawer.Draw(context);
         return true;
     }
@@ -51,22 +56,22 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
     /// <summary>
     /// Resolves an optional artist-facing name without executing a drawer or retaining its generation.
     /// </summary>
-    /// <param name="definitionId">
+    /// <param name="definitionID">
     /// Stable compiler-independent node identity.
     /// </param>
     /// <returns>
     /// The contributed name, or null when the host should use its generic presentation.
     /// </returns>
-    public string? GetDisplayName(string definitionId)
+    public string? GetDisplayName(string definitionID)
     {
         using IDisposable operation = m_types.AcquireOperation("Resolve shader node presentation");
-        return m_registry.snapshot.names.TryGetValue(definitionId, out string? name) && name.Length != 0 ? name : null;
+        return m_registry.snapshot.names.TryGetValue(definitionID, out string? name) && name.Length != 0 ? name : null;
     }
 
     /// <summary>
     /// Gets optional creation-menu presentation without executing the drawer.
     /// </summary>
-    /// <param name="definitionId">
+    /// <param name="definitionID">
     /// Stable compiler-independent node identity.
     /// </param>
     /// <param name="presentation">
@@ -76,17 +81,21 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
     /// True when the current generation contributes presentation for the node; otherwise false.
     /// </returns>
     public bool TryGetPresentation(
-        string definitionId,
+        string definitionID,
         out ShaderNodePresentation presentation
     ) {
         using IDisposable operation = m_types.AcquireOperation("Resolve shader node authoring presentation");
-        return m_registry.snapshot.presentations.TryGetValue(definitionId, out presentation);
+        return m_registry.snapshot.presentations.TryGetValue(definitionID, out presentation);
     }
 
     /// <summary>
     /// Retires the current presentation providers through the shared lifecycle.
     /// </summary>
     public void Dispose() => m_registry.Dispose();
+
+    private static string Normalize(string value)
+        => string.Join('/', value.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+
     private sealed class Registry(TypeCatalog types) : TypeRegistry<Snapshot>(types)
     {
         internal Snapshot snapshot => current;
@@ -107,15 +116,27 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
             var presentations = new Dictionary<string, ShaderNodePresentation>(StringComparer.Ordinal);
             try
             {
-                foreach (Type type in snapshot.GetTypesWithAttribute<ShaderNodeDrawerAttribute>().Select(reference => reference.Resolve(snapshot)))
-                {
+                foreach (Type type in snapshot
+                    .GetTypesWithAttribute<ShaderNodeDrawerAttribute>()
+                    .Select(reference => reference.Resolve(snapshot))
+                ) {
                     ShaderNodeDrawerAttribute attribute = type.GetCustomAttribute<ShaderNodeDrawerAttribute>()!;
-                    string id = attribute.definitionId;
+                    string id = attribute.definitionID;
                     if (result.ContainsKey(id))
+                    {
                         throw new InvalidOperationException($"Shader node drawer '{id}' is registered twice.");
+                    }
                     result.Add(id, CreateExtension<ShaderNodeDrawer>(type));
                     names.Add(id, attribute.displayName);
-                    presentations.Add(id, new(attribute.displayName, Normalize(attribute.createPath), attribute.createOrder, attribute.separatorBefore));
+                    presentations.Add(
+                        id,
+                        new ShaderNodePresentation(
+                            attribute.displayName,
+                            Normalize(attribute.createPath),
+                            attribute.createOrder,
+                            attribute.separatorBefore
+                        )
+                    );
                 }
 
                 return new(result, names, presentations);
@@ -144,7 +165,6 @@ public sealed class ShaderNodeDrawerRegistry : IDisposable
         protected override void DisposeSnapshot(Snapshot snapshot) => DisposeExtensions(snapshot.drawers.Values);
     }
 
-    private static string Normalize(string value) => string.Join('/', value.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
     private sealed record Snapshot(
         IReadOnlyDictionary<string, ShaderNodeDrawer> drawers,
         IReadOnlyDictionary<string, string> names,

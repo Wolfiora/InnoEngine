@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-
 using Inno.Core.Logging;
 using Inno.Editor.Core;
 
@@ -27,19 +26,20 @@ internal sealed class EditorExtensionStateStore
         Logger log
     ) {
         ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(log);
         m_context = context;
-        m_log = log ?? throw new ArgumentNullException(nameof(log));
+        m_log = log;
     }
 
     internal bool TryGetPanelOpen(
-        string panelId,
+        string panelID,
         out bool isOpen
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
-        if (m_context.TryGetLayoutSection(C_PANELS_SECTION, out IReadOnlyDictionary<string, string> values) &&
-            values.TryGetValue(panelId, out string? stored) &&
-            bool.TryParse(stored, out isOpen))
-        {
+        ArgumentException.ThrowIfNullOrWhiteSpace(panelID);
+        if (m_context.TryGetLayoutSection(C_PANELS_SECTION, out IReadOnlyDictionary<string, string> values)
+            && values.TryGetValue(panelID, out string? stored)
+            && bool.TryParse(stored, out isOpen)
+        ) {
             return true;
         }
         isOpen = false;
@@ -50,56 +50,57 @@ internal sealed class EditorExtensionStateStore
         IReadOnlyList<EditorExtensionCatalog.StateRegistration> registrations,
         IReadOnlyList<EditorExtensionCatalog.PanelRegistration> panels
     ) {
-        var failures = new List<(string Message, Exception Exception)>();
+        List<(string message, Exception exception)> failures = [];
         for (int i = 0; i < registrations.Count; i++)
         {
             EditorExtensionCatalog.StateRegistration registration = registrations[i];
-            if (!m_restoredOwners.TryGetValue(registration.owner, out RestoredOwner? owner) ||
-                !owner.isRestored)
-            {
+            if (!m_restoredOwners.TryGetValue(registration.owner, out RestoredOwner? owner)
+                || !owner.isRestored
+            ) {
                 continue;
             }
             try
             {
                 var state = new EditorJsonState();
                 registration.capture(state);
-                m_context.SetLayoutSection(
-                    GetSectionName(registration),
-                    state.Export());
+                m_context.SetLayoutSection(GetSectionName(registration), state.Export());
             }
             catch (Exception exception)
             {
-                failures.Add((
-                    $"Extension '{registration.id}' failed to capture state: {exception.Message}",
-                    exception));
+                failures.Add(
+                    (
+                        $"Extension '{registration.id}' failed to capture state: {exception.Message}",
+                        exception)
+                );
             }
         }
-        if (m_diagnostics.PublishCapture(failures.Select(static failure => failure.Message).ToArray()))
+        if (m_diagnostics.PublishCapture(failures.Select(static failure => failure.message).ToArray()))
         {
             for (int i = 0; i < failures.Count; i++)
-                m_log.Write(
-                    LogLevel.Error,
-                    "{0} Full exception: {1}",
-                    [failures[i].Message, failures[i].Exception]);
+            {
+                m_log.Write(LogLevel.Error, "{0} Full exception: {1}", [failures[i].message, failures[i].exception]);
+            }
         }
 
         var panelValues = new Dictionary<string, string>(StringComparer.Ordinal);
         for (int i = 0; i < panels.Count; i++)
+        {
             panelValues[panels[i].attribute.id] = panels[i].panel.isOpen ? "true" : "false";
+        }
         m_context.SetLayoutSection(C_PANELS_SECTION, panelValues);
     }
 
     internal void Restore(IReadOnlyList<EditorExtensionCatalog.StateRegistration> registrations)
     {
-        var failures = new List<(string Message, Exception Exception)>();
+        List<(string message, Exception exception)> failures = [];
         for (int i = 0; i < registrations.Count; i++)
         {
             EditorExtensionCatalog.StateRegistration registration = registrations[i];
-            RestoredOwner owner = m_restoredOwners.GetValue(
-                registration.owner,
-                static _ => new RestoredOwner());
+            RestoredOwner owner = m_restoredOwners.GetValue(registration.owner, static _ => new RestoredOwner());
             if (owner.isRestored || owner.isRestoring)
+            {
                 continue;
+            }
             owner.isRestoring = true;
             try
             {
@@ -109,22 +110,23 @@ internal sealed class EditorExtensionStateStore
             catch (Exception exception)
             {
                 _ = m_restoredOwners.Remove(registration.owner);
-                failures.Add((
-                    $"Extension '{registration.id}' failed to restore state: {exception.Message}",
-                    exception));
+                failures.Add(
+                    (
+                        $"Extension '{registration.id}' failed to restore state: {exception.Message}",
+                        exception)
+                );
             }
             finally
             {
                 owner.isRestoring = false;
             }
         }
-        if (m_diagnostics.PublishRestore(failures.Select(static failure => failure.Message).ToArray()))
+        if (m_diagnostics.PublishRestore(failures.Select(static failure => failure.message).ToArray()))
         {
             for (int i = 0; i < failures.Count; i++)
-                m_log.Write(
-                    LogLevel.Error,
-                    "{0} Full exception: {1}",
-                    [failures[i].Message, failures[i].Exception]);
+            {
+                m_log.Write(LogLevel.Error, "{0} Full exception: {1}", [failures[i].message, failures[i].exception]);
+            }
         }
         SaveIfChanged();
     }
@@ -137,7 +139,9 @@ internal sealed class EditorExtensionStateStore
         IReadOnlyList<EditorExtensionCatalog.PanelRegistration> panels
     ) {
         if (m_isShutdownPrepared || elapsedSeconds < m_nextSaveTime)
+        {
             return;
+        }
         m_nextSaveTime = elapsedSeconds + C_SAVE_INTERVAL_SECONDS;
         Capture(registrations, panels);
         SaveIfChanged();
@@ -161,7 +165,9 @@ internal sealed class EditorExtensionStateStore
         IReadOnlyList<EditorExtensionCatalog.PanelRegistration> panels
     ) {
         if (m_isShutdownPrepared)
+        {
             return;
+        }
 
         // Freeze periodic persistence before capturing the terminal extension snapshot. Module
         // shutdown may unload scenes and clear panels, and that transient teardown state must
@@ -175,7 +181,9 @@ internal sealed class EditorExtensionStateStore
     {
         string sectionName = GetSectionName(registration);
         if (!m_context.TryGetLayoutSection(sectionName, out IReadOnlyDictionary<string, string> values))
+        {
             return new EditorJsonState(values: null);
+        }
         return new EditorJsonState(values);
     }
 
@@ -193,7 +201,8 @@ internal sealed class EditorExtensionStateStore
                 m_log.Write(
                     LogLevel.Error,
                     "Editor extension state could not be saved to '{0}': {1}",
-                    [m_context.layoutPath, exception]);
+                    [m_context.layoutPath, exception]
+                );
             }
         }
     }

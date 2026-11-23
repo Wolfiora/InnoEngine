@@ -12,14 +12,7 @@ internal static unsafe class RmlUiNativeRuntime
     ) {
         Result result = default;
         BgcsInnoRmluiError* error = null;
-        RmlUiNativeErrors.CheckBridge(
-            UiNative.Raw.CloseDocument(
-                runtime,
-                context,
-                document,
-                &result,
-                &error),
-            error);
+        RmlUiNativeErrors.CheckBridge(UiNative.Raw.CloseDocument(runtime, context, document, &result, &error), error);
         return result;
     }
 
@@ -35,6 +28,7 @@ internal static unsafe class RmlUiNativeRuntime
         BgcsInnoRmluiError* error = null;
         using var nameText = new RmlUiUtf8String(name);
         fixed (ulong* contextPointer = &context)
+        {
             RmlUiNativeErrors.CheckBridge(
                 UiNative.Raw.CreateContext(
                     runtime,
@@ -44,8 +38,11 @@ internal static unsafe class RmlUiNativeRuntime
                     density,
                     contextPointer,
                     &result,
-                    &error),
-                error);
+                    &error
+                ),
+                error
+            );
+        }
         return result;
     }
 
@@ -55,13 +52,7 @@ internal static unsafe class RmlUiNativeRuntime
     ) {
         Result result = default;
         BgcsInnoRmluiError* error = null;
-        RmlUiNativeErrors.CheckBridge(
-            UiNative.Raw.DestroyContext(
-                runtime,
-                context,
-                &result,
-                &error),
-            error);
+        RmlUiNativeErrors.CheckBridge(UiNative.Raw.DestroyContext(runtime, context, &result, &error), error);
         return result;
     }
 
@@ -75,16 +66,12 @@ internal static unsafe class RmlUiNativeRuntime
         Result result = default;
         BgcsInnoRmluiError* error = null;
         fixed (byte* hitPointer = &hit)
+        {
             RmlUiNativeErrors.CheckBridge(
-                UiNative.Raw.HasElementAtPoint(
-                    runtime,
-                    context,
-                    x,
-                    y,
-                    hitPointer,
-                    &result,
-                    &error),
-                error);
+                UiNative.Raw.HasElementAtPoint(runtime, context, x, y, hitPointer, &result, &error),
+                error
+            );
+        }
         return result;
     }
 
@@ -95,14 +82,7 @@ internal static unsafe class RmlUiNativeRuntime
     ) {
         Result result = default;
         BgcsInnoRmluiError* error = null;
-        RmlUiNativeErrors.CheckBridge(
-            UiNative.Raw.HideDocument(
-                runtime,
-                context,
-                document,
-                &result,
-                &error),
-            error);
+        RmlUiNativeErrors.CheckBridge(UiNative.Raw.HideDocument(runtime, context, document, &result, &error), error);
         return result;
     }
 
@@ -118,6 +98,7 @@ internal static unsafe class RmlUiNativeRuntime
         using var markupText = new RmlUiUtf8String(markup);
         using var sourceUrlText = new RmlUiUtf8String(sourceUrl);
         fixed (ulong* documentPointer = &document)
+        {
             RmlUiNativeErrors.CheckBridge(
                 UiNative.Raw.LoadDocument(
                     runtime,
@@ -126,8 +107,11 @@ internal static unsafe class RmlUiNativeRuntime
                     (sbyte*)sourceUrlText.pointer,
                     documentPointer,
                     &result,
-                    &error),
-                error);
+                    &error
+                ),
+                error
+            );
+        }
         return result;
     }
 
@@ -143,17 +127,9 @@ internal static unsafe class RmlUiNativeRuntime
         Result result = default;
         BgcsInnoRmluiError* error = null;
         RmlUiNativeErrors.CheckBridge(
-            UiNative.Raw.LoadFont(
-                runtime,
-                data,
-                dataLength,
-                (sbyte*)family,
-                style,
-                weight,
-                fallback,
-                &result,
-                &error),
-            error);
+            UiNative.Raw.LoadFont(runtime, data, dataLength, (sbyte*)family, style, weight, fallback, &result, &error),
+            error
+        );
         return result;
     }
 
@@ -167,15 +143,9 @@ internal static unsafe class RmlUiNativeRuntime
         Result result = default;
         BgcsInnoRmluiError* error = null;
         RmlUiNativeErrors.CheckBridge(
-            UiNative.Raw.ProcessKey(
-                runtime,
-                context,
-                key,
-                down,
-                modifiers,
-                &result,
-                &error),
-            error);
+            UiNative.Raw.ProcessKey(runtime, context, key, down, modifiers, &result, &error),
+            error
+        );
         return result;
     }
 
@@ -189,15 +159,9 @@ internal static unsafe class RmlUiNativeRuntime
         Result result = default;
         BgcsInnoRmluiError* error = null;
         RmlUiNativeErrors.CheckBridge(
-            UiNative.Raw.ProcessMouseButton(
-                runtime,
-                context,
-                button,
-                down,
-                modifiers,
-                &result,
-                &error),
-            error);
+            UiNative.Raw.ProcessMouseButton(runtime, context, button, down, modifiers, &result, &error),
+            error
+        );
         return result;
     }
 
@@ -211,15 +175,9 @@ internal static unsafe class RmlUiNativeRuntime
         Result result = default;
         BgcsInnoRmluiError* error = null;
         RmlUiNativeErrors.CheckBridge(
-            UiNative.Raw.ProcessMouseMove(
-                runtime,
-                context,
-                x,
-                y,
-                modifiers,
-                &result,
-                &error),
-            error);
+            UiNative.Raw.ProcessMouseMove(runtime, context, x, y, modifiers, &result, &error),
+            error
+        );
         return result;
     }
 
@@ -233,15 +191,9 @@ internal static unsafe class RmlUiNativeRuntime
         Result result = default;
         BgcsInnoRmluiError* error = null;
         RmlUiNativeErrors.CheckBridge(
-            UiNative.Raw.ProcessMouseWheel(
-                runtime,
-                context,
-                x,
-                y,
-                modifiers,
-                &result,
-                &error),
-            error);
+            UiNative.Raw.ProcessMouseWheel(runtime, context, x, y, modifiers, &result, &error),
+            error
+        );
         return result;
     }
 
@@ -252,14 +204,7 @@ internal static unsafe class RmlUiNativeRuntime
     ) {
         Result result = default;
         BgcsInnoRmluiError* error = null;
-        RmlUiNativeErrors.CheckBridge(
-            UiNative.Raw.ProcessText(
-                runtime,
-                context,
-                (sbyte*)text,
-                &result,
-                &error),
-            error);
+        RmlUiNativeErrors.CheckBridge(UiNative.Raw.ProcessText(runtime, context, (sbyte*)text, &result, &error), error);
         return result;
     }
 
@@ -284,8 +229,10 @@ internal static unsafe class RmlUiNativeRuntime
                 pixels,
                 pixelCapacity,
                 &result,
-                &error),
-            error);
+                &error
+            ),
+            error
+        );
         return result;
     }
 
@@ -293,29 +240,33 @@ internal static unsafe class RmlUiNativeRuntime
         InnoUIRmlUiAdapterRuntime* runtime,
         ulong context,
         ulong document,
-        string elementId,
+        string elementID,
         string name,
         string value,
         ref byte changed
     ) {
         Result result = default;
         BgcsInnoRmluiError* error = null;
-        using var elementIdText = new RmlUiUtf8String(elementId);
+        using var elementIDText = new RmlUiUtf8String(elementID);
         using var nameText = new RmlUiUtf8String(name);
         using var valueText = new RmlUiUtf8String(value);
         fixed (byte* changedPointer = &changed)
+        {
             RmlUiNativeErrors.CheckBridge(
                 UiNative.Raw.SetAttribute(
                     runtime,
                     context,
                     document,
-                    (sbyte*)elementIdText.pointer,
+                    (sbyte*)elementIDText.pointer,
                     (sbyte*)nameText.pointer,
                     (sbyte*)valueText.pointer,
                     changedPointer,
                     &result,
-                    &error),
-                error);
+                    &error
+                ),
+                error
+            );
+        }
         return result;
     }
 
@@ -323,28 +274,32 @@ internal static unsafe class RmlUiNativeRuntime
         InnoUIRmlUiAdapterRuntime* runtime,
         ulong context,
         ulong document,
-        string elementId,
+        string elementID,
         string className,
         byte active,
         ref byte changed
     ) {
         Result result = default;
         BgcsInnoRmluiError* error = null;
-        using var elementIdText = new RmlUiUtf8String(elementId);
+        using var elementIDText = new RmlUiUtf8String(elementID);
         using var classNameText = new RmlUiUtf8String(className);
         fixed (byte* changedPointer = &changed)
+        {
             RmlUiNativeErrors.CheckBridge(
                 UiNative.Raw.SetClass(
                     runtime,
                     context,
                     document,
-                    (sbyte*)elementIdText.pointer,
+                    (sbyte*)elementIDText.pointer,
                     (sbyte*)classNameText.pointer,
                     active,
                     changedPointer,
                     &result,
-                    &error),
-                error);
+                    &error
+                ),
+                error
+            );
+        }
         return result;
     }
 
@@ -352,26 +307,30 @@ internal static unsafe class RmlUiNativeRuntime
         InnoUIRmlUiAdapterRuntime* runtime,
         ulong context,
         ulong document,
-        string elementId,
+        string elementID,
         string markup,
         ref byte changed
     ) {
         Result result = default;
         BgcsInnoRmluiError* error = null;
-        using var elementIdText = new RmlUiUtf8String(elementId);
+        using var elementIDText = new RmlUiUtf8String(elementID);
         using var markupText = new RmlUiUtf8String(markup);
         fixed (byte* changedPointer = &changed)
+        {
             RmlUiNativeErrors.CheckBridge(
                 UiNative.Raw.SetInnerMarkup(
                     runtime,
                     context,
                     document,
-                    (sbyte*)elementIdText.pointer,
+                    (sbyte*)elementIDText.pointer,
                     (sbyte*)markupText.pointer,
                     changedPointer,
                     &result,
-                    &error),
-                error);
+                    &error
+                ),
+                error
+            );
+        }
         return result;
     }
 
@@ -385,15 +344,9 @@ internal static unsafe class RmlUiNativeRuntime
         Result result = default;
         BgcsInnoRmluiError* error = null;
         RmlUiNativeErrors.CheckBridge(
-            UiNative.Raw.SetViewport(
-                runtime,
-                context,
-                width,
-                height,
-                density,
-                &result,
-                &error),
-            error);
+            UiNative.Raw.SetViewport(runtime, context, width, height, density, &result, &error),
+            error
+        );
         return result;
     }
 
@@ -404,14 +357,7 @@ internal static unsafe class RmlUiNativeRuntime
     ) {
         Result result = default;
         BgcsInnoRmluiError* error = null;
-        RmlUiNativeErrors.CheckBridge(
-            UiNative.Raw.ShowDocument(
-                runtime,
-                context,
-                document,
-                &result,
-                &error),
-            error);
+        RmlUiNativeErrors.CheckBridge(UiNative.Raw.ShowDocument(runtime, context, document, &result, &error), error);
         return result;
     }
 
@@ -421,13 +367,7 @@ internal static unsafe class RmlUiNativeRuntime
     ) {
         Result result = default;
         BgcsInnoRmluiError* error = null;
-        RmlUiNativeErrors.CheckBridge(
-            UiNative.Raw.Update(
-                runtime,
-                context,
-                &result,
-                &error),
-            error);
+        RmlUiNativeErrors.CheckBridge(UiNative.Raw.Update(runtime, context, &result, &error), error);
         return result;
     }
 }

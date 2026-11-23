@@ -1,15 +1,19 @@
 using System;
 using System.Numerics;
 using Inno.Native.ImGui;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
+using NativeKey = Inno.Native.ImGui.ImGuiKey;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
+
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
 public sealed unsafe partial class ImGuiWidget
 {
     private const float C_INLINE_RENAME_FOCUS_OFFSET = 1f;
+
     /// <summary>
     /// Draws a compact single-line rename editor inside an existing row.
     /// </summary>
@@ -57,7 +61,7 @@ public sealed unsafe partial class ImGuiWidget
         }
 
         float fieldWidth = MathF.Max(1f, width < 0f ? NativeImGui.GetContentRegionAvail().X : width);
-        string controlId = $"##rename_{id}";
+        string controlID = $"##rename_{id}";
         bool selectAll = requestFocus;
         NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), style.inlineRenameFramePadding);
         NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FrameRounding), style.frameRounding);
@@ -77,7 +81,13 @@ public sealed unsafe partial class ImGuiWidget
             NativeImGui.PushStyleColor((int)(ImGuiCol.NavCursor), EditorPalette.transparent);
             try
             {
-                submitted = ImGuiUtf8Buffer.InputText(controlId, null, ref text, (nuint)capacity, ImGuiInputTextFlags.EnterReturnsTrue | ImGuiInputTextFlags.AutoSelectAll);
+                submitted = ImGuiUtf8Buffer.InputText(
+                    controlID,
+                    null,
+                    ref text,
+                    (nuint)capacity,
+                    ImGuiInputTextFlags.EnterReturnsTrue | ImGuiInputTextFlags.AutoSelectAll
+                );
             }
             finally
             {
@@ -85,14 +95,14 @@ public sealed unsafe partial class ImGuiWidget
             }
 
             bool deactivated = NativeImGui.IsItemDeactivated();
-            bool escapePressed = NativeImGui.IsKeyPressed((Inno.Native.ImGui.ImGuiKey)ImGuiKey.Escape);
+            bool escapePressed = NativeImGui.IsKeyPressed((NativeKey)ImGuiKey.Escape);
             bool active = NativeImGui.IsItemActive();
             bool contextMenuRequested = active && NativeImGui.IsMouseReleased((int)(ImGuiMouseButton.Right));
             if (selectAll && active)
             {
-                uint inputId = NativeImGui.GetItemID();
-                ImGuiInputTextState* inputState = NativeImGui.Raw.GetInputTextState(inputId);
-                if (inputState != null)
+                uint inputID = NativeImGui.GetItemID();
+                ImGuiInputTextState* inputState = NativeImGui.Raw.GetInputTextState(inputID);
+                if (inputState is not null)
                 {
                     NativeImGui.Raw.SelectAll(inputState);
                     requestFocus = false;
@@ -101,7 +111,7 @@ public sealed unsafe partial class ImGuiWidget
 
             if (active)
             {
-                Vector2 focusOffset = new(C_INLINE_RENAME_FOCUS_OFFSET);
+                var focusOffset = new Vector2(C_INLINE_RENAME_FOCUS_OFFSET);
                 ImGui.DrawNativeRectangle(
                     NativeImGui.Raw.GetForegroundDrawList((ImGuiViewport*)null),
                     NativeImGui.GetItemRectMin() - focusOffset,
@@ -114,9 +124,13 @@ public sealed unsafe partial class ImGuiWidget
             }
 
             if (escapePressed)
+            {
                 return InlineRenameResult.Cancel;
+            }
             if (submitted)
+            {
                 return InlineRenameResult.Commit;
+            }
             if (contextMenuRequested)
             {
                 // A context menu transfers focus into a popup after this item has already been
@@ -133,80 +147,6 @@ public sealed unsafe partial class ImGuiWidget
             NativeImGui.PopStyleVar(3);
         }
     }
-}
-
-/// <summary>
-/// Describes the view-owned geometry used to present an active inline rename action.
-/// </summary>
-public sealed class InlineRenamePresentation
-{
-    /// <summary>
-    /// Creates inline rename presentation data.
-    /// </summary>
-    /// <param name="id">
-    /// The stable ImGui identifier used by the input field.
-    /// </param>
-    /// <param name="width">
-    /// The requested input width in logical pixels.
-    /// </param>
-    /// <param name="rowHeight">
-    /// The height of the row area in which the field is centered.
-    /// </param>
-    /// <param name="bufferSize">
-    /// The maximum UTF-8 buffer size accepted by the input.
-    /// </param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="id"/> is empty.
-    /// </exception>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name = "width"/> or <paramref name="rowHeight"/> is not finite and
-    /// positive, or when <paramref name="bufferSize"/> is zero.
-    /// </exception>
-    public InlineRenamePresentation(
-        string id,
-        float width,
-        float rowHeight,
-        nuint bufferSize = 512
-    ) {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("An inline rename identifier is required.", nameof(id));
-        if (!float.IsFinite(width) || width <= 0f)
-        {
-            throw new ArgumentOutOfRangeException(nameof(width), width, "The inline rename width must be finite and positive.");
-        }
-
-        if (!float.IsFinite(rowHeight) || rowHeight <= 0f)
-        {
-            throw new ArgumentOutOfRangeException(nameof(rowHeight), rowHeight, "The inline rename row height must be finite and positive.");
-        }
-
-        if (bufferSize == 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(bufferSize), bufferSize, "The inline rename buffer size must be positive.");
-        }
-
-        this.id = id;
-        this.width = width;
-        this.rowHeight = rowHeight;
-        this.bufferSize = bufferSize;
-    }
-
-    /// <summary>
-    /// Gets the stable ImGui identifier used by the input field.
-    /// </summary>
-    public string id { get; }
-    /// <summary>
-    /// Gets the requested input width in logical pixels.
-    /// </summary>
-    public float width { get; }
-    /// <summary>
-    /// Gets the height of the row area in which the input field is centered.
-    /// </summary>
-    public float rowHeight { get; }
-    /// <summary>
-    /// Gets the maximum UTF-8 buffer size accepted by the input.
-    /// </summary>
-    public nuint bufferSize { get; }
 }
 
 /// <summary>

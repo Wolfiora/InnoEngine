@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Inspection;
 
@@ -66,103 +65,6 @@ public sealed class PropertyDrawerRegistry : IDisposable
     /// </summary>
     public void Dispose() => m_registry.Dispose();
 
-    private sealed class PropertyTypeRegistry : TypeRegistry<Registration[]>
-    {
-        private readonly EditorInteractions m_interactions;
-        private readonly SerializationRegistry m_serialization;
-        private readonly object[] m_drawerServices;
-
-        internal PropertyTypeRegistry(
-            EditorInteractions interactions,
-            TypeCatalog types,
-            SerializationRegistry serialization,
-            IEnumerable<object> drawerServices
-        )
-            : base(types)
-        {
-            m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-            m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
-            ArgumentNullException.ThrowIfNull(drawerServices);
-            m_drawerServices = drawerServices.Select(static service =>
-                service ?? throw new ArgumentException(
-                    "Property drawer services cannot contain null.",
-                    nameof(drawerServices))).ToArray();
-        }
-
-        internal IPropertyDrawer Resolve(Type propertyType)
-        {
-            Registration? best = null;
-            int bestDistance = int.MaxValue;
-            foreach (Registration registration in current)
-            {
-                if (!DrawerTypeUtility.TryGetDistance(
-                        propertyType,
-                        registration.targetType,
-                        registration.useForChildren,
-                        out int distance))
-                    continue;
-                if (best is null || distance < bestDistance ||
-                    distance == bestDistance && registration.priority > best.priority)
-                {
-                    best = registration;
-                    bestDistance = distance;
-                }
-            }
-            return best?.drawer ?? UnsupportedPropertyDrawer.instance;
-        }
-
-        /// <summary>
-        /// Builds a validated result from the current immutable input snapshot.
-        /// </summary>
-        /// <param name="types">
-        /// The active type catalog generation used for extension resolution.
-        /// </param>
-        /// <returns>
-        /// An immutable snapshot of the values selected by the operation.
-        /// </returns>
-        protected override Registration[] Build(TypeCacheSnapshot types)
-        {
-            var drawers = new Dictionary<Type, IPropertyDrawer>();
-            var registrations = new List<Registration>();
-            foreach (Type drawerType in types.GetTypesWithAttribute<PropertyDrawerAttribute>()
-                         .Select(typeRef => typeRef.Resolve(types))
-                         .OrderBy(static type => type.FullName, StringComparer.Ordinal))
-            {
-                IPropertyDrawer drawer = drawers.TryGetValue(drawerType, out IPropertyDrawer? existing)
-                    ? existing
-                    : OwnCandidateExtension(CreateDrawer(
-                        drawerType,
-                        m_interactions,
-                        types,
-                        m_serialization,
-                        m_drawerServices));
-                drawers[drawerType] = drawer;
-
-                foreach (PropertyDrawerAttribute attribute in
-                         drawerType.GetCustomAttributes<PropertyDrawerAttribute>(false))
-                {
-                    EnsureNoConflict(registrations, attribute, drawerType);
-                    registrations.Add(new Registration(
-                        attribute.targetType,
-                        attribute.useForChildren,
-                        attribute.priority,
-                        drawerType,
-                        drawer));
-                }
-            }
-            return registrations.ToArray();
-        }
-
-        /// <summary>
-        /// Releases the generation lease retained by an immutable registry snapshot.
-        /// </summary>
-        /// <param name="snapshot">
-        /// The immutable state snapshot consumed by this operation.
-        /// </param>
-        protected override void DisposeSnapshot(Registration[] snapshot)
-            => DisposeExtensions(snapshot.Select(static registration => registration.drawer));
-    }
-
     private static IPropertyDrawer CreateDrawer(
         Type type,
         EditorInteractions interactions,
@@ -171,11 +73,14 @@ public sealed class PropertyDrawerRegistry : IDisposable
         IReadOnlyList<object> drawerServices
     ) {
         ConstructorInfo[] constructors = type.GetConstructors(
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+        );
         if (constructors.Length != 1)
+        {
             throw new InvalidOperationException($"Property drawer '{type.FullName}' must declare exactly one constructor.");
+        }
         ParameterInfo[] parameters = constructors[0].GetParameters();
-        object?[] arguments = new object?[parameters.Length];
+        var arguments = new object?[parameters.Length];
         for (int index = 0; index < parameters.Length; index++)
         {
             Type parameterType = parameters[index].ParameterType;
@@ -192,11 +97,13 @@ public sealed class PropertyDrawerRegistry : IDisposable
             {
                 1 => matches[0],
                 0 => throw new InvalidOperationException(
-                    $"Property drawer '{type.FullName}' requests unavailable service " +
-                    $"'{parameterType.FullName}'."),
+                    $"Property drawer '{type.FullName}' requests unavailable service "
+                    + $"'{parameterType.FullName}'."
+                ),
                 _ => throw new InvalidOperationException(
-                    $"Property drawer '{type.FullName}' requests ambiguous service " +
-                    $"'{parameterType.FullName}'.")
+                    $"Property drawer '{type.FullName}' requests ambiguous service "
+                    + $"'{parameterType.FullName}'."
+                )
             };
         }
         return (IPropertyDrawer)constructors[0].Invoke(arguments);
@@ -212,9 +119,118 @@ public sealed class PropertyDrawerRegistry : IDisposable
             if (existing.targetType == attribute.targetType && existing.priority == attribute.priority)
             {
                 throw new InvalidOperationException(
-                    $"Property drawers '{existing.drawerType.FullName}' and '{drawerType.FullName}' " +
-                    $"conflict for '{attribute.targetType.FullName}'.");
+                    $"Property drawers '{existing.drawerType.FullName}' and '{drawerType.FullName}' "
+                    + $"conflict for '{attribute.targetType.FullName}'."
+                );
             }
+        }
+    }
+
+    private sealed class PropertyTypeRegistry : TypeRegistry<Registration[]>
+    {
+        private readonly EditorInteractions m_interactions;
+        private readonly SerializationRegistry m_serialization;
+        private readonly object[] m_drawerServices;
+
+        internal PropertyTypeRegistry(
+            EditorInteractions interactions,
+            TypeCatalog types,
+            SerializationRegistry serialization,
+            IEnumerable<object> drawerServices
+        ) : base(types)
+        {
+            ArgumentNullException.ThrowIfNull(interactions);
+            ArgumentNullException.ThrowIfNull(serialization);
+            m_interactions = interactions;
+            m_serialization = serialization;
+            ArgumentNullException.ThrowIfNull(drawerServices);
+            m_drawerServices = drawerServices.Select(static service => (
+                service ?? throw new ArgumentException(
+                    "Property drawer services cannot contain null.",
+                    nameof(drawerServices)
+                )
+            )).ToArray();
+        }
+
+        /// <summary>
+        /// Builds a validated result from the current immutable input snapshot.
+        /// </summary>
+        /// <param name="types">
+        /// The active type catalog generation used for extension resolution.
+        /// </param>
+        /// <returns>
+        /// An immutable snapshot of the values selected by the operation.
+        /// </returns>
+        protected override Registration[] Build(TypeCacheSnapshot types)
+        {
+            var drawers = new Dictionary<Type, IPropertyDrawer>();
+            List<Registration> registrations = [];
+            foreach (Type drawerType in types.GetTypesWithAttribute<PropertyDrawerAttribute>()
+                .Select(typeRef => typeRef.Resolve(types))
+                .OrderBy(static type => type.FullName, StringComparer.Ordinal)
+            ) {
+                IPropertyDrawer drawer = drawers.TryGetValue(drawerType, out IPropertyDrawer? existing)
+                                         ? existing
+                                         : OwnCandidateExtension(
+                                             CreateDrawer(
+                                                 drawerType,
+                                                 m_interactions,
+                                                 types,
+                                                 m_serialization,
+                                                 m_drawerServices
+                                             )
+                                         );
+                drawers[drawerType] = drawer;
+
+                foreach (PropertyDrawerAttribute attribute in
+                         drawerType.GetCustomAttributes<PropertyDrawerAttribute>(false)
+                ) {
+                    EnsureNoConflict(registrations, attribute, drawerType);
+                    registrations.Add(
+                        new Registration(
+                            attribute.targetType,
+                            attribute.useForChildren,
+                            attribute.priority,
+                            drawerType,
+                            drawer
+                        )
+                    );
+                }
+            }
+            return registrations.ToArray();
+        }
+
+        /// <summary>
+        /// Releases the generation lease retained by an immutable registry snapshot.
+        /// </summary>
+        /// <param name="snapshot">
+        /// The immutable state snapshot consumed by this operation.
+        /// </param>
+        protected override void DisposeSnapshot(Registration[] snapshot)
+            => DisposeExtensions(snapshot.Select(static registration => registration.drawer));
+
+        internal IPropertyDrawer Resolve(Type propertyType)
+        {
+            Registration? best = null;
+            int bestDistance = int.MaxValue;
+            foreach (Registration registration in current)
+            {
+                if (!DrawerTypeUtility.TryGetDistance(
+                    propertyType,
+                    registration.targetType,
+                    registration.useForChildren,
+                    out int distance
+                )) {
+                    continue;
+                }
+                if (best is null || distance < bestDistance
+                    || distance == bestDistance && registration.priority > best.priority
+                ) {
+                    best = registration;
+                    bestDistance = distance;
+                }
+            }
+            return best?.drawer ?? UnsupportedPropertyDrawer.instance;
         }
     }
 

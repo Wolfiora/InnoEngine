@@ -11,13 +11,7 @@ internal static unsafe class RmlUiNativeFrames
     ) {
         Result result = default;
         BgcsInnoRmluiError* error = null;
-        RmlUiNativeErrors.CheckBridge(
-            UiNative.Raw.ClearEvents(
-                runtime,
-                context,
-                &result,
-                &error),
-            error);
+        RmlUiNativeErrors.CheckBridge(UiNative.Raw.ClearEvents(runtime, context, &result, &error), error);
         return result;
     }
 
@@ -29,6 +23,7 @@ internal static unsafe class RmlUiNativeFrames
         Result result = default;
         BgcsInnoRmluiError* error = null;
         fixed (InnoUIRmlUiAdapterDrawCommand* commandsPointer = commands)
+        {
             RmlUiNativeErrors.CheckBridge(
                 UiNative.Raw.CopyCommands(
                     runtime,
@@ -36,30 +31,37 @@ internal static unsafe class RmlUiNativeFrames
                     (InnoUIRmlUiAdapterDrawCommandNative*)commandsPointer,
                     checked((ulong)commands.Length),
                     &result,
-                    &error),
-                error);
+                    &error
+                ),
+                error
+            );
+        }
         return result;
     }
 
-    internal static Result CopyEventTargetId(
+    internal static Result CopyEventTargetID(
         InnoUIRmlUiAdapterRuntime* runtime,
         ulong context,
         ulong index,
-        Span<byte> targetId
+        Span<byte> targetID
     ) {
         Result result = default;
         BgcsInnoRmluiError* error = null;
-        fixed (byte* targetIdPointer = targetId)
+        fixed (byte* targetIDPointer = targetID)
+        {
             RmlUiNativeErrors.CheckBridge(
                 UiNative.Raw.CopyEventTargetId(
                     runtime,
                     context,
                     index,
-                    (sbyte*)targetIdPointer,
-                    checked((ulong)targetId.Length),
+                    (sbyte*)targetIDPointer,
+                    checked((ulong)targetID.Length),
                     &result,
-                    &error),
-                error);
+                    &error
+                ),
+                error
+            );
+        }
         return result;
     }
 
@@ -72,6 +74,7 @@ internal static unsafe class RmlUiNativeFrames
         Result result = default;
         BgcsInnoRmluiError* error = null;
         fixed (uint* indicesPointer = indices)
+        {
             RmlUiNativeErrors.CheckBridge(
                 UiNative.Raw.CopyMeshIndices(
                     runtime,
@@ -80,8 +83,11 @@ internal static unsafe class RmlUiNativeFrames
                     (uint*)indicesPointer,
                     checked((ulong)indices.Length),
                     &result,
-                    &error),
-                error);
+                    &error
+                ),
+                error
+            );
+        }
         return result;
     }
 
@@ -94,6 +100,7 @@ internal static unsafe class RmlUiNativeFrames
         Result result = default;
         BgcsInnoRmluiError* error = null;
         fixed (InnoUIRmlUiAdapterVertex* verticesPointer = vertices)
+        {
             RmlUiNativeErrors.CheckBridge(
                 UiNative.Raw.CopyMeshVertices(
                     runtime,
@@ -102,8 +109,11 @@ internal static unsafe class RmlUiNativeFrames
                     (InnoUIRmlUiAdapterVertexNative*)verticesPointer,
                     checked((ulong)vertices.Length),
                     &result,
-                    &error),
-                error);
+                    &error
+                ),
+                error
+            );
+        }
         return result;
     }
 
@@ -115,6 +125,7 @@ internal static unsafe class RmlUiNativeFrames
         Result result = default;
         BgcsInnoRmluiError* error = null;
         fixed (ulong* meshesPointer = meshes)
+        {
             RmlUiNativeErrors.CheckBridge(
                 UiNative.Raw.CopyReleasedMeshes(
                     runtime,
@@ -122,8 +133,11 @@ internal static unsafe class RmlUiNativeFrames
                     (ulong*)meshesPointer,
                     checked((ulong)meshes.Length),
                     &result,
-                    &error),
-                error);
+                    &error
+                ),
+                error
+            );
+        }
         return result;
     }
 
@@ -135,6 +149,7 @@ internal static unsafe class RmlUiNativeFrames
         Result result = default;
         BgcsInnoRmluiError* error = null;
         fixed (ulong* texturesPointer = textures)
+        {
             RmlUiNativeErrors.CheckBridge(
                 UiNative.Raw.CopyReleasedTextures(
                     runtime,
@@ -142,8 +157,11 @@ internal static unsafe class RmlUiNativeFrames
                     (ulong*)texturesPointer,
                     checked((ulong)textures.Length),
                     &result,
-                    &error),
-                error);
+                    &error
+                ),
+                error
+            );
+        }
         return result;
     }
 
@@ -156,6 +174,7 @@ internal static unsafe class RmlUiNativeFrames
         Result result = default;
         BgcsInnoRmluiError* error = null;
         fixed (byte* pixelsPointer = pixels)
+        {
             RmlUiNativeErrors.CheckBridge(
                 UiNative.Raw.CopyTexturePixels(
                     runtime,
@@ -164,8 +183,11 @@ internal static unsafe class RmlUiNativeFrames
                     (byte*)pixelsPointer,
                     checked((ulong)pixels.Length),
                     &result,
-                    &error),
-                error);
+                    &error
+                ),
+                error
+            );
+        }
         return result;
     }
 
@@ -175,13 +197,7 @@ internal static unsafe class RmlUiNativeFrames
     ) {
         Result result = default;
         BgcsInnoRmluiError* error = null;
-        RmlUiNativeErrors.CheckBridge(
-            UiNative.Raw.FinishFrame(
-                runtime,
-                context,
-                &result,
-                &error),
-            error);
+        RmlUiNativeErrors.CheckBridge(UiNative.Raw.FinishFrame(runtime, context, &result, &error), error);
         return result;
     }
 
@@ -193,14 +209,12 @@ internal static unsafe class RmlUiNativeFrames
         Result result = default;
         BgcsInnoRmluiError* error = null;
         fixed (ulong* countPointer = &count)
+        {
             RmlUiNativeErrors.CheckBridge(
-                UiNative.Raw.GetEventCount(
-                    runtime,
-                    context,
-                    countPointer,
-                    &result,
-                    &error),
-                error);
+                UiNative.Raw.GetEventCount(runtime, context, countPointer, &result, &error),
+                error
+            );
+        }
         return result;
     }
 
@@ -213,6 +227,7 @@ internal static unsafe class RmlUiNativeFrames
         Result result = default;
         BgcsInnoRmluiError* error = null;
         fixed (InnoUIRmlUiAdapterEventInfo* eventInfoPointer = &eventInfo)
+        {
             RmlUiNativeErrors.CheckBridge(
                 UiNative.Raw.GetEventInfo(
                     runtime,
@@ -220,8 +235,11 @@ internal static unsafe class RmlUiNativeFrames
                     index,
                     (InnoUIRmlUiAdapterEventInfoNative*)eventInfoPointer,
                     &result,
-                    &error),
-                error);
+                    &error
+                ),
+                error
+            );
+        }
         return result;
     }
 
@@ -234,6 +252,7 @@ internal static unsafe class RmlUiNativeFrames
         Result result = default;
         BgcsInnoRmluiError* error = null;
         fixed (InnoUIRmlUiAdapterMeshInfo* meshPointer = &mesh)
+        {
             RmlUiNativeErrors.CheckBridge(
                 UiNative.Raw.GetMeshInfo(
                     runtime,
@@ -241,8 +260,11 @@ internal static unsafe class RmlUiNativeFrames
                     index,
                     (InnoUIRmlUiAdapterMeshInfoNative*)meshPointer,
                     &result,
-                    &error),
-                error);
+                    &error
+                ),
+                error
+            );
+        }
         return result;
     }
 
@@ -255,6 +277,7 @@ internal static unsafe class RmlUiNativeFrames
         Result result = default;
         BgcsInnoRmluiError* error = null;
         fixed (InnoUIRmlUiAdapterTextureInfo* texturePointer = &texture)
+        {
             RmlUiNativeErrors.CheckBridge(
                 UiNative.Raw.GetTextureInfo(
                     runtime,
@@ -262,8 +285,11 @@ internal static unsafe class RmlUiNativeFrames
                     index,
                     (InnoUIRmlUiAdapterTextureInfoNative*)texturePointer,
                     &result,
-                    &error),
-                error);
+                    &error
+                ),
+                error
+            );
+        }
         return result;
     }
 
@@ -275,14 +301,18 @@ internal static unsafe class RmlUiNativeFrames
         Result result = default;
         BgcsInnoRmluiError* error = null;
         fixed (InnoUIRmlUiAdapterFrameInfo* framePointer = &frame)
+        {
             RmlUiNativeErrors.CheckBridge(
                 UiNative.Raw.Render(
                     runtime,
                     context,
                     (InnoUIRmlUiAdapterFrameInfoNative*)framePointer,
                     &result,
-                    &error),
-                error);
+                    &error
+                ),
+                error
+            );
+        }
         return result;
     }
 }

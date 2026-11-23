@@ -8,11 +8,11 @@ namespace Inno.References;
 /// </summary>
 public sealed class ReferenceCatalog
 {
-    private readonly IReadOnlyDictionary<ReferenceKindId, IReferenceResolver> m_resolvers;
+    private readonly IReadOnlyDictionary<ReferenceKindID, IReferenceResolver> m_resolvers;
 
     private ReferenceCatalog(
         long generation,
-        IReadOnlyDictionary<ReferenceKindId, IReferenceResolver> resolvers
+        IReadOnlyDictionary<ReferenceKindID, IReferenceResolver> resolvers
     ) {
         this.generation = generation;
         m_resolvers = resolvers;
@@ -21,12 +21,51 @@ public sealed class ReferenceCatalog
     /// <summary>
     /// Gets an empty initial reference catalog.
     /// </summary>
-    public static ReferenceCatalog empty { get; } = new(0, new Dictionary<ReferenceKindId, IReferenceResolver>());
+    public static ReferenceCatalog empty { get; } = new(0, new Dictionary<ReferenceKindID, IReferenceResolver>());
 
     /// <summary>
     /// Gets the owner-assigned generation represented by this snapshot.
     /// </summary>
     public long generation { get; }
+
+    /// <summary>
+    /// Resolves a persistent descriptor using the resolver selected by its kind.
+    /// </summary>
+    /// <param name="descriptor">
+    /// The descriptor to resolve.
+    /// </param>
+    /// <returns>
+    /// The resolver result, an unassigned result for an empty target, or a missing result when no resolver is installed.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="descriptor"/> is null.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when a resolver returns a result for a different descriptor.
+    /// </exception>
+    public ReferenceResolution Resolve(ReferenceDescriptor descriptor)
+    {
+        ArgumentNullException.ThrowIfNull(descriptor);
+        if (descriptor.isUnassigned)
+        {
+            return new ReferenceResolution(descriptor, ReferenceResolutionState.Unassigned);
+        }
+        if (!m_resolvers.TryGetValue(descriptor.kindID, out IReferenceResolver? resolver))
+        {
+            return new ReferenceResolution(
+                descriptor,
+                ReferenceResolutionState.Missing,
+                diagnostic: $"No resolver for reference kind '{descriptor.kindID}' is active in generation {generation}."
+            );
+        }
+        ReferenceResolution result = resolver.Resolve(descriptor)
+                                     ?? throw new InvalidOperationException($"Reference resolver '{descriptor.kindID}' returned null.");
+        if (!ReferenceEquals(result.descriptor, descriptor))
+        {
+            throw new InvalidOperationException($"Reference resolver '{descriptor.kindID}' replaced the supplied descriptor.");
+        }
+        return result;
+    }
 
     /// <summary>
     /// Builds a complete resolver generation and rejects duplicate protocol identifiers.
@@ -54,51 +93,23 @@ public sealed class ReferenceCatalog
         IEnumerable<IReferenceResolver> resolvers
     ) {
         if (generation <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(generation), "A published reference catalog requires a positive generation.");
+        }
         ArgumentNullException.ThrowIfNull(resolvers);
-        var byKind = new Dictionary<ReferenceKindId, IReferenceResolver>();
+        var byKind = new Dictionary<ReferenceKindID, IReferenceResolver>();
         foreach (IReferenceResolver? resolver in resolvers)
         {
             ArgumentNullException.ThrowIfNull(resolver);
-            if (!resolver.kindId.isValid)
+            if (!resolver.kindID.isValid)
+            {
                 throw new InvalidOperationException("A reference resolver declared an invalid kind identifier.");
-            if (!byKind.TryAdd(resolver.kindId, resolver))
-                throw new InvalidOperationException($"Reference kind '{resolver.kindId}' has more than one resolver.");
+            }
+            if (!byKind.TryAdd(resolver.kindID, resolver))
+            {
+                throw new InvalidOperationException($"Reference kind '{resolver.kindID}' has more than one resolver.");
+            }
         }
         return new ReferenceCatalog(generation, byKind);
-    }
-
-    /// <summary>
-    /// Resolves a persistent descriptor using the resolver selected by its kind.
-    /// </summary>
-    /// <param name="descriptor">
-    /// The descriptor to resolve.
-    /// </param>
-    /// <returns>
-    /// The resolver result, an unassigned result for an empty target, or a missing result when no resolver is installed.
-    /// </returns>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="descriptor"/> is null.
-    /// </exception>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown when a resolver returns a result for a different descriptor.
-    /// </exception>
-    public ReferenceResolution Resolve(ReferenceDescriptor descriptor)
-    {
-        ArgumentNullException.ThrowIfNull(descriptor);
-        if (descriptor.isUnassigned)
-            return new ReferenceResolution(descriptor, ReferenceResolutionState.Unassigned);
-        if (!m_resolvers.TryGetValue(descriptor.kindId, out IReferenceResolver? resolver))
-        {
-            return new ReferenceResolution(
-                descriptor,
-                ReferenceResolutionState.Missing,
-                diagnostic: $"No resolver for reference kind '{descriptor.kindId}' is active in generation {generation}.");
-        }
-        ReferenceResolution result = resolver.Resolve(descriptor)
-            ?? throw new InvalidOperationException($"Reference resolver '{descriptor.kindId}' returned null.");
-        if (!ReferenceEquals(result.descriptor, descriptor))
-            throw new InvalidOperationException($"Reference resolver '{descriptor.kindId}' replaced the supplied descriptor.");
-        return result;
     }
 }

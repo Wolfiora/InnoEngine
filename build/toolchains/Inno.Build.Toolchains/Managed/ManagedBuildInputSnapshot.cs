@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -31,7 +32,7 @@ public sealed class ManagedBuildInputSnapshot
         m_sdk = sdk;
         m_project = project;
         m_properties = properties;
-        fingerprint = captured.fingerprint;
+        this.fingerprint = captured.fingerprint;
         m_declarations = captured.declarations;
     }
 
@@ -60,6 +61,64 @@ public sealed class ManagedBuildInputSnapshot
         => ManagedBuildExecution.CreateAsync(m_context, m_sdk, m_project, m_properties, cancellationToken);
 
     /// <summary>
+    /// Re-evaluates the graph and re-reads its current bytes in a fresh verification phase.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// Cancels evaluation and verification without changing any published output.
+    /// </param>
+    /// <returns>
+    /// Completion when the complete current input identity still matches this snapshot.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// The graph, SDK, source, resource, analyzer or reference inputs changed.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// Verification was canceled.
+    /// </exception>
+    public async ValueTask VerifyAsync(CancellationToken cancellationToken = default)
+    {
+        ManagedBuildInputCapture current = await ManagedBuildInputReader.CaptureAsync(
+            m_context.BeginInputVerification("managed-inputs"),
+            m_sdk,
+            m_project,
+            m_properties,
+            cancellationToken
+        ).ConfigureAwait(false);
+        if (current.fingerprint != fingerprint)
+        {
+            List<string> changed = [];
+            foreach (NativeInputSnapshot.Entry input in m_context.inputState.CaptureRecordedInputs(m_context.engineRoot).entries)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!File.Exists(input.physicalPath))
+                {
+                    changed.Add(input.logicalPath + " (missing)");
+                }
+                else
+                {
+                    using FileStream stream = File.OpenRead(input.physicalPath);
+                    if (!SHA256.HashData(stream).AsSpan().SequenceEqual(input.hash))
+                    {
+                        changed.Add(input.logicalPath);
+                    }
+                }
+            }
+            throw new InvalidOperationException(
+                "Managed compilation inputs changed after planning; the candidate cannot be accepted. "
+                + (changed.Count == 0
+                   ? "Changed declarations: " + string.Join(
+                       "; ",
+                       current.declarations.Except(m_declarations)
+                           .Select(static item => "added " + item)
+                           .Concat(m_declarations.Except(current.declarations).Select(static item => "removed " + item))
+                           .Take(20)
+                   )
+                   : "Changed files: " + string.Join(", ", changed))
+            );
+        }
+    }
+
+    /// <summary>
     /// Evaluates an explicit managed graph using its frozen SDK and hashes its declared compilation inputs.
     /// </summary>
     /// <param name="context">
@@ -80,10 +139,6 @@ public sealed class ManagedBuildInputSnapshot
     /// <returns>
     /// A snapshot that can be freshly verified after waiting or executing; no Player compilation is performed.
     /// </returns>
-    /// <remarks>
-    /// Restore and evaluation use an owned SDK output layout, independently of ordinary IDE outputs.
-    /// An explicit ArtifactsPath remains the caller's responsibility, including its concurrency protection.
-    /// </remarks>
     /// <exception cref="ArgumentNullException">
     /// A required operation, SDK or property collection is null.
     /// </exception>
@@ -99,6 +154,10 @@ public sealed class ManagedBuildInputSnapshot
     /// <exception cref="OperationCanceledException">
     /// Evaluation or hashing was canceled.
     /// </exception>
+    /// <remarks>
+    /// Restore and evaluation use an owned SDK output layout, independently of ordinary IDE outputs.
+    /// An explicit ArtifactsPath remains the caller's responsibility, including its concurrency protection.
+    /// </remarks>
     public static async ValueTask<ManagedBuildInputSnapshot> CaptureAsync(
         NativeBuildContext context,
         DotNetSdkDescriptor sdk,
@@ -114,52 +173,19 @@ public sealed class ManagedBuildInputSnapshot
         string selected = new PhysicalPathResolver().Resolve(Path.GetFullPath(project, context.engineRoot));
         PathBoundary.RequireContained(context.engineRoot, selected);
         if (!File.Exists(selected))
-            throw new FileNotFoundException("The managed input entry project is absent.", selected);
-        var frozen = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(
-            properties.ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.OrdinalIgnoreCase));
-        ManagedBuildInputCapture identity = await ManagedBuildInputReader.CaptureAsync(context, sdk, selected, frozen,
-            cancellationToken).ConfigureAwait(false);
-        return new(context, sdk, selected, frozen, identity);
-    }
-
-    /// <summary>
-    /// Re-evaluates the graph and re-reads its current bytes in a fresh verification phase.
-    /// </summary>
-    /// <param name="cancellationToken">
-    /// Cancels evaluation and verification without changing any published output.
-    /// </param>
-    /// <returns>
-    /// Completion when the complete current input identity still matches this snapshot.
-    /// </returns>
-    /// <exception cref="InvalidOperationException">
-    /// The graph, SDK, source, resource, analyzer or reference inputs changed.
-    /// </exception>
-    /// <exception cref="OperationCanceledException">
-    /// Verification was canceled.
-    /// </exception>
-    public async ValueTask VerifyAsync(CancellationToken cancellationToken = default)
-    {
-        ManagedBuildInputCapture current = await ManagedBuildInputReader.CaptureAsync(
-            m_context.BeginInputVerification("managed-inputs"), m_sdk, m_project, m_properties,
-            cancellationToken).ConfigureAwait(false);
-        if (current.fingerprint != fingerprint)
         {
-            var changed = new List<string>();
-            foreach (NativeInputSnapshot.Entry input in m_context.inputState.CaptureRecordedInputs(m_context.engineRoot).entries)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                if (!File.Exists(input.physicalPath))
-                    changed.Add(input.logicalPath + " (missing)");
-                else
-                {
-                    using FileStream stream = File.OpenRead(input.physicalPath);
-                    if (!SHA256.HashData(stream).AsSpan().SequenceEqual(input.hash))
-                        changed.Add(input.logicalPath);
-                }
-            }
-            throw new InvalidOperationException("Managed compilation inputs changed after planning; the candidate cannot be accepted. "
-                + (changed.Count == 0 ? "Changed declarations: " + string.Join("; ", current.declarations.Except(m_declarations).Select(static item => "added " + item)
-                    .Concat(m_declarations.Except(current.declarations).Select(static item => "removed " + item)).Take(20)) : "Changed files: " + string.Join(", ", changed)));
+            throw new FileNotFoundException("The managed input entry project is absent.", selected);
         }
+        var frozen = new ReadOnlyDictionary<string, string>(
+            properties.ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.OrdinalIgnoreCase)
+        );
+        ManagedBuildInputCapture identity = await ManagedBuildInputReader.CaptureAsync(
+            context,
+            sdk,
+            selected,
+            frozen,
+            cancellationToken
+        ).ConfigureAwait(false);
+        return new(context, sdk, selected, frozen, identity);
     }
 }

@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Assets;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
@@ -16,26 +15,16 @@ public sealed class AssetSerializationServices
     private readonly SerializationRegistry m_serialization;
     private readonly TypeCatalog m_types;
 
-    internal IAssetReferenceResolver references
-        => m_references
-            ?? throw new InvalidOperationException(
-                "Asset reference resolution is unavailable outside an import transaction.");
-
-    internal SerializationRegistry serialization => m_serialization;
-
-    internal TypeCatalog types => m_types;
-
-    internal SerializationContext context => m_references is null
-        ? SerializationContext.empty : AssetSerializationContext.Create(m_references);
-
     internal AssetSerializationServices(
         TypeCatalog types,
         SerializationRegistry serialization,
         IAssetReferenceResolver? references,
         Action<AssetDependency>? dependencySink
     ) {
-        m_types = types ?? throw new ArgumentNullException(nameof(types));
-        m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
+        ArgumentNullException.ThrowIfNull(types);
+        ArgumentNullException.ThrowIfNull(serialization);
+        m_types = types;
+        m_serialization = serialization;
         m_references = references;
         m_dependencySink = dependencySink;
     }
@@ -52,7 +41,7 @@ public sealed class AssetSerializationServices
     /// <exception cref="InvalidOperationException">
     /// Thrown when <typeparamref name="TValue"/> has no stable type registration.
     /// </exception>
-    public Guid GetStableTypeId<TValue>() => m_types.GetTypeRef(typeof(TValue)).stableId;
+    public Guid GetStableTypeID<TValue>() => m_types.GetTypeRef(typeof(TValue)).stableID;
 
     /// <summary>
     /// Captures typed properties and their references as one neutral, owner-independent value.
@@ -66,16 +55,21 @@ public sealed class AssetSerializationServices
     /// <returns>
     /// Frozen native properties with exact stable type identity and collected direct dependencies.
     /// </returns>
-    public AssetPropertySnapshot CaptureProperties<TValue>(TValue value) where TValue : class, ISerializable
+    public AssetPropertySnapshot CaptureProperties<TValue>(TValue value)
+        where TValue : class, ISerializable
     {
         ArgumentNullException.ThrowIfNull(value);
         using IDisposable operation = m_types.AcquireOperation("Capture asset properties");
         var dependencies = new AssetDependencyCollection();
         byte[] data = m_serialization.Encode(writer => writer.WriteProperties(value), context.With(dependencies));
         if (m_dependencySink is not null)
+        {
             foreach (AssetDependency dependency in dependencies.dependencies)
+            {
                 m_dependencySink(dependency);
-        return new(m_types.GetTypeRef(value.GetType()).stableId, data, dependencies.dependencies);
+            }
+        }
+        return new(m_types.GetTypeRef(value.GetType()).stableID, data, dependencies.dependencies);
     }
 
     /// <summary>
@@ -103,7 +97,9 @@ public sealed class AssetSerializationServices
         if (m_dependencySink is not null)
         {
             foreach (AssetDependency dependency in dependencies.dependencies)
+            {
                 m_dependencySink(dependency);
+            }
         }
         return result;
     }
@@ -127,8 +123,23 @@ public sealed class AssetSerializationServices
         where TValue : class, ISerializable
     {
         SerializationContext context = m_references is null
-            ? SerializationContext.empty
-            : AssetSerializationContext.Create(m_references);
+                                       ? SerializationContext.empty
+                                       : AssetSerializationContext.Create(m_references);
         return m_serialization.Deserialize<TValue>(bytes, context);
     }
+
+    internal IAssetReferenceResolver references
+        => m_references
+           ?? throw new InvalidOperationException(
+               "Asset reference resolution is unavailable outside an import transaction."
+           );
+
+    internal SerializationRegistry serialization => m_serialization;
+
+    internal TypeCatalog types => m_types;
+
+    internal SerializationContext context
+        => m_references is null
+           ? SerializationContext.empty
+           : AssetSerializationContext.Create(m_references);
 }

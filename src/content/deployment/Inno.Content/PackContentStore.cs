@@ -28,20 +28,22 @@ public sealed class PackContentStore : IRuntimeContentStore
         this.index = index;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ContentPackDescriptor descriptor { get; }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ContentPackIndex index { get; }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ContentReadLease Acquire(ContentKey key)
     {
         lock (m_sync)
         {
             ObjectDisposedException.ThrowIf(m_closed, this);
             if (!index.TryGetEntry(key, out ContentEntry? entry))
+            {
                 throw new FileNotFoundException($"Content '{key}' does not exist in pack '{descriptor.contentHash}'.");
+            }
             m_pins = checked(m_pins + 1);
             return new ContentReadLease(entry!, () => OpenPinned(key), ReleasePin);
         }
@@ -55,7 +57,9 @@ public sealed class PackContentStore : IRuntimeContentStore
         lock (m_sync)
         {
             if (m_closed)
+            {
                 return;
+            }
             m_closed = true;
             ReleasePin();
         }
@@ -76,7 +80,9 @@ public sealed class PackContentStore : IRuntimeContentStore
         lock (m_sync)
         {
             if (--m_pins == 0)
+            {
                 m_archive.Dispose();
+            }
         }
     }
 
@@ -93,59 +99,70 @@ public sealed class PackContentStore : IRuntimeContentStore
             m_input = input;
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override bool CanRead => m_input is not null;
-        /// <inheritdoc />
+
+        /// <inheritdoc/>
         public override bool CanSeek => false;
-        /// <inheritdoc />
+
+        /// <inheritdoc/>
         public override bool CanWrite => false;
-        /// <inheritdoc />
+
+        /// <inheritdoc/>
         public override long Length => throw new NotSupportedException();
-        /// <inheritdoc />
+
+        /// <inheritdoc/>
         public override long Position
         {
             get => throw new NotSupportedException();
             set => throw new NotSupportedException();
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
+        public override int Read(Span<byte> buffer)
+        {
+            lock (m_owner.m_sync)
+            {
+                return (m_input ?? throw new ObjectDisposedException(nameof(EntryReadStream))).Read(buffer);
+            }
+        }
+
+        /// <inheritdoc/>
         public override int Read(
             byte[] buffer,
             int offset,
             int count
         ) => Read(buffer.AsSpan(offset, count));
 
-        /// <inheritdoc />
-        public override int Read(Span<byte> buffer)
-        {
-            lock (m_owner.m_sync)
-                return (m_input ?? throw new ObjectDisposedException(nameof(EntryReadStream))).Read(buffer);
-        }
-
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override int ReadByte()
         {
             lock (m_owner.m_sync)
+            {
                 return (m_input ?? throw new ObjectDisposedException(nameof(EntryReadStream))).ReadByte();
+            }
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override void Flush() => throw new NotSupportedException();
-        /// <inheritdoc />
+
+        /// <inheritdoc/>
         public override long Seek(
             long offset,
             SeekOrigin origin
         ) => throw new NotSupportedException();
-        /// <inheritdoc />
+
+        /// <inheritdoc/>
         public override void SetLength(long value) => throw new NotSupportedException();
-        /// <inheritdoc />
+
+        /// <inheritdoc/>
         public override void Write(
             byte[] buffer,
             int offset,
             int count
         ) => throw new NotSupportedException();
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
             if (disposing)

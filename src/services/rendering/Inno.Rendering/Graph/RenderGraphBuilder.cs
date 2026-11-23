@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Scripting.Api;
 
 namespace Inno.Rendering;
@@ -23,8 +22,8 @@ public sealed partial class RenderGraphBuilder
     private RenderGraphValidationState? m_validation;
     private long m_revision;
     private long m_validatedRevision = -1;
-    private long m_nextNameScopeId;
-    private ulong m_nextResourceId;
+    private long m_nextNameScopeID;
+    private ulong m_nextResourceID;
     private int m_frozenPassCount;
     private bool m_compiled;
 
@@ -69,8 +68,8 @@ public sealed partial class RenderGraphBuilder
     ) {
         EnsureMutating();
         ValidateNameAndValue(name, descriptor);
-        RenderTextureHandle handle = new(m_textures.Count, m_generation, checked(++m_nextResourceId));
-        m_textures.Add(new RenderTextureRecord(QualifyName(name), descriptor, false, default, handle.allocationId));
+        var handle = new RenderTextureHandle(m_textures.Count, m_generation, checked(++m_nextResourceID));
+        m_textures.Add(new RenderTextureRecord(QualifyName(name), descriptor, false, default, handle.allocationID));
         InvalidateValidation();
         return handle;
     }
@@ -102,8 +101,8 @@ public sealed partial class RenderGraphBuilder
             throw new ArgumentException("Persistent texture handle is invalid.", nameof(texture));
         }
 
-        RenderTextureHandle handle = new(m_textures.Count, m_generation, checked(++m_nextResourceId));
-        m_textures.Add(new RenderTextureRecord(QualifyName(name), descriptor, true, texture, handle.allocationId));
+        var handle = new RenderTextureHandle(m_textures.Count, m_generation, checked(++m_nextResourceID));
+        m_textures.Add(new RenderTextureRecord(QualifyName(name), descriptor, true, texture, handle.allocationID));
         InvalidateValidation();
         return handle;
     }
@@ -126,8 +125,8 @@ public sealed partial class RenderGraphBuilder
     ) {
         EnsureMutating();
         ValidateNameAndValue(name, descriptor);
-        RenderBufferHandle handle = new(m_buffers.Count, m_generation, checked(++m_nextResourceId));
-        m_buffers.Add(new RenderBufferRecord(QualifyName(name), descriptor, false, default, handle.allocationId));
+        var handle = new RenderBufferHandle(m_buffers.Count, m_generation, checked(++m_nextResourceID));
+        m_buffers.Add(new RenderBufferRecord(QualifyName(name), descriptor, false, default, handle.allocationID));
         InvalidateValidation();
         return handle;
     }
@@ -159,8 +158,8 @@ public sealed partial class RenderGraphBuilder
             throw new ArgumentException("Persistent buffer handle is invalid.", nameof(buffer));
         }
 
-        RenderBufferHandle handle = new(m_buffers.Count, m_generation, checked(++m_nextResourceId));
-        m_buffers.Add(new RenderBufferRecord(QualifyName(name), descriptor, true, buffer, handle.allocationId));
+        var handle = new RenderBufferHandle(m_buffers.Count, m_generation, checked(++m_nextResourceID));
+        m_buffers.Add(new RenderBufferRecord(QualifyName(name), descriptor, true, buffer, handle.allocationID));
         InvalidateValidation();
         return handle;
     }
@@ -200,8 +199,14 @@ public sealed partial class RenderGraphBuilder
         EnsureMutating();
         m_frozenPassCount = m_passes.Count;
         var scope = new RenderGraphMutationScope(
-            this, m_textures.Count, m_buffers.Count, m_passes.Count, m_addedOutputs.Count, m_nameScopes.Count,
-            m_validatedRevision == m_revision ? m_validation : null);
+            this,
+            m_textures.Count,
+            m_buffers.Count,
+            m_passes.Count,
+            m_addedOutputs.Count,
+            m_nameScopes.Count,
+            m_validatedRevision == m_revision ? m_validation : null
+        );
         m_mutations.Add(scope);
         return scope;
     }
@@ -219,7 +224,7 @@ public sealed partial class RenderGraphBuilder
     {
         EnsureMutating();
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        long id = checked(++m_nextNameScopeId);
+        long id = checked(++m_nextNameScopeID);
         m_nameScopes.Add((id, name.Trim()));
         return new RenderGraphNameScope(this, id);
     }
@@ -247,11 +252,10 @@ public sealed partial class RenderGraphBuilder
     /// </returns>
     public RasterPassBuilder AddRasterPass<TPassData>(
         string name,
-        RenderPhaseId phase,
+        RenderPhaseID phase,
         TPassData passData,
         RenderPassExecute<TPassData> execute
-    )
-        where TPassData : notnull
+    ) where TPassData : notnull
         => new(this, AddPass(name, phase, RenderPassKind.Raster, passData, execute));
 
     /// <summary>
@@ -277,11 +281,10 @@ public sealed partial class RenderGraphBuilder
     /// </returns>
     public ComputePassBuilder AddComputePass<TPassData>(
         string name,
-        RenderPhaseId phase,
+        RenderPhaseID phase,
         TPassData passData,
         RenderPassExecute<TPassData> execute
-    )
-        where TPassData : notnull
+    ) where TPassData : notnull
         => new(this, AddPass(name, phase, RenderPassKind.Compute, passData, execute));
 
     /// <summary>
@@ -307,11 +310,10 @@ public sealed partial class RenderGraphBuilder
     /// </returns>
     public CopyPassBuilder AddCopyPass<TPassData>(
         string name,
-        RenderPhaseId phase,
+        RenderPhaseID phase,
         TPassData passData,
         RenderPassExecute<TPassData> execute
-    )
-        where TPassData : notnull
+    ) where TPassData : notnull
         => new(this, AddPass(name, phase, RenderPassKind.Copy, passData, execute));
 
     /// <summary>
@@ -325,7 +327,9 @@ public sealed partial class RenderGraphBuilder
     {
         EnsureBuilding();
         if (m_mutations.Count != 0)
+        {
             throw new InvalidOperationException("End all graph mutation scopes before final compilation.");
+        }
         RenderGraphValidationState validation = GetValidation();
         m_compiled = true;
         return RenderGraphCompiler.Compile(m_generation, m_textures, m_buffers, m_passes, validation);
@@ -348,11 +352,17 @@ public sealed partial class RenderGraphBuilder
     {
         int index = m_nameScopes.FindIndex(scope => scope.id == id);
         if (index < 0)
+        {
             return;
+        }
         if (index != m_nameScopes.Count - 1)
+        {
             throw new InvalidOperationException("Render graph name scopes must be disposed in nesting order.");
+        }
         if (m_mutations.Count != 0 && index < m_mutations[^1].nameScopeCount)
+        {
             throw new InvalidOperationException("A mutation cannot close a name scope owned by an earlier declaration.");
+        }
         m_nameScopes.RemoveAt(index);
     }
 
@@ -389,21 +399,21 @@ public sealed partial class RenderGraphBuilder
             pass,
             attachment.texture,
             attachment.loadAction == RenderLoadAction.Load
-                ? RenderResourceAccess.ReadWrite
-                : RenderResourceAccess.Write,
+            ? RenderResourceAccess.ReadWrite
+            : RenderResourceAccess.Write,
             attachment.isDepth
-                ? RenderResourceUseKind.DepthStencilAttachment
-                : RenderResourceUseKind.ColorAttachment);
+            ? RenderResourceUseKind.DepthStencilAttachment
+            : RenderResourceUseKind.ColorAttachment
+        );
     }
 
     private RenderPassRecord AddPass<TPassData>(
         string name,
-        RenderPhaseId phase,
+        RenderPhaseID phase,
         RenderPassKind kind,
         TPassData passData,
         RenderPassExecute<TPassData> execute
-    )
-        where TPassData : notnull
+    ) where TPassData : notnull
     {
         EnsureMutating();
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -414,7 +424,7 @@ public sealed partial class RenderGraphBuilder
             throw new ArgumentException($"Render pass '{qualifiedName}' already exists.", nameof(name));
         }
 
-        RenderPassRecord pass = new()
+        var pass = new RenderPassRecord()
         {
             index = m_passes.Count,
             name = qualifiedName,
@@ -431,8 +441,8 @@ public sealed partial class RenderGraphBuilder
     {
         EnsureMutating();
         if (handle.generation != m_generation || handle.index < 0 || handle.index >= m_textures.Count
-            || handle.allocationId != m_textures[handle.index].allocationId)
-        {
+            || handle.allocationID != m_textures[handle.index].allocationID
+        ) {
             throw new ArgumentException("Texture handle does not belong to this render graph generation.", nameof(handle));
         }
     }
@@ -441,8 +451,8 @@ public sealed partial class RenderGraphBuilder
     {
         EnsureMutating();
         if (handle.generation != m_generation || handle.index < 0 || handle.index >= m_buffers.Count
-            || handle.allocationId != m_buffers[handle.index].allocationId)
-        {
+            || handle.allocationID != m_buffers[handle.index].allocationID
+        ) {
             throw new ArgumentException("Buffer handle does not belong to this render graph generation.", nameof(handle));
         }
     }
@@ -457,14 +467,13 @@ public sealed partial class RenderGraphBuilder
 
     private string QualifyName(string name)
         => m_nameScopes.Count == 0
-            ? name
-            : $"{string.Join('/', m_nameScopes.ConvertAll(static scope => scope.name))}/{name}";
+           ? name
+           : $"{string.Join('/', m_nameScopes.ConvertAll(static scope => scope.name))}/{name}";
 
     private static void ValidateNameAndValue<T>(
         string name,
         T value
-    )
-        where T : class
+    ) where T : class
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(value);

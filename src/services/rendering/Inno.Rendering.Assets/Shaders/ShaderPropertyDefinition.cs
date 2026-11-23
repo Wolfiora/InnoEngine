@@ -1,19 +1,19 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Scripting.Api;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
 /// <summary>
 /// Declares one shader property and its reflected stage visibility.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("4b05e49c-b844-535e-aec9-c2201cfdd93f")]
+[StableTypeID("4b05e49c-b844-535e-aec9-c2201cfdd93f")]
 public struct ShaderPropertyDefinition
 {
     /// <summary>
@@ -45,7 +45,7 @@ public struct ShaderPropertyDefinition
     /// Layer responsible for supplying the binding value at execution time.
     /// </param>
     public ShaderPropertyDefinition(
-        ShaderPropertyId id,
+        ShaderPropertyID id,
         string displayName,
         ShaderPropertyType type,
         ShaderStage stages,
@@ -55,7 +55,9 @@ public struct ShaderPropertyDefinition
         ShaderPropertyBindingOwner bindingOwner = ShaderPropertyBindingOwner.Material
     ) {
         if (!id.isValid)
+        {
             throw new ArgumentException("A shader property ID must be valid.", nameof(id));
+        }
         ArgumentException.ThrowIfNullOrWhiteSpace(displayName);
         this.id = id;
         this.displayName = displayName;
@@ -66,16 +68,20 @@ public struct ShaderPropertyDefinition
         this.storageAccess = storageAccess;
         this.bindingOwner = bindingOwner;
         if (!Enum.IsDefined(storageAccess))
+        {
             throw new ArgumentOutOfRangeException(nameof(storageAccess));
+        }
         if (!Enum.IsDefined(bindingOwner))
+        {
             throw new ArgumentOutOfRangeException(nameof(bindingOwner));
+        }
         ValidateBindingKind(type, this.bindingKind);
     }
 
     /// <summary>
     /// Gets or sets the stable property identifier.
     /// </summary>
-    public ShaderPropertyId id { get; set; }
+    public ShaderPropertyID id { get; set; }
 
     /// <summary>
     /// Gets or sets the artist-facing property name.
@@ -115,28 +121,27 @@ public struct ShaderPropertyDefinition
     internal static bool IsBindingKindCompatible(
         ShaderPropertyType type,
         ShaderPropertyBindingKind bindingKind
-    )
-        => bindingKind switch
-        {
-            ShaderPropertyBindingKind.Uniform => !IsTexture(type) && type != ShaderPropertyType.Buffer,
-            ShaderPropertyBindingKind.SampledTexture => IsTexture(type),
-            ShaderPropertyBindingKind.StorageTexture => IsTexture(type),
-            ShaderPropertyBindingKind.StorageBuffer => type == ShaderPropertyType.Buffer,
-            _ => false
-        };
+    ) => bindingKind switch
+    {
+        ShaderPropertyBindingKind.Uniform => !IsTexture(type) && type != ShaderPropertyType.Buffer,
+        ShaderPropertyBindingKind.SampledTexture => IsTexture(type),
+        ShaderPropertyBindingKind.StorageTexture => IsTexture(type),
+        ShaderPropertyBindingKind.StorageBuffer => type == ShaderPropertyType.Buffer,
+        _ => false
+    };
 
     private static ShaderPropertyBindingKind InferBindingKind(ShaderPropertyType type)
         => IsTexture(type)
-            ? ShaderPropertyBindingKind.SampledTexture
-            : type == ShaderPropertyType.Buffer
-                ? ShaderPropertyBindingKind.StorageBuffer
-                : ShaderPropertyBindingKind.Uniform;
+           ? ShaderPropertyBindingKind.SampledTexture
+           : type == ShaderPropertyType.Buffer
+             ? ShaderPropertyBindingKind.StorageBuffer
+             : ShaderPropertyBindingKind.Uniform;
 
     private static bool IsTexture(ShaderPropertyType type)
         => type is ShaderPropertyType.Texture2D
-            or ShaderPropertyType.Texture2DArray
-            or ShaderPropertyType.Texture3D
-            or ShaderPropertyType.TextureCube;
+           or ShaderPropertyType.Texture2DArray
+           or ShaderPropertyType.Texture3D
+           or ShaderPropertyType.TextureCube;
 
     private static void ValidateBindingKind(
         ShaderPropertyType type,
@@ -146,8 +151,8 @@ public struct ShaderPropertyDefinition
         {
             throw new ArgumentException(
                 $"Shader property type '{type}' is incompatible with binding kind '{bindingKind}'.",
-                nameof(bindingKind));
+                nameof(bindingKind)
+            );
         }
     }
 }
-

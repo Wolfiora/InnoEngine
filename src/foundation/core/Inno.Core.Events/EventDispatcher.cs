@@ -13,21 +13,11 @@ public sealed class EventDispatcher
 {
     private readonly ConcurrentQueue<Event> m_queue = new();
     private readonly Lock m_hubsGate = new();
-    private EventHub[] m_hubsSnapshot = [];
-    private long m_nextHubSequence;
     private readonly int m_queueCapacity;
     private readonly int m_flushBudget;
+    private EventHub[] m_hubsSnapshot = [];
+    private long m_nextHubSequence;
     private int m_pendingCount;
-
-    /// <summary>
-    /// Observes an event after its ordered hub dispatch has completed, including globally consumed events.
-    /// </summary>
-    /// <remarks>
-    /// Observers run synchronously on the dispatching thread and do not participate in consumption.
-    /// They must not change consumption or call HandleInHub. Observer failures propagate to the caller.
-    /// Owners must unsubscribe before retiring their callbacks or extensions.
-    /// </remarks>
-    public event Action<Event>? dispatched;
 
     /// <summary>
     /// Creates a dispatcher with bounded pending work and a finite per-flush budget.
@@ -42,13 +32,11 @@ public sealed class EventDispatcher
     /// A budget is not positive.
     /// </exception>
     public EventDispatcher(
-        int queueCapacity = 65536,
+        int queueCapacity = 65_536,
         int flushBudget = 4096
     ) {
-        if (queueCapacity <= 0)
-            throw new ArgumentOutOfRangeException(nameof(queueCapacity));
-        if (flushBudget <= 0)
-            throw new ArgumentOutOfRangeException(nameof(flushBudget));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(queueCapacity);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(flushBudget);
         m_queueCapacity = queueCapacity;
         m_flushBudget = flushBudget;
     }
@@ -57,6 +45,16 @@ public sealed class EventDispatcher
     /// Gets the number of pending events, including producer reservations.
     /// </summary>
     public int pendingCount => Volatile.Read(ref m_pendingCount);
+
+    /// <summary>
+    /// Observes an event after its ordered hub dispatch has completed, including globally consumed events.
+    /// </summary>
+    /// <remarks>
+    /// Observers run synchronously on the dispatching thread and do not participate in consumption.
+    /// They must not change consumption or call HandleInHub. Observer failures propagate to the caller.
+    /// Owners must unsubscribe before retiring their callbacks or extensions.
+    /// </remarks>
+    public event Action<Event>? dispatched;
 
     /// <summary>
     /// Creates a new hub attached to this dispatcher.
@@ -71,7 +69,7 @@ public sealed class EventDispatcher
     {
         lock (m_hubsGate)
         {
-            EventHub hub = new(this, order, m_nextHubSequence++);
+            var hub = new EventHub(this, order, m_nextHubSequence++);
             List<EventHub> hubs = [..m_hubsSnapshot, hub];
             SortHubs(hubs);
             Volatile.Write(ref m_hubsSnapshot, [..hubs]);
@@ -91,7 +89,9 @@ public sealed class EventDispatcher
     public void Enqueue(Event e)
     {
         if (!TryEnqueue(e))
+        {
             throw new InvalidOperationException("The event queue is full; the producer must defer or reject this operation explicitly.");
+        }
     }
 
     /// <summary>
@@ -151,13 +151,13 @@ public sealed class EventDispatcher
     /// <summary>
     /// Immediately dispatches an event to all valid hubs in priority order.
     /// </summary>
+    /// <param name="e">
+    /// The event instance to dispatch.
+    /// </param>
     /// <remarks>
     /// Hub dispatch stops when the event is marked globally handled. Completion observers are still notified.
     /// A failed hub propagates its exception without reporting successful completion.
     /// </remarks>
-    /// <param name="e">
-    /// The event instance to dispatch.
-    /// </param>
     public void Emit(Event e)
     {
         ArgumentNullException.ThrowIfNull(e);
@@ -168,11 +168,15 @@ public sealed class EventDispatcher
             {
                 EventHub hub = hubs[i];
                 if (!hub.isValid)
+                {
                     continue;
+                }
 
                 hub.Dispatch(e);
                 if (e.isGlobalHandled)
+                {
                     break;
+                }
             }
         }
         dispatched?.Invoke(e);
@@ -200,19 +204,17 @@ public sealed class EventDispatcher
     }
 
     private static void SortHubs(List<EventHub> hubs)
-    {
-        hubs.Sort(static (
+        => hubs.Sort(static (
             a,
             b
         ) =>
         {
-            int byOrder = b.order.CompareTo(a.order);
-            if (byOrder != 0)
-            {
-                return byOrder;
-            }
+                                                                      int byOrder = b.order.CompareTo(a.order);
+                                                                      if (byOrder != 0)
+                                                                      {
+                                                                          return byOrder;
+                                                                      }
 
-            return a.sequence.CompareTo(b.sequence);
-        });
-    }
+                                                                      return a.sequence.CompareTo(b.sequence);
+                                                                  });
 }

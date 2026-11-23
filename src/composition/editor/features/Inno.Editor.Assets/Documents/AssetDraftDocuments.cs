@@ -4,19 +4,22 @@ using System.IO;
 using System.Linq;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Execution;
 using Inno.Core.IO;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Assets;
+
 /// <summary>
 /// Owns detached native asset drafts with shared document, History, recovery and explicit-save semantics.
 /// </summary>
 /// <typeparam name="TAsset">
 /// Native source type edited by the consuming feature.
 /// </typeparam>
-public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : AssetObject
+public sealed class AssetDraftDocuments<TAsset> : IDisposable
+    where TAsset : AssetObject
 {
     private readonly Dictionary<Guid, Draft> m_drafts = [];
     private readonly HashSet<AssetPath> m_imports = [];
@@ -24,12 +27,13 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
     private readonly AssetSourceStore m_sources;
     private readonly AssetPipeline m_assets;
     private readonly EditorInteractions m_interactions;
-    private readonly string m_providerId;
+    private readonly string m_providerID;
     private readonly string m_historyKind;
     private readonly string m_extension;
     private readonly string m_label;
     private IDisposable? m_provider;
     private long m_sourceRevision = -1;
+
     /// <summary>
     /// Creates a feature-owned draft store; call Start after document services become available.
     /// </summary>
@@ -42,7 +46,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
     /// <param name="interactions">
     /// Shared documents and History services.
     /// </param>
-    /// <param name="providerId">
+    /// <param name="providerID">
     /// Stable unique document provider identifier.
     /// </param>
     /// <param name="historyKind">
@@ -58,7 +62,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
         AssetPipeline assets,
         SerializationRegistry serialization,
         EditorInteractions interactions,
-        string providerId,
+        string providerID,
         string historyKind,
         string extension,
         string label
@@ -66,18 +70,22 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
         ArgumentNullException.ThrowIfNull(assets);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(interactions);
-        ArgumentException.ThrowIfNullOrWhiteSpace(providerId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(providerID);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyKind);
         ArgumentException.ThrowIfNullOrWhiteSpace(label);
         if (string.IsNullOrWhiteSpace(extension) || !extension.StartsWith('.') || extension.IndexOfAny(['/', '\\']) >= 0)
+        {
             throw new ArgumentException("A native file extension is required.", nameof(extension));
-        if (providerId is "." or ".." || providerId.IndexOfAny(['/', '\\', ':']) >= 0)
-            throw new ArgumentException("The provider identifier must be a safe single directory name.", nameof(providerId));
+        }
+        if (providerID is "." or ".." || providerID.IndexOfAny(['/', '\\', ':']) >= 0)
+        {
+            throw new ArgumentException("The provider identifier must be a safe single directory name.", nameof(providerID));
+        }
         m_assets = assets;
         m_interactions = interactions;
         m_serialization = serialization;
         m_sources = m_assets.CreateSourceStore();
-        m_providerId = providerId;
+        m_providerID = providerID;
         m_historyKind = historyKind;
         m_extension = extension;
         m_label = label;
@@ -86,13 +94,14 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
     /// <summary>
     /// Gets host-owned neutral presentation state for an open document.
     /// </summary>
-    /// <param name="assetId">
+    /// <param name="assetID">
     /// Persistent source identity.
     /// </param>
     /// <returns>
     /// Read-only presentation state; it contains no live asset or extension objects.
     /// </returns>
-    public Draft GetDraft(Guid assetId) => m_drafts[assetId];
+    public Draft GetDraft(Guid assetID) => m_drafts[assetID];
+
     /// <summary>
     /// Opens a native asset source in the shared document service without revealing a second Inspector.
     /// </summary>
@@ -105,27 +114,32 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
     public Guid Open(AssetPath path)
     {
         if (!path.localPath.EndsWith(m_extension, StringComparison.OrdinalIgnoreCase))
+        {
             throw new ArgumentException("The source extension does not belong to this document provider.", nameof(path));
+        }
         if (!m_assets.TryGetInfo(path, out AssetInfo? info) || info is null)
+        {
             throw new IOException("The asset identity is unavailable.");
-        m_interactions.documents.Open(path.ToString(), info.persistentId);
-        return info.persistentId;
+        }
+        m_interactions.documents.Open(path.ToString(), info.persistentID);
+        return info.persistentID;
     }
 
     /// <summary>
     /// Reads a detached current-generation value; callers must never mutate its referenced canonical assets.
     /// </summary>
-    /// <param name="assetId">
+    /// <param name="assetID">
     /// Open asset identity.
     /// </param>
     /// <returns>
     /// A detached editable asset whose changes have not been published.
     /// </returns>
-    public TAsset Read(Guid assetId) => m_sources.Decode<TAsset>(m_drafts[assetId].bytes);
+    public TAsset Read(Guid assetID) => m_sources.Decode<TAsset>(m_drafts[assetID].bytes);
+
     /// <summary>
     /// Updates the open draft through shared History without saving or publishing a runtime asset.
     /// </summary>
-    /// <param name="assetId">
+    /// <param name="assetID">
     /// Open asset identity.
     /// </param>
     /// <param name="candidate">
@@ -135,13 +149,15 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
     /// The current gesture key, or null for an independent discrete edit.
     /// </param>
     public void Replace(
-        Guid assetId,
+        Guid assetID,
         TAsset candidate,
         string? mergeKey = null
     ) {
-        Draft draft = m_drafts[assetId];
+        Draft draft = m_drafts[assetID];
         if (draft.readOnly)
+        {
             throw new InvalidOperationException("Copy this installed asset to the project before editing.");
+        }
         RecordReplace(draft, m_sources.Encode(candidate), mergeKey);
     }
 
@@ -160,47 +176,21 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
     ) {
         ArgumentNullException.ThrowIfNull(candidates);
         var encoded = new Dictionary<Guid, byte[]>();
-        foreach (var pair in candidates)
+        foreach (KeyValuePair<Guid, TAsset> pair in candidates)
         {
             if (m_drafts[pair.Key].readOnly)
+            {
                 throw new InvalidOperationException("The selection contains a read-only asset.");
+            }
             encoded.Add(pair.Key, m_sources.Encode(pair.Value));
         }
 
         using EditorHistoryTransaction transaction = m_interactions.history.BeginTransaction("Edit " + m_label + " Selection");
-        foreach (var pair in encoded)
+        foreach (KeyValuePair<Guid, byte[]> pair in encoded)
+        {
             RecordReplace(m_drafts[pair.Key], pair.Value, mergeKey);
+        }
         transaction.Commit();
-    }
-
-    private void RecordReplace(
-        Draft draft,
-        byte[] next,
-        string? mergeKey = null
-    ) {
-        byte[] before = draft.bytes;
-        if (before.AsSpan().SequenceEqual(next))
-            return;
-        var payload = new ChangeData
-        {
-            assetId = draft.id,
-            before = before,
-            after = next
-        };
-        var change = new EditorHistoryChange(m_historyKind, EditorHistoryPayload.FromBytes(m_serialization.Serialize(payload)), mergeKey);
-        draft.bytes = next;
-        try
-        {
-            Changed(draft);
-            m_interactions.history.RecordApplied("Edit " + m_label, change);
-        }
-        catch
-        {
-            change.Dispose();
-            draft.bytes = before;
-            Changed(draft);
-            throw;
-        }
     }
 
     /// <summary>
@@ -225,18 +215,26 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
     ) {
         merged = null;
         if (older.kind != m_historyKind || newer.kind != m_historyKind || older.mergeKey is null || older.mergeKey != newer.mergeKey)
+        {
             return false;
+        }
         ChangeData first = m_serialization.Deserialize<ChangeData>(older.payload.ReadBytes());
         ChangeData last = m_serialization.Deserialize<ChangeData>(newer.payload.ReadBytes());
         if (first.assetId != last.assetId || !first.after.AsSpan().SequenceEqual(last.before))
+        {
             return false;
+        }
         var combined = new ChangeData
         {
             assetId = first.assetId,
             before = first.before,
             after = last.after
         };
-        merged = new EditorHistoryChange(m_historyKind, EditorHistoryPayload.FromBytes(m_serialization.Serialize(combined)), older.mergeKey);
+        merged = new EditorHistoryChange(
+            m_historyKind,
+            EditorHistoryPayload.FromBytes(m_serialization.Serialize(combined)),
+            older.mergeKey
+        );
         return true;
     }
 
@@ -255,7 +253,9 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
     ) {
         ChangeData data = m_serialization.Deserialize<ChangeData>(change.payload.ReadBytes());
         if (!m_drafts.ContainsKey(data.assetId))
+        {
             throw new InvalidOperationException("Reopen the asset document to use its history.");
+        }
     }
 
     /// <summary>
@@ -276,22 +276,132 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
         Changed(draft);
     }
 
+    /// <summary>
+    /// Registers the feature provider with the headless document ownership service.
+    /// </summary>
+    public void Start()
+    {
+        if (m_provider is not null)
+        {
+            throw new InvalidOperationException("This draft provider is already started.");
+        }
+        m_provider = m_interactions.documents.RegisterProvider(new Provider(this));
+    }
+
+    /// <summary>
+    /// Imports explicit saves and reconciles source changes without owning UI gesture lifetimes.
+    /// </summary>
+    public void Update()
+    {
+        foreach (AssetPath path in m_imports.ToArray())
+        {
+            m_imports.Remove(path);
+            try
+            {
+                if (!m_assets.Import(path))
+                {
+                    string diagnostics = m_assets.TryGetInfo(path, out AssetInfo? info)
+                                         && info is not null
+                                         ? string.Join("\n", info.diagnostics)
+                                         : "The asset importer did not publish this asset.";
+                    foreach (Draft draft in m_drafts.Values.Where(value => value.path == path))
+                    {
+                        draft.error = "Saved; import failed: " + diagnostics;
+                    }
+                }
+            }
+            catch (Exception error) when (Recoverable(error))
+            {
+                foreach (Draft draft in m_drafts.Values.Where(value => value.path == path))
+                {
+                    draft.error = "Saved; import failed: " + error.Message;
+                }
+            }
+        }
+
+        if (m_sourceRevision != m_assets.revision)
+        {
+            foreach (Draft draft in m_drafts.Values)
+            {
+                SynchronizeSource(draft);
+            }
+            m_sourceRevision = m_assets.revision;
+        }
+    }
+
+    /// <summary>
+    /// Preserves unsaved recovery and unregisters the current feature provider.
+    /// </summary>
+    public void Dispose()
+    {
+        foreach (Draft draft in m_drafts.Values)
+        {
+            if (draft.isDirty)
+            {
+                Changed(draft);
+            }
+        }
+
+        m_provider?.Dispose();
+        m_provider = null;
+    }
+
+    private void RecordReplace(
+        Draft draft,
+        byte[] next,
+        string? mergeKey = null
+    ) {
+        byte[] before = draft.bytes;
+        if (before.AsSpan().SequenceEqual(next))
+        {
+            return;
+        }
+        var payload = new ChangeData
+        {
+            assetId = draft.id,
+            before = before,
+            after = next
+        };
+        var change = new EditorHistoryChange(
+            m_historyKind,
+            EditorHistoryPayload.FromBytes(m_serialization.Serialize(payload)),
+            mergeKey
+        );
+        draft.bytes = next;
+        try
+        {
+            Changed(draft);
+            m_interactions.history.RecordApplied("Edit " + m_label, change);
+        }
+        catch
+        {
+            change.Dispose();
+            draft.bytes = before;
+            Changed(draft);
+            throw;
+        }
+    }
+
     private (Draft, ChangeData) ResolveHistory(
         EditorHistoryChange change,
         EditorHistoryDirection direction
     ) {
         ChangeData data = m_serialization.Deserialize<ChangeData>(change.payload.ReadBytes());
         if (!m_drafts.TryGetValue(data.assetId, out Draft? draft))
+        {
             throw new InvalidOperationException("Reopen the asset document to use its history.");
+        }
         byte[] expected = direction == EditorHistoryDirection.Undo ? data.after : data.before;
         if (!draft.bytes.AsSpan().SequenceEqual(expected))
+        {
             throw new InvalidOperationException("The asset draft changed outside this history entry.");
+        }
         return (draft, data);
     }
 
     private void Changed(Draft draft)
     {
-        m_interactions.documents.SetDirty(draft.documentId, draft.isDirty);
+        m_interactions.documents.SetDirty(draft.documentID, draft.isDirty);
         try
         {
             if (!draft.isDirty)
@@ -302,10 +412,14 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
 
             AtomicFile.WriteAllBytes(
                 RecoveryPath(draft.id),
-                m_serialization.Serialize(new Recovery { assetId = draft.id, hash = draft.hash, baseline = draft.baseline, bytes = draft.bytes })
+                m_serialization.Serialize(
+                    new Recovery { assetId = draft.id, hash = draft.hash, baseline = draft.baseline, bytes = draft.bytes }
+                )
             );
             if (draft.error.StartsWith("Recovery write failed:", StringComparison.Ordinal))
-                draft.error = "";
+            {
+                draft.error = string.Empty;
+            }
         }
         catch (Exception error) when (Recoverable(error))
         {
@@ -320,7 +434,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
             RefreshPath(draft);
             draft.hash = m_sources.Save(draft.path, draft.bytes, draft.hash);
             draft.baseline = draft.bytes;
-            draft.error = "";
+            draft.error = string.Empty;
             m_imports.Add(draft.path);
             DeleteRecovery(draft.id);
             return true;
@@ -342,7 +456,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
             draft.hash = source.contentHash;
             draft.baseline = draft.bytes;
             draft.readOnly = source.isReadOnly;
-            draft.error = "";
+            draft.error = string.Empty;
             DeleteRecovery(draft.id);
             return true;
         }
@@ -356,21 +470,31 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
     private void RefreshPath(Draft draft)
     {
         if (!m_assets.TryGetInfo(draft.id, out AssetInfo? info) || info is null || info.status == AssetImportStatus.Missing)
+        {
             throw new IOException("Asset source is missing. Draft and history are retained.");
+        }
         draft.path = info.assetPath;
-        m_interactions.documents.UpdateAssetPath(draft.documentId, draft.path.ToString());
+        m_interactions.documents.UpdateAssetPath(draft.documentID, draft.path.ToString());
     }
 
     private void Open(EditorDocumentContext document)
     {
-        if (m_drafts.ContainsKey(document.assetId))
+        if (m_drafts.ContainsKey(document.assetID))
+        {
             return;
+        }
         AssetPath path = AssetPath.Parse(document.assetPath);
-        if (m_assets.TryGetInfo(document.assetId, out AssetInfo? info) && info is not null)
+        if (m_assets.TryGetInfo(document.assetID, out AssetInfo? info) && info is not null)
+        {
             path = info.assetPath;
-        Recovery? recovery = File.Exists(RecoveryPath(document.assetId)) ? m_serialization.Deserialize<Recovery>(File.ReadAllBytes(RecoveryPath(document.assetId))) : null;
-        if (recovery is not null && recovery.assetId != document.assetId)
+        }
+        Recovery? recovery = File.Exists(RecoveryPath(document.assetID))
+                             ? m_serialization.Deserialize<Recovery>(File.ReadAllBytes(RecoveryPath(document.assetID)))
+                             : null;
+        if (recovery is not null && recovery.assetId != document.assetID)
+        {
             throw new InvalidDataException("Asset recovery identity does not match its document.");
+        }
         AssetSourceSnapshot? source = null;
         try
         {
@@ -381,8 +505,8 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
         }
 
         var draft = new Draft(
-            document.assetId,
-            document.documentId,
+            document.assetID,
+            document.documentID,
             path,
             recovery?.bytes ?? source!.bytes,
             recovery?.baseline ?? source!.bytes,
@@ -390,58 +514,13 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
             source?.isReadOnly ?? true
         );
         if (recovery is not null && source?.contentHash != recovery.hash)
+        {
             draft.error = "Source changed externally. Recovery retained; resolve or Revert explicitly.";
+        }
         m_drafts.Add(draft.id, draft);
         if (draft.isDirty)
-            m_interactions.documents.SetDirty(draft.documentId);
-    }
-
-    /// <summary>
-    /// Registers the feature provider with the headless document ownership service.
-    /// </summary>
-    public void Start()
-    {
-        if (m_provider is not null)
-            throw new InvalidOperationException("This draft provider is already started.");
-        m_provider = m_interactions.documents.RegisterProvider(new Provider(this));
-    }
-
-    /// <summary>
-    /// Imports explicit saves and reconciles source changes without owning UI gesture lifetimes.
-    /// </summary>
-    public void Update()
-    {
-        foreach (AssetPath path in m_imports.ToArray())
         {
-            m_imports.Remove(path);
-            try
-            {
-                if (!m_assets.Import(path))
-                {
-                    string diagnostics = m_assets.TryGetInfo(
-                        path,
-                        out AssetInfo? info
-                    )
-                        && info is not null ? string.Join(
-                        "\n",
-                        info.diagnostics
-                    ) : "The asset importer did not publish this asset.";
-                    foreach (Draft draft in m_drafts.Values.Where(value => value.path == path))
-                        draft.error = "Saved; import failed: " + diagnostics;
-                }
-            }
-            catch (Exception error) when (Recoverable(error))
-            {
-                foreach (Draft draft in m_drafts.Values.Where(value => value.path == path))
-                    draft.error = "Saved; import failed: " + error.Message;
-            }
-        }
-
-        if (m_sourceRevision != m_assets.revision)
-        {
-            foreach (Draft draft in m_drafts.Values)
-                SynchronizeSource(draft);
-            m_sourceRevision = m_assets.revision;
+            m_interactions.documents.SetDirty(draft.documentID);
         }
     }
 
@@ -453,7 +532,9 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
             AssetSourceSnapshot source = m_sources.Read(draft.path);
             draft.readOnly = source.isReadOnly;
             if (draft.hash == source.contentHash)
+            {
                 return;
+            }
             if (draft.isDirty)
             {
                 draft.error = "Source changed externally. Your draft is retained; Revert reloads it without overwriting the external edit.";
@@ -463,7 +544,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
             draft.bytes = source.bytes;
             draft.baseline = source.bytes;
             draft.hash = source.contentHash;
-            draft.error = "";
+            draft.error = string.Empty;
             Changed(draft);
         }
         catch (Exception error) when (Recoverable(error))
@@ -472,37 +553,28 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
         }
     }
 
-    /// <summary>
-    /// Preserves unsaved recovery and unregisters the current feature provider.
-    /// </summary>
-    public void Dispose()
-    {
-        foreach (Draft draft in m_drafts.Values)
-        {
-            if (draft.isDirty)
-                Changed(draft);
-        }
+    private string RecoveryPath(Guid id)
+        => Path.Combine(m_assets.libraryRoot, "Editor", "AssetDrafts", m_providerID, id.ToString("N") + ".inno");
 
-        m_provider?.Dispose();
-        m_provider = null;
-    }
-
-    private string RecoveryPath(Guid id) => Path.Combine(m_assets.libraryRoot, "Editor", "AssetDrafts", m_providerId, id.ToString("N") + ".inno");
     private void DeleteRecovery(Guid id)
     {
         string path = RecoveryPath(id);
         if (File.Exists(path))
+        {
             File.Delete(path);
+        }
     }
 
-    private static bool Recoverable(Exception error) => error is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException or FormatException
-        && Inno.Core.Execution.RetirementPendingException.Find(error) is null;
+    private static bool Recoverable(Exception error)
+        => error is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException or FormatException
+           && RetirementPendingException.Find(error) is null;
+
     private sealed class Provider(AssetDraftDocuments<TAsset> owner) : EditorDocumentProvider
     {
         /// <summary>
         /// Gets the stable identity used to reference this value across subsystem boundaries.
         /// </summary>
-        public override string id => owner.m_providerId;
+        public override string id => owner.m_providerID;
 
         /// <summary>
         /// Checks whether this document handler supports the selected asset.
@@ -514,6 +586,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
         /// <see langword="true"/> when the documented condition is satisfied; otherwise, <see langword="false"/>.
         /// </returns>
         public override bool CanOpen(string assetPath) => assetPath.EndsWith(owner.m_extension, StringComparison.OrdinalIgnoreCase);
+
         /// <summary>
         /// Opens the requested resource and establishes its active lifetime.
         /// </summary>
@@ -521,6 +594,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
         /// The operation scope that provides state, services, and ownership boundaries.
         /// </param>
         public override void Open(EditorDocumentContext context) => owner.Open(context);
+
         /// <summary>
         /// Persists the supplied value through the configured storage contract.
         /// </summary>
@@ -530,7 +604,8 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
         /// <returns>
         /// <see langword="true"/> when the documented condition is satisfied; otherwise, <see langword="false"/>.
         /// </returns>
-        public override bool Save(EditorDocumentContext context) => owner.Save(owner.m_drafts[context.assetId]);
+        public override bool Save(EditorDocumentContext context) => owner.Save(owner.m_drafts[context.assetID]);
+
         /// <summary>
         /// Restores the draft from the latest imported asset state.
         /// </summary>
@@ -540,7 +615,8 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
         /// <returns>
         /// <see langword="true"/> when the documented condition is satisfied; otherwise, <see langword="false"/>.
         /// </returns>
-        public override bool Revert(EditorDocumentContext context) => owner.Revert(owner.m_drafts[context.assetId]);
+        public override bool Revert(EditorDocumentContext context) => owner.Revert(owner.m_drafts[context.assetID]);
+
         /// <summary>
         /// Closes the active resource and releases its operation-scoped state.
         /// </summary>
@@ -549,8 +625,8 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
         /// </param>
         public override void Close(EditorDocumentContext context)
         {
-            owner.DeleteRecovery(context.assetId);
-            owner.m_drafts.Remove(context.assetId);
+            owner.DeleteRecovery(context.assetID);
+            owner.m_drafts.Remove(context.assetID);
         }
     }
 
@@ -562,9 +638,10 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
         internal byte[] bytes;
         internal byte[] baseline;
         internal string hash;
+
         internal Draft(
             Guid id,
-            Guid documentId,
+            Guid documentID,
             AssetPath path,
             byte[] bytes,
             byte[] baseline,
@@ -572,7 +649,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
             bool readOnly
         ) {
             this.id = id;
-            this.documentId = documentId;
+            this.documentID = documentID;
             this.path = path;
             this.bytes = bytes;
             this.baseline = baseline;
@@ -584,22 +661,27 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
         /// Gets the persistent source identity.
         /// </summary>
         public Guid id { get; }
+
         /// <summary>
         /// Gets the shared document identity used for Save/Revert and close confirmation.
         /// </summary>
-        public Guid documentId { get; }
+        public Guid documentID { get; }
+
         /// <summary>
         /// Gets the current resolved source path.
         /// </summary>
         public AssetPath path { get; internal set; }
+
         /// <summary>
         /// Gets whether this source is installed read-only content.
         /// </summary>
         public bool readOnly { get; internal set; }
+
         /// <summary>
         /// Gets the latest source, save or import diagnostic.
         /// </summary>
-        public string error { get; internal set; } = "";
+        public string error { get; internal set; } = string.Empty;
+
         /// <summary>
         /// Gets whether detached bytes differ from the saved baseline.
         /// </summary>
@@ -612,7 +694,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable where TAsset : Ass
         internal Guid assetId { get; set; }
 
         [SerializableProperty]
-        internal string hash { get; set; } = "";
+        internal string hash { get; set; } = string.Empty;
 
         [SerializableProperty]
         internal byte[] baseline { get; set; } = [];

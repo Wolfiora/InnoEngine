@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
-using Inno.Build.Toolchains;
-using Inno.Core.IO;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Inno.Build.Toolchains;
+using Inno.Core.IO;
 
 namespace Inno.Tooling.Architecture;
 
@@ -19,8 +20,8 @@ namespace Inno.Tooling.Architecture;
 /// </summary>
 internal sealed class DocumentationExportCache : IDisposable
 {
-    private static readonly string S_TOOL_IDENTITY = ToolIdentity();
-    private static readonly JsonSerializerOptions S_JSON = new() { WriteIndented = true, NewLine = "\n" };
+    private static readonly string TOOL_IDENTITY = ToolIdentity();
+    private static readonly JsonSerializerOptions JSON = new() { WriteIndented = true, NewLine = "\n" };
     private readonly string m_root;
     private readonly BuildCachePublisher m_publisher;
     private readonly FileLease m_activity;
@@ -31,14 +32,16 @@ internal sealed class DocumentationExportCache : IDisposable
         string engineRoot,
         CancellationToken cancellationToken
     ) {
-        m_root = PathBoundary.RequireUnlinkedPath(engineRoot,
-            Path.Combine(engineRoot, "artifacts", "documentation-export", "extraction-cache"));
+        m_root = PathBoundary.RequireUnlinkedPath(
+            engineRoot,
+            Path.Combine(engineRoot, "artifacts", "documentation-export", "extraction-cache")
+        );
         m_publisher = new(m_root, BuildCacheArtifactRole.ImmutableArtifact);
         BuildCacheOwnerCatalog.Register(engineRoot, m_root, "documentation-api-extraction", m_publisher.role, cancellationToken);
         m_activity = m_publisher.AcquireUseAsync(cancellationToken).AsTask().GetAwaiter().GetResult();
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Dispose() => m_activity.Dispose();
 
     internal bool TryRead<T>(
@@ -46,11 +49,14 @@ internal sealed class DocumentationExportCache : IDisposable
         out T? value,
         CancellationToken cancellationToken
     ) {
-        string key = Hash(Encoding.UTF8.GetBytes(S_TOOL_IDENTITY + "\n" + inputIdentity));
+        string key = Hash(Encoding.UTF8.GetBytes(TOOL_IDENTITY + "\n" + inputIdentity));
         string directory = PathBoundary.RequireUnlinkedPath(m_root, Path.Combine(m_root, "entries", key));
         string leasePath = PathBoundary.RequireUnlinkedPath(m_root, Path.Combine(m_root, "leases", key + ".lock"));
-        using FileLease ownership = FileLease.AcquireAsync(leasePath, Timeout.InfiniteTimeSpan,
-            cancellationToken).AsTask().GetAwaiter().GetResult();
+        using FileLease ownership = FileLease.AcquireAsync(
+            leasePath,
+            Timeout.InfiniteTimeSpan,
+            cancellationToken
+        ).AsTask().GetAwaiter().GetResult();
         value = default;
         if (!BuildArtifactManifest.IsComplete(directory, key, ["facts"])) return false;
         try
@@ -61,7 +67,10 @@ internal sealed class DocumentationExportCache : IDisposable
             m_reused++;
             return true;
         }
-        catch (JsonException) { return false; }
+        catch (JsonException)
+        {
+            return false;
+        }
     }
 
     internal T Capture<T>(
@@ -71,18 +80,21 @@ internal sealed class DocumentationExportCache : IDisposable
         CancellationToken cancellationToken
     ) {
         cancellationToken.ThrowIfCancellationRequested();
-        string key = Hash(Encoding.UTF8.GetBytes(S_TOOL_IDENTITY + "\n" + inputIdentity));
+        string key = Hash(Encoding.UTF8.GetBytes(TOOL_IDENTITY + "\n" + inputIdentity));
         string directory = PathBoundary.RequireUnlinkedPath(m_root, Path.Combine(m_root, "entries", key));
         string leasePath = PathBoundary.RequireUnlinkedPath(m_root, Path.Combine(m_root, "leases", key + ".lock"));
-        using FileLease ownership = FileLease.AcquireAsync(leasePath, Timeout.InfiniteTimeSpan,
-            cancellationToken).AsTask().GetAwaiter().GetResult();
+        using FileLease ownership = FileLease.AcquireAsync(
+            leasePath,
+            Timeout.InfiniteTimeSpan,
+            cancellationToken
+        ).AsTask().GetAwaiter().GetResult();
         cancellationToken.ThrowIfCancellationRequested();
         if (BuildArtifactManifest.IsComplete(directory, key, ["facts"]))
         {
             try
             {
                 T result = JsonSerializer.Deserialize<T>(File.ReadAllBytes(Path.Combine(directory, "facts", "project.json")))
-                    ?? throw new InvalidDataException("The extraction cache contains an empty owner result.");
+                           ?? throw new InvalidDataException("The extraction cache contains an empty owner result.");
                 m_publisher.Record(directory, leasePath, [], null, null, cancellationToken);
                 m_reused++;
                 return result;
@@ -94,20 +106,24 @@ internal sealed class DocumentationExportCache : IDisposable
         }
         T captured = capture();
         cancellationToken.ThrowIfCancellationRequested();
-        string staging = PathBoundary.RequireUnlinkedPath(m_root,
-            Path.Combine(m_root, "staging", Guid.NewGuid().ToString("N")));
+        string staging = PathBoundary.RequireUnlinkedPath(
+            m_root,
+            Path.Combine(m_root, "staging", Guid.NewGuid().ToString("N"))
+        );
         try
         {
             Directory.CreateDirectory(Path.Combine(staging, "facts"));
-            File.WriteAllBytes(Path.Combine(staging, "facts", "project.json"), JsonSerializer.SerializeToUtf8Bytes(captured, S_JSON));
+            File.WriteAllBytes(Path.Combine(staging, "facts", "project.json"), JsonSerializer.SerializeToUtf8Bytes(captured, JSON));
             BuildArtifactManifest.Write(staging, key, ["facts"]);
             cancellationToken.ThrowIfCancellationRequested();
             Directory.CreateDirectory(Path.GetDirectoryName(directory)!);
             string? quarantine = null;
             if (Directory.Exists(directory))
             {
-                quarantine = PathBoundary.RequireUnlinkedPath(m_root,
-                    Path.Combine(m_root, "quarantine", key + "-" + Guid.NewGuid().ToString("N")));
+                quarantine = PathBoundary.RequireUnlinkedPath(
+                    m_root,
+                    Path.Combine(m_root, "quarantine", key + "-" + Guid.NewGuid().ToString("N"))
+                );
                 Directory.CreateDirectory(Path.GetDirectoryName(quarantine)!);
                 Directory.Move(directory, quarantine);
             }
@@ -118,7 +134,9 @@ internal sealed class DocumentationExportCache : IDisposable
             catch
             {
                 if (quarantine is not null && !Directory.Exists(directory))
+                {
                     Directory.Move(quarantine, directory);
+                }
                 throw;
             }
             // Exported facts own their returned values. This acceleration artifact remains
@@ -135,7 +153,9 @@ internal sealed class DocumentationExportCache : IDisposable
         finally
         {
             if (Directory.Exists(staging))
+            {
                 Directory.Delete(staging, recursive: true);
+            }
         }
     }
 
@@ -144,21 +164,25 @@ internal sealed class DocumentationExportCache : IDisposable
 
     private static string ToolIdentity()
     {
-        var assembly = typeof(DocumentationExportCache).Assembly;
+        Assembly assembly = typeof(DocumentationExportCache).Assembly;
         string[] sources = assembly.GetManifestResourceNames().Where(static name =>
             name.StartsWith("ApiExtractionSource/", StringComparison.Ordinal)).Order(StringComparer.Ordinal).ToArray();
         if (sources.Length == 0)
+        {
             throw new InvalidDataException("The API extractor has no embedded input identity.");
-        var identities = new List<string>();
+        }
+        List<string> identities = [];
         foreach (string source in sources)
         {
             using Stream stream = assembly.GetManifestResourceStream(source)
-                ?? throw new InvalidDataException("Missing extraction identity input: " + source);
+                                  ?? throw new InvalidDataException("Missing extraction identity input: " + source);
             using var reader = new StreamReader(stream);
             identities.Add(source + "\0" + Hash(Encoding.UTF8.GetBytes(reader.ReadToEnd().ReplaceLineEndings("\n"))));
         }
-        foreach (var compiler in new[] { typeof(Compilation).Assembly, typeof(CSharpCompilation).Assembly })
+        foreach (Assembly compiler in new[] { typeof(Compilation).Assembly, typeof(CSharpCompilation).Assembly })
+        {
             identities.Add(compiler.GetName().Name + "\0" + Hash(File.ReadAllBytes(compiler.Location)));
+        }
         return Hash(Encoding.UTF8.GetBytes(string.Join('\n', identities)));
     }
 

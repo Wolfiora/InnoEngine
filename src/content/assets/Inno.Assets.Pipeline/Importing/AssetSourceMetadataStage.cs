@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Inno.Core.IO;
+
 using IOFile = System.IO.File;
 
 namespace Inno.Assets.Pipeline;
@@ -24,15 +25,19 @@ internal sealed class AssetSourceMetadataStage
         foreach (Entry entry in snapshot)
         {
             if (!Equal(entry.original, ReadPhysical(entry.path)))
+            {
                 throw new IOException($"Asset source metadata '{entry.path}' changed while its candidate was being prepared.");
+            }
         }
-        var applied = new List<Entry>();
+        List<Entry> applied = [];
         try
         {
             foreach (Entry entry in snapshot)
             {
                 if (Equal(entry.original, entry.value))
+                {
                     continue;
+                }
                 applied.Add(entry);
                 WritePhysical(entry.path, entry.value);
             }
@@ -41,7 +46,7 @@ internal sealed class AssetSourceMetadataStage
         }
         catch (Exception failure)
         {
-            var failures = new List<Exception> { failure };
+            List<Exception> failures = [failure];
             for (int index = applied.Count - 1; index >= 0; index--)
             {
                 try
@@ -54,7 +59,9 @@ internal sealed class AssetSourceMetadataStage
                 }
             }
             if (failures.Count > 1)
+            {
                 throw new AggregateException("Asset catalog publication and source metadata compensation failed.", failures);
+            }
             throw;
         }
     }
@@ -73,8 +80,7 @@ internal sealed class AssetSourceMetadataStage
     private static bool Equal(
         byte[]? left,
         byte[]? right
-    )
-        => left is null ? right is null : right is not null && left.AsSpan().SequenceEqual(right);
+    ) => left is null ? right is null : right is not null && left.AsSpan().SequenceEqual(right);
 
     private static byte[]? ReadPhysical(string path) => IOFile.Exists(path) ? IOFile.ReadAllBytes(path) : null;
 
@@ -83,9 +89,13 @@ internal sealed class AssetSourceMetadataStage
         byte[]? value
     ) {
         if (value is not null)
+        {
             AtomicFile.WriteAllBytes(path, value);
+        }
         else if (IOFile.Exists(path))
+        {
             IOFile.Delete(path);
+        }
     }
 
     private sealed class Entry(

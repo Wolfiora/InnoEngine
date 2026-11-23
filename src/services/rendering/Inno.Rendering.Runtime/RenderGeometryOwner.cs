@@ -28,7 +28,25 @@ internal sealed class RenderGeometryOwner : RenderResourceProvider, IDisposable
         m_entries = new(entry => entry.retirement.Dispose(), capacity);
     }
 
-    internal int count => m_entries.Count;
+    /// <summary>
+    /// Releases the resources owned by this implementation.
+    /// </summary>
+    public void Dispose()
+    {
+        if (m_retirement is null)
+        {
+            m_retirement = new RenderRetirementQueue();
+            if (m_allocation is not null)
+            {
+                m_retirement.Add(m_allocation.Dispose);
+            }
+            m_retirement.Add(m_entries.Dispose);
+        }
+        m_retirement.Dispose();
+        m_allocation = null;
+    }
+
+    internal int count => m_entries.count;
     internal int retiringCount => m_entries.pendingCount;
     internal long rejectedCount => m_entries.rejectedCount;
 
@@ -58,12 +76,18 @@ internal sealed class RenderGeometryOwner : RenderResourceProvider, IDisposable
         Drain();
         ArgumentNullException.ThrowIfNull(asset);
         geometry = null;
-        Guid id = asset.identity.persistentId;
+        Guid id = asset.identity.persistentID;
         string source = asset.assetPath.ToString();
         if (id == Guid.Empty)
         {
-            m_diagnostics.Publish(new Diagnostic("RENDER_GEOMETRY_ID_MISSING",
-                "Geometry must have a persistent asset identity.", DiagnosticSeverity.Error, source));
+            m_diagnostics.Publish(
+                new Diagnostic(
+                    "RENDER_GEOMETRY_ID_MISSING",
+                    "Geometry must have a persistent asset identity.",
+                    DiagnosticSeverity.Error,
+                    source
+                )
+            );
             return false;
         }
         m_diagnostics.Resolve("RENDER_GEOMETRY_ID_MISSING", source);
@@ -82,11 +106,18 @@ internal sealed class RenderGeometryOwner : RenderResourceProvider, IDisposable
             }
             catch (Exception failure)
             {
-                m_diagnostics.Publish(new Diagnostic("RENDER_GEOMETRY_RESOLVE_FAILED",
-                    $"Geometry '{source}' kept its complete last-good buffer pair: {failure.Message}",
-                    DiagnosticSeverity.Error, source));
+                m_diagnostics.Publish(
+                    new Diagnostic(
+                        "RENDER_GEOMETRY_RESOLVE_FAILED",
+                        $"Geometry '{source}' kept its complete last-good buffer pair: {failure.Message}",
+                        DiagnosticSeverity.Error,
+                        source
+                    )
+                );
                 if (entry is null)
+                {
                     return false;
+                }
                 entry.lastUsedFrame = m_frameIndex;
                 geometry = entry.geometry;
                 return true;
@@ -101,43 +132,43 @@ internal sealed class RenderGeometryOwner : RenderResourceProvider, IDisposable
         return true;
     }
 
-    /// <summary>
-    /// Releases the resources owned by this implementation.
-    /// </summary>
-    public void Dispose()
-    {
-        if (m_retirement is null)
-        {
-            m_retirement = new RenderRetirementQueue();
-            if (m_allocation is not null)
-                m_retirement.Add(m_allocation.Dispose);
-            m_retirement.Add(m_entries.Dispose);
-        }
-        m_retirement.Dispose();
-        m_allocation = null;
-    }
-
     private Entry Create(GeometryAsset asset)
     {
         GeometryData data = GeometryAssetRuntime.GetGeometryData(asset);
         RenderVertexLayout layout = CanonicalGeometryLayout();
         byte[] vertices = PackVertices(data.vertices);
         byte[] indices = MemoryMarshal.AsBytes(data.indices.ToArray().AsSpan()).ToArray();
-        IReadOnlyList<RenderGeometrySection> sections = Array.AsReadOnly(data.sections.Select(static section =>
-            new RenderGeometrySection(section.firstIndex, section.indexCount)).ToArray());
+        IReadOnlyList<RenderGeometrySection> sections = Array.AsReadOnly(
+            data.sections.Select(static section =>
+                new RenderGeometrySection(section.firstIndex, section.indexCount)).ToArray()
+        );
         m_allocation = new RenderRetirementQueue();
         try
         {
-            PersistentBufferHandle vertex = m_device.CreateBuffer(new PersistentBufferDescriptor(
-                new RenderBufferDescriptor(data.vertices.Count, layout.stride, RenderBufferUsage.Vertex), layout),
-                vertices, $"{asset.name}/Vertices");
+            PersistentBufferHandle vertex = m_device.CreateBuffer(
+                new PersistentBufferDescriptor(
+                    new RenderBufferDescriptor(data.vertices.Count, layout.stride, RenderBufferUsage.Vertex),
+                    layout
+                ),
+                vertices,
+                $"{asset.name}/Vertices"
+            );
             m_allocation.Add(() => m_device.DestroyBuffer(vertex));
-            PersistentBufferHandle index = m_device.CreateBuffer(new PersistentBufferDescriptor(
-                new RenderBufferDescriptor(data.indices.Count, sizeof(uint), RenderBufferUsage.Index),
-                indexFormat: RenderIndexFormat.UInt32), indices, $"{asset.name}/Indices");
+            PersistentBufferHandle index = m_device.CreateBuffer(
+                new PersistentBufferDescriptor(
+                    new RenderBufferDescriptor(data.indices.Count, sizeof(uint), RenderBufferUsage.Index),
+                    indexFormat: RenderIndexFormat.UInt32
+                ),
+                indices,
+                $"{asset.name}/Indices"
+            );
             m_allocation.Add(() => m_device.DestroyBuffer(index));
-            var entry = new Entry(CreateGeometry(vertex, index, layout, data.vertices.Count,
-                data.indices.Count, sections), asset.contentVersion, m_frameIndex, m_allocation);
+            var entry = new Entry(
+                CreateGeometry(vertex, index, layout, data.vertices.Count, data.indices.Count, sections),
+                asset.contentVersion,
+                m_frameIndex,
+                m_allocation
+            );
             m_allocation = null;
             return entry;
         }

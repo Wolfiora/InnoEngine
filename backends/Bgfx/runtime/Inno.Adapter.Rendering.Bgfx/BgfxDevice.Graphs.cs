@@ -1,17 +1,17 @@
-using Inno.Adapter.Platform;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using Inno.Adapter.Platform;
 using Inno.Native.Bgfx;
 using Inno.Platform;
 using Inno.Rendering;
 
 namespace Inno.Adapter.Rendering.Bgfx;
 
-sealed unsafe partial class BgfxDevice
+public sealed unsafe partial class BgfxDevice
 {
     /// <summary>
     /// Begins recording commands for one validated compiled render graph.
@@ -29,16 +29,17 @@ sealed unsafe partial class BgfxDevice
         }
 
         int requestedViews = graph.passes.Count;
-        if (requestedViews > capabilities.limits.maxViews - m_nextViewId)
+        if (requestedViews > capabilities.limits.maxViews - m_nextViewID)
         {
             throw new InvalidOperationException(
-                $"Frame requires at least {m_nextViewId + requestedViews} views, "
+                $"Frame requires at least {m_nextViewID + requestedViews} views, "
                 + $"but the device supports {capabilities.limits.maxViews}. "
-                + "Reduce active cameras, viewports, or render passes.");
+                + "Reduce active cameras, viewports, or render passes."
+            );
         }
 
         m_activeGraph = graph;
-        m_activeGraphViewBase = m_nextViewId;
+        m_activeGraphViewBase = m_nextViewID;
         m_graphTextures.Clear();
         m_transientTextureSlots.Clear();
         m_transientTextureSlotDescriptors.Clear();
@@ -67,17 +68,15 @@ sealed unsafe partial class BgfxDevice
 
                     if (!m_transientTextureSlots.TryGetValue(texture.physicalSlot, out nativeTexture))
                     {
-                        nativeTexture = AcquireTransientTexture(
-                            texture.descriptor,
-                            texture.name,
-                            texture.physicalSlot);
+                        nativeTexture = AcquireTransientTexture(texture.descriptor, texture.name, texture.physicalSlot);
                         m_transientTextureSlots.Add(texture.physicalSlot, nativeTexture);
                         m_transientTextureSlotDescriptors.Add(texture.physicalSlot, texture.descriptor);
                     }
                     else if (!m_transientTextureSlotDescriptors[texture.physicalSlot].Equals(texture.descriptor))
                     {
                         throw new InvalidOperationException(
-                            $"Render-graph physical texture slot {texture.physicalSlot} aliases incompatible descriptors.");
+                            $"Render-graph physical texture slot {texture.physicalSlot} aliases incompatible descriptors."
+                        );
                     }
                 }
 
@@ -95,10 +94,11 @@ sealed unsafe partial class BgfxDevice
                 bgfx.Raw.set_view_order(
                     checked((ushort)m_activeGraphViewBase),
                     checked((ushort)graph.passes.Count),
-                    order);
+                    order
+                );
             }
 
-            m_nextViewId += requestedViews;
+            m_nextViewID += requestedViews;
         }
         catch
         {
@@ -120,32 +120,33 @@ sealed unsafe partial class BgfxDevice
     public RenderCommandEncoder BeginPass(CompiledRenderPass pass)
     {
         ArgumentNullException.ThrowIfNull(pass);
-        if (m_activeGraph is null || m_activeEncoder != null)
+        if (m_activeGraph is null || m_activeEncoder is not null)
         {
             throw new InvalidOperationException("Pass execution is outside a valid BGFX graph scope.");
         }
 
-        ushort viewId = checked((ushort)(m_activeGraphViewBase + pass.viewIndex));
+        ushort viewID = checked((ushort)(m_activeGraphViewBase + pass.viewIndex));
         int viewNameLength = Encoding.UTF8.GetByteCount(pass.name);
         Span<byte> viewNameBytes = viewNameLength < 256
-            ? stackalloc byte[256] : new byte[checked(viewNameLength + 1)];
+                                   ? stackalloc byte[256]
+                                   : new byte[checked(viewNameLength + 1)];
         Encoding.UTF8.GetBytes(pass.name, viewNameBytes);
         viewNameBytes[viewNameLength] = 0;
         fixed (byte* viewNamePointer = viewNameBytes)
         {
-            bgfx.Raw.set_view_name(viewId, (sbyte*)viewNamePointer, viewNameLength);
+            bgfx.Raw.set_view_name(viewID, (sbyte*)viewNamePointer, viewNameLength);
         }
-        bgfx.set_view_mode(viewId, bgfx.ViewMode.Sequential);
-        ApplyViewTransform(viewId, pass.viewTransform);
-        ConfigureViewTarget(viewId, pass);
+        bgfx.set_view_mode(viewID, bgfx.ViewMode.Sequential);
+        ApplyViewTransform(viewID, pass.viewTransform);
+        ConfigureViewTarget(viewID, pass);
         m_activeEncoder = bgfx.Raw.encoder_begin(0);
-        if (m_activeEncoder == null)
+        if (m_activeEncoder is null)
         {
             throw new InvalidOperationException($"BGFX could not acquire an encoder for pass '{pass.name}'.");
         }
 
-        bgfx.Raw.encoder_touch(m_activeEncoder, viewId);
-        return new BgfxCommandEncoder(this, m_activeEncoder, viewId);
+        bgfx.Raw.encoder_touch(m_activeEncoder, viewID);
+        return new BgfxCommandEncoder(this, m_activeEncoder, viewID);
     }
 
     /// <summary>
@@ -157,7 +158,7 @@ sealed unsafe partial class BgfxDevice
     public void EndPass(CompiledRenderPass pass)
     {
         ArgumentNullException.ThrowIfNull(pass);
-        if (m_activeEncoder == null)
+        if (m_activeEncoder is null)
         {
             throw new InvalidOperationException("No BGFX encoder is active.");
         }
@@ -175,7 +176,7 @@ sealed unsafe partial class BgfxDevice
     public void EndGraph(CompiledRenderGraph graph)
     {
         ArgumentNullException.ThrowIfNull(graph);
-        if (!ReferenceEquals(m_activeGraph, graph) || m_activeEncoder != null)
+        if (!ReferenceEquals(m_activeGraph, graph) || m_activeEncoder is not null)
         {
             throw new InvalidOperationException("BGFX graph cleanup does not match the active graph state.");
         }
@@ -188,25 +189,6 @@ sealed unsafe partial class BgfxDevice
         m_activeGraphViewBase = 0;
     }
 
-    private static void ApplyViewTransform(
-        ushort viewId,
-        RenderViewTransform? transform
-    ) {
-        if (transform is null)
-        {
-            bgfx.Raw.set_view_transform(viewId, null, null);
-            return;
-        }
-
-        ReadOnlySpan<float> view = transform.viewMatrix.Span;
-        ReadOnlySpan<float> projection = transform.projectionMatrix.Span;
-        fixed (float* viewPointer = view)
-        fixed (float* projectionPointer = projection)
-        {
-            bgfx.Raw.set_view_transform(viewId, viewPointer, projectionPointer);
-        }
-    }
-
     private void ReleasePreparedGraphResources()
     {
         ReturnTransientGraphResources();
@@ -217,4 +199,22 @@ sealed unsafe partial class BgfxDevice
         m_activeGraphViewBase = 0;
     }
 
+    private static void ApplyViewTransform(
+        ushort viewID,
+        RenderViewTransform? transform
+    ) {
+        if (transform is null)
+        {
+            bgfx.Raw.set_view_transform(viewID, null, null);
+            return;
+        }
+
+        ReadOnlySpan<float> view = transform.viewMatrix.Span;
+        ReadOnlySpan<float> projection = transform.projectionMatrix.Span;
+        fixed (float* viewPointer = view)
+        fixed (float* projectionPointer = projection)
+        {
+            bgfx.Raw.set_view_transform(viewID, viewPointer, projectionPointer);
+        }
+    }
 }

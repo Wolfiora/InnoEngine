@@ -3,44 +3,47 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-
 using Inno.Core.Serialization;
 
 namespace Inno.Adapter.Serialization.DotNet;
 
 internal static class ReflectionStructMetadata
 {
-    private const BindingFlags C_MEMBERS =
-        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+    private const BindingFlags C_MEMBERS = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-    private static readonly ConditionalWeakTable<Type, MembersBox> S_CACHE = new();
+    private static readonly ConditionalWeakTable<Type, MembersBox> CACHE = new();
 
     internal static SerializationMemberMetadata[] GetMembers(Type structType)
-    {
-        return S_CACHE.GetValue(structType, static type => new MembersBox(BuildMembers(type))).members;
-    }
+        => CACHE.GetValue(structType, static type => new MembersBox(BuildMembers(type))).members;
 
     internal static bool HasPureFieldAccess(
         Type type,
         SerializationTypeMetadata metadata
     ) {
         if (!type.IsValueType || metadata.requiresConverter || metadata.collection is not null || metadata.members.Count == 0)
+        {
             return false;
+        }
         foreach (SerializationMemberMetadata member in metadata.members)
         {
             if ((member.visibility & PropertyVisibility.Serialize) == 0) continue;
             FieldInfo? field = type.GetField(member.name, C_MEMBERS);
-            if (field is null || field.FieldType != member.type ||
-                !(field.FieldType.IsPrimitive && field.FieldType != typeof(IntPtr) && field.FieldType != typeof(UIntPtr) && field.FieldType != typeof(char)
-                  || field.FieldType == typeof(decimal) || field.FieldType == typeof(System.Guid) || field.FieldType == typeof(string)))
+            if (field is null || field.FieldType != member.type
+                || !(field.FieldType.IsPrimitive
+                     && field.FieldType != typeof(nint)
+                     && field.FieldType != typeof(nuint)
+                     && field.FieldType != typeof(char)
+                     || field.FieldType == typeof(decimal) || field.FieldType == typeof(Guid) || field.FieldType == typeof(string))
+            ) {
                 return false;
+            }
         }
         return true;
     }
 
     private static SerializationMemberMetadata[] BuildMembers(Type structType)
     {
-        var members = new List<SerializationMemberMetadata>();
+        List<SerializationMemberMetadata> members = [];
         var names = new HashSet<string>(StringComparer.Ordinal);
         MemberInfo[] candidates = structType
             .GetMembers(C_MEMBERS)
@@ -56,11 +59,14 @@ internal static class ReflectionStructMetadata
                 _ => null
             };
             if (member is null)
+            {
                 continue;
+            }
             if (!names.Add(member.name))
             {
                 throw new InvalidOperationException(
-                    $"Struct '{structType.FullName}' declares duplicate serialized key '{member.name}'.");
+                    $"Struct '{structType.FullName}' declares duplicate serialized key '{member.name}'."
+                );
             }
             members.Add(member);
         }
@@ -68,37 +74,40 @@ internal static class ReflectionStructMetadata
         if (members.Count == 0)
         {
             throw new InvalidOperationException(
-                $"Struct '{structType.FullName}' has no public writable data members. Register a SerializationConverter<{structType.Name}>.");
+                $"Struct '{structType.FullName}' has no public writable data members. Register a SerializationConverter<{structType.Name}>."
+            );
         }
 
         return [.. members];
     }
 
     private static int GetSerializableOrder(MemberInfo member)
-    {
-        return member.GetCustomAttribute<SerializablePropertyAttribute>(inherit: true)?.order
-            ?? int.MaxValue;
-    }
+        => member.GetCustomAttribute<SerializablePropertyAttribute>(inherit: true)?.order
+           ?? int.MaxValue;
 
     private static SerializationMemberMetadata? TryCreateField(
         Type structType,
         FieldInfo field
     ) {
         if (field.IsStatic)
+        {
             return null;
+        }
 
-        SerializablePropertyAttribute? attribute =
-            field.GetCustomAttribute<SerializablePropertyAttribute>(inherit: true);
+        SerializablePropertyAttribute? attribute = field.GetCustomAttribute<SerializablePropertyAttribute>(inherit: true);
         bool isDefaultMember = field.IsPublic && !field.IsInitOnly;
         if (attribute is null && !isDefaultMember)
+        {
             return null;
+        }
 
         PropertyVisibility visibility = attribute?.propertyVisibility ?? PropertyVisibility.Show;
         bool requiresWrite = (visibility & (PropertyVisibility.Deserialize | PropertyVisibility.RuntimeSet)) != 0;
         if (requiresWrite && field.IsInitOnly)
         {
             throw new InvalidOperationException(
-                $"Struct field '{structType.FullName}.{field.Name}' must be writable for visibility '{visibility}'.");
+                $"Struct field '{structType.FullName}.{field.Name}' must be writable for visibility '{visibility}'."
+            );
         }
 
         return new SerializationMemberMetadata(
@@ -106,7 +115,8 @@ internal static class ReflectionStructMetadata
             field.FieldType,
             visibility,
             field.GetValue,
-            field.IsInitOnly ? null : field.SetValue);
+            field.IsInitOnly ? null : field.SetValue
+        );
     }
 
     private static SerializationMemberMetadata? TryCreateProperty(
@@ -114,15 +124,18 @@ internal static class ReflectionStructMetadata
         PropertyInfo property
     ) {
         if (property.GetIndexParameters().Length != 0)
+        {
             return null;
+        }
 
-        SerializablePropertyAttribute? attribute =
-            property.GetCustomAttribute<SerializablePropertyAttribute>(inherit: true);
+        SerializablePropertyAttribute? attribute = property.GetCustomAttribute<SerializablePropertyAttribute>(inherit: true);
         MethodInfo? getter = property.GetGetMethod(nonPublic: true);
         MethodInfo? setter = property.GetSetMethod(nonPublic: true);
         bool isDefaultMember = getter?.IsPublic == true && setter?.IsPublic == true;
         if (attribute is null && !isDefaultMember)
+        {
             return null;
+        }
 
         PropertyVisibility visibility = attribute?.propertyVisibility ?? PropertyVisibility.Show;
         bool requiresRead = (visibility & (PropertyVisibility.Serialize | PropertyVisibility.RuntimeGet)) != 0;
@@ -130,12 +143,14 @@ internal static class ReflectionStructMetadata
         if (requiresRead && getter is null)
         {
             throw new InvalidOperationException(
-                $"Struct property '{structType.FullName}.{property.Name}' must define a getter for visibility '{visibility}'.");
+                $"Struct property '{structType.FullName}.{property.Name}' must define a getter for visibility '{visibility}'."
+            );
         }
         if (requiresWrite && setter is null)
         {
             throw new InvalidOperationException(
-                $"Struct property '{structType.FullName}.{property.Name}' must define a setter for visibility '{visibility}'.");
+                $"Struct property '{structType.FullName}.{property.Name}' must define a setter for visibility '{visibility}'."
+            );
         }
 
         return new SerializationMemberMetadata(
@@ -143,7 +158,8 @@ internal static class ReflectionStructMetadata
             property.PropertyType,
             visibility,
             getter is null ? null : property.GetValue,
-            setter is null ? null : property.SetValue);
+            setter is null ? null : property.SetValue
+        );
     }
 
     private sealed record MembersBox(SerializationMemberMetadata[] members);

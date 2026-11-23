@@ -9,35 +9,11 @@ using Inno.Editor.Interactions;
 namespace Inno.Editor.Graph;
 
 /// <summary>
-/// Contains a neutral copied node fragment suitable for graph clipboard operations.
-/// </summary>
-public sealed class GraphClipboardData
-{
-    internal GraphClipboardData(GraphDocument fragment) => m_fragment = fragment;
-
-    private readonly GraphDocument m_fragment;
-
-    /// <summary>
-    /// Gets the copied node count.
-    /// </summary>
-    public int nodeCount => m_fragment.nodes.Count;
-
-    /// <summary>
-    /// Gets the copied connection count whose endpoints both belong to the fragment.
-    /// </summary>
-    public int edgeCount => m_fragment.edges.Count;
-
-    internal GraphDocument CloneFragment() => m_fragment.Clone();
-}
-
-/// <summary>
 /// Applies neutral graph edits atomically and records every data mutation in reload-safe Editor History.
 /// </summary>
 public sealed class GraphDocumentController
 {
     private readonly Identity m_identity;
-    private GraphDocumentSession session => m_identity.Resolve<GraphDocumentSession>()
-        ?? throw new InvalidOperationException("The Graph document controller belongs to a closed identity generation.");
     private readonly IEditorHistory m_history;
     private readonly SerializationRegistry m_serialization;
 
@@ -54,7 +30,7 @@ public sealed class GraphDocumentController
     /// <summary>
     /// Gets the stable project-relative document identity.
     /// </summary>
-    public Guid documentId => m_identity.persistentId;
+    public Guid documentID => m_identity.persistentID;
 
     /// <summary>
     /// Gets whether the current document identity and source are both available.
@@ -90,24 +66,28 @@ public sealed class GraphDocumentController
     /// <param name="historyName">
     /// Concise artist-facing history entry name.
     /// </param>
-    /// <param name="gestureId">
+    /// <param name="gestureID">
     /// Unique active gesture identity for continuous samples, or null for an independent edit.
     /// </param>
     public void ReplaceDocument(
         GraphDocument replacement,
         string historyName,
-        string? gestureId = null
+        string? gestureID = null
     ) {
         ArgumentNullException.ThrowIfNull(replacement);
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         GraphDocument snapshot = replacement.Clone();
-        Mutate(historyName, gestureId is null ? null : $"graph:{documentId}:document:{gestureId}", () => document.ReplaceContents(snapshot));
+        Mutate(
+            historyName,
+            gestureID is null ? null : $"graph:{documentID}:document:{gestureID}",
+            () => document.ReplaceContents(snapshot)
+        );
     }
 
     /// <summary>
     /// Adds a node with a generated stable identity.
     /// </summary>
-    /// <param name="definitionId">
+    /// <param name="definitionID">
     /// Stable node definition ID.
     /// </param>
     /// <param name="position">
@@ -119,21 +99,21 @@ public sealed class GraphDocumentController
     /// <returns>
     /// The new stable node identity.
     /// </returns>
-    public GraphNodeId AddNode(
-        string definitionId,
+    public GraphNodeID AddNode(
+        string definitionID,
         GraphPosition position,
         IReadOnlyDictionary<string, GraphSerializedValue>? values = null
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(definitionId);
-        GraphNodeId id = NewNodeId();
+        ArgumentException.ThrowIfNullOrWhiteSpace(definitionID);
+        GraphNodeID id = NewNodeID();
         Mutate("Create Node", null, () =>
         {
-            var node = new GraphNodeRecord(id, definitionId) { position = position };
+            var node = new GraphNodeRecord(id, definitionID) { position = position };
             if (values is not null)
             {
-                foreach ((string propertyId, GraphSerializedValue value) in values)
+                foreach ((string propertyID, GraphSerializedValue value) in values)
                 {
-                    node.SetValue(propertyId, value.Clone());
+                    node.SetValue(propertyID, value.Clone());
                 }
             }
 
@@ -145,26 +125,26 @@ public sealed class GraphDocumentController
     /// <summary>
     /// Removes nodes and all incident connections as one structural edit.
     /// </summary>
-    /// <param name="nodeIds">
+    /// <param name="nodeIDs">
     /// Nodes to remove.
     /// </param>
-    public void RemoveNodes(IEnumerable<GraphNodeId> nodeIds)
+    public void RemoveNodes(IEnumerable<GraphNodeID> nodeIDs)
     {
-        ArgumentNullException.ThrowIfNull(nodeIds);
-        GraphNodeId[] ids = nodeIds.Distinct().ToArray();
+        ArgumentNullException.ThrowIfNull(nodeIDs);
+        GraphNodeID[] ids = nodeIDs.Distinct().ToArray();
         if (ids.Length == 0)
         {
             return;
         }
 
-        foreach (GraphNodeId id in ids)
+        foreach (GraphNodeID id in ids)
         {
             RequireNode(id);
         }
 
         Mutate(ids.Length == 1 ? "Delete Node" : "Delete Nodes", null, () =>
         {
-            foreach (GraphNodeId id in ids)
+            foreach (GraphNodeID id in ids)
             {
                 document.RemoveNode(id);
             }
@@ -177,7 +157,7 @@ public sealed class GraphDocumentController
     /// <param name="positions">
     /// Complete destination positions keyed by node identity.
     /// </param>
-    public void MoveNodes(IReadOnlyDictionary<GraphNodeId, GraphPosition> positions)
+    public void MoveNodes(IReadOnlyDictionary<GraphNodeID, GraphPosition> positions)
     {
         ArgumentNullException.ThrowIfNull(positions);
         if (positions.Count == 0)
@@ -185,7 +165,7 @@ public sealed class GraphDocumentController
             return;
         }
 
-        foreach (GraphNodeId id in positions.Keys)
+        foreach (GraphNodeID id in positions.Keys)
         {
             RequireNode(id);
         }
@@ -195,11 +175,12 @@ public sealed class GraphDocumentController
             null,
             () =>
             {
-                foreach ((GraphNodeId id, GraphPosition position) in positions)
+                foreach ((GraphNodeID id, GraphPosition position) in positions)
                 {
                     document.FindNode(id)!.position = position;
                 }
-            });
+            }
+        );
     }
 
     /// <summary>
@@ -214,124 +195,125 @@ public sealed class GraphDocumentController
     /// <returns>
     /// The generated connection identity.
     /// </returns>
-    public GraphEdgeId Connect(
+    public GraphEdgeID Connect(
         GraphEndpoint output,
         GraphEndpoint input
     ) {
-        RequireNode(output.nodeId);
-        RequireNode(input.nodeId);
-        if (output.nodeId == input.nodeId && output.portId == input.portId)
+        RequireNode(output.nodeID);
+        RequireNode(input.nodeID);
+        if (output.nodeID == input.nodeID && output.portID == input.portID)
         {
             throw new ArgumentException("A graph endpoint cannot connect to itself.", nameof(input));
         }
 
-        GraphEdgeId edgeId = NewEdgeId();
+        GraphEdgeID edgeID = NewEdgeID();
         Mutate("Connect Nodes", null, () =>
         {
-            GraphEdgeId[] replaced = document.edges
+            GraphEdgeID[] replaced = document.edges
                 .Where(edge => edge.input == input)
                 .Select(static edge => edge.id)
                 .ToArray();
-            foreach (GraphEdgeId existing in replaced)
+            foreach (GraphEdgeID existing in replaced)
             {
                 document.RemoveEdge(existing);
             }
 
-            document.AddEdge(new GraphEdgeRecord(edgeId, output, input));
+            document.AddEdge(new GraphEdgeRecord(edgeID, output, input));
         });
-        return edgeId;
+        return edgeID;
     }
 
     /// <summary>
     /// Removes one stable connection.
     /// </summary>
-    /// <param name="edgeId">
+    /// <param name="edgeID">
     /// Connection to remove.
     /// </param>
     /// <returns>
     /// <see langword="true"/> after a connection was removed.
     /// </returns>
-    public bool Disconnect(GraphEdgeId edgeId)
+    public bool Disconnect(GraphEdgeID edgeID)
     {
-        if (!document.edges.Any(edge => edge.id == edgeId))
+        if (!document.edges.Any(edge => edge.id == edgeID))
         {
             return false;
         }
 
-        Mutate("Disconnect Nodes", null, () => document.RemoveEdge(edgeId));
+        Mutate("Disconnect Nodes", null, () => document.RemoveEdge(edgeID));
         return true;
     }
 
     /// <summary>
     /// Creates or replaces one neutral node property; only samples carrying the same explicit gesture identity merge.
     /// </summary>
-    /// <param name="nodeId">
+    /// <param name="nodeID">
     /// Owning node.
     /// </param>
-    /// <param name="propertyId">
+    /// <param name="propertyID">
     /// Stable property ID.
     /// </param>
     /// <param name="value">
     /// New neutral value.
     /// </param>
-    /// <param name="gestureId">
+    /// <param name="gestureID">
     /// Unique current text/numeric gesture identity, or null for an independent edit.
     /// </param>
     public void SetNodeValue(
-        GraphNodeId nodeId,
-        string propertyId,
+        GraphNodeID nodeID,
+        string propertyID,
         GraphSerializedValue value,
-        string? gestureId = null
+        string? gestureID = null
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(propertyId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(propertyID);
         ArgumentNullException.ThrowIfNull(value);
-        GraphNodeRecord node = RequireNode(nodeId);
+        GraphNodeRecord node = RequireNode(nodeID);
         Mutate(
             "Edit Node Property",
-            gestureId is null ? null : $"graph:{documentId}:value:{nodeId.value}:{propertyId}:{gestureId}",
-            () => node.SetValue(propertyId, value.Clone()));
+            gestureID is null ? null : $"graph:{documentID}:value:{nodeID.value}:{propertyID}:{gestureID}",
+            () => node.SetValue(propertyID, value.Clone())
+        );
     }
 
     /// <summary>
     /// Removes one neutral node property as a structural edit.
     /// </summary>
-    /// <param name="nodeId">
+    /// <param name="nodeID">
     /// Owning node.
     /// </param>
-    /// <param name="propertyId">
+    /// <param name="propertyID">
     /// Stable property ID.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when the property existed.
     /// </returns>
     public bool RemoveNodeValue(
-        GraphNodeId nodeId,
-        string propertyId
+        GraphNodeID nodeID,
+        string propertyID
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(propertyId);
-        GraphNodeRecord node = RequireNode(nodeId);
-        if (!node.values.ContainsKey(propertyId))
+        ArgumentException.ThrowIfNullOrWhiteSpace(propertyID);
+        GraphNodeRecord node = RequireNode(nodeID);
+        if (!node.values.ContainsKey(propertyID))
         {
             return false;
         }
 
-        Mutate("Remove Node Property", null, () => node.RemoveValue(propertyId));
+        Mutate("Remove Node Property", null, () => node.RemoveValue(propertyID));
         return true;
     }
 
     /// <summary>
     /// Copies selected nodes and only their internal connections.
     /// </summary>
-    /// <param name="nodeIds">
+    /// <param name="nodeIDs">
     /// Nodes to copy.
     /// </param>
     /// <returns>
     /// A detached neutral clipboard fragment.
     /// </returns>
-    public GraphClipboardData Copy(IEnumerable<GraphNodeId> nodeIds)
+    public GraphClipboardData Copy(IEnumerable<GraphNodeID> nodeIDs)
     {
-        ArgumentNullException.ThrowIfNull(nodeIds);
-        HashSet<GraphNodeId> selected = [.. nodeIds];
+        ArgumentNullException.ThrowIfNull(nodeIDs);
+        HashSet<GraphNodeID> selected = [.. nodeIDs];
         var fragment = new GraphDocument();
         foreach (GraphNodeRecord source in document.nodes.Where(node => selected.Contains(node.id)))
         {
@@ -339,8 +321,8 @@ public sealed class GraphDocumentController
         }
 
         foreach (GraphEdgeRecord edge in document.edges.Where(
-            edge => selected.Contains(edge.output.nodeId) && selected.Contains(edge.input.nodeId)))
-        {
+            edge => selected.Contains(edge.output.nodeID) && selected.Contains(edge.input.nodeID)
+        )) {
             fragment.AddEdge(new GraphEdgeRecord(edge.id, edge.output, edge.input));
         }
 
@@ -356,23 +338,23 @@ public sealed class GraphDocumentController
     /// <param name="offset">
     /// Offset added to every copied node position.
     /// </param>
-    /// <returns>
-    /// New node identities in clipboard document order.
-    /// </returns>
     /// <param name="remapNode">
     /// Optional synchronous domain remapping of neutral node values after identity allocation. The callback is never stored in History.
     /// </param>
-    public IReadOnlyList<GraphNodeId> Paste(
+    /// <returns>
+    /// New node identities in clipboard document order.
+    /// </returns>
+    public IReadOnlyList<GraphNodeID> Paste(
         GraphClipboardData clipboard,
         GraphPosition offset,
-        Action<GraphNodeRecord, IReadOnlyDictionary<GraphNodeId, GraphNodeId>>? remapNode = null
+        Action<GraphNodeRecord, IReadOnlyDictionary<GraphNodeID, GraphNodeID>>? remapNode = null
     ) {
         ArgumentNullException.ThrowIfNull(clipboard);
         GraphDocument fragment = clipboard.CloneFragment();
-        Dictionary<GraphNodeId, GraphNodeId> remap = [];
+        Dictionary<GraphNodeID, GraphNodeID> remap = [];
         foreach (GraphNodeRecord node in fragment.nodes)
         {
-            remap.Add(node.id, NewNodeId());
+            remap.Add(node.id, NewNodeID());
         }
 
         Mutate("Paste Nodes", null, () =>
@@ -382,21 +364,29 @@ public sealed class GraphDocumentController
                 GraphNodeRecord clone = CloneNode(
                     source,
                     remap[source.id],
-                    new GraphPosition(source.position.x + offset.x, source.position.y + offset.y));
+                    new GraphPosition(source.position.x + offset.x, source.position.y + offset.y)
+                );
                 remapNode?.Invoke(clone, remap);
                 document.AddNode(clone);
             }
 
             foreach (GraphEdgeRecord edge in fragment.edges)
             {
-                document.AddEdge(new GraphEdgeRecord(
-                    NewEdgeId(),
-                    new GraphEndpoint(remap[edge.output.nodeId], edge.output.portId),
-                    new GraphEndpoint(remap[edge.input.nodeId], edge.input.portId)));
+                document.AddEdge(
+                    new GraphEdgeRecord(
+                        NewEdgeID(),
+                        new GraphEndpoint(remap[edge.output.nodeID], edge.output.portID),
+                        new GraphEndpoint(remap[edge.input.nodeID], edge.input.portID)
+                    )
+                );
             }
         });
         return fragment.nodes.Select(node => remap[node.id]).ToArray();
     }
+
+    private GraphDocumentSession session
+        => m_identity.Resolve<GraphDocumentSession>()
+           ?? throw new InvalidOperationException("The Graph document controller belongs to a closed identity generation.");
 
     private void Mutate(
         string name,
@@ -405,7 +395,7 @@ public sealed class GraphDocumentController
     ) {
         if (!session.available)
         {
-            throw new InvalidOperationException($"Graph document '{documentId}' is closed.");
+            throw new InvalidOperationException($"Graph document '{documentID}' is closed.");
         }
 
         byte[] before = GraphHistoryDocumentCodec.Encode(document, m_serialization);
@@ -418,7 +408,7 @@ public sealed class GraphDocumentController
                 return;
             }
 
-            var change = GraphHistoryData.CreateChange(documentId, before, after, mergeKey);
+            EditorHistoryChange change = GraphHistoryData.CreateChange(documentID, before, after, mergeKey);
             try
             {
                 m_history.RecordApplied(name, change);
@@ -439,24 +429,25 @@ public sealed class GraphDocumentController
         }
     }
 
-    private GraphNodeRecord RequireNode(GraphNodeId nodeId)
-        => document.FindNode(nodeId)
-            ?? throw new ArgumentException($"Node '{nodeId}' is not present in '{documentId}'.", nameof(nodeId));
+    private GraphNodeRecord RequireNode(GraphNodeID nodeID)
+        => document.FindNode(nodeID)
+           ?? throw new ArgumentException($"Node '{nodeID}' is not present in '{documentID}'.", nameof(nodeID));
 
     private static GraphNodeRecord CloneNode(
         GraphNodeRecord source,
-        GraphNodeId id,
+        GraphNodeID id,
         GraphPosition position
     ) {
-        var clone = new GraphNodeRecord(id, source.definitionId) { position = position };
-        foreach ((string propertyId, GraphSerializedValue value) in source.values)
+        var clone = new GraphNodeRecord(id, source.definitionID) { position = position };
+        foreach ((string propertyID, GraphSerializedValue value) in source.values)
         {
-            clone.SetValue(propertyId, value.Clone());
+            clone.SetValue(propertyID, value.Clone());
         }
 
         return clone;
     }
 
-    private static GraphNodeId NewNodeId() => new(Guid.NewGuid().ToString("N"));
-    private static GraphEdgeId NewEdgeId() => new(Guid.NewGuid().ToString("N"));
+    private static GraphNodeID NewNodeID() => new(Guid.NewGuid().ToString("N"));
+
+    private static GraphEdgeID NewEdgeID() => new(Guid.NewGuid().ToString("N"));
 }

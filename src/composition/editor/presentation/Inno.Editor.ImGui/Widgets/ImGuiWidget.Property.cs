@@ -1,9 +1,11 @@
 using System;
 using System.Numerics;
 using Inno.Native.ImGui;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
+
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
@@ -11,37 +13,6 @@ public sealed unsafe partial class ImGuiWidget
 {
     private const string C_COMPACT_FLOAT_FORMAT = "%.1f";
     private const string C_PRECISE_FLOAT_FORMAT = "%.9g";
-    /// <summary>
-    /// Draws a two-column property row with a stable internal identifier.
-    /// </summary>
-    /// <param name="id">
-    /// Stable row identifier.
-    /// </param>
-    /// <param name="label">
-    /// Human-readable property label.
-    /// </param>
-    /// <param name="drawValue">
-    /// Value control callback.
-    /// </param>
-    /// <param name="tooltip">
-    /// Optional hover help displayed from the property label.
-    /// </param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="id"/> is empty or whitespace.
-    /// </exception>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name = "label"/> or <paramref name="drawValue"/> is <see langword="null"/>.
-    /// </exception>
-    public void PropertyRow(
-        string id,
-        string label,
-        Action drawValue,
-        string? tooltip = null
-    ) {
-        m_session.EnsureDrawing();
-        ArgumentNullException.ThrowIfNull(label);
-        PropertyRow(id, () => PropertyLabel(label, tooltip), drawValue);
-    }
 
     /// <summary>
     /// Draws a two-column property row whose label is supplied by a custom presentation callback.
@@ -91,6 +62,38 @@ public sealed unsafe partial class ImGuiWidget
         {
             NativeImGui.EndTable();
         }
+    }
+
+    /// <summary>
+    /// Draws a two-column property row with a stable internal identifier.
+    /// </summary>
+    /// <param name="id">
+    /// Stable row identifier.
+    /// </param>
+    /// <param name="label">
+    /// Human-readable property label.
+    /// </param>
+    /// <param name="drawValue">
+    /// Value control callback.
+    /// </param>
+    /// <param name="tooltip">
+    /// Optional hover help displayed from the property label.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="id"/> is empty or whitespace.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name = "label"/> or <paramref name="drawValue"/> is <see langword="null"/>.
+    /// </exception>
+    public void PropertyRow(
+        string id,
+        string label,
+        Action drawValue,
+        string? tooltip = null
+    ) {
+        m_session.EnsureDrawing();
+        ArgumentNullException.ThrowIfNull(label);
+        PropertyRow(id, () => PropertyLabel(label, tooltip), drawValue);
     }
 
     /// <summary>
@@ -382,7 +385,13 @@ public sealed unsafe partial class ImGuiWidget
     ) {
         m_session.EnsureDrawing();
         uint color = NativeImGui.GetColorU32((int)(ImGuiCol.DragDropTarget));
-        ImGui.DrawNativeLine(NativeImGui.Raw.GetForegroundDrawList((ImGuiViewport*)null), new Vector2(fromX, y), new Vector2(toX, y), color, style.interactionOverlayThickness);
+        ImGui.DrawNativeLine(
+            NativeImGui.Raw.GetForegroundDrawList((ImGuiViewport*)null),
+            new Vector2(fromX, y),
+            new Vector2(toX, y),
+            color,
+            style.interactionOverlayThickness
+        );
     }
 
     /// <summary>
@@ -422,10 +431,22 @@ public sealed unsafe partial class ImGuiWidget
         float axisWidth = MathF.Min(MathF.Max(style.axisPrefixMinimumWidth, height), width * style.axisPrefixWidthRatio);
         Vector2 prefixMin = NativeImGui.GetCursorScreenPos();
         Vector2 prefixMax = prefixMin + new Vector2(axisWidth, height);
-        ImGui.DrawNativeFilledRectangle(NativeImGui.Raw.GetWindowDrawList(), prefixMin, prefixMax, NativeImGui.ColorConvertFloat4ToU32(GetAxisColor(axis)), 1f, 0);
+        ImGui.DrawNativeFilledRectangle(
+            NativeImGui.Raw.GetWindowDrawList(),
+            prefixMin,
+            prefixMax,
+            NativeImGui.ColorConvertFloat4ToU32(GetAxisColor(axis)),
+            1f,
+            0
+        );
         Vector2 textSize = NativeImGui.CalcTextSize(axis);
         Vector2 textPosition = prefixMin + (new Vector2(axisWidth, height) - textSize) * 0.5f;
-        ImGui.DrawNativeText(NativeImGui.Raw.GetWindowDrawList(), textPosition, NativeImGui.ColorConvertFloat4ToU32(EditorPalette.text), axis);
+        ImGui.DrawNativeText(
+            NativeImGui.Raw.GetWindowDrawList(),
+            textPosition,
+            NativeImGui.ColorConvertFloat4ToU32(EditorPalette.text),
+            axis
+        );
         NativeImGui.Dummy(new Vector2(axisWidth, height));
         NativeImGui.SameLine(0f, 0f);
         NativeImGui.SetNextItemWidth(MathF.Max(1f, width - axisWidth));
@@ -434,13 +455,16 @@ public sealed unsafe partial class ImGuiWidget
     private bool WantsPreciseFloatInput(string label)
     {
         bool inputRequested = NativeImGui.IsMouseDoubleClicked((int)(ImGuiMouseButton.Left))
-            || (NativeImGui.Raw.GetIO()->KeyCtrl != 0
-            && NativeImGui.IsMouseClicked((int)(ImGuiMouseButton.Left)));
+                              || (NativeImGui.Raw.GetIO()->KeyCtrl != 0
+                                  && NativeImGui.IsMouseClicked((int)(ImGuiMouseButton.Left)));
         if (!inputRequested)
+        {
             return false;
+        }
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
         Vector2 maximum = minimum + new Vector2(MathF.Max(1f, NativeImGui.CalcItemWidth()), NativeImGui.GetFrameHeight());
-        return NativeImGui.IsWindowHovered((int)(ImGuiHoveredFlags.RootAndChildWindows)) && NativeImGui.IsMouseHoveringRect(minimum, maximum, true);
+        return NativeImGui.IsWindowHovered((int)(ImGuiHoveredFlags.RootAndChildWindows))
+               && NativeImGui.IsMouseHoveringRect(minimum, maximum, true);
     }
 
     private void ValidateFloatBounds(
@@ -453,19 +477,21 @@ public sealed unsafe partial class ImGuiWidget
         }
 
         if (minimum is not float lower || maximum is not float upper)
+        {
             return;
+        }
         if (!float.IsFinite(lower) || !float.IsFinite(upper) || lower > upper)
+        {
             throw new ArgumentOutOfRangeException(nameof(maximum), "Floating-point bounds must be finite and ordered.");
+        }
     }
 
     private Vector4 GetAxisColor(string axis)
+        => axis.ToUpperInvariant() switch
     {
-        return axis.ToUpperInvariant() switch
-        {
-            "X" or "R" => EditorPalette.axisX,
-            "Y" or "G" => EditorPalette.axisY,
-            "Z" or "B" => EditorPalette.axisZ,
-            _ => EditorPalette.axisW
-        };
-    }
+        "X" or "R" => EditorPalette.axisX,
+        "Y" or "G" => EditorPalette.axisY,
+        "Z" or "B" => EditorPalette.axisZ,
+        _ => EditorPalette.axisW
+    };
 }

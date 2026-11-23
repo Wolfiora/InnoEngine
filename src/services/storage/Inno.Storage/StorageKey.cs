@@ -21,13 +21,14 @@ public readonly record struct StorageKey
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         string normalized = value.Replace('\\', '/').Trim('/');
         string[] segments = normalized.Split('/');
-        if (normalized.Length == 0 ||
-            value.StartsWith('/') ||
-            value.StartsWith('\\') ||
-            segments.Length == 0 ||
-            Array.Exists(segments, static segment =>
-                string.IsNullOrWhiteSpace(segment) || segment is "." or ".." || segment.Contains(':')))
-        {
+        if (normalized.Length == 0
+            || value.StartsWith('/')
+            || value.StartsWith('\\')
+            || segments.Length == 0
+            || Array.Exists(segments, static segment => (
+                string.IsNullOrWhiteSpace(segment) || segment is "." or ".." || segment.Contains(':')
+            ))
+        ) {
             throw new ArgumentException("A storage key must be a non-rooted unambiguous sandbox path.", nameof(value));
         }
         this.value = normalized;

@@ -23,14 +23,17 @@ public sealed class NativeProductContribution
         ProductNativeBuildPlan plan,
         INativeProductExecutor executor
     ) {
-        this.plan = plan ?? throw new ArgumentNullException(nameof(plan));
-        this.executor = executor ?? throw new ArgumentNullException(nameof(executor));
+        ArgumentNullException.ThrowIfNull(plan);
+        ArgumentNullException.ThrowIfNull(executor);
+        this.plan = plan;
+        this.executor = executor;
     }
 
     /// <summary>
     /// Gets the immutable product graph.
     /// </summary>
     public ProductNativeBuildPlan plan { get; }
+
     /// <summary>
     /// Gets the platform-selected executor.
     /// </summary>

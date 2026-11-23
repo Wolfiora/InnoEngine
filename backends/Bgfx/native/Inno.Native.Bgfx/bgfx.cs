@@ -8,9 +8,9 @@ namespace Inno.Native.Bgfx;
 public static unsafe partial class bgfx
 {
 #if DEBUG
-    internal const string LibName = "bgfx-shared-lib-debug";
+    internal const string C_LIB_NAME = "bgfx-shared-lib-debug";
 #else
-    internal const string LibName = "bgfx-shared-lib-release";
+    internal const string C_LIB_NAME = "bgfx-shared-lib-release";
 #endif
 
     static bgfx()
@@ -20,7 +20,7 @@ public static unsafe partial class bgfx
 #elif INNO_STATIC_NATIVE
         FromStatic();
 #else
-        Load(NativeDllLoader.FindNativeLibrary(LibName));
+        Load(NativeDllLoader.FindNativeLibrary(C_LIB_NAME));
 #endif
     }
 }

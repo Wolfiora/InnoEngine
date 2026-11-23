@@ -29,7 +29,7 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [bool]$Expected) {
     $accepted = $false
     $diagnostic = ''
     try {
-        $receipt = @(& "$PSScriptRoot/Get-DocumentationSourceReceipt.ps1" -Plan $state.plan -Evidence $state.evidence -Context $state.context -Directory $directory)
+        $receipt = @(& "$PSScriptRoot/../../tools/ci/Get-DocumentationSourceReceipt.ps1" -Plan $state.plan -Evidence $state.evidence -Context $state.context -Directory $directory)
         if ($receipt.Count -ne 1 -or $receipt[0].reportIdentity -cne (Get-FileHash $file).Hash.ToLowerInvariant() `
             -or $receipt[0].projects[0] -cne 'Probe') { throw 'The source receipt lost exact coverage or report provenance.' }
         if ($state.plan.checks[0].inputs.Count -gt 0 -and ($receipt[0].inputs.Count -ne 1 `

@@ -1,13 +1,14 @@
 using System;
-using System.Collections.Generic;
+using System.Buffers.Binary;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using Inno.Core.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.IO;
 
 namespace Inno.Build;
 
@@ -16,12 +17,12 @@ namespace Inno.Build;
 /// </summary>
 public sealed class PlayerSupportPackCatalog
 {
-    private static readonly HashSet<string> S_FORBIDDEN_EXTENSIONS = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> FORBIDDEN_EXTENSIONS = new(StringComparer.OrdinalIgnoreCase)
     {
         ".cs", ".csproj", ".dbg", ".map", ".pdb", ".rsp", ".sln", ".xml"
     };
 
-    private static readonly string[] S_FORBIDDEN_NAME_TOKENS =
+    private static readonly string[] FORBIDDEN_NAME_TOKENS =
     [
         "Microsoft.CodeAnalysis",
         "Roslyn",
@@ -35,7 +36,7 @@ public sealed class PlayerSupportPackCatalog
     ];
 
     private readonly string m_root;
-    private readonly ConcurrentDictionary<BuildTargetId, SemaphoreSlim> m_provisionGates = new();
+    private readonly ConcurrentDictionary<BuildTargetID, SemaphoreSlim> m_provisionGates = new();
 
     /// <summary>
     /// Creates a catalog rooted at the directory containing target-specific Player Support Packs.
@@ -83,7 +84,7 @@ public sealed class PlayerSupportPackCatalog
     /// Validation or selection was canceled.
     /// </exception>
     public async ValueTask<PlayerSupportPackLease> SelectAsync(
-        BuildTargetId target,
+        BuildTargetID target,
         string fingerprint,
         IPlayerSupportPackValidator validator,
         Func<CancellationToken, ValueTask> verifyInputs,
@@ -92,14 +93,24 @@ public sealed class PlayerSupportPackCatalog
         ArgumentNullException.ThrowIfNull(validator);
         ArgumentNullException.ThrowIfNull(verifyInputs);
         if (fingerprint is null || fingerprint.Length != 64
-            || fingerprint.Any(static character => !char.IsAsciiHexDigitLower(character)))
+            || fingerprint.Any(static character => !char.IsAsciiHexDigitLower(character))
+        ) {
             throw new ArgumentException("A prepared Pack requires its exact content identity.", nameof(fingerprint));
+        }
         cancellationToken.ThrowIfCancellationRequested();
         string targetRoot = PathBoundary.Resolve(m_root, target.value);
-        using FileLease selection = await FileLease.AcquireAsync(Path.Combine(targetRoot, "current.lock"),
-            Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
-        PlayerSupportPackLease reading = AcquireArtifact(PathBoundary.Resolve(targetRoot, fingerprint), fingerprint,
-            target, validator, cancellationToken);
+        using FileLease selection = await FileLease.AcquireAsync(
+            Path.Combine(targetRoot, "current.lock"),
+            Timeout.InfiniteTimeSpan,
+            cancellationToken
+        ).ConfigureAwait(false);
+        PlayerSupportPackLease reading = AcquireArtifact(
+            PathBoundary.Resolve(targetRoot, fingerprint),
+            fingerprint,
+            target,
+            validator,
+            cancellationToken
+        );
         try
         {
             await VerifySelectionInputsAsync(verifyInputs, cancellationToken).ConfigureAwait(false);
@@ -120,6 +131,12 @@ public sealed class PlayerSupportPackCatalog
     /// <param name="target">
     /// The platform and architecture identity of the required Support Pack.
     /// </param>
+    /// <param name="validator">
+    /// The target-owned validator for runtime or linker inputs.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels ownership acquisition or complete content validation before returning a lease.
+    /// </param>
     /// <returns>
     /// Reading ownership of the complete pack; dispose it after its final consumer finishes.
     /// </returns>
@@ -129,12 +146,6 @@ public sealed class PlayerSupportPackCatalog
     /// <exception cref="InvalidDataException">
     /// Thrown when the pack is empty, contains build-time payload, or lacks its Player executable or native runtimes.
     /// </exception>
-    /// <param name="validator">
-    /// The target-owned validator for runtime or linker inputs.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels ownership acquisition or complete content validation before returning a lease.
-    /// </param>
     /// <exception cref="OperationCanceledException">
     /// Acquisition or validation was canceled; no reading ownership is transferred.
     /// </exception>
@@ -142,7 +153,7 @@ public sealed class PlayerSupportPackCatalog
     /// Exclusive repair or retirement retains the artifact for more than thirty seconds.
     /// </exception>
     public PlayerSupportPackLease Acquire(
-        BuildTargetId target,
+        BuildTargetID target,
         IPlayerSupportPackValidator validator,
         CancellationToken cancellationToken = default
     ) {
@@ -153,12 +164,15 @@ public sealed class PlayerSupportPackCatalog
         if (!File.Exists(index))
         {
             throw new DirectoryNotFoundException(
-                $"Player Support Pack '{target}' is not installed at '{targetRoot}'. " +
-                "Install or generate the target Support Pack before exporting.");
+                $"Player Support Pack '{target}' is not installed at '{targetRoot}'. "
+                + "Install or generate the target Support Pack before exporting."
+            );
         }
         string fingerprint = File.ReadAllText(index);
         if (fingerprint.Length != 64 || fingerprint.Any(static character => !char.IsAsciiHexDigitLower(character)))
+        {
             throw new InvalidDataException($"Player Support Pack '{target}' has an invalid current fingerprint.");
+        }
         string directory = Path.Combine(targetRoot, fingerprint);
         return AcquireArtifact(directory, fingerprint, target, validator, cancellationToken);
     }
@@ -176,12 +190,12 @@ public sealed class PlayerSupportPackCatalog
     /// <param name="validator">
     /// The target validator for runtime and linker inputs.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels validation or lease acquisition before selecting the completed pack.
-    /// </param>
     /// <param name="verifyInputs">
     /// Optional final source-input gate after output validation and any publication wait.
     /// Omit only when the caller exclusively owns a fully prepared tree with no external preparation inputs.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels validation or lease acquisition before selecting the completed pack.
     /// </param>
     /// <returns>
     /// Reading ownership of the selected immutable pack; earlier readers retain their own protection.
@@ -196,11 +210,11 @@ public sealed class PlayerSupportPackCatalog
     /// Cancellation occurred before the current index was committed.
     /// </exception>
     public async ValueTask<PlayerSupportPackLease> PublishAsync(
-        BuildTargetId target,
+        BuildTargetID target,
         string stagingDirectory,
         IPlayerSupportPackValidator validator,
-        CancellationToken cancellationToken = default,
-        Func<CancellationToken, ValueTask>? verifyInputs = null
+        Func<CancellationToken, ValueTask>? verifyInputs = null,
+        CancellationToken cancellationToken = default
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(stagingDirectory);
         ArgumentNullException.ThrowIfNull(validator);
@@ -211,7 +225,10 @@ public sealed class PlayerSupportPackCatalog
         string targetRoot = Path.Combine(m_root, target.value);
         Directory.CreateDirectory(targetRoot);
         using FileLease ownership = await FileLease.AcquireAsync(
-            Path.Combine(targetRoot, "current.lock"), Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+            Path.Combine(targetRoot, "current.lock"),
+            Timeout.InfiniteTimeSpan,
+            cancellationToken
+        ).ConfigureAwait(false);
         string destination = Path.Combine(targetRoot, fingerprint);
         bool valid = false;
         if (Directory.Exists(destination))
@@ -219,7 +236,12 @@ public sealed class PlayerSupportPackCatalog
             try
             {
                 using PlayerSupportPackLease existing = AcquireArtifact(
-                    destination, fingerprint, target, validator, cancellationToken);
+                    destination,
+                    fingerprint,
+                    target,
+                    validator,
+                    cancellationToken
+                );
                 valid = true;
             }
             catch (InvalidDataException) { }
@@ -227,9 +249,14 @@ public sealed class PlayerSupportPackCatalog
         if (!valid)
         {
             using FileLease publication = await FileLease.AcquireAsync(
-                GetLeasePath(destination), TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(false);
+                GetLeasePath(destination),
+                TimeSpan.FromSeconds(30),
+                cancellationToken
+            ).ConfigureAwait(false);
             if (verifyInputs is not null)
+            {
                 await VerifySelectionInputsAsync(verifyInputs, cancellationToken).ConfigureAwait(false);
+            }
             cancellationToken.ThrowIfCancellationRequested();
             PathBoundary.RequireUnlinkedPath(targetRoot, destination);
             try
@@ -242,12 +269,16 @@ public sealed class PlayerSupportPackCatalog
             }
         }
         else if (verifyInputs is not null)
+        {
             await VerifySelectionInputsAsync(verifyInputs, cancellationToken).ConfigureAwait(false);
+        }
         PlayerSupportPackLease reading = AcquireArtifact(destination, fingerprint, target, validator, cancellationToken);
         try
         {
             if (verifyInputs is not null)
+            {
                 await VerifySelectionInputsAsync(verifyInputs, cancellationToken).ConfigureAwait(false);
+            }
             cancellationToken.ThrowIfCancellationRequested();
             SelectCurrent(targetRoot, fingerprint);
             return reading;
@@ -259,101 +290,17 @@ public sealed class PlayerSupportPackCatalog
         }
     }
 
-    private static void SelectCurrent(
-        string targetRoot,
-        string fingerprint
-    ) {
-        string index = Path.Combine(targetRoot, "current");
-        if (!File.Exists(index) || File.ReadAllText(index) != fingerprint)
-            AtomicFile.WriteAllBytes(index, Encoding.UTF8.GetBytes(fingerprint));
-    }
-
-    private static async ValueTask VerifySelectionInputsAsync(
-        Func<CancellationToken, ValueTask> verifyInputs,
-        CancellationToken cancellation
-    ) {
-        try
-        {
-            await verifyInputs(cancellation).ConfigureAwait(false);
-        }
-        catch (Exception failure) when (failure is not OperationCanceledException)
-        {
-            throw new InvalidOperationException("Prepared Pack source inputs could not be verified; selection was rejected.", failure);
-        }
-    }
-
-    private static PlayerSupportPackLease AcquireArtifact(
-        string directory,
-        string fingerprint,
-        BuildTargetId target,
-        IPlayerSupportPackValidator validator,
-        CancellationToken cancellationToken
-    ) {
-        string path = GetLeasePath(directory);
-        if (!File.Exists(path))
-        {
-            using FileLease initializer = FileLease.AcquireAsync(path,
-                TimeSpan.FromSeconds(30), cancellationToken).GetAwaiter().GetResult();
-        }
-        FileLease lease = FileLease.AcquireSharedAsync(path,
-            TimeSpan.FromSeconds(30), cancellationToken).GetAwaiter().GetResult();
-        try
-        {
-            ValidateDirectory(directory, target, validator);
-            if (ComputeFingerprint(directory, cancellationToken) != fingerprint)
-                throw new InvalidDataException($"Player Support Pack '{target}' no longer matches its immutable fingerprint.");
-            return new PlayerSupportPackLease(directory, lease);
-        }
-        catch
-        {
-            lease.Dispose();
-            throw;
-        }
-    }
-
-    private static string GetLeasePath(string directory) => directory + ".read.lock";
-
-    private static void ValidateDirectory(
-        string directory,
-        BuildTargetId target,
-        IPlayerSupportPackValidator validator
-    ) {
-        if (!Directory.Exists(directory))
-            throw new InvalidDataException($"Player Support Pack '{target}' points to a missing artifact '{directory}'.");
-        string[] files = PathBoundary.EnumerateFiles(directory).ToArray();
-        if (files.Length == 0)
-            throw new InvalidDataException($"Player Support Pack '{target}' is empty.");
-        foreach (string file in files)
-        {
-            string relativePath = Path.GetRelativePath(directory, file);
-            if (relativePath.StartsWith("PlayerLink" + Path.DirectorySeparatorChar, StringComparison.Ordinal))
-                continue;
-            string name = Path.GetFileName(file);
-            if (S_FORBIDDEN_EXTENSIONS.Contains(Path.GetExtension(name))
-                || S_FORBIDDEN_NAME_TOKENS.Any(token => name.Contains(token, StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new InvalidDataException(
-                    $"Player Support Pack '{target}' contains forbidden build-time file '{name}'.");
-            }
-        }
-        string referenceDirectory = Path.Combine(directory, "References");
-        if (!Directory.Exists(referenceDirectory)
-            || !Directory.EnumerateFiles(referenceDirectory, "Inno.*.dll", SearchOption.TopDirectoryOnly).Any())
-        {
-            throw new InvalidDataException($"Player Support Pack '{target}' has no target compilation references.");
-        }
-        validator.Validate(directory);
-    }
-
     internal async ValueTask<PlayerSupportPackLease> ResolveOrProvisionAsync(
-        BuildTargetId target,
+        BuildTargetID target,
         IPlayerSupportPackValidator validator,
         IPlayerSupportPackProvisioner? provisioner,
         CancellationToken cancellationToken
     ) {
         cancellationToken.ThrowIfCancellationRequested();
         if (provisioner is null)
+        {
             return Acquire(target, validator, cancellationToken);
+        }
 
         SemaphoreSlim gate = m_provisionGates.GetOrAdd(target, static _ => new SemaphoreSlim(1, 1));
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -369,6 +316,109 @@ public sealed class PlayerSupportPackCatalog
         }
     }
 
+    private static void SelectCurrent(
+        string targetRoot,
+        string fingerprint
+    ) {
+        string index = Path.Combine(targetRoot, "current");
+        if (!File.Exists(index) || File.ReadAllText(index) != fingerprint)
+        {
+            AtomicFile.WriteAllBytes(index, Encoding.UTF8.GetBytes(fingerprint));
+        }
+    }
+
+    private static async ValueTask VerifySelectionInputsAsync(
+        Func<CancellationToken, ValueTask> verifyInputs,
+        CancellationToken cancellationToken
+    ) {
+        try
+        {
+            await verifyInputs(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception failure) when (failure is not OperationCanceledException)
+        {
+            throw new InvalidOperationException("Prepared Pack source inputs could not be verified; selection was rejected.", failure);
+        }
+    }
+
+    private static PlayerSupportPackLease AcquireArtifact(
+        string directory,
+        string fingerprint,
+        BuildTargetID target,
+        IPlayerSupportPackValidator validator,
+        CancellationToken cancellationToken
+    ) {
+        string path = GetLeasePath(directory);
+        if (!File.Exists(path))
+        {
+            using FileLease initializer = FileLease.AcquireAsync(
+                path,
+                TimeSpan.FromSeconds(30),
+                cancellationToken
+            ).GetAwaiter().GetResult();
+        }
+        FileLease lease = FileLease.AcquireSharedAsync(
+            path,
+            TimeSpan.FromSeconds(30),
+            cancellationToken
+        ).GetAwaiter().GetResult();
+        try
+        {
+            ValidateDirectory(directory, target, validator);
+            if (ComputeFingerprint(directory, cancellationToken) != fingerprint)
+            {
+                throw new InvalidDataException($"Player Support Pack '{target}' no longer matches its immutable fingerprint.");
+            }
+            return new PlayerSupportPackLease(directory, lease);
+        }
+        catch
+        {
+            lease.Dispose();
+            throw;
+        }
+    }
+
+    private static string GetLeasePath(string directory) => directory + ".read.lock";
+
+    private static void ValidateDirectory(
+        string directory,
+        BuildTargetID target,
+        IPlayerSupportPackValidator validator
+    ) {
+        if (!Directory.Exists(directory))
+        {
+            throw new InvalidDataException($"Player Support Pack '{target}' points to a missing artifact '{directory}'.");
+        }
+        string[] files = PathBoundary.EnumerateFiles(directory).ToArray();
+        if (files.Length == 0)
+        {
+            throw new InvalidDataException($"Player Support Pack '{target}' is empty.");
+        }
+        foreach (string file in files)
+        {
+            string relativePath = Path.GetRelativePath(directory, file);
+            if (relativePath.StartsWith("PlayerLink" + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+            {
+                continue;
+            }
+            string name = Path.GetFileName(file);
+            if (FORBIDDEN_EXTENSIONS.Contains(Path.GetExtension(name))
+                || FORBIDDEN_NAME_TOKENS.Any(token => name.Contains(token, StringComparison.OrdinalIgnoreCase))
+            ) {
+                throw new InvalidDataException(
+                    $"Player Support Pack '{target}' contains forbidden build-time file '{name}'."
+                );
+            }
+        }
+        string referenceDirectory = Path.Combine(directory, "References");
+        if (!Directory.Exists(referenceDirectory)
+            || !Directory.EnumerateFiles(referenceDirectory, "Inno.*.dll", SearchOption.TopDirectoryOnly).Any()
+        ) {
+            throw new InvalidDataException($"Player Support Pack '{target}' has no target compilation references.");
+        }
+        validator.Validate(directory);
+    }
+
     private static string ComputeFingerprint(
         string directory,
         CancellationToken cancellationToken
@@ -376,12 +426,12 @@ public sealed class PlayerSupportPackCatalog
         using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         Span<byte> length = stackalloc byte[sizeof(int)];
         foreach (string file in PathBoundary.EnumerateFiles(directory)
-            .OrderBy(path => Path.GetRelativePath(directory, path).Replace('\\', '/'), StringComparer.Ordinal))
-        {
+            .OrderBy(path => Path.GetRelativePath(directory, path).Replace('\\', '/'), StringComparer.Ordinal)
+        ) {
             cancellationToken.ThrowIfCancellationRequested();
             string relative = Path.GetRelativePath(directory, file).Replace('\\', '/');
             byte[] path = Encoding.UTF8.GetBytes(relative);
-            System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(length, path.Length);
+            BinaryPrimitives.WriteInt32LittleEndian(length, path.Length);
             hash.AppendData(length);
             hash.AppendData(path);
             using FileStream input = File.OpenRead(file);

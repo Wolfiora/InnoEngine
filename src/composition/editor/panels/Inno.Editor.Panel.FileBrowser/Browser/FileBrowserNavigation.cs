@@ -1,19 +1,21 @@
-using Inno.Editor.Assets;
-using Inno.Editor.Assets.ImGui;
 using System;
 using System.Collections.Generic;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
 
 namespace Inno.Editor.Panel.FileBrowser;
+
 internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
 {
     private readonly Stack<BrowserLocation> m_backHistory = [];
     private readonly Stack<BrowserLocation> m_forwardHistory = [];
-    private BrowserLocation m_historyCurrent = BrowserLocation.AssetsRoot;
+    private BrowserLocation m_historyCurrent = BrowserLocation.assetsRoot;
     internal bool canGoBack => m_backHistory.Count > 0;
     internal bool canGoForward => m_forwardHistory.Count > 0;
 
@@ -23,15 +25,21 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
         string? selectedPathAfterNavigation = null
     ) {
         directory = NormalizePath(directory);
-        AssetBrowserRoot root = string.IsNullOrEmpty(directory) ? assets.browser.root : AssetPath.Parse(directory).source == AssetSourceId.project ? AssetBrowserRoot.Assets : AssetBrowserRoot.Plugins;
+        AssetBrowserRoot root = string.IsNullOrEmpty(directory)
+            ? assets.browser.root
+            : AssetPath.Parse(directory).source == AssetSourceID.project ? AssetBrowserRoot.Assets : AssetBrowserRoot.Plugins;
         var target = new BrowserLocation(root, directory);
-        if (CurrentLocation == target)
+        if (currentLocation == target)
+        {
             return;
-        m_backHistory.Push(CurrentLocation);
+        }
+        m_backHistory.Push(currentLocation);
         m_forwardHistory.Clear();
         ApplyLocation(context, target);
         if (selectedPathAfterNavigation is not null)
+        {
             assets.browser.Select(context, selectedPathAfterNavigation);
+        }
     }
 
     internal void NavigateToRoot(
@@ -39,9 +47,11 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
         AssetBrowserRoot root
     ) {
         var target = new BrowserLocation(root, string.Empty);
-        if (CurrentLocation == target)
+        if (currentLocation == target)
+        {
             return;
-        m_backHistory.Push(CurrentLocation);
+        }
+        m_backHistory.Push(currentLocation);
         m_forwardHistory.Clear();
         ApplyLocation(context, target);
     }
@@ -51,7 +61,9 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
         AssetBrowserRoot root
     ) {
         if (assets.browser.root == root)
+        {
             return;
+        }
         m_backHistory.Clear();
         m_forwardHistory.Clear();
         ApplyLocation(context, new BrowserLocation(root, assets.browser.GetDirectory(root)));
@@ -60,26 +72,21 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
     internal void GoBack(EditorContext context)
     {
         if (m_backHistory.Count == 0)
+        {
             return;
-        m_forwardHistory.Push(CurrentLocation);
+        }
+        m_forwardHistory.Push(currentLocation);
         ApplyLocation(context, m_backHistory.Pop());
     }
 
     internal void GoForward(EditorContext context)
     {
         if (m_forwardHistory.Count == 0)
+        {
             return;
-        m_backHistory.Push(CurrentLocation);
+        }
+        m_backHistory.Push(currentLocation);
         ApplyLocation(context, m_forwardHistory.Pop());
-    }
-
-    private void ApplyLocation(
-        EditorContext context,
-        BrowserLocation location
-    ) {
-        m_historyCurrent = location;
-        assets.browser.SetLocation(location.root, location.directory);
-        assets.browser.Select(context, string.Empty);
     }
 
     internal void OpenEntry(
@@ -94,7 +101,7 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
             return;
         }
 
-        _ = assets.edits.interactions.For(FileBrowserInteractionIds.C_AREA, entry).Execute(FileBrowserInteractionIds.C_OPEN);
+        _ = assets.edits.interactions.For(FileBrowserInteractionIDs.C_AREA, entry).Execute(FileBrowserInteractionIDs.C_OPEN);
     }
 
     internal void SyncExternalDirectoryChange(
@@ -103,19 +110,29 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
     ) {
         var location = new BrowserLocation(root, NormalizePath(directory));
         if (m_historyCurrent == location)
+        {
             return;
+        }
         m_historyCurrent = location;
         m_backHistory.Clear();
         m_forwardHistory.Clear();
     }
 
-    private BrowserLocation CurrentLocation => new(assets.browser.root, NormalizePath(assets.browser.currentDirectory));
+    private BrowserLocation currentLocation => new(assets.browser.root, NormalizePath(assets.browser.currentDirectory));
+
+    private void ApplyLocation(
+        EditorContext context,
+        BrowserLocation location
+    ) {
+        m_historyCurrent = location;
+        assets.browser.SetLocation(location.root, location.directory);
+        assets.browser.Select(context, string.Empty);
+    }
 
     private readonly record struct BrowserLocation(
         AssetBrowserRoot root,
         string directory
-    )
-    {
-        internal static BrowserLocation AssetsRoot { get; } = new(AssetBrowserRoot.Assets, string.Empty);
+    ) {
+        internal static BrowserLocation assetsRoot { get; } = new(AssetBrowserRoot.Assets, string.Empty);
     }
 }

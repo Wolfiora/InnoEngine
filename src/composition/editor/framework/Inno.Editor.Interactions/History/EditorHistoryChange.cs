@@ -33,8 +33,9 @@ public sealed class EditorHistoryChange : IDisposable
         string? mergeKey = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(kind);
+        ArgumentNullException.ThrowIfNull(payload);
         this.kind = kind;
-        this.payload = payload ?? throw new ArgumentNullException(nameof(payload));
+        this.payload = payload;
         this.mergeKey = string.IsNullOrWhiteSpace(mergeKey) ? null : mergeKey;
     }
 
@@ -53,6 +54,20 @@ public sealed class EditorHistoryChange : IDisposable
     /// </summary>
     public string? mergeKey { get; }
 
+    /// <summary>
+    /// Releases the payload storage owned by this history change.
+    /// </summary>
+    public void Dispose()
+    {
+        if (m_disposed)
+        {
+            return;
+        }
+        m_disposed = true;
+        payload.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
     internal long residentSize => payload.residentSize;
 
     internal long diskSize => payload.diskSize;
@@ -61,21 +76,5 @@ public sealed class EditorHistoryChange : IDisposable
         EditorHistoryBlobStore store,
         int inlinePayloadThreshold,
         bool canStoreOnDisk
-    )
-        => new(
-            kind,
-            payload.Retain(store, inlinePayloadThreshold, canStoreOnDisk),
-            mergeKey);
-
-    /// <summary>
-    /// Releases the payload storage owned by this history change.
-    /// </summary>
-    public void Dispose()
-    {
-        if (m_disposed)
-            return;
-        m_disposed = true;
-        payload.Dispose();
-        GC.SuppressFinalize(this);
-    }
+    ) => new(kind, payload.Retain(store, inlinePayloadThreshold, canStoreOnDisk), mergeKey);
 }

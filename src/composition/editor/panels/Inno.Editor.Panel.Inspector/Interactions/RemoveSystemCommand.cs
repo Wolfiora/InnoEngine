@@ -1,10 +1,11 @@
-using Inno.Scene;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
+using Inno.Scene;
 
 namespace Inno.Editor.Panel.Inspector;
-[EditorAction(InspectorInteractionIds.C_REMOVE_SYSTEM, priority: 100)]
-[EditorMenu(InspectorInteractionIds.C_SYSTEM_AREA, "Remove System", order: 200)]
+
+[EditorAction(InspectorInteractionIDs.C_REMOVE_SYSTEM, priority: 100)]
+[EditorMenu(InspectorInteractionIDs.C_SYSTEM_AREA, "Remove System", order: 200)]
 internal sealed class RemoveSystemCommand(SceneEdits edits) : EditorAction<GameSystem>
 {
     /// <summary>
@@ -16,7 +17,9 @@ internal sealed class RemoveSystemCommand(SceneEdits edits) : EditorAction<GameS
     /// <returns>
     /// The validated editor action state that represents the completed operation.
     /// </returns>
-    protected override EditorActionState Query(EditorActionContext<GameSystem> context) => !context.target.isDestroyed ? EditorActionState.enabled : EditorActionState.disabled;
+    protected override EditorActionState Query(EditorActionContext<GameSystem> context)
+        => !context.target.isDestroyed ? EditorActionState.enabled : EditorActionState.disabled;
+
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.
     /// </summary>

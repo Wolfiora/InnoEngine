@@ -1,6 +1,5 @@
 using System;
 using System.Numerics;
-
 using Inno.Native.ImGui;
 
 namespace Inno.Editor.ImGui;
@@ -13,102 +12,102 @@ public static unsafe class EditorPalette
     /// <summary>
     /// Gets zero opacity for invisible surfaces.
     /// </summary>
-    public const float opacityNone = 0f;
+    public const float C_OPACITY_NONE = 0f;
 
     /// <summary>
     /// Gets trace opacity for barely perceptible alternating surfaces.
     /// </summary>
-    public const float opacityTrace = 0.005f;
+    public const float C_OPACITY_TRACE = 0.005f;
 
     /// <summary>
     /// Gets faint opacity for quiet guides and separators.
     /// </summary>
-    public const float opacityFaint = 0.04f;
+    public const float C_OPACITY_FAINT = 0.04f;
 
     /// <summary>
     /// Gets subtle opacity for selection washes and low-emphasis overlays.
     /// </summary>
-    public const float opacitySubtle = 0.12f;
+    public const float C_OPACITY_SUBTLE = 0.12f;
 
     /// <summary>
     /// Gets soft opacity for tinted container surfaces.
     /// </summary>
-    public const float opacitySoft = 0.20f;
+    public const float C_OPACITY_SOFT = 0.2f;
 
     /// <summary>
     /// Gets muted opacity for shadows and subdued outlines.
     /// </summary>
-    public const float opacityMuted = 0.28f;
+    public const float C_OPACITY_MUTED = 0.28f;
 
     /// <summary>
     /// Gets medium opacity for secondary content and overlays.
     /// </summary>
-    public const float opacityMedium = 0.45f;
+    public const float C_OPACITY_MEDIUM = 0.45f;
 
     /// <summary>
     /// Gets strong opacity for accents that remain translucent.
     /// </summary>
-    public const float opacityStrong = 0.55f;
+    public const float C_OPACITY_STRONG = 0.55f;
 
     /// <summary>
     /// Gets prominent opacity for navigation emphasis.
     /// </summary>
-    public const float opacityProminent = 0.70f;
+    public const float C_OPACITY_PROMINENT = 0.7f;
 
     /// <summary>
     /// Gets emphasized opacity for borders and interactive grips.
     /// </summary>
-    public const float opacityEmphasized = 0.82f;
+    public const float C_OPACITY_EMPHASIZED = 0.82f;
 
     /// <summary>
     /// Gets near-opaque opacity for active overlays.
     /// </summary>
-    public const float opacityNearOpaque = 0.92f;
+    public const float C_OPACITY_NEAR_OPAQUE = 0.92f;
 
     /// <summary>
     /// Gets popup opacity, retaining only enough transparency for depth.
     /// </summary>
-    public const float opacityPopup = 0.985f;
+    public const float C_OPACITY_POPUP = 0.985f;
 
     /// <summary>
     /// Gets full opacity.
     /// </summary>
-    public const float opacityOpaque = 1f;
+    public const float C_OPACITY_OPAQUE = 1f;
 
     /// <summary>
     /// Gets fully transparent color.
     /// </summary>
-    public static Vector4 transparent { get; } = new(0f, 0f, 0f, opacityNone);
+    public static Vector4 transparent { get; } = new(0f, 0f, 0f, C_OPACITY_NONE);
 
     /// <summary>
     /// Gets the primary text color.
     /// </summary>
-    public static Vector4 text { get; } = new(0.88f, 0.89f, 0.91f, opacityOpaque);
+    public static Vector4 text { get; } = new(0.88f, 0.89f, 0.91f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets disabled text color.
     /// </summary>
-    public static Vector4 textDisabled { get; } = new(0.58f, 0.60f, 0.64f, opacityOpaque);
+    public static Vector4 textDisabled { get; } = new(0.58f, 0.6f, 0.64f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the standard error color.
     /// </summary>
-    public static Vector4 error { get; } = new(1f, 0.35f, 0.35f, opacityOpaque);
+    public static Vector4 error { get; } = new(1f, 0.35f, 0.35f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the standard warning color.
     /// </summary>
-    public static Vector4 warning { get; } = new(0.9f, 0.65f, 0.25f, opacityOpaque);
+    public static Vector4 warning { get; } = new(0.9f, 0.65f, 0.25f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the editor window background.
     /// </summary>
-    public static Vector4 windowBackground { get; } = new(0.105f, 0.112f, 0.125f, opacityOpaque);
+    public static Vector4 windowBackground { get; } = new(0.105f, 0.112f, 0.125f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the editor popup background.
     /// </summary>
-    public static Vector4 popupBackground { get; } = new(0.075f, 0.081f, 0.092f, opacityPopup);
+    public static Vector4 popupBackground { get; } = new(0.075f, 0.081f, 0.092f, C_OPACITY_POPUP);
 
     /// <summary>
     /// Gets text color used by editor context menus.
@@ -128,12 +127,12 @@ public static unsafe class EditorPalette
     /// <summary>
     /// Gets the hovered background of an editor context-menu item.
     /// </summary>
-    public static Vector4 menuItemHovered => new(0.235f, 0.245f, 0.275f, opacityOpaque);
+    public static Vector4 menuItemHovered => new(0.235f, 0.245f, 0.275f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the active background of an editor context-menu item.
     /// </summary>
-    public static Vector4 menuItemActive => new(0.31f, 0.285f, 0.43f, opacityOpaque);
+    public static Vector4 menuItemActive => new(0.31f, 0.285f, 0.43f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the separator color used by editor context menus.
@@ -143,187 +142,187 @@ public static unsafe class EditorPalette
     /// <summary>
     /// Gets the standard border color.
     /// </summary>
-    public static Vector4 border { get; } = new(0.235f, 0.25f, 0.285f, opacityEmphasized);
+    public static Vector4 border { get; } = new(0.235f, 0.25f, 0.285f, C_OPACITY_EMPHASIZED);
 
     /// <summary>
     /// Gets the standard border shadow color.
     /// </summary>
-    public static Vector4 borderShadow { get; } = new(0f, 0f, 0f, opacityMedium);
+    public static Vector4 borderShadow { get; } = new(0f, 0f, 0f, C_OPACITY_MEDIUM);
 
     /// <summary>
     /// Gets the standard frame background.
     /// </summary>
-    public static Vector4 frame { get; } = new(0.145f, 0.155f, 0.175f, opacityOpaque);
+    public static Vector4 frame { get; } = new(0.145f, 0.155f, 0.175f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the hovered frame background.
     /// </summary>
-    public static Vector4 frameHovered { get; } = new(0.205f, 0.218f, 0.245f, opacityOpaque);
+    public static Vector4 frameHovered { get; } = new(0.205f, 0.218f, 0.245f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the active frame background.
     /// </summary>
-    public static Vector4 frameActive { get; } = new(0.275f, 0.258f, 0.36f, opacityOpaque);
+    public static Vector4 frameActive { get; } = new(0.275f, 0.258f, 0.36f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the inactive title background.
     /// </summary>
-    public static Vector4 title { get; } = new(0.075f, 0.081f, 0.092f, opacityOpaque);
+    public static Vector4 title { get; } = new(0.075f, 0.081f, 0.092f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the active title background.
     /// </summary>
-    public static Vector4 titleActive { get; } = new(0.115f, 0.123f, 0.139f, opacityOpaque);
+    public static Vector4 titleActive { get; } = new(0.115f, 0.123f, 0.139f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the collapsed title background.
     /// </summary>
-    public static Vector4 titleCollapsed { get; } = new(0.065f, 0.070f, 0.080f, opacityOpaque);
+    public static Vector4 titleCollapsed { get; } = new(0.065f, 0.07f, 0.08f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the standard scrollbar thumb.
     /// </summary>
-    public static Vector4 scrollbarGrab { get; } = new(0.30f, 0.32f, 0.36f, opacityEmphasized);
+    public static Vector4 scrollbarGrab { get; } = new(0.3f, 0.32f, 0.36f, C_OPACITY_EMPHASIZED);
 
     /// <summary>
     /// Gets the hovered scrollbar thumb.
     /// </summary>
-    public static Vector4 scrollbarGrabHovered { get; } = new(0.42f, 0.44f, 0.49f, opacityNearOpaque);
+    public static Vector4 scrollbarGrabHovered { get; } = new(0.42f, 0.44f, 0.49f, C_OPACITY_NEAR_OPAQUE);
 
     /// <summary>
     /// Gets the active scrollbar thumb.
     /// </summary>
-    public static Vector4 scrollbarGrabActive { get; } = new(0.55f, 0.57f, 0.63f, opacityOpaque);
+    public static Vector4 scrollbarGrabActive { get; } = new(0.55f, 0.57f, 0.63f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the standard accent color.
     /// </summary>
-    public static Vector4 accent { get; } = new(0.61960787f, 0.5764706f, 0.76862746f, opacityStrong);
+    public static Vector4 accent { get; } = new(0.61960787f, 0.5764706f, 0.76862746f, C_OPACITY_STRONG);
 
     /// <summary>
     /// Gets the hovered accent color.
     /// </summary>
-    public static Vector4 accentHovered { get; } = new(0.7372549f, 0.69411767f, 0.8862745f, opacityStrong);
+    public static Vector4 accentHovered { get; } = new(0.7372549f, 0.69411767f, 0.8862745f, C_OPACITY_STRONG);
 
     /// <summary>
     /// Gets the active accent color.
     /// </summary>
-    public static Vector4 accentActive { get; } = new(0.8156863f, 0.77254903f, 0.9647059f, opacityStrong);
+    public static Vector4 accentActive { get; } = new(0.8156863f, 0.77254903f, 0.9647059f, C_OPACITY_STRONG);
 
     /// <summary>
     /// Gets the standard tab color.
     /// </summary>
-    public static Vector4 tab { get; } = new(0.105f, 0.112f, 0.125f, opacityOpaque);
+    public static Vector4 tab { get; } = new(0.105f, 0.112f, 0.125f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the hovered tab color.
     /// </summary>
-    public static Vector4 tabHovered { get; } = new(0.19f, 0.20f, 0.225f, opacityOpaque);
+    public static Vector4 tabHovered { get; } = new(0.19f, 0.2f, 0.225f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the selected tab color.
     /// </summary>
-    public static Vector4 tabSelected { get; } = new(0.17f, 0.176f, 0.20f, opacityOpaque);
+    public static Vector4 tabSelected { get; } = new(0.17f, 0.176f, 0.2f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the dimmed tab color.
     /// </summary>
-    public static Vector4 tabDimmed { get; } = new(0.082f, 0.088f, 0.10f, opacityOpaque);
+    public static Vector4 tabDimmed { get; } = new(0.082f, 0.088f, 0.1f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the selected dimmed tab color.
     /// </summary>
-    public static Vector4 tabDimmedSelected { get; } = new(0.135f, 0.142f, 0.16f, opacityOpaque);
+    public static Vector4 tabDimmedSelected { get; } = new(0.135f, 0.142f, 0.16f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the selected tab overline color.
     /// </summary>
-    public static Vector4 tabSelectedOverline { get; } = new(0.72f, 0.66f, 0.90f, opacityOpaque);
+    public static Vector4 tabSelectedOverline { get; } = new(0.72f, 0.66f, 0.9f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the table header background.
     /// </summary>
-    public static Vector4 tableHeader { get; } = new(0.1882353f, 0.1882353f, 0.2f, opacityOpaque);
+    public static Vector4 tableHeader { get; } = new(0.1882353f, 0.1882353f, 0.2f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the strong table border.
     /// </summary>
-    public static Vector4 tableBorderStrong { get; } = new(0.245f, 0.258f, 0.29f, opacityEmphasized);
+    public static Vector4 tableBorderStrong { get; } = new(0.245f, 0.258f, 0.29f, C_OPACITY_EMPHASIZED);
 
     /// <summary>
     /// Gets the light table border.
     /// </summary>
-    public static Vector4 tableBorderLight { get; } = new(0.205f, 0.215f, 0.245f, opacityStrong);
+    public static Vector4 tableBorderLight { get; } = new(0.205f, 0.215f, 0.245f, C_OPACITY_STRONG);
 
     /// <summary>
     /// Gets the alternate table row background.
     /// </summary>
-    public static Vector4 tableRowAlternate { get; } = new(1f, 1f, 1f, opacityFaint);
+    public static Vector4 tableRowAlternate { get; } = new(1f, 1f, 1f, C_OPACITY_FAINT);
 
     /// <summary>
     /// Gets the standard drag target color.
     /// </summary>
-    public static Vector4 dragDropTarget { get; } = new(1f, 1f, 0f, opacityNearOpaque);
+    public static Vector4 dragDropTarget { get; } = new(1f, 1f, 0f, C_OPACITY_NEAR_OPAQUE);
 
     /// <summary>
     /// Gets navigation highlight color.
     /// </summary>
-    public static Vector4 navigationHighlight { get; } = new(1f, 1f, 1f, opacityProminent);
+    public static Vector4 navigationHighlight { get; } = new(1f, 1f, 1f, C_OPACITY_PROMINENT);
 
     /// <summary>
     /// Gets navigation dim background.
     /// </summary>
-    public static Vector4 navigationDim { get; } = new(0.8f, 0.8f, 0.8f, opacitySoft);
+    public static Vector4 navigationDim { get; } = new(0.8f, 0.8f, 0.8f, C_OPACITY_SOFT);
 
     /// <summary>
     /// Gets modal dim background.
     /// </summary>
-    public static Vector4 modalDim { get; } = new(0.8f, 0.8f, 0.8f, opacityMuted);
+    public static Vector4 modalDim { get; } = new(0.8f, 0.8f, 0.8f, C_OPACITY_MUTED);
 
     /// <summary>
     /// Gets card header background.
     /// </summary>
-    public static Vector4 cardHeader { get; } = new(0.17f, 0.18f, 0.205f, opacityOpaque);
+    public static Vector4 cardHeader { get; } = new(0.17f, 0.18f, 0.205f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the persistent target header background.
     /// </summary>
-    public static Vector4 targetHeader { get; } = new(0.14f, 0.14f, 0.16f, opacityOpaque);
+    public static Vector4 targetHeader { get; } = new(0.14f, 0.14f, 0.16f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the persistent target header border.
     /// </summary>
-    public static Vector4 targetHeaderBorder { get; } = new(0.30f, 0.29f, 0.34f, opacityOpaque);
+    public static Vector4 targetHeaderBorder { get; } = new(0.3f, 0.29f, 0.34f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets card body background.
     /// </summary>
-    public static Vector4 cardBody { get; } = new(0.12f, 0.12f, 0.14f, opacityOpaque);
+    public static Vector4 cardBody { get; } = new(0.12f, 0.12f, 0.14f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets card body border.
     /// </summary>
-    public static Vector4 cardBodyBorder { get; } = new(0.28f, 0.27f, 0.32f, opacityOpaque);
+    public static Vector4 cardBodyBorder { get; } = new(0.28f, 0.27f, 0.32f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the outline color of framed sections.
     /// </summary>
-    public static Vector4 sectionBorder { get; } = new(0.34f, 0.33f, 0.39f, opacityOpaque);
+    public static Vector4 sectionBorder { get; } = new(0.34f, 0.33f, 0.39f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets disabled card text.
     /// </summary>
-    public static Vector4 cardDisabledText { get; } = new(0.52f, 0.52f, 0.54f, opacityOpaque);
+    public static Vector4 cardDisabledText { get; } = new(0.52f, 0.52f, 0.54f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets card disclosure hover background.
     /// </summary>
-    public static Vector4 cardDisclosureHovered { get; } = new(0.24f, 0.22f, 0.31f, opacityOpaque);
+    public static Vector4 cardDisclosureHovered { get; } = new(0.24f, 0.22f, 0.31f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets compact control hover color.
     /// </summary>
-    public static Vector4 compactControlHovered { get; } = new(0.74f, 0.70f, 0.90f, opacityOpaque);
+    public static Vector4 compactControlHovered { get; } = new(0.74f, 0.7f, 0.9f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the deepest collection background.
@@ -333,94 +332,94 @@ public static unsafe class EditorPalette
     /// <summary>
     /// Gets the primary collection row background.
     /// </summary>
-    public static Vector4 collectionRow { get; } = new(0.115f, 0.123f, 0.137f, opacityOpaque);
+    public static Vector4 collectionRow { get; } = new(0.115f, 0.123f, 0.137f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the alternate collection row background.
     /// </summary>
-    public static Vector4 collectionRowAlternate { get; } = new(0.135f, 0.144f, 0.160f, opacityOpaque);
+    public static Vector4 collectionRowAlternate { get; } = new(0.135f, 0.144f, 0.16f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the content field background.
     /// </summary>
-    public static Vector4 contentField { get; } = new(0.235f, 0.22f, 0.27f, opacityOpaque);
+    public static Vector4 contentField { get; } = new(0.235f, 0.22f, 0.27f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the content border.
     /// </summary>
-    public static Vector4 contentBorder { get; } = new(0.31f, 0.30f, 0.35f, opacityOpaque);
+    public static Vector4 contentBorder { get; } = new(0.31f, 0.3f, 0.35f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the soft content border.
     /// </summary>
-    public static Vector4 contentBorderSoft { get; } = new(0.24f, 0.24f, 0.27f, opacityOpaque);
+    public static Vector4 contentBorderSoft { get; } = new(0.24f, 0.24f, 0.27f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the content text color.
     /// </summary>
-    public static Vector4 contentText { get; } = new(0.86f, 0.86f, 0.86f, opacityOpaque);
+    public static Vector4 contentText { get; } = new(0.86f, 0.86f, 0.86f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the muted content text color.
     /// </summary>
-    public static Vector4 contentTextMuted { get; } = new(0.54f, 0.54f, 0.56f, opacityOpaque);
+    public static Vector4 contentTextMuted { get; } = new(0.54f, 0.54f, 0.56f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets the subdued contextual text color used by paths and origin hints.
     /// </summary>
-    public static Vector4 contextText { get; } = new(0.86f, 0.86f, 0.86f, opacityMedium);
+    public static Vector4 contextText { get; } = new(0.86f, 0.86f, 0.86f, C_OPACITY_MEDIUM);
 
     /// <summary>
     /// Gets the opaque content accent.
     /// </summary>
-    public static Vector4 contentAccent { get; } = new(0.50f, 0.45f, 0.62f, opacityOpaque);
+    public static Vector4 contentAccent { get; } = new(0.5f, 0.45f, 0.62f, C_OPACITY_OPAQUE);
+
+    /// <summary>
+    /// Gets the guide color of reusable tree controls.
+    /// </summary>
+    public static Vector4 treeGuide { get; } = new(0.62f, 0.62f, 0.66f, C_OPACITY_OPAQUE);
+
+    /// <summary>
+    /// Gets X axis color.
+    /// </summary>
+    public static Vector4 axisX { get; } = new(0.76f, 0.2f, 0.22f, C_OPACITY_OPAQUE);
+
+    /// <summary>
+    /// Gets Y axis color.
+    /// </summary>
+    public static Vector4 axisY { get; } = new(0.16f, 0.62f, 0.3f, C_OPACITY_OPAQUE);
+
+    /// <summary>
+    /// Gets Z axis color.
+    /// </summary>
+    public static Vector4 axisZ { get; } = new(0.2f, 0.34f, 0.78f, C_OPACITY_OPAQUE);
+
+    /// <summary>
+    /// Gets W axis color.
+    /// </summary>
+    public static Vector4 axisW { get; } = new(0.48f, 0.48f, 0.5f, C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets a hover treatment derived from a base theme color.
     /// </summary>
-    /// <returns>
-    /// The base color blended toward the palette text color using the standard hover amount.
-    /// </returns>
     /// <param name="color">
     /// The color consumed by get hovered; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
+    /// <returns>
+    /// The base color blended toward the palette text color using the standard hover amount.
+    /// </returns>
     public static Vector4 GetHovered(Vector4 color) => Lerp(color, text, 0.16f);
 
     /// <summary>
     /// Gets an active treatment derived from a base theme color.
     /// </summary>
-    /// <returns>
-    /// The base color blended toward the palette text color using the standard active amount.
-    /// </returns>
     /// <param name="color">
     /// The color consumed by get active; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
+    /// <returns>
+    /// The base color blended toward the palette text color using the standard active amount.
+    /// </returns>
     public static Vector4 GetActive(Vector4 color) => Lerp(color, text, 0.24f);
-
-    /// <summary>
-    /// Gets the guide color of reusable tree controls.
-    /// </summary>
-    public static Vector4 treeGuide { get; } = new(0.62f, 0.62f, 0.66f, opacityOpaque);
-
-    /// <summary>
-    /// Gets X axis color.
-    /// </summary>
-    public static Vector4 axisX { get; } = new(0.76f, 0.20f, 0.22f, opacityOpaque);
-
-    /// <summary>
-    /// Gets Y axis color.
-    /// </summary>
-    public static Vector4 axisY { get; } = new(0.16f, 0.62f, 0.30f, opacityOpaque);
-
-    /// <summary>
-    /// Gets Z axis color.
-    /// </summary>
-    public static Vector4 axisZ { get; } = new(0.20f, 0.34f, 0.78f, opacityOpaque);
-
-    /// <summary>
-    /// Gets W axis color.
-    /// </summary>
-    public static Vector4 axisW { get; } = new(0.48f, 0.48f, 0.50f, opacityOpaque);
 
     /// <summary>
     /// Linearly interpolates two palette colors using a clamped amount.
@@ -447,8 +446,26 @@ public static unsafe class EditorPalette
             from.X + (to.X - from.X) * value,
             from.Y + (to.Y - from.Y) * value,
             from.Z + (to.Z - from.Z) * value,
-            from.W + (to.W - from.W) * value);
+            from.W + (to.W - from.W) * value
+        );
     }
+
+    /// <summary>
+    /// Returns a theme color with a caller-selected opacity, normally one of the shared opacity levels.
+    /// </summary>
+    /// <param name="color">
+    /// Base RGB color.
+    /// </param>
+    /// <param name="opacity">
+    /// Replacement alpha in the inclusive zero-to-one range.
+    /// </param>
+    /// <returns>
+    /// The validated vector4 that represents the completed operation.
+    /// </returns>
+    public static Vector4 WithOpacity(
+        Vector4 color,
+        float opacity
+    ) => new(color.X, color.Y, color.Z, Math.Clamp(opacity, C_OPACITY_NONE, C_OPACITY_OPAQUE));
 
     internal static void Apply(ImGuiStyle* style)
     {
@@ -466,7 +483,7 @@ public static unsafe class EditorPalette
         style->Colors[(int)ImGuiCol.TitleBgActive] = ImGui.ToNative(titleActive);
         style->Colors[(int)ImGuiCol.TitleBgCollapsed] = ImGui.ToNative(titleCollapsed);
         style->Colors[(int)ImGuiCol.MenuBarBg] = ImGui.ToNative(transparent);
-        style->Colors[(int)ImGuiCol.ScrollbarBg] = ImGui.ToNative(WithOpacity(frame, opacityNone));
+        style->Colors[(int)ImGuiCol.ScrollbarBg] = ImGui.ToNative(WithOpacity(frame, C_OPACITY_NONE));
         style->Colors[(int)ImGuiCol.ScrollbarGrab] = ImGui.ToNative(scrollbarGrab);
         style->Colors[(int)ImGuiCol.ScrollbarGrabHovered] = ImGui.ToNative(scrollbarGrabHovered);
         style->Colors[(int)ImGuiCol.ScrollbarGrabActive] = ImGui.ToNative(scrollbarGrabActive);
@@ -507,22 +524,4 @@ public static unsafe class EditorPalette
         style->Colors[(int)ImGuiCol.ModalWindowDimBg] = ImGui.ToNative(modalDim);
         style->Colors[(int)ImGuiCol.DockingPreview] = ImGui.ToNative(accentActive);
     }
-
-    /// <summary>
-    /// Returns a theme color with a caller-selected opacity, normally one of the shared opacity levels.
-    /// </summary>
-    /// <param name="color">
-    /// Base RGB color.
-    /// </param>
-    /// <param name="opacity">
-    /// Replacement alpha in the inclusive zero-to-one range.
-    /// </param>
-    /// <returns>
-    /// The validated vector4 that represents the completed operation.
-    /// </returns>
-    public static Vector4 WithOpacity(
-        Vector4 color,
-        float opacity
-    )
-        => new(color.X, color.Y, color.Z, Math.Clamp(opacity, opacityNone, opacityOpaque));
 }

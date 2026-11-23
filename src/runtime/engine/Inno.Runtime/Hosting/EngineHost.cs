@@ -1,16 +1,15 @@
 using System;
 using System.Collections.Generic;
-
-using Inno.Extensibility.Modules;
 using Inno.Core.Diagnostics;
 using Inno.Core.Events;
 using Inno.Core.Execution;
 using Inno.Core.Identity;
-using Inno.Runtime.Contracts;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Modules;
 using Inno.Extensibility.Reload;
+using Inno.Extensibility.Types;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Runtime;
 
@@ -35,16 +34,16 @@ public sealed class EngineHost : IDisposable
         ISerializationMetadataSource serializationMetadata
     ) {
         this.retirementTimeout = retirementTimeout;
-        logs = new LogRouter(deliveryMode: logDeliveryMode);
-        diagnostics = new DiagnosticHub();
+        this.logs = new LogRouter(deliveryMode: logDeliveryMode);
+        this.diagnostics = new DiagnosticHub();
         try
         {
-            modules = new ModuleHost(new ModuleHostOptions
+            this.modules = new ModuleHost(new ModuleHostOptions
             {
                 catalogSource = moduleSource
             });
-            types = new TypeCatalog(modules, typeSource);
-            serialization = new SerializationRegistry(types, serializationMetadata);
+            this.types = new TypeCatalog(modules, typeSource);
+            this.serialization = new SerializationRegistry(types, serializationMetadata);
         }
         catch
         {
@@ -108,7 +107,9 @@ public sealed class EngineHost : IDisposable
         {
             ObjectDisposedException.ThrowIf(m_disposed, this);
             if (m_stopping)
+            {
                 throw new InvalidOperationException("The engine host is retiring and cannot acquire new owners.");
+            }
             generations.EnsureReady("create a runtime session");
             var session = new RuntimeSession(this, options);
             m_sessions.Add(session);
@@ -142,17 +143,26 @@ public sealed class EngineHost : IDisposable
     /// </exception>
     public RuntimeSubsystemPipeline CreateHostPipeline(
         IReadOnlyList<IRuntimeSubsystemFactory> factories,
-        IReadOnlyList<RuntimeCapabilityId>? capabilities = null
+        IReadOnlyList<RuntimeCapabilityID>? capabilities = null
     ) {
         ArgumentNullException.ThrowIfNull(factories);
         lock (m_sync)
         {
             ObjectDisposedException.ThrowIf(m_disposed, this);
             if (m_stopping)
+            {
                 throw new InvalidOperationException("The engine host is retiring and cannot acquire new owners.");
+            }
             generations.EnsureReady("create a host subsystem pipeline");
-            var context = new RuntimeSubsystemContext(new EventDispatcher(), diagnostics,
-                new IdentityAllocator(), types, new LifetimeScope(), RuntimeSubsystemLifetime.Host, capabilities: capabilities);
+            var context = new RuntimeSubsystemContext(
+                new EventDispatcher(),
+                diagnostics,
+                new IdentityAllocator(),
+                types,
+                new LifetimeScope(),
+                RuntimeSubsystemLifetime.Host,
+                capabilities: capabilities
+            );
             var pipeline = new RuntimeSubsystemPipeline(context, retirementTimeout, generations);
             m_hostPipelines.Add(pipeline);
             try
@@ -178,14 +188,18 @@ public sealed class EngineHost : IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         generations.EnsureRetirementSafe();
         try
         {
             // Metadata-only hosts are thread-neutral; attached subsystems enforce their own control thread.
             m_retirement ??= new RetirementBarrier("EngineHost", retirementTimeout);
             if (!m_retirement.TryComplete(DisposeCore))
+            {
                 throw new RetirementPendingException("EngineHost is still draining owned sessions or pipelines.");
+            }
         }
         catch (Exception failure) when (RetirementPendingException.Find(failure) is RetirementTimeoutException)
         {
@@ -203,13 +217,25 @@ public sealed class EngineHost : IDisposable
         }
     }
 
+    internal TimeSpan retirementTimeout { get; }
+
+    internal void Release(RuntimeSession session)
+    {
+        lock (m_sync)
+        {
+            m_sessions.Remove(session);
+        }
+    }
+
     private void DisposeCore()
     {
         RuntimeSession[] sessions;
         lock (m_sync)
         {
             if (m_disposed)
+            {
                 return;
+            }
             m_stopping = true;
             sessions = [.. m_sessions];
         }
@@ -280,19 +306,14 @@ public sealed class EngineHost : IDisposable
         }
         if (m_retirementFailures is not null)
         {
-            var failure = new AggregateException("Engine host disposal encountered one or more failures.", m_retirementFailures);
+            var failure = new AggregateException(
+                "Engine host disposal encountered one or more failures.",
+                m_retirementFailures
+            );
             m_retirementFailures = null;
             throw failure;
         }
         generations.Wait();
-    }
-
-    internal TimeSpan retirementTimeout { get; }
-
-    internal void Release(RuntimeSession session)
-    {
-        lock (m_sync)
-            m_sessions.Remove(session);
     }
 
     private void RetireFailedStartup(
@@ -301,7 +322,9 @@ public sealed class EngineHost : IDisposable
     ) {
         IDisposable? reservation = null;
         if (generations.state == GenerationState.Ready)
+        {
             _ = generations.TryAcquireChange("retire failed runtime startup", out reservation);
+        }
         using IDisposable? generationReservation = reservation;
         try
         {
@@ -312,7 +335,9 @@ public sealed class EngineHost : IDisposable
             var failure = new AggregateException("Runtime startup and retirement failed.", startupFailure, cleanupFailure);
             generations.Fault(failure);
             if (RetirementPendingException.Find(cleanupFailure) is not null)
+            {
                 throw;
+            }
             throw failure;
         }
     }

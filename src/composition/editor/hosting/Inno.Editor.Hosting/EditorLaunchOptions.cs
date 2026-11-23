@@ -1,7 +1,7 @@
 using System;
 using Inno.Adapter.Presentation;
-using Inno.Build.Composition;
 using Inno.Build;
+using Inno.Build.Composition;
 using Inno.Core.Logging;
 using Inno.Editor.Core;
 using Inno.Extensibility.Modules;
@@ -39,7 +39,7 @@ public sealed class EditorLaunchOptions
     /// <summary>
     /// Gets the explicit presentation implementation selected by the product.
     /// </summary>
-    public required PresentationBackendId presentation { get; init; }
+    public required PresentationBackendID presentation { get; init; }
 
     /// <summary>
     /// Gets the borrowed owner-thread scheduling policy.
@@ -54,7 +54,7 @@ public sealed class EditorLaunchOptions
     /// <summary>
     /// Gets the explicit default game target for new project build settings.
     /// </summary>
-    public required BuildTargetId defaultBuildTarget { get; init; }
+    public required BuildTargetID defaultBuildTarget { get; init; }
 
     /// <summary>
     /// Gets the explicitly selected SDK and build execution host.
@@ -79,7 +79,7 @@ public sealed class EditorLaunchOptions
     /// <summary>
     /// Gets an optional factory transferring each edit or play log sink to its owning session.
     /// </summary>
-    public Func<RuntimeSessionKind, LogSessionId, ILogSink>? createSessionLogSink { get; init; }
+    public Func<RuntimeSessionKind, LogSessionID, ILogSink>? createSessionLogSink { get; init; }
 
     /// <summary>
     /// Gets an optional factory transferring one host log sink to the Editor lifetime.

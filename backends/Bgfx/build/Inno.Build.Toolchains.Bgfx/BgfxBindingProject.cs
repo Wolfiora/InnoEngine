@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -19,16 +20,25 @@ internal static class BgfxBindingProject
     ) {
         context.RequireBindings(request.component);
         string definition = Path.Combine(request.component.GetToolchainRoot(context.engineRoot), "Native", "SharedBindings");
-        string build = await NativeCMakeExecutor.BuildAsync(context, request.component, definition,
-            "inno_bgfx_binding", request.bindingCmakeArguments, cancellationToken).ConfigureAwait(false);
-        string archive = NativeCMakeExecutor.FindOutput(context, build,
-            "inno_bgfx_binding" + context.RequireToolchain().linkPlan.GetFileExtension(NativeLibraryKind.Static));
-        var linking = profile.CreateBindingLinkSettings(archive);
+        string build = await NativeCMakeExecutor.BuildAsync(
+            context,
+            request.component,
+            definition,
+            "inno_bgfx_binding",
+            request.bindingCmakeArguments,
+            cancellationToken
+        ).ConfigureAwait(false);
+        string archive = NativeCMakeExecutor.FindOutput(
+            context,
+            build,
+            "inno_bgfx_binding" + context.RequireToolchain().linkPlan.GetFileExtension(NativeLibraryKind.Static)
+        );
+        (string reference, IReadOnlyList<string> arguments) linking = profile.CreateBindingLinkSettings(archive);
         string script = Path.Combine(context.GetNativeBuildRoot(request.component), "BindingProject.lua");
         string text = "dofile(" + Literal(Path.Combine(source, "scripts", "genie.lua")) + ")\n"
-            + "project \"bgfx-shared-lib\"\nconfiguration {}\n"
-            + "links { " + Literal(linking.reference) + " }\n"
-            + "linkoptions { " + string.Join(", ", linking.arguments.Select(Literal)) + " }\n";
+                      + "project \"bgfx-shared-lib\"\nconfiguration {}\n"
+                      + "links { " + Literal(linking.reference) + " }\n"
+                      + "linkoptions { " + string.Join(", ", linking.arguments.Select(Literal)) + " }\n";
         AtomicFile.WriteAllBytes(script, Encoding.UTF8.GetBytes(text));
         return script;
     }
@@ -36,11 +46,15 @@ internal static class BgfxBindingProject
     private static string Literal(string value)
     {
         if (value.AsSpan().IndexOfAnyInRange('\0', '\x1f') >= 0)
+        {
             throw new InvalidDataException("A GENie input path cannot contain control characters.");
+        }
         string portable = value.Replace('\\', '/');
         string delimiter = "=";
         while (portable.Contains("]" + delimiter + "]", StringComparison.Ordinal))
+        {
             delimiter += "=";
+        }
         return "[" + delimiter + "[" + portable + "]" + delimiter + "]";
     }
 }

@@ -25,7 +25,8 @@ public sealed class ShaderTargetRegistry : IDisposable
     /// </param>
     public ShaderTargetRegistry(TypeCatalog types)
     {
-        m_types = types ?? throw new ArgumentNullException(nameof(types));
+        ArgumentNullException.ThrowIfNull(types);
+        m_types = types;
         m_registry = new(types);
     }
 
@@ -78,11 +79,15 @@ public sealed class ShaderTargetRegistry : IDisposable
         cancellationToken.ThrowIfCancellationRequested();
         string id = ShaderGraphDocument.ReadTarget(document, serialization, context);
         if (id.Length == 0)
+        {
             return document.Clone();
+        }
         if (!m_registry.snapshot.TryGetValue(id, out ShaderTarget? target))
+        {
             throw new ShaderTargetUnavailableException(id);
-        GraphDocument expanded = target.Expand(new(document.Clone(), serialization, context), cancellationToken)
-            ?? throw new InvalidOperationException($"Shader target '{id}' returned no program.");
+        }
+        GraphDocument expanded = target.Expand(new ShaderTargetContext(document.Clone(), serialization, context), cancellationToken)
+                                 ?? throw new InvalidOperationException($"Shader target '{id}' returned no program.");
         cancellationToken.ThrowIfCancellationRequested();
         return expanded.Clone();
     }
@@ -115,16 +120,19 @@ protected override IReadOnlyDictionary<string, ShaderTarget> Build(TypeCacheSnap
                     if (type.IsAbstract || !typeof(ShaderTarget).IsAssignableFrom(type))
                     {
                         throw new InvalidOperationException(
-                            $"Shader target '{type.FullName}' must be a concrete {nameof(ShaderTarget)}.");
+                            $"Shader target '{type.FullName}' must be a concrete {nameof(ShaderTarget)}."
+                        );
                     }
                     return (type, type.GetCustomAttribute<ShaderTargetAttribute>(inherit: false)!.id);
                 })
                 .ToArray();
-            string? duplicateId = registrations
+            string? duplicateID = registrations
                 .GroupBy(static registration => registration.id, StringComparer.Ordinal)
                 .FirstOrDefault(static group => group.Count() > 1)?.Key;
-            if (duplicateId is not null)
-                throw new InvalidOperationException($"Duplicate shader target '{duplicateId}'.");
+            if (duplicateID is not null)
+            {
+                throw new InvalidOperationException($"Duplicate shader target '{duplicateID}'.");
+            }
 
             var targets = new Dictionary<string, ShaderTarget>(StringComparer.Ordinal);
             foreach ((Type type, string id) in registrations)

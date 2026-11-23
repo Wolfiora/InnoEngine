@@ -14,23 +14,31 @@ namespace Inno.Build.WindowsX64;
 /// </summary>
 public sealed class WindowsToolchainWorkspaceProvider : IToolchainWorkspaceProvider
 {
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string identity => Path.Combine(Path.GetTempPath(), "InnoTools");
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public async ValueTask<ToolchainWorkingDirectory> OpenAsync(
         string physicalPath,
         CancellationToken cancellationToken = default
     ) {
         if (!OperatingSystem.IsWindows())
+        {
             throw new PlatformNotSupportedException("Windows execution workspaces require a Windows host.");
+        }
         if (!Path.IsPathFullyQualified(physicalPath))
+        {
             throw new ArgumentException("Toolchain workspaces require absolute owner paths.", nameof(physicalPath));
+        }
         string physical = Path.TrimEndingDirectorySeparator(Path.GetFullPath(physicalPath));
         string leaf = GetAliasPath(physical) + ".lock";
         string owner = Path.Combine(Path.GetDirectoryName(leaf)!, "owner.lock");
-        CoordinatedFileLease lease = await CoordinatedFileLease.AcquireAsync(owner, leaf,
-            Timeout.InfiniteTimeSpan, cancellationToken: cancellationToken).ConfigureAwait(false);
+        CoordinatedFileLease lease = await CoordinatedFileLease.AcquireAsync(
+            owner,
+            leaf,
+            Timeout.InfiniteTimeSpan,
+            cancellationToken: cancellationToken
+        ).ConfigureAwait(false);
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -47,7 +55,9 @@ public sealed class WindowsToolchainWorkspaceProvider : IToolchainWorkspaceProvi
     internal static string GetAliasPath(string physicalPath)
     {
         string identity = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(physicalPath.ToUpperInvariant())))
-            .TrimEnd('=').Replace('+', '-').Replace('/', '_');
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
         return Path.Combine(Path.GetTempPath(), "InnoTools", identity);
     }
 
@@ -58,7 +68,7 @@ public sealed class WindowsToolchainWorkspaceProvider : IToolchainWorkspaceProvi
         string leaf
     ) : IDisposable
     {
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public void Dispose()
         {
             try

@@ -37,12 +37,17 @@ public sealed class BrowserWasm32BgfxSurfaceIntegration : IBgfxSurfaceIntegratio
         BgfxSurfaceRole role
     ) {
         if (role != BgfxSurfaceRole.Primary && role != BgfxSurfaceRole.Additional)
+        {
             throw new ArgumentOutOfRangeException(nameof(role));
+        }
         if (role == BgfxSurfaceRole.Additional)
+        {
             throw new NotSupportedException("The browser canvas host does not support additional BGFX windows.");
-        if (handles.handleKind != PlatformNativeHandleId.browserCanvas)
+        }
+        if (handles.handleKind != PlatformNativeHandleID.browserCanvas)
+        {
             throw new NotSupportedException("The Browser BGFX integration requires its explicit browserCanvas surface ABI.");
-        return new BgfxSurfaceDescriptor(handles.windowHandle, handles.displayHandle,
-            supportsSrgbReset: false);
+        }
+        return new BgfxSurfaceDescriptor(handles.windowHandle, handles.displayHandle, supportsSrgbReset: false);
     }
 }

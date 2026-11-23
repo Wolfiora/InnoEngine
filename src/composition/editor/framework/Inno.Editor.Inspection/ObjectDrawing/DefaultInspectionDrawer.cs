@@ -1,15 +1,17 @@
-using Inno.Editor.ImGui;
 using System;
-using Ui = Inno.Editor.ImGui.ImGui;
+using Inno.Editor.ImGui;
+
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
+
 [InspectionDrawer(typeof(object), useForChildren: true, priority: int.MinValue)]
 internal sealed class DefaultInspectionDrawer : InspectionDrawer<object>
 {
     /// <summary>
     /// Gets the icon glyph used to represent this item in the editor.
     /// </summary>
-    public override string icon => ImGuiIcon.CircleInfo;
+    public override string icon => ImGuiIcon.C_CIRCLE_INFO;
 
     /// <summary>
     /// Binds a caller-visible label to the current inspection target.
@@ -27,6 +29,7 @@ internal sealed class DefaultInspectionDrawer : InspectionDrawer<object>
         InspectionDrawContext context,
         object target
     ) => (target.GetType().Name, null);
+
     /// <summary>
     /// Renders the header presentation for the current editor frame.
     /// </summary>
@@ -39,7 +42,8 @@ internal sealed class DefaultInspectionDrawer : InspectionDrawer<object>
     protected override void DrawHeader(
         InspectionDrawContext context,
         object target
-    ) => Ui.Text(target.GetType().FullName ?? target.GetType().Name);
+    ) => Gui.Text(target.GetType().FullName ?? target.GetType().Name);
+
     /// <summary>
     /// Renders the value presentation for the current editor frame.
     /// </summary>
@@ -52,7 +56,5 @@ internal sealed class DefaultInspectionDrawer : InspectionDrawer<object>
     protected override void Draw(
         InspectionDrawContext context,
         object target
-    ) {
-        context.DrawProperties();
-    }
+    ) => context.DrawProperties();
 }

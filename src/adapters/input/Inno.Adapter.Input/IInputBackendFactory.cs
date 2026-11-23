@@ -11,7 +11,7 @@ public interface IInputBackendFactory
     /// <summary>
     /// Gets the exact registrations available in this composition snapshot.
     /// </summary>
-    IReadOnlyList<InputBackendId> supportedBackends { get; }
+    IReadOnlyList<InputBackendID> supportedBackends { get; }
 
     /// <summary>
     /// Creates an input event source for one window or for the entire application.
@@ -32,7 +32,7 @@ public interface IInputBackendFactory
     /// Thrown when the catalog does not contain the selected backend or the platform is incompatible.
     /// </exception>
     IInputEventSource CreateEventSource(
-        InputBackendId backend,
+        InputBackendID backend,
         IPlatformWindow window,
         bool acceptAllWindows
     );

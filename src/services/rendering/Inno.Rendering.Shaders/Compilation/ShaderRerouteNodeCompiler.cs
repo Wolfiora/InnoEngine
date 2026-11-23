@@ -11,7 +11,8 @@ public sealed class ShaderRerouteNodeCompiler : IShaderNodeCompiler
     /// <summary>
     /// Gets the definition id text used by the current instance.
     /// </summary>
-    public string definitionId => "inno.shader.reroute";
+    public string definitionID => "inno.shader.reroute";
+
     /// <summary>
     /// Gets a ports required by the implemented contract.
     /// </summary>
@@ -24,8 +25,12 @@ public sealed class ShaderRerouteNodeCompiler : IShaderNodeCompiler
     public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext context)
     {
         ShaderSourceType type = context.Read("valueType", new ShaderGraphType { id = "float" }).CreateType();
-        return [new("input", type, GraphPortDirection.Input, required: false), new("value", type, GraphPortDirection.Output)];
+        return [
+            new ShaderNodePort("input", type, GraphPortDirection.Input, required: false),
+            new ShaderNodePort("value", type, GraphPortDirection.Output)
+        ];
     }
+
     /// <summary>
     /// Lowers this graph node to typed shader IR after validating its inputs.
     /// </summary>

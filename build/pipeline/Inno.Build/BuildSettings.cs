@@ -1,7 +1,6 @@
 using System;
-using Inno.Build.Managed;
 using System.IO;
-
+using Inno.Build.Managed;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
 
@@ -71,7 +70,7 @@ public sealed class BuildSettings : ISerializable
     /// <summary>
     /// Gets or sets the default game build target.
     /// </summary>
-    public BuildTargetId gameTarget
+    public BuildTargetID gameTarget
     {
         get => new(m_gameTargetId);
         set => m_gameTargetId = value.value;
@@ -83,9 +82,9 @@ public sealed class BuildSettings : ISerializable
     /// <summary>
     /// Gets or sets the default managed publisher; null follows the selected platform's default.
     /// </summary>
-    public ManagedDeploymentId? gameManagedDeployment
+    public ManagedDeploymentID? gameManagedDeployment
     {
-        get => m_gameManagedDeploymentId.Length == 0 ? null : new ManagedDeploymentId(m_gameManagedDeploymentId);
+        get => m_gameManagedDeploymentId.Length == 0 ? null : new ManagedDeploymentID(m_gameManagedDeploymentId);
         set => m_gameManagedDeploymentId = value?.value ?? string.Empty;
     }
 
@@ -113,17 +112,19 @@ public sealed class BuildSettings : ISerializable
     public static BuildSettings CreateDefault(
         string projectName,
         string startupScene,
-        BuildTargetId target
+        BuildTargetID target
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(projectName);
         ArgumentNullException.ThrowIfNull(startupScene);
         if (string.IsNullOrWhiteSpace(target.value))
+        {
             throw new ArgumentException("A default build target is required.", nameof(target));
-        string portableId = ProjectId.FromName(projectName).value;
+        }
+        string portableID = ProjectID.FromName(projectName).value;
         return new BuildSettings
         {
             pluginDisplayName = projectName,
-            pluginOutputPath = $"Builds/{portableId}.iplugin",
+            pluginOutputPath = $"Builds/{portableID}.iplugin",
             includePluginDependencies = false,
             gameProductName = projectName,
             gameStartupScene = startupScene,
@@ -137,24 +138,24 @@ public sealed class BuildSettings : ISerializable
     /// <summary>
     /// Creates an isolated game profile from the current defaults.
     /// </summary>
-    /// <param name="projectId">
+    /// <param name="projectID">
     /// The authoritative project identity copied into the game profile.
     /// </param>
     /// <returns>
     /// A newly owned profile that may be changed for one build without mutating these settings.
     /// </returns>
-    public BuildProfile CreateGameProfile(ProjectId projectId)
+    public BuildProfile CreateGameProfile(ProjectID projectID)
         => new()
-        {
-            applicationId = projectId.value,
-            productName = gameProductName,
-            persistentDataPath = gamePersistentDataPath,
-            startupScene = gameStartupScene,
-            target = gameTarget,
-            managedDeployment = gameManagedDeployment,
-            windowWidth = gameWindowWidth,
-            windowHeight = gameWindowHeight
-        };
+    {
+        applicationId = projectID.value,
+        productName = gameProductName,
+        persistentDataPath = gamePersistentDataPath,
+        startupScene = gameStartupScene,
+        target = gameTarget,
+        managedDeployment = gameManagedDeployment,
+        windowWidth = gameWindowWidth,
+        windowHeight = gameWindowHeight
+    };
 
     /// <summary>
     /// Creates an isolated copy suitable for a temporary export draft.
@@ -164,19 +165,19 @@ public sealed class BuildSettings : ISerializable
     /// </returns>
     public BuildSettings Copy()
         => new()
-        {
-            pluginDisplayName = pluginDisplayName,
-            pluginOutputPath = pluginOutputPath,
-            includePluginDependencies = includePluginDependencies,
-            gameProductName = gameProductName,
-            gamePersistentDataPath = gamePersistentDataPath,
-            gameStartupScene = gameStartupScene,
-            gameOutputDirectory = gameOutputDirectory,
-            gameWindowWidth = gameWindowWidth,
-            gameWindowHeight = gameWindowHeight,
-            m_gameTargetId = m_gameTargetId,
-            m_gameManagedDeploymentId = m_gameManagedDeploymentId
-        };
+    {
+        pluginDisplayName = pluginDisplayName,
+        pluginOutputPath = pluginOutputPath,
+        includePluginDependencies = includePluginDependencies,
+        gameProductName = gameProductName,
+        gamePersistentDataPath = gamePersistentDataPath,
+        gameStartupScene = gameStartupScene,
+        gameOutputDirectory = gameOutputDirectory,
+        gameWindowWidth = gameWindowWidth,
+        gameWindowHeight = gameWindowHeight,
+        m_gameTargetId = m_gameTargetId,
+        m_gameManagedDeploymentId = m_gameManagedDeploymentId
+    };
 
     internal void ValidateDocument()
     {
@@ -187,12 +188,14 @@ public sealed class BuildSettings : ISerializable
             || gameStartupScene is null
             || gameOutputDirectory is null
             || m_gameTargetId is null
-            || m_gameManagedDeploymentId is null)
-        {
+            || m_gameManagedDeploymentId is null
+        ) {
             throw new InvalidDataException("Build Settings contains a null string.");
         }
         if (gameWindowWidth <= 0 || gameWindowHeight <= 0)
+        {
             throw new InvalidDataException("Build Settings window dimensions must be positive.");
+        }
         try
         {
             _ = gameTarget;

@@ -18,23 +18,23 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Dispose();
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void BindGraphicsPipeline(GraphicsPipelineHandle pipeline)
     {
         Begin(Operation.BindGraphicsPipeline);
         m_buffer.Write(pipeline);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void BindComputePipeline(ComputePipelineHandle pipeline)
     {
         Begin(Operation.BindComputePipeline);
         m_buffer.Write(pipeline);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void BindTexture(
-        RenderBindingId binding,
+        RenderBindingID binding,
         RenderTextureHandle texture,
         RenderSamplerState sampler
     ) {
@@ -44,9 +44,9 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(sampler);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void BindTexture(
-        RenderBindingId binding,
+        RenderBindingID binding,
         PersistentTextureHandle texture,
         RenderSamplerState sampler
     ) {
@@ -56,9 +56,9 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(sampler);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void BindStorageTexture(
-        RenderBindingId binding,
+        RenderBindingID binding,
         RenderTextureHandle texture,
         int mipLevel = 0
     ) {
@@ -68,9 +68,9 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(mipLevel);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void BindStorageTexture(
-        RenderBindingId binding,
+        RenderBindingID binding,
         PersistentTextureHandle texture,
         int mipLevel = 0
     ) {
@@ -80,9 +80,9 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(mipLevel);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void BindBuffer(
-        RenderBindingId binding,
+        RenderBindingID binding,
         RenderBufferHandle buffer
     ) {
         Begin(Operation.BindBufferGraph);
@@ -90,9 +90,9 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(buffer);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void BindBuffer(
-        RenderBindingId binding,
+        RenderBindingID binding,
         PersistentBufferHandle buffer
     ) {
         Begin(Operation.BindBufferPersistent);
@@ -100,12 +100,12 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(buffer);
     }
 
-    /// <inheritdoc />
     /// <remarks>
     /// Copies the borrowed uniform bytes into this recording before returning.
     /// </remarks>
+    /// <inheritdoc/>
     public override void SetUniform(
-        RenderBindingId binding,
+        RenderBindingID binding,
         ReadOnlySpan<byte> value
     ) {
         Begin(Operation.SetUniform);
@@ -113,17 +113,17 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.WriteSnapshot(value);
     }
 
-    /// <inheritdoc />
     /// <remarks>
     /// Copies the borrowed matrix values into this recording before returning.
     /// </remarks>
+    /// <inheritdoc/>
     public override void SetTransform(ReadOnlySpan<float> columnMajorMatrix)
     {
         Begin(Operation.SetTransform);
         m_buffer.WriteSnapshot(MemoryMarshal.AsBytes(columnMajorMatrix));
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void SetRasterState(RenderRasterState state)
     {
         ArgumentNullException.ThrowIfNull(state);
@@ -131,7 +131,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.WriteReference(state);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void SetStencil(RenderStencilState state)
     {
         ArgumentNullException.ThrowIfNull(state);
@@ -139,7 +139,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.WriteReference(state);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void SetViewport(
         int x,
         int y,
@@ -153,7 +153,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(height);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void SetScissor(
         int x,
         int y,
@@ -167,7 +167,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(height);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void BindVertexBuffer(
         RenderBufferHandle buffer,
         int firstVertex = 0
@@ -177,7 +177,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(firstVertex);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void BindVertexBuffer(
         PersistentBufferHandle buffer,
         int firstVertex = 0
@@ -187,7 +187,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(firstVertex);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void BindIndexBuffer(
         RenderBufferHandle buffer,
         int firstIndex = 0
@@ -197,7 +197,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(firstIndex);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void BindIndexBuffer(
         PersistentBufferHandle buffer,
         int firstIndex = 0
@@ -207,7 +207,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(firstIndex);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void BindInstanceBuffer(
         RenderBufferHandle buffer,
         int firstInstance,
@@ -219,7 +219,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(instanceCount);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void BindInstanceBuffer(
         PersistentBufferHandle buffer,
         int firstInstance,
@@ -231,34 +231,28 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(instanceCount);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     public override void Draw(
         int vertexCount,
         int instanceCount = 1
-    ) {
-        RecordDraw(Operation.Draw, vertexCount, instanceCount);
-    }
+    ) => RecordDraw(Operation.Draw, vertexCount, instanceCount);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     public override void DrawProcedural(
         int vertexCount,
         int instanceCount = 1
-    ) {
-        RecordDraw(Operation.DrawProcedural, vertexCount, instanceCount);
-    }
+    ) => RecordDraw(Operation.DrawProcedural, vertexCount, instanceCount);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     public override void DrawIndexed(
         int indexCount,
         int instanceCount = 1
-    ) {
-        RecordDraw(Operation.DrawIndexed, indexCount, instanceCount);
-    }
+    ) => RecordDraw(Operation.DrawIndexed, indexCount, instanceCount);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void DrawIndirect(
         RenderBufferHandle buffer,
         int firstCommand = 0,
@@ -270,7 +264,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(commandCount);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void DrawIndirect(
         PersistentBufferHandle buffer,
         int firstCommand = 0,
@@ -282,7 +276,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(commandCount);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void Dispatch(
         int groupCountX,
         int groupCountY = 1,
@@ -294,7 +288,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(groupCountZ);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void DispatchIndirect(
         RenderBufferHandle buffer,
         int firstCommand = 0,
@@ -306,7 +300,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(commandCount);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void DispatchIndirect(
         PersistentBufferHandle buffer,
         int firstCommand = 0,
@@ -318,7 +312,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(commandCount);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void CopyTexture(
         RenderTextureHandle source,
         RenderTextureHandle destination
@@ -328,7 +322,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(destination);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void BlitTexture(
         RenderTextureHandle source,
         RenderTextureRegion sourceRegion,
@@ -342,7 +336,7 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
         m_buffer.Write(destinationRegion);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void CopyBuffer(
         RenderBufferHandle source,
         RenderBufferHandle destination
@@ -375,7 +369,8 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
     private void EnsureWritable()
     {
         if (m_sealed)
+        {
             throw new InvalidOperationException("A recorded render command list is already sealed.");
+        }
     }
-
 }

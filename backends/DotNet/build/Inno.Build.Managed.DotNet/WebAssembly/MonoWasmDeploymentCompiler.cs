@@ -21,14 +21,14 @@ public sealed class MonoWasmDeploymentCompiler : IManagedDeploymentCompiler
     /// <param name="hostPath">
     /// The .NET executable whose project resolution selects the matching WebAssembly workload.
     /// </param>
-    /// <param name="aheadOfTime">
-    /// Whether managed code is compiled ahead of browser execution.
-    /// </param>
     /// <param name="runtimeIdentifiers">
     /// The platform-contributed managed targets authorized for this implementation.
     /// </param>
     /// <param name="workspaces">
     /// The explicit host execution path provider.
+    /// </param>
+    /// <param name="aheadOfTime">
+    /// Whether managed code is compiled ahead of browser execution.
     /// </param>
     /// <exception cref="ArgumentException">
     /// The SDK host is empty or runtime targets are empty, unassigned, or repeated.
@@ -47,21 +47,36 @@ public sealed class MonoWasmDeploymentCompiler : IManagedDeploymentCompiler
         m_hostPath = hostPath;
         m_workspaces = workspaces;
         m_aheadOfTime = aheadOfTime;
-        capabilities = new ManagedDeploymentCapabilities(runtimeIdentifiers,
-            dynamicCode: false, aheadOfTime: aheadOfTime, nativeStaticLinking: true);
+        this.capabilities = new ManagedDeploymentCapabilities(
+            runtimeIdentifiers,
+            dynamicCode: false,
+            aheadOfTime: aheadOfTime,
+            nativeStaticLinking: true
+        );
     }
 
-    /// <inheritdoc />
-    public ManagedDeploymentId id => m_aheadOfTime ? ManagedDeploymentId.monoWasmAot : ManagedDeploymentId.monoWasm;
+    /// <inheritdoc/>
+    public ManagedDeploymentID id => m_aheadOfTime ? ManagedDeploymentID.monoWasmAot : ManagedDeploymentID.monoWasm;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ManagedDeploymentCapabilities capabilities { get; }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ValueTask<ManagedDeploymentResult> CompileAsync(
         ManagedDeploymentRequest request,
         CancellationToken cancellationToken = default
-    ) => DotNetDeploymentPublisher.PublishAsync(id, capabilities, m_hostPath, m_workspaces, request,
-        ["WasmBuildNative=true", "PublishTrimmed=true", "TrimMode=full",
-            "RunAOTCompilation=" + (m_aheadOfTime ? "true" : "false")], cancellationToken);
+    ) => DotNetDeploymentPublisher.PublishAsync(
+        id,
+        capabilities,
+        m_hostPath,
+        m_workspaces,
+        request,
+        [
+            "WasmBuildNative=true",
+            "PublishTrimmed=true",
+            "TrimMode=full",
+            "RunAOTCompilation=" + (m_aheadOfTime ? "true" : "false")
+        ],
+        cancellationToken
+    );
 }

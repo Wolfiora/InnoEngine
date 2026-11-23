@@ -23,8 +23,12 @@ public static class StandardBuildHosts
     {
         IBuildHostProvider[] providers = [new WindowsBuildHostProvider(), new MacOSArm64BuildHostProvider()];
         foreach (IBuildHostProvider provider in providers)
+        {
             if (provider.TryCapture() is BuildHostDescriptor host)
+            {
                 return host;
+            }
+        }
         throw new PlatformNotSupportedException("No registered build host supports this machine.");
     }
 }

@@ -45,7 +45,9 @@ public sealed class AudioRuntimeOptions
         ArgumentOutOfRangeException.ThrowIfNegative(decodedCacheBudgetBytes);
         ArgumentOutOfRangeException.ThrowIfNegative(automaticStreamingThresholdBytes);
         if (!float.IsFinite(deviceRecoveryIntervalSeconds) || deviceRecoveryIntervalSeconds <= 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(deviceRecoveryIntervalSeconds));
+        }
         return new AudioRuntimeOptions
         {
             maxVoices = maxVoices,

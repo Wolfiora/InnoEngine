@@ -1,10 +1,11 @@
-using Inno.References;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Inno.Extensibility.Types;
+using Inno.References;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 
@@ -12,7 +13,7 @@ namespace Inno.Rendering.Runtime;
 /// Marks a reloadable rendering model with a stable identity.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-[Inno.Extensibility.Types.StableTypeId("eccab85a-0b21-55e1-b581-885c4bbc5192")]
+[StableTypeID("eccab85a-0b21-55e1-b581-885c4bbc5192")]
 public sealed class RenderModelExtensionAttribute : Attribute
 {
     /// <summary>
@@ -32,4 +33,3 @@ public sealed class RenderModelExtensionAttribute : Attribute
     /// </summary>
     public string id { get; }
 }
-

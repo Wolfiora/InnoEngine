@@ -42,6 +42,6 @@ public static class SceneContentSource
         GameScene? activeScene
     ) {
         ArgumentNullException.ThrowIfNull(scenes);
-        return new ContentReadScope(scenes.Select(static scene => scene.identity), activeScene?.identity.persistentId);
+        return new ContentReadScope(scenes.Select(static scene => scene.identity), activeScene?.identity.persistentID);
     }
 }

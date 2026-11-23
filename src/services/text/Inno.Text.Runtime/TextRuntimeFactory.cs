@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Runtime;
 using Inno.Runtime.Contracts;
 
@@ -20,15 +19,17 @@ public sealed class TextRuntimeFactory : IRuntimeSubsystemFactory
     /// </param>
     public TextRuntimeFactory(Func<RuntimeSubsystemContext, TextRuntime> runtimeFactory)
     {
-        m_runtimeFactory = runtimeFactory ?? throw new ArgumentNullException(nameof(runtimeFactory));
+        ArgumentNullException.ThrowIfNull(runtimeFactory);
+        m_runtimeFactory = runtimeFactory;
     }
 
     /// <summary>
     /// Gets stable ordering metadata that makes text available before scene simulation.
     /// </summary>
     public RuntimeSubsystemDescriptor descriptor { get; } = new(
-        new RuntimeSubsystemId("inno.runtime.text"),
-        order: -800);
+        new RuntimeSubsystemID("inno.runtime.text"),
+        order: -800
+    );
 
     /// <summary>
     /// Creates one session-owned text runtime.
@@ -43,6 +44,6 @@ public sealed class TextRuntimeFactory : IRuntimeSubsystemFactory
     {
         ArgumentNullException.ThrowIfNull(context);
         return m_runtimeFactory(context)
-            ?? throw new InvalidOperationException("The text runtime factory returned null.");
+               ?? throw new InvalidOperationException("The text runtime factory returned null.");
     }
 }

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
 using Inno.Extensibility.Modules;
 
 namespace Inno.Scripting.Compiler;
@@ -25,14 +24,17 @@ public sealed class ScriptCompilationResult
         this.diagnostics = diagnostics;
         this.outputDirectory = outputDirectory;
         this.moduleDeployments = Array.AsReadOnly((moduleDeployments ?? []).ToArray());
-        runtimeAssemblyPaths = this.moduleDeployments
+        this.runtimeAssemblyPaths = this.moduleDeployments
             .SelectMany(static request =>
                 new[] { request.mainAssemblyPath }.Concat(request.preloadAssemblyPaths)
-                    .Where(path => request.assemblyScopes.TryGetValue(
+                    .Where(path => (
+                        request.assemblyScopes.TryGetValue(
                             Path.GetFileNameWithoutExtension(path),
-                            out AssemblyScope scope)
+                            out AssemblyScope scope
+                        )
                         ? scope == AssemblyScope.Runtime
-                        : request.scope == AssemblyScope.Runtime))
+                        : request.scope == AssemblyScope.Runtime
+                    )))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Order(StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -97,7 +99,8 @@ public sealed class ScriptCompilationResult
             success: false,
             [diagnostic],
             outputDirectory: null,
-            moduleDeployments: null);
+            moduleDeployments: null
+        );
     }
 
     internal IReadOnlyList<string> compiledAssemblies { get; }

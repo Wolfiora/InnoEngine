@@ -1,27 +1,19 @@
 using Inno.Assets;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 
 namespace Inno.Assets;
 
 /// <summary>
 /// Describes an imported opaque binary payload.
 /// </summary>
-[StableTypeId("5298dd91-e9a7-4298-a343-bf8a6c5fc779")]
+[StableTypeID("5298dd91-e9a7-4298-a343-bf8a6c5fc779")]
 public sealed class BinaryAsset : AssetObject
 {
     /// <summary>
-    /// Gets the imported payload length in bytes.
-    /// </summary>
-    [SerializableProperty]
-    public int byteLength { get; private set; }
-
-    /// <summary>
     /// Creates an empty binary asset descriptor.
     /// </summary>
-    public BinaryAsset()
-    {
-    }
+    public BinaryAsset() {}
 
     /// <summary>
     /// Creates a binary asset descriptor with a byte length.
@@ -33,4 +25,10 @@ public sealed class BinaryAsset : AssetObject
     {
         this.byteLength = byteLength;
     }
+
+    /// <summary>
+    /// Gets the imported payload length in bytes.
+    /// </summary>
+    [SerializableProperty]
+    public int byteLength { get; private set; }
 }

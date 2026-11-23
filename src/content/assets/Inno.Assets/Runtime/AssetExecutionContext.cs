@@ -1,6 +1,6 @@
-using Inno.Core.Execution;
 using System;
 using System.Threading;
+using Inno.Core.Execution;
 
 namespace Inno.Assets;
 
@@ -13,7 +13,7 @@ namespace Inno.Assets;
 /// </remarks>
 public static class AssetExecutionContext
 {
-    private static readonly ExecutionSlot<IAssetLookup> S_CURRENT_SCOPE = new("assets");
+    private static readonly ExecutionSlot<IAssetLookup> CURRENT_SCOPE = new("assets");
 
     /// <summary>
     /// Gets the asset lookup bound to the current asynchronous execution context.
@@ -21,7 +21,7 @@ public static class AssetExecutionContext
     /// <exception cref="InvalidOperationException">
     /// Thrown when no asset lookup is active for the caller.
     /// </exception>
-    public static IAssetLookup current => S_CURRENT_SCOPE.current;
+    public static IAssetLookup current => CURRENT_SCOPE.current;
 
     /// <summary>
     /// Binds an asset lookup until the returned strict last-in-first-out scope is disposed.
@@ -38,7 +38,6 @@ public static class AssetExecutionContext
     public static IDisposable EnterScope(IAssetLookup assets)
     {
         ArgumentNullException.ThrowIfNull(assets);
-        return S_CURRENT_SCOPE.Enter(assets);
+        return CURRENT_SCOPE.Enter(assets);
     }
-
 }

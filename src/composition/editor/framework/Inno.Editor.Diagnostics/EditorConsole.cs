@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-
 using Inno.Core.Diagnostics;
 using Inno.Core.Logging;
 using Inno.Editor.PlayMode;
@@ -48,9 +47,12 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
         DiagnosticHub diagnosticHub,
         IEditorPlayMode playMode
     ) {
-        m_logRouter = logRouter ?? throw new ArgumentNullException(nameof(logRouter));
-        m_diagnosticHub = diagnosticHub ?? throw new ArgumentNullException(nameof(diagnosticHub));
-        m_playMode = playMode ?? throw new ArgumentNullException(nameof(playMode));
+        ArgumentNullException.ThrowIfNull(logRouter);
+        ArgumentNullException.ThrowIfNull(diagnosticHub);
+        ArgumentNullException.ThrowIfNull(playMode);
+        m_logRouter = logRouter;
+        m_diagnosticHub = diagnosticHub;
+        m_playMode = playMode;
     }
 
     /// <summary>
@@ -61,7 +63,9 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
         get
         {
             lock (m_sync)
+            {
                 return m_capacity;
+            }
         }
         set
         {
@@ -69,7 +73,9 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
             {
                 int normalized = Math.Max(16, value);
                 if (normalized == m_capacity)
+                {
                     return;
+                }
                 m_capacity = normalized;
                 TrimLogsUnsafe();
                 m_revision++;
@@ -93,7 +99,9 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_started)
+        {
             return;
+        }
         IDisposable subscription = m_playMode.ListenStateChanges(OnPlayModeStateChanged);
         try
         {
@@ -138,10 +146,28 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
         ArgumentNullException.ThrowIfNull(report);
         var entries = new EditorConsoleOccurrence[report.diagnostics.Count];
         for (int i = 0; i < entries.Length; i++)
+        {
             entries[i] = FromDiagnostic(NextSequence(), report, report.diagnostics[i]);
+        }
         lock (m_sync)
         {
             m_diagnostics[report.source.id] = entries;
+            m_revision++;
+        }
+    }
+
+    /// <summary>
+    /// Removes retained logs while keeping currently reported issues visible until their owners resolve them.
+    /// </summary>
+    public void Clear()
+    {
+        lock (m_sync)
+        {
+            if (m_logs.Count == 0)
+            {
+                return;
+            }
+            m_logs.Clear();
             m_revision++;
         }
     }
@@ -157,7 +183,9 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
         lock (m_sync)
         {
             if (m_diagnostics.Remove(source.id))
+            {
                 m_revision++;
+            }
         }
     }
 
@@ -185,26 +213,14 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
     }
 
     /// <summary>
-    /// Removes retained logs while keeping currently reported issues visible until their owners resolve them.
-    /// </summary>
-    public void Clear()
-    {
-        lock (m_sync)
-        {
-            if (m_logs.Count == 0)
-                return;
-            m_logs.Clear();
-            m_revision++;
-        }
-    }
-
-    /// <summary>
     /// Detaches this service and releases its subscriptions.
     /// </summary>
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         if (m_started)
         {
             m_playModeSubscription?.Dispose();
@@ -219,7 +235,9 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
     private void OnPlayModeStateChanged(EditorPlayModeState state)
     {
         if (state == EditorPlayModeState.Compiling && clearOnPlay)
+        {
             ClearLogsForPlay();
+        }
     }
 
     private void ClearLogsForPlay()
@@ -228,31 +246,43 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
         lock (m_sync)
         {
             if (m_logs.Count == 0)
+            {
                 return;
+            }
             m_logs.Clear();
             m_revision++;
+        }
+    }
+
+    private long NextSequence() => Interlocked.Increment(ref m_nextSequence);
+
+    private void TrimLogsUnsafe()
+    {
+        while (m_logs.Count > m_capacity)
+        {
+            _ = m_logs.Dequeue();
         }
     }
 
     private static EditorConsoleOccurrence FromLog(
         long sequence,
         LogEntry entry
-    )
-        => new(
-            sequence,
-            EditorConsoleEntryKind.Log,
-            entry.level,
-            $"{entry.domain}/{entry.scope}",
-            string.Empty,
-            string.Empty,
-            entry.category,
-            entry.message,
-            entry.time,
-            entry.file,
-            entry.line,
-            0,
-            entry.stackTrace,
-            entry.sessionId);
+    ) => new(
+        sequence,
+        EditorConsoleEntryKind.Log,
+        entry.level,
+        $"{entry.domain}/{entry.scope}",
+        string.Empty,
+        string.Empty,
+        entry.category,
+        entry.message,
+        entry.time,
+        entry.file,
+        entry.line,
+        0,
+        entry.stackTrace,
+        entry.sessionID
+    );
 
     private static EditorConsoleOccurrence FromDiagnostic(
         long sequence,
@@ -280,14 +310,7 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
             location?.line ?? 0,
             location?.column ?? 0,
             string.Empty,
-            LogSessionId.none);
-    }
-
-    private long NextSequence() => Interlocked.Increment(ref m_nextSequence);
-
-    private void TrimLogsUnsafe()
-    {
-        while (m_logs.Count > m_capacity)
-            _ = m_logs.Dequeue();
+            LogSessionID.none
+        );
     }
 }

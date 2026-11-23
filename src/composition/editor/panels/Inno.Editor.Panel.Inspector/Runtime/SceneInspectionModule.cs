@@ -1,8 +1,6 @@
 using System;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Extensibility.Types;
 using Inno.Core.Logging;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
@@ -10,6 +8,7 @@ using Inno.Editor.Inspection;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
 using Inno.Editor.Settings;
+using Inno.Extensibility.Types;
 using Inno.Runtime;
 
 namespace Inno.Editor.Panel.Inspector;
@@ -76,16 +75,16 @@ internal sealed class SceneInspectionModule : EditorModule
         RuntimeSession runtimeSession,
         LogRouter logs
     ) {
-        System.ArgumentNullException.ThrowIfNull(interactions);
-        System.ArgumentNullException.ThrowIfNull(edits);
-        System.ArgumentNullException.ThrowIfNull(assetIcons);
-        System.ArgumentNullException.ThrowIfNull(classificationSettings);
-        System.ArgumentNullException.ThrowIfNull(settings);
-        System.ArgumentNullException.ThrowIfNull(assets);
-        System.ArgumentNullException.ThrowIfNull(types);
-        System.ArgumentNullException.ThrowIfNull(serialization);
-        System.ArgumentNullException.ThrowIfNull(runtimeSession);
-        System.ArgumentNullException.ThrowIfNull(logs);
+        ArgumentNullException.ThrowIfNull(interactions);
+        ArgumentNullException.ThrowIfNull(edits);
+        ArgumentNullException.ThrowIfNull(assetIcons);
+        ArgumentNullException.ThrowIfNull(classificationSettings);
+        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(assets);
+        ArgumentNullException.ThrowIfNull(types);
+        ArgumentNullException.ThrowIfNull(serialization);
+        ArgumentNullException.ThrowIfNull(runtimeSession);
+        ArgumentNullException.ThrowIfNull(logs);
         m_assets = assets;
         var activator = new InspectionDrawerActivator(
             interactions,
@@ -94,50 +93,23 @@ internal sealed class SceneInspectionModule : EditorModule
             classificationSettings,
             settings,
             serialization,
-            logs);
+            logs
+        );
         m_inspectors = new InspectionDrawerRegistry(interactions, activator.Create, types, serialization);
-        m_properties = new PropertyDrawerRegistry(
-            interactions,
-            types,
-            serialization,
-            [assets, runtimeSession]);
+        m_properties = new PropertyDrawerRegistry(interactions, types, serialization, [assets, runtimeSession]);
         m_attributes = new InspectorAttributeDrawerRegistry(
             interactions,
             types,
             serialization,
-            [assets, runtimeSession]);
+            [assets, runtimeSession]
+        );
         m_renderer = new SerializedPropertyRenderer(
             m_properties,
             m_attributes,
             interactions,
             new SceneInspectionPropertyEditService(edits),
-            logs);
-    }
-
-    internal bool TryResolve(
-        EditorContext editorContext,
-        object target,
-        out IInspectionDrawer? drawer,
-        out InspectionDrawContext? drawContext
-    ) {
-        if (target is AssetFileEntry { isDirectory: false } entry &&
-            m_assets.TryLoad(entry.assetPath, out AssetObject? asset) &&
-            asset is not null &&
-            m_inspectors.TryResolveExact(
-                editorContext,
-                asset,
-                m_renderer,
-                out drawer,
-                out drawContext))
-        {
-            return true;
-        }
-        return m_inspectors.TryResolve(
-            editorContext,
-            target,
-            m_renderer,
-            out drawer,
-            out drawContext);
+            logs
+        );
     }
 
     /// <summary>
@@ -148,5 +120,21 @@ internal sealed class SceneInspectionModule : EditorModule
         m_inspectors.Dispose();
         m_attributes.Dispose();
         m_properties.Dispose();
+    }
+
+    internal bool TryResolve(
+        EditorContext editorContext,
+        object target,
+        out IInspectionDrawer? drawer,
+        out InspectionDrawContext? drawContext
+    ) {
+        if (target is AssetFileEntry { isDirectory: false } entry
+            && m_assets.TryLoad(entry.assetPath, out AssetObject? asset)
+            && asset is not null
+            && m_inspectors.TryResolveExact(editorContext, asset, m_renderer, out drawer, out drawContext)
+        ) {
+            return true;
+        }
+        return m_inspectors.TryResolve(editorContext, target, m_renderer, out drawer, out drawContext);
     }
 }

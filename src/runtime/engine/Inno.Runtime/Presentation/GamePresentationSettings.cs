@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
 using Inno.Extensibility.Types;
@@ -10,19 +9,19 @@ namespace Inno.Runtime;
 /// Defines the project-wide game presentation area shared by Editor previews and deployed Players.
 /// </summary>
 [GenerateSerializationConverter]
-[StableTypeId("4068d172-87ac-41b3-ae64-247d25889336")]
-[ProjectSettingDefinition(GamePresentationSettings.settingProtocolId)]
+[StableTypeID("4068d172-87ac-41b3-ae64-247d25889336")]
+[ProjectSettingDefinition(GamePresentationSettings.C_SETTING_PROTOCOL_ID)]
 public sealed class GamePresentationSettings : ISerializable
 {
     /// <summary>
     /// Gets the immutable project-setting protocol value used by discovery metadata.
     /// </summary>
-    public const string settingProtocolId = "inno.runtime.game-presentation";
+    public const string C_SETTING_PROTOCOL_ID = "inno.runtime.game-presentation";
 
     /// <summary>
     /// Gets the stable project-setting identity for game presentation.
     /// </summary>
-    public static ProjectSettingId settingId => new(settingProtocolId);
+    public static ProjectSettingID settingID => new(C_SETTING_PROTOCOL_ID);
 
     /// <summary>
     /// Gets or sets whether the complete reference frame is fitted inside the available surface.
@@ -66,7 +65,9 @@ public sealed class GamePresentationSettings : ISerializable
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(referenceWidth);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(referenceHeight);
         if (!preserveAspectRatio)
+        {
             return new GamePresentationViewport(0, 0, availableWidth, availableHeight);
+        }
 
         double targetAspect = referenceWidth / (double)referenceHeight;
         int width = availableWidth;
@@ -81,63 +82,7 @@ public sealed class GamePresentationSettings : ISerializable
             (availableWidth - width) / 2,
             (availableHeight - height) / 2,
             width,
-            height);
+            height
+        );
     }
-}
-
-/// <summary>
-/// Stores one centered game-content region within a presentation surface.
-/// </summary>
-public readonly record struct GamePresentationViewport
-{
-    /// <summary>
-    /// Creates a validated game presentation viewport.
-    /// </summary>
-    /// <param name="x">
-    /// Non-negative horizontal offset.
-    /// </param>
-    /// <param name="y">
-    /// Non-negative vertical offset.
-    /// </param>
-    /// <param name="width">
-    /// Positive content width.
-    /// </param>
-    /// <param name="height">
-    /// Positive content height.
-    /// </param>
-    public GamePresentationViewport(
-        int x,
-        int y,
-        int width,
-        int height
-    ) {
-        ArgumentOutOfRangeException.ThrowIfNegative(x);
-        ArgumentOutOfRangeException.ThrowIfNegative(y);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-    }
-
-    /// <summary>
-    /// Gets the horizontal content offset.
-    /// </summary>
-    public int x { get; }
-
-    /// <summary>
-    /// Gets the vertical content offset.
-    /// </summary>
-    public int y { get; }
-
-    /// <summary>
-    /// Gets the content width.
-    /// </summary>
-    public int width { get; }
-
-    /// <summary>
-    /// Gets the content height.
-    /// </summary>
-    public int height { get; }
 }

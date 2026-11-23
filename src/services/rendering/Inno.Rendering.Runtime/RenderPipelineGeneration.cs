@@ -16,8 +16,13 @@ internal sealed class RenderPipelineGeneration : IDisposable
     ) {
         this.typeCacheVersion = typeCacheVersion;
         this.pipeline = m_lifetime.Own(pipeline);
-        features = new ReadOnlyDictionary<string, RenderPipelineFeature>(m_features);
+        this.features = new ReadOnlyDictionary<string, RenderPipelineFeature>(m_features);
     }
+
+    /// <summary>
+    /// Retires features before their pipeline, preserving the remaining ownership while work is pending.
+    /// </summary>
+    public void Dispose() => m_lifetime.Dispose();
 
     internal long typeCacheVersion { get; }
     internal RenderPipeline pipeline { get; }
@@ -28,12 +33,9 @@ internal sealed class RenderPipelineGeneration : IDisposable
         RenderPipelineFeature feature
     ) {
         if (feature is IDisposable resource)
+        {
             m_lifetime.Own(resource);
+        }
         m_features.Add(id, feature);
     }
-
-    /// <summary>
-    /// Retires features before their pipeline, preserving the remaining ownership while work is pending.
-    /// </summary>
-    public void Dispose() => m_lifetime.Dispose();
 }

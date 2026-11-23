@@ -7,6 +7,7 @@ using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.SupportPacks;
 using Inno.Build.Toolchains;
+
 using BuildTask = Microsoft.Build.Utilities.Task;
 
 namespace Inno.Build.Tasks;
@@ -62,19 +63,29 @@ public sealed class PublishSupportPackTask : BuildTask, ICancelableTask
         {
             m_cancellation = cancellation;
             if (m_canceled)
+            {
                 cancellation.Cancel();
+            }
         }
         try
         {
-            var execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(ToolTarget));
-            var context = new BuildCompositionContext(ToolchainEnvironment.ResolveExecutable(DotnetHost),
-                AppContext.BaseDirectory, execution.host, execution.toolsTarget);
-            using PlayerSupportPackPublication installed = StandardBuildDistribution.Create(context).build.supportPacks.PublishAsync(
-                EngineRoot, OutputRoot, new BuildTargetId(Target), DotnetHost, cancellation.Token)
-                .AsTask().GetAwaiter().GetResult();
+            BuildCompositionContext execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetID(ToolTarget));
+            var context = new BuildCompositionContext(
+                ToolchainEnvironment.ResolveExecutable(DotnetHost),
+                AppContext.BaseDirectory,
+                execution.host,
+                execution.toolsTarget
+            );
+            using PlayerSupportPackPublication installed = StandardBuildDistribution.Create(context).build.supportPacks
+                .PublishAsync(EngineRoot, OutputRoot, new BuildTargetID(Target), DotnetHost, cancellationToken: cancellation.Token)
+                .AsTask()
+                .GetAwaiter()
+                .GetResult();
             Log.LogMessage(MessageImportance.Normal, "Installed Player Support Pack: {0}", installed.directory);
             foreach (string diagnostic in installed.diagnostics)
+            {
                 Log.LogWarning(diagnostic);
+            }
             return true;
         }
         catch (Exception failure)
@@ -85,7 +96,9 @@ public sealed class PublishSupportPackTask : BuildTask, ICancelableTask
         finally
         {
             lock (m_gate)
+            {
                 m_cancellation = null;
+            }
         }
     }
 

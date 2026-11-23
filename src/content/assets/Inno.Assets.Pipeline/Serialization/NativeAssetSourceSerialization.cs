@@ -30,20 +30,17 @@ public static partial class NativeAssetSourceSerialization
     public static byte[] Export<TAsset>(
         TAsset asset,
         AssetSerializationServices services
-    )
-        where TAsset : AssetObject
+    ) where TAsset : AssetObject
     {
         ArgumentNullException.ThrowIfNull(asset);
         ArgumentNullException.ThrowIfNull(services);
         TypeRef type = services.types.GetTypeRef(asset.GetType());
         var dependencies = new AssetDependencyCollection();
         SerializationContext context = services.context.With(dependencies);
-        byte[] propertyData = services.serialization.Encode(
-            writer => writer.WriteProperties(asset),
-            context);
+        byte[] propertyData = services.serialization.Encode(writer => writer.WriteProperties(asset), context);
         return services.serialization.Serialize(new NativeAssetSourceDocument
         {
-            stableAssetTypeId = type.stableId,
+            stableAssetTypeId = type.stableID,
             propertyData = propertyData,
             dependencies = dependencies.dependencies.ToArray()
         });
@@ -58,11 +55,11 @@ public static partial class NativeAssetSourceSerialization
     /// <param name="bytes">
     /// Native source bytes.
     /// </param>
-    /// <param name="dependencies">
-    /// Receives persistent dependencies discovered during export.
-    /// </param>
     /// <param name="services">
     /// The generation-bound serialization and reference services supplied by the import context.
+    /// </param>
+    /// <param name="dependencies">
+    /// Receives persistent dependencies discovered during export.
     /// </param>
     /// <returns>
     /// A detached asset ready for an import transaction.
@@ -74,20 +71,20 @@ public static partial class NativeAssetSourceSerialization
         ReadOnlySpan<byte> bytes,
         AssetSerializationServices services,
         out IReadOnlyList<AssetDependency> dependencies
-    )
-        where TAsset : AssetObject
+    ) where TAsset : AssetObject
     {
         ArgumentNullException.ThrowIfNull(services);
         NativeAssetSourceDocument document = services.serialization.Deserialize<NativeAssetSourceDocument>(bytes);
         TypeRef expectedType = services.types.GetTypeRef(typeof(TAsset));
-        if (document.stableAssetTypeId != expectedType.stableId)
+        if (document.stableAssetTypeId != expectedType.stableID)
         {
             throw new InvalidOperationException(
-                $"Native asset source type '{document.stableAssetTypeId:D}' does not match " +
-                $"'{expectedType.stableId:D}'.");
+                $"Native asset source type '{document.stableAssetTypeId:D}' does not match "
+                + $"'{expectedType.stableID:D}'."
+            );
         }
-        var asset = (TAsset)(Activator.CreateInstance(typeof(TAsset), nonPublic: true)
-            ?? throw new InvalidOperationException($"Asset type '{typeof(TAsset).FullName}' could not be created."));
+        TAsset asset = (TAsset)(Activator.CreateInstance(typeof(TAsset), nonPublic: true)
+                                ?? throw new InvalidOperationException($"Asset type '{typeof(TAsset).FullName}' could not be created."));
         SerializationContext context = AssetSerializationContext.Create(services.references);
         _ = services.serialization.Decode(document.propertyData, reader =>
         {

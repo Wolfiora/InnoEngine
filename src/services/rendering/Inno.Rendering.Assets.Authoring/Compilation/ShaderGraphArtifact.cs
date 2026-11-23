@@ -1,27 +1,28 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Threading;
+using Inno.Assets;
 using Inno.Core.Graphs;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 using Inno.Rendering.Shaders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Threading;
 
 namespace Inno.Rendering.Assets.Authoring;
 
 /// <summary>
 /// Persists graph and frozen function inputs as an authoring artifact; Player export removes this payload.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("1bb0d88f-b8ca-5d43-a91c-8d6d4ac0f0c2")]
+[StableTypeID("1bb0d88f-b8ca-5d43-a91c-8d6d4ac0f0c2")]
 public static partial class ShaderGraphArtifact
 {
     /// <summary>
     /// Identifies the authoring-only graph and frozen source output.
     /// </summary>
-    public const string outputName = "shader-graph";
+    public const string C_OUTPUT_NAME = "shader-graph";
 
     /// <summary>
     /// Freezes an authored graph and its target-expanded function dependencies without publishing an asset.
@@ -41,11 +42,11 @@ public static partial class ShaderGraphArtifact
     /// <param name="readSource">
     /// Reads an immutable function bundle by stable identity and diagnostic last-known path.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancellation before node expansion, target expansion and dependency reads.
-    /// </param>
     /// <param name="readGraph">
     /// Reads an authored Shader graph used as a reusable node, when the graph contains one.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancellation before node expansion, target expansion and dependency reads.
     /// </param>
     /// <returns>
     /// Native immutable authoring artifact bytes usable by import or isolated preview compilation.
@@ -56,35 +57,32 @@ public static partial class ShaderGraphArtifact
         SerializationRegistry serialization,
         SerializationContext context,
         Func<Guid, string, byte[]> readSource,
-        CancellationToken cancellationToken = default,
-        Func<Guid, string, GraphDocument>? readGraph = null
+        Func<Guid, string, GraphDocument>? readGraph = null,
+        CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(readSource);
         using IDisposable operation = types.AcquireOperation("Capture shader authoring candidate");
         using var targets = new ShaderTargetRegistry(types);
         GraphDocument expanded = ShaderGraphNodes.Expand(graph, readGraph ?? MissingGraphResolver, serialization, context);
         GraphDocument program = targets.Expand(expanded, serialization, context, cancellationToken);
-        var sources = new Dictionary<GraphNodeId, byte[]>();
+        var sources = new Dictionary<GraphNodeID, byte[]>();
         foreach (GraphNodeRecord node in program.nodes)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (node.definitionId != "inno.shader.source")
+            if (node.definitionID != "inno.shader.source")
+            {
                 continue;
+            }
             Guid id = ShaderGraphDocument.Read(node, "sourceId", Guid.Empty, serialization, context);
             if (id == Guid.Empty)
+            {
                 continue;
-            string path = ShaderGraphDocument.Read(node, "sourcePath", "", serialization, context);
+            }
+            string path = ShaderGraphDocument.Read(node, "sourcePath", string.Empty, serialization, context);
             sources.Add(node.id, readSource(id, path));
         }
         return Encode(graph, sources, serialization, program);
     }
-
-    private static GraphDocument MissingGraphResolver(
-        Guid id,
-        string path
-    )
-        => throw new InvalidOperationException(
-            $"Shader graph node '{id}' at '{path}' requires a graph resolver during artifact capture.");
 
     /// <summary>
     /// Reads the target-expanded runtime interface from the same frozen candidate as its computations.
@@ -105,8 +103,11 @@ public static partial class ShaderGraphArtifact
         ReadOnlySpan<byte> bytes,
         SerializationRegistry serialization,
         SerializationContext context
-    )
-        => ShaderGraphDocument.ReadDefinition(GraphDocumentCodec.Decode(serialization.Deserialize<ArtifactData>(bytes).program, serialization), serialization, context);
+    ) => ShaderGraphDocument.ReadDefinition(
+        GraphDocumentCodec.Decode(serialization.Deserialize<ArtifactData>(bytes).program, serialization),
+        serialization,
+        context
+    );
 
     /// <summary>
     /// Reads a retained immutable authoring snapshot through its explicit artifact owner.
@@ -122,11 +123,11 @@ public static partial class ShaderGraphArtifact
     /// </returns>
     public static byte[] Read(
         ShaderAsset shader,
-        Inno.Assets.IAssetArtifactLookup artifacts
+        IAssetArtifactLookup artifacts
     ) {
         ArgumentNullException.ThrowIfNull(shader);
         ArgumentNullException.ThrowIfNull(artifacts);
-        using Inno.Assets.ArtifactLease lease = artifacts.AcquireArtifact(shader.identity.persistentId, outputName);
+        using ArtifactLease lease = artifacts.AcquireArtifact(shader.identity.persistentID, C_OUTPUT_NAME);
         return lease.ReadAllBytes();
     }
 
@@ -152,10 +153,14 @@ public static partial class ShaderGraphArtifact
         {
             node.position = default;
             foreach (string key in node.values.Keys.Where(static key => key.StartsWith("inno.editor.", StringComparison.Ordinal)).ToArray())
+            {
                 node.RemoveValue(key);
+            }
         }
         foreach (string key in graph.metadata.Keys.Where(static key => key.StartsWith("inno.editor.", StringComparison.Ordinal)).ToArray())
+        {
             graph.RemoveMetadata(key);
+        }
         data.document = [];
         data.program = GraphDocumentCodec.Encode(graph, serialization);
         return Convert.ToHexString(SHA256.HashData(serialization.Serialize(data)));
@@ -181,17 +186,17 @@ public static partial class ShaderGraphArtifact
     /// </returns>
     public static byte[] Encode(
         GraphDocument graph,
-        IReadOnlyDictionary<GraphNodeId, byte[]> sources,
+        IReadOnlyDictionary<GraphNodeID, byte[]> sources,
         SerializationRegistry serialization,
         GraphDocument? program = null
-    )
-        => serialization.Serialize(new ArtifactData
-        {
-            document = GraphDocumentCodec.Encode(graph, serialization),
-            program = GraphDocumentCodec.Encode(program ?? graph, serialization),
-            sources = sources.OrderBy(static pair => pair.Key.value, StringComparer.Ordinal)
-                .Select(static pair => new SourceData { node = pair.Key.value, bundle = pair.Value.ToArray() }).ToArray()
-        });
+    ) => serialization.Serialize(new ArtifactData
+    {
+        document = GraphDocumentCodec.Encode(graph, serialization),
+        program = GraphDocumentCodec.Encode(program ?? graph, serialization),
+        sources = sources.OrderBy(static pair => pair.Key.value, StringComparer.Ordinal)
+            .Select(static pair => new SourceData { node = pair.Key.value, bundle = pair.Value.ToArray() })
+            .ToArray()
+    });
 
     /// <summary>
     /// Restores the imported graph for authoring or source export.
@@ -208,8 +213,7 @@ public static partial class ShaderGraphArtifact
     public static GraphDocument ReadDocument(
         ReadOnlySpan<byte> bytes,
         SerializationRegistry serialization
-    )
-        => GraphDocumentCodec.Decode(serialization.Deserialize<ArtifactData>(bytes).document, serialization);
+    ) => GraphDocumentCodec.Decode(serialization.Deserialize<ArtifactData>(bytes).document, serialization);
 
     /// <summary>
     /// Analyzes frozen functions and lowers the graph in the owner's active generation.
@@ -217,7 +221,7 @@ public static partial class ShaderGraphArtifact
     /// <param name="bytes">
     /// Committed authoring artifact bytes.
     /// </param>
-    /// <param name="implementationId">
+    /// <param name="implementationID">
     /// Selected adapter implementation identity.
     /// </param>
     /// <param name="nodes">
@@ -240,7 +244,7 @@ public static partial class ShaderGraphArtifact
     /// </returns>
     public static ShaderGraphProgramResult Lower(
         ReadOnlySpan<byte> bytes,
-        string implementationId,
+        string implementationID,
         ShaderNodeCompilerRegistry nodes,
         ShaderSourceFrontendRegistry frontends,
         SerializationRegistry serialization,
@@ -249,45 +253,63 @@ public static partial class ShaderGraphArtifact
     ) {
         ArtifactData data = serialization.Deserialize<ArtifactData>(bytes);
         GraphDocument graph = GraphDocumentCodec.Decode(data.program, serialization);
-        var sources = data.sources.ToDictionary(static source => new GraphNodeId(source.node), source =>
-        {
-            GraphNodeRecord node = graph.FindNode(new(source.node))
-                ?? throw new InvalidOperationException($"Captured source node '{source.node}' is unavailable.");
-            string function = ShaderGraphDocument.Read(node, "function", "", serialization, context);
-            if (string.IsNullOrWhiteSpace(function))
-                throw new InvalidOperationException($"Source node '{source.node}' has no exported function selection.");
-            return frontends.AnalyzeModule(ShaderSourceBundle.Decode(source.bundle, function, serialization, defines));
-        });
-        return new ShaderGraphProgramCompiler(nodes).Lower(graph, implementationId, sources, serialization, context);
+        Dictionary<GraphNodeID, ShaderSourceModuleAnalysis> sources = data.sources.ToDictionary(
+            static source => new GraphNodeID(source.node),
+            source =>
+            {
+                GraphNodeRecord node = graph.FindNode(new GraphNodeID(source.node))
+                                       ?? throw new InvalidOperationException($"Captured source node '{source.node}' is unavailable.");
+                string function = ShaderGraphDocument.Read(node, "function", string.Empty, serialization, context);
+                if (string.IsNullOrWhiteSpace(function))
+                {
+                    throw new InvalidOperationException($"Source node '{source.node}' has no exported function selection.");
+                }
+                return frontends.AnalyzeModule(ShaderSourceBundle.Decode(source.bundle, function, serialization, defines));
+            }
+        );
+        return new ShaderGraphProgramCompiler(nodes).Lower(graph, implementationID, sources, serialization, context);
     }
 
-    [Inno.Extensibility.Types.StableTypeId("16182a41-f19b-5a28-a66f-5310360f8a32")]
+    private static GraphDocument MissingGraphResolver(
+        Guid id,
+        string path
+    ) => throw new InvalidOperationException(
+        $"Shader graph node '{id}' at '{path}' requires a graph resolver during artifact capture."
+    );
+
+    [StableTypeID("16182a41-f19b-5a28-a66f-5310360f8a32")]
     private sealed class ArtifactData : ISerializable
     {
         /// <summary>
         /// Gets or sets native graph bytes.
         /// </summary>
-        [SerializableProperty] public byte[] document { get; set; } = [];
+        [SerializableProperty]
+        public byte[] document { get; set; } = [];
+
         /// <summary>
         /// Gets or sets explicit target-expanded stage graph bytes.
         /// </summary>
-        [SerializableProperty] public byte[] program { get; set; } = [];
+        [SerializableProperty]
+        public byte[] program { get; set; } = [];
+
         /// <summary>
         /// Gets or sets frozen functions by node identity.
         /// </summary>
-        [SerializableProperty] public SourceData[] sources { get; set; } = [];
+        [SerializableProperty]
+        public SourceData[] sources { get; set; } = [];
     }
-    [Inno.Extensibility.Types.StableTypeId("91d54277-1257-5bf0-904d-165e8092fe4a")]
+
+    [StableTypeID("91d54277-1257-5bf0-904d-165e8092fe4a")]
     private struct SourceData
     {
         /// <summary>
         /// Gets or sets the stable source node identity.
         /// </summary>
         public string node { get; set; }
+
         /// <summary>
         /// Gets or sets native frozen function bytes.
         /// </summary>
         public byte[] bundle { get; set; }
     }
 }
-

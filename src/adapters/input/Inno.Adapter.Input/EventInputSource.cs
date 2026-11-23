@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Core.Events;
 using Inno.Input;
 
@@ -14,18 +13,18 @@ public sealed class EventInputSource : IInputEventSource
     private readonly List<EventInputBackend> m_backends = [];
     private readonly EventDispatcher m_events = new();
     private readonly EventHub m_inputHub;
-    private readonly uint m_windowId;
+    private readonly uint m_windowID;
     private bool m_disposed;
 
     /// <summary>
     /// Creates an input source restricted to one window, or to all windows when the identifier is zero.
     /// </summary>
-    /// <param name="windowId">
+    /// <param name="windowID">
     /// The platform window identifier accepted by this source; zero accepts events from every window.
     /// </param>
-    public EventInputSource(uint windowId)
+    public EventInputSource(uint windowID)
     {
-        m_windowId = windowId;
+        m_windowID = windowID;
         m_inputHub = m_events.CreateHub();
     }
 
@@ -41,7 +40,7 @@ public sealed class EventInputSource : IInputEventSource
     public IInputBackend CreateBackend()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        var backend = new EventInputBackend(m_windowId, RemoveBackend);
+        var backend = new EventInputBackend(m_windowID, RemoveBackend);
         backend.ConnectSource(m_inputHub.Listen<Event>(backend.ProcessEvent));
         m_backends.Add(backend);
         return backend;
@@ -72,13 +71,17 @@ public sealed class EventInputSource : IInputEventSource
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_disposed = true;
         m_inputHub.Dispose();
         EventInputBackend[] snapshot = m_backends.ToArray();
         m_backends.Clear();
         foreach (EventInputBackend backend in snapshot)
+        {
             backend.DisconnectSource();
+        }
     }
 
     private void RemoveBackend(EventInputBackend backend) => m_backends.Remove(backend);

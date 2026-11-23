@@ -39,27 +39,18 @@ internal abstract class EditorHistoryOperation : IDisposable
     /// </summary>
     public virtual long estimatedDiskSize => 0L;
 
-    internal EditorHistoryResult UndoInternal()
+    /// <summary>
+    /// Releases resources retained exclusively for future undo and redo transitions.
+    /// </summary>
+    public void Dispose()
     {
-        ObjectDisposedException.ThrowIf(m_isDisposed, this);
-        return canUndo
-            ? Undo()
-            : EditorHistoryResult.Failure($"'{name}' cannot currently be undone.");
-    }
-
-    internal EditorHistoryResult RedoInternal()
-    {
-        ObjectDisposedException.ThrowIf(m_isDisposed, this);
-        return canRedo
-            ? Redo()
-            : EditorHistoryResult.Failure($"'{name}' cannot currently be redone.");
-    }
-
-    internal bool TryMergeInternal(EditorHistoryOperation newer)
-    {
-        ObjectDisposedException.ThrowIf(m_isDisposed, this);
-        ArgumentNullException.ThrowIfNull(newer);
-        return TryMerge(newer);
+        if (m_isDisposed)
+        {
+            return;
+        }
+        m_isDisposed = true;
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>
@@ -90,24 +81,33 @@ internal abstract class EditorHistoryOperation : IDisposable
     protected virtual bool TryMerge(EditorHistoryOperation newer) => false;
 
     /// <summary>
-    /// Releases resources retained exclusively for future undo and redo transitions.
-    /// </summary>
-    public void Dispose()
-    {
-        if (m_isDisposed)
-            return;
-        m_isDisposed = true;
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
     /// Releases resources owned by a derived history operation.
     /// </summary>
     /// <param name="disposing">
     /// Whether managed resources may be released.
     /// </param>
-    protected virtual void Dispose(bool disposing)
+    protected virtual void Dispose(bool disposing) {}
+
+    internal EditorHistoryResult UndoInternal()
     {
+        ObjectDisposedException.ThrowIf(m_isDisposed, this);
+        return canUndo
+               ? Undo()
+               : EditorHistoryResult.Failure($"'{name}' cannot currently be undone.");
+    }
+
+    internal EditorHistoryResult RedoInternal()
+    {
+        ObjectDisposedException.ThrowIf(m_isDisposed, this);
+        return canRedo
+               ? Redo()
+               : EditorHistoryResult.Failure($"'{name}' cannot currently be redone.");
+    }
+
+    internal bool TryMergeInternal(EditorHistoryOperation newer)
+    {
+        ObjectDisposedException.ThrowIf(m_isDisposed, this);
+        ArgumentNullException.ThrowIfNull(newer);
+        return TryMerge(newer);
     }
 }

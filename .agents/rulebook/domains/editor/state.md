@@ -1,5 +1,5 @@
 ---
-paths: ["src/composition/editor/**", "tests/editor/**"]
+paths: ["src/composition/editor/**", "tests/composition/editor/**"]
 tags: [editor-state]
 ---
 # Editor state

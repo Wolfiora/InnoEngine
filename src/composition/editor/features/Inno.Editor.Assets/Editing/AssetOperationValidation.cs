@@ -1,4 +1,5 @@
 namespace Inno.Editor.Assets;
+
 /// <summary>
 /// Describes whether an editor asset operation may proceed.
 /// </summary>
@@ -25,10 +26,12 @@ public readonly record struct AssetOperationValidation
     /// Gets whether the operation may proceed.
     /// </summary>
     public bool isValid { get; }
+
     /// <summary>
     /// Gets the validation diagnostic.
     /// </summary>
     public string message { get; }
+
     /// <summary>
     /// Gets a successful validation result.
     /// </summary>

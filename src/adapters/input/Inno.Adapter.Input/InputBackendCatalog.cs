@@ -10,7 +10,7 @@ namespace Inno.Adapter.Input;
 /// </summary>
 public sealed class InputBackendCatalog : IInputBackendFactory
 {
-    private readonly Dictionary<InputBackendId, InputBackendProvider> m_providers = [];
+    private readonly Dictionary<InputBackendID, InputBackendProvider> m_providers = [];
 
     /// <summary>
     /// Validates and captures a complete provider set without creating any service.
@@ -30,28 +30,31 @@ public sealed class InputBackendCatalog : IInputBackendFactory
         foreach (InputBackendProvider provider in providers)
         {
             if (provider is null || !provider.id.isValid || !m_providers.TryAdd(provider.id, provider))
+            {
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
+            }
         }
-        supportedBackends = new ReadOnlyCollection<InputBackendId>(new List<InputBackendId>(m_providers.Keys));
+        this.supportedBackends = new ReadOnlyCollection<InputBackendID>([.. m_providers.Keys]);
     }
 
-    /// <inheritdoc />
-    public IReadOnlyList<InputBackendId> supportedBackends { get; }
+    /// <inheritdoc/>
+    public IReadOnlyList<InputBackendID> supportedBackends { get; }
 
-    /// <inheritdoc />
     /// <exception cref="InvalidOperationException">
     /// The selected provider returned no service.
     /// </exception>
+    /// <inheritdoc/>
     public IInputEventSource CreateEventSource(
-        InputBackendId backend,
+        InputBackendID backend,
         IPlatformWindow window,
         bool acceptAllWindows
     ) {
         ArgumentNullException.ThrowIfNull(window);
         if (!m_providers.TryGetValue(backend, out InputBackendProvider? provider))
+        {
             throw new NotSupportedException("Input backend '" + backend + "' is not registered.");
+        }
         return provider.CreateEventSource(window, acceptAllWindows)
-            ?? throw new InvalidOperationException("Input provider '" + backend + "' returned no service.");
+               ?? throw new InvalidOperationException("Input provider '" + backend + "' returned no service.");
     }
 }
-

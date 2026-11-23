@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-
 using Inno.Core.Execution;
 using Inno.Extensibility.Modules;
 
@@ -31,15 +30,15 @@ public sealed class TypeCatalog : IDisposable
     /// <param name="modules">
     /// The module host that owns the assembly generations visible to this catalog.
     /// </param>
+    /// <param name="source">
+    /// The metadata provider selected by the composition root for every contributed assembly.
+    /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="modules"/> is null.
     /// </exception>
     /// <exception cref="InvalidOperationException">
     /// Thrown when <paramref name="modules"/> has already been disposed.
     /// </exception>
-    /// <param name="source">
-    /// The metadata provider selected by the composition root for every contributed assembly.
-    /// </param>
     public TypeCatalog(
         ModuleHost modules,
         ITypeCatalogSource source
@@ -47,7 +46,9 @@ public sealed class TypeCatalog : IDisposable
         ArgumentNullException.ThrowIfNull(modules);
         ArgumentNullException.ThrowIfNull(source);
         if (!modules.isInitialized)
+        {
             throw new InvalidOperationException("The module host must be active before creating a type catalog.");
+        }
         m_modules = modules;
         m_source = source;
         m_participant = new TypeCacheCatalogParticipant(this);
@@ -58,6 +59,22 @@ public sealed class TypeCatalog : IDisposable
     /// Gets whether the type catalog is registered with an initialized <see cref="ModuleHost"/>.
     /// </summary>
     public bool isInitialized => !m_disposed && m_modules.isInitialized;
+
+    /// <summary>
+    /// Gets the current immutable type snapshot after applying pending host assembly changes.
+    /// </summary>
+    public TypeCacheSnapshot current
+    {
+        get
+        {
+            EnsureInitialized();
+            m_modules.Refresh();
+            lock (m_sync)
+            {
+                return m_current;
+            }
+        }
+    }
 
     /// <summary>
     /// Defers automatic assembly publication until a synchronous typed operation releases its current owners.
@@ -78,20 +95,6 @@ public sealed class TypeCatalog : IDisposable
     {
         EnsureInitialized();
         return m_modules.generations.AcquireOperation(operation);
-    }
-
-    /// <summary>
-    /// Gets the current immutable type snapshot after applying pending host assembly changes.
-    /// </summary>
-    public TypeCacheSnapshot current
-    {
-        get
-        {
-            EnsureInitialized();
-            m_modules.Refresh();
-            lock (m_sync)
-                return m_current;
-        }
     }
 
     /// <summary>
@@ -118,7 +121,9 @@ public sealed class TypeCatalog : IDisposable
             lock (m_sync)
             {
                 if (m_disposed)
+                {
                     return;
+                }
                 m_disposed = true;
                 registries = m_registries.Prepare(TypeCacheSnapshot.empty);
                 m_current = TypeCacheSnapshot.empty;
@@ -167,12 +172,16 @@ public sealed class TypeCatalog : IDisposable
     /// <returns>
     /// The matching concrete types in stable catalog order.
     /// </returns>
-    public IReadOnlyList<TypeRef> GetTypesWithAttribute<TAttribute>() where TAttribute : Attribute
-        => current.GetTypesWithAttribute<TAttribute>();
+    public IReadOnlyList<TypeRef> GetTypesWithAttribute<TAttribute>()
+        where TAttribute : Attribute
+            => current.GetTypesWithAttribute<TAttribute>();
 
     /// <summary>
     /// Gets the reference for an active CLR type.
     /// </summary>
+    /// <param name="type">
+    /// The type consumed by get type ref; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
     /// <returns>
     /// Its logical and generation-local identity.
     /// </returns>
@@ -182,9 +191,6 @@ public sealed class TypeCatalog : IDisposable
     /// <exception cref="InvalidOperationException">
     /// Thrown when the type does not belong to the active catalog.
     /// </exception>
-    /// <param name="type">
-    /// The type consumed by get type ref; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
     public TypeRef GetTypeRef(Type type) => current.GetTypeRef(type);
 
     /// <summary>
@@ -242,12 +248,15 @@ public sealed class TypeCatalog : IDisposable
     /// </exception>
     public Type Resolve(TypeRef typeRef)
     {
-        if (typeRef.stableId != Guid.Empty && TryResolve(typeRef, out Type? type))
+        if (typeRef.stableID != Guid.Empty && TryResolve(typeRef, out Type? type))
+        {
             return type!;
+        }
         throw new InvalidOperationException(
-            typeRef.stableId == Guid.Empty
-                ? "An empty type reference cannot be resolved."
-                : $"Type reference '{typeRef.stableId:D}' is not available in the active type cache.");
+            typeRef.stableID == Guid.Empty
+            ? "An empty type reference cannot be resolved."
+            : $"Type reference '{typeRef.stableID:D}' is not available in the active type cache."
+        );
     }
 
     internal TypeRegistryRegistration Register(ITypeRegistry registry)
@@ -271,7 +280,9 @@ public sealed class TypeCatalog : IDisposable
     private void EnsureInitialized()
     {
         if (!isInitialized)
+        {
             throw new InvalidOperationException("TypeCatalog is not initialized.");
+        }
     }
 
     private void RetainFailedRetirement(
@@ -299,12 +310,15 @@ public sealed class TypeCatalog : IDisposable
             owner.EnsureRetirementSafe();
             TypeCacheSnapshot previous;
             lock (owner.m_sync)
+            {
                 previous = owner.m_current;
+            }
             TypeCacheSnapshot candidate = TypeCacheSnapshot.Build(
                 catalog.assemblies,
                 owner.m_source,
                 previous,
-                Interlocked.Increment(ref owner.m_nextVersion));
+                Interlocked.Increment(ref owner.m_nextVersion)
+            );
             TypeRegistryRefreshSet registries = owner.m_registries.Prepare(candidate);
             return new TypeCacheCatalogTransaction(owner, previous, candidate, registries);
         }
@@ -334,7 +348,9 @@ public sealed class TypeCatalog : IDisposable
             owner.EnsureRetirementSafe();
             EnsureNotFinished();
             lock (owner.m_sync)
+            {
                 owner.m_current = candidate;
+            }
             try
             {
                 registries.Activate();
@@ -348,7 +364,9 @@ public sealed class TypeCatalog : IDisposable
             catch
             {
                 lock (owner.m_sync)
+                {
                     owner.m_current = previous;
+                }
                 registries.Rollback();
                 m_finished = true;
                 m_context.Release();
@@ -364,7 +382,9 @@ public sealed class TypeCatalog : IDisposable
             owner.EnsureRetirementSafe();
             EnsureNotFinished();
             if (!m_activated)
+            {
                 throw new InvalidOperationException("Type cache transaction has not been activated.");
+            }
             m_finished = true;
             try
             {
@@ -378,7 +398,9 @@ public sealed class TypeCatalog : IDisposable
             finally
             {
                 if (owner.m_retirementFailure is null)
+                {
                     m_context.Release();
+                }
             }
         }
 
@@ -389,11 +411,15 @@ public sealed class TypeCatalog : IDisposable
         {
             owner.EnsureRetirementSafe();
             if (m_finished)
+            {
                 return;
+            }
             if (m_activated)
             {
                 lock (owner.m_sync)
+                {
                     owner.m_current = previous;
+                }
             }
             m_finished = true;
             try
@@ -408,14 +434,18 @@ public sealed class TypeCatalog : IDisposable
             finally
             {
                 if (owner.m_retirementFailure is null)
+                {
                     m_context.Release();
+                }
             }
         }
 
         private void EnsureNotFinished()
         {
             if (m_finished)
+            {
                 throw new InvalidOperationException("Type cache transaction is already finished.");
+            }
         }
     }
 }

@@ -1,17 +1,19 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Globalization;
 using Inno.Core.Identity;
 using Inno.Editor.Interactions;
-using Inno.Editor.ImGui.ImGuiWidget;
+
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Bridges managed editor drag sessions to the native ImGui payload API.
 /// </summary>
 public static class EditorDragDropRenderer
 {
     private const string C_IDENTITY_PAYLOAD_PREFIX = "INNO_ID_";
+
     /// <summary>
     /// Publishes managed drag data for the most recently submitted ImGui item.
     /// </summary>
@@ -33,7 +35,11 @@ public static class EditorDragDropRenderer
         Action? drawPreview = null
     ) {
         ArgumentNullException.ThrowIfNull(data);
-        return EditorUI.current.widgets.DragDropSource(GetPayloadType(data.sourceIdentity.domainId), () => interaction.BeginDrag(data).runtimeId, drawPreview);
+        return EditorUI.current.widgets.DragDropSource(
+            GetPayloadType(data.sourceIdentity.domainID),
+            () => interaction.BeginDrag(data).runtimeID,
+            drawPreview
+        );
     }
 
     /// <summary>
@@ -53,62 +59,29 @@ public static class EditorDragDropRenderer
         EditorDropPlacement placement = EditorDropPlacement.None
     ) {
         if (!interaction.TryGetActiveDragIdentity(out RuntimeIdentity activeIdentity))
+        {
             return EditorDropWidgetResult.none;
-        bool delivered = EditorUI.current.widgets.DragDropTarget(GetPayloadType(activeIdentity.domainId), out int runtimeId, out bool isPreviewing, drawDefaultHighlight: false);
+        }
+        bool delivered = EditorUI.current.widgets.DragDropTarget(
+            GetPayloadType(activeIdentity.domainID),
+            out int runtimeID,
+            out bool isPreviewing,
+            drawDefaultHighlight: false
+        );
         if (!isPreviewing && !delivered)
+        {
             return EditorDropWidgetResult.none;
-        if (runtimeId <= 0)
+        }
+        if (runtimeID <= 0)
+        {
             return EditorDropWidgetResult.none;
-        var identity = new RuntimeIdentity(activeIdentity.domainId, runtimeId);
+        }
+        var identity = new RuntimeIdentity(activeIdentity.domainID, runtimeID);
         EditorDropStatus status = interaction.QueryDrop(identity, placement);
         EditorDropResult result = delivered && status.canDrop ? interaction.Drop(identity, placement) : EditorDropResult.rejected;
         return new EditorDropWidgetResult(isPreviewing, status, result);
     }
 
-    private static string GetPayloadType(IdentityDomainId domainId) => C_IDENTITY_PAYLOAD_PREFIX + domainId.value.ToString("X8", CultureInfo.InvariantCulture);
-}
-
-/// <summary>
-/// Reports the preview and delivery state of an ImGui editor drop target.
-/// </summary>
-public readonly record struct EditorDropWidgetResult
-{
-    /// <summary>
-    /// Creates a combined native-preview and managed-drop result.
-    /// </summary>
-    /// <param name="isPreviewing">
-    /// Whether a compatible native payload is currently hovering the target.
-    /// </param>
-    /// <param name="status">
-    /// The compatibility and visual state returned by the managed drop router.
-    /// </param>
-    /// <param name="result">
-    /// The result produced when the payload was delivered.
-    /// </param>
-    public EditorDropWidgetResult(
-        bool isPreviewing,
-        EditorDropStatus status,
-        EditorDropResult result
-    ) {
-        this.isPreviewing = isPreviewing;
-        this.status = status;
-        this.result = result;
-    }
-
-    /// <summary>
-    /// Gets whether a compatible native payload is hovering the target.
-    /// </summary>
-    public bool isPreviewing { get; }
-    /// <summary>
-    /// Gets the managed drop compatibility status.
-    /// </summary>
-    public EditorDropStatus status { get; }
-    /// <summary>
-    /// Gets the delivered drop result.
-    /// </summary>
-    public EditorDropResult result { get; }
-    /// <summary>
-    /// Gets an inactive drop target result.
-    /// </summary>
-    public static EditorDropWidgetResult none => new(false, EditorDropStatus.rejected, EditorDropResult.rejected);
+    private static string GetPayloadType(IdentityDomainID domainID)
+        => C_IDENTITY_PAYLOAD_PREFIX + domainID.value.ToString("X8", CultureInfo.InvariantCulture);
 }

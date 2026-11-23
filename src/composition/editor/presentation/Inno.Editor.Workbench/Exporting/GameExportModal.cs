@@ -1,33 +1,40 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Numerics;
 using Inno.Build;
 using Inno.Build.Managed;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
-using Ui = Inno.Editor.ImGui.ImGui;
+
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Workbench;
+
 [EditorModal("export.game", "Export as Game", order: 310)]
 internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
 {
     private const int C_TEXT_CAPACITY = 4096;
+
     /// <summary>
     /// Gets whether this implementation is visible.
     /// </summary>
     public override bool isVisible => window.isGameVisible;
+
     /// <summary>
     /// Gets whether this implementation can move.
     /// </summary>
     public override bool canMove => true;
+
     /// <summary>
     /// Gets whether this implementation can resize.
     /// </summary>
     public override bool canResize => true;
+
     /// <summary>
     /// Gets the preferred initial window size in logical editor units.
     /// </summary>
     public override Vector2 initialSize => new(760f, 540f);
+
     /// <summary>
     /// Gets the smallest size that keeps the export form usable.
     /// </summary>
@@ -41,25 +48,32 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
     /// </param>
     protected override void OnDraw(EditorContext context)
     {
-        EditorUI.current.widgets.WrappedText("Build a standalone Player from the current project. Only imported runtime content " + "is deployed; source files stay in the project.");
-        Ui.SeparatorText("Application");
+        EditorUI.current.widgets.WrappedText(
+            "Build a standalone Player from the current project. Only imported runtime content " + "is deployed; source files stay in the project."
+        );
+        Gui.SeparatorText("Application");
         if (BeginFields("##application_fields"))
         {
             try
             {
                 EditorUI.current.widgets.SetupPropertyColumns();
-                DrawReadOnly("Application ID", window.gameApplicationId);
+                DrawReadOnly("Application ID", window.gameApplicationID);
                 DrawText("Product Name", "game_name", window.gameProductName, value => window.gameProductName = value);
-                DrawText("Persistent Data Folder", "game_data", window.gamePersistentDataPath, value => window.gamePersistentDataPath = value);
+                DrawText(
+                    "Persistent Data Folder",
+                    "game_data",
+                    window.gamePersistentDataPath,
+                    value => window.gamePersistentDataPath = value
+                );
                 DrawText("Startup Scene", "game_scene", window.gameStartupScene, value => window.gameStartupScene = value);
             }
             finally
             {
-                Ui.EndTable();
+                Gui.EndTable();
             }
         }
 
-        Ui.SeparatorText("Window and Platform");
+        Gui.SeparatorText("Window and Platform");
         if (BeginFields("##platform_fields"))
         {
             try
@@ -71,11 +85,11 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
             }
             finally
             {
-                Ui.EndTable();
+                Gui.EndTable();
             }
         }
 
-        Ui.SeparatorText("Output");
+        Gui.SeparatorText("Output");
         if (BeginFields("##output_fields"))
         {
             try
@@ -85,51 +99,20 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
             }
             finally
             {
-                Ui.EndTable();
+                Gui.EndTable();
             }
         }
 
-        Ui.Spacing();
+        Gui.Spacing();
         EditorUI.current.widgets.WrappedText("Defaults: Settings > Build > Game. Application ID: Settings > Project > Identity.");
         if (!string.IsNullOrEmpty(window.error))
         {
-            Ui.Spacing();
+            Gui.Spacing();
             EditorUI.current.widgets.WrappedText(window.error);
         }
 
-        Ui.Separator();
+        Gui.Separator();
         DrawButtons();
-    }
-
-    private static bool BeginFields(string id) => Ui.BeginTable(
-        id,
-        2,
-        ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings | ImGuiTableFlags.NoPadOuterX,
-        default(Vector2),
-        0f);
-
-    private static void BeginField(string label)
-    {
-        Ui.TableNextRow();
-        _ = Ui.TableSetColumnIndex(0);
-        EditorUI.current.widgets.PropertyLabel(label);
-        _ = Ui.TableSetColumnIndex(1);
-    }
-
-    private static void DrawReadOnly(
-        string label,
-        string value
-    ) {
-        BeginField(label);
-        Ui.PushStyleColor((ImGuiCol.Text), EditorPalette.textDisabled);
-        try
-        {
-            EditorUI.current.widgets.WrappedText(value);
-        }
-        finally
-        {
-            Ui.PopStyleColor();
-        }
     }
 
     private void DrawWindowSize()
@@ -137,28 +120,40 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
         int width = window.gameWindowWidth;
         int height = window.gameWindowHeight;
         BeginField("Initial Width");
-        Ui.SetNextItemWidth(-1f);
-        if (Ui.InputInt("##game_window_width", ref width, 1, 100, 0))
+        Gui.SetNextItemWidth(-1f);
+        if (Gui.InputInt("##game_window_width", ref width, 1, 100, 0))
+        {
             window.gameWindowWidth = Math.Max(1, width);
+        }
         BeginField("Initial Height");
-        Ui.SetNextItemWidth(-1f);
-        if (Ui.InputInt("##game_window_height", ref height, 1, 100, 0))
+        Gui.SetNextItemWidth(-1f);
+        if (Gui.InputInt("##game_window_height", ref height, 1, 100, 0))
+        {
             window.gameWindowHeight = Math.Max(1, height);
+        }
     }
 
     private void DrawManagedDeployment()
     {
         BeginField("Managed Deployment");
-        Ui.SetNextItemWidth(-1f);
+        Gui.SetNextItemWidth(-1f);
         if (!EditorUI.current.widgets.BeginBoundedCombo("##game_deployment", window.gameManagedDeployment?.value ?? "Platform default"))
+        {
             return;
+        }
         try
         {
-            if (Ui.Selectable("Platform default", window.gameManagedDeployment is null))
+            if (Gui.Selectable("Platform default", window.gameManagedDeployment is null))
+            {
                 window.gameManagedDeployment = null;
-            foreach (ManagedDeploymentId deployment in window.availableManagedDeployments)
-                if (Ui.Selectable(deployment.value, window.gameManagedDeployment == deployment))
+            }
+            foreach (ManagedDeploymentID deployment in window.availableManagedDeployments)
+            {
+                if (Gui.Selectable(deployment.value, window.gameManagedDeployment == deployment))
+                {
                     window.gameManagedDeployment = deployment;
+                }
+            }
         }
         finally
         {
@@ -169,14 +164,18 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
     private void DrawTarget()
     {
         BeginField("Target");
-        Ui.SetNextItemWidth(-1f);
+        Gui.SetNextItemWidth(-1f);
         string preview = window.GetGameTargetDisplayName(window.gameTarget);
         if (!EditorUI.current.widgets.BeginBoundedCombo("##game_target", preview))
+        {
             return;
+        }
         try
         {
-            foreach (BuildTargetId target in window.availableGameTargets)
+            foreach (BuildTargetID target in window.availableGameTargets)
+            {
                 DrawTargetChoice(target);
+            }
         }
         finally
         {
@@ -184,28 +183,71 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
         }
     }
 
-    private void DrawTargetChoice(BuildTargetId target)
+    private void DrawTargetChoice(BuildTargetID target)
     {
         bool selected = window.gameTarget == target;
-        if (Ui.Selectable(window.GetGameTargetDisplayName(target), selected))
+        if (Gui.Selectable(window.GetGameTargetDisplayName(target), selected))
+        {
             window.gameTarget = target;
+        }
         if (selected)
-            Ui.SetItemDefaultFocus();
+        {
+            Gui.SetItemDefaultFocus();
+        }
     }
 
     private void DrawButtons()
     {
-        Ui.Spacing();
+        Gui.Spacing();
         string primaryLabel = "Export";
-        EditorUiLayout style = Ui.GetLayout();
-        float closeWidth = Ui.MeasureText("Close").X + style.framePadding.X * 2f;
-        float primaryWidth = Ui.MeasureText(primaryLabel).X + style.framePadding.X * 2f;
-        Ui.SetCursorPosX(Ui.GetCursorPosX() + MathF.Max(0f, Ui.GetContentRegionAvailable().X - closeWidth - style.itemSpacing.X - primaryWidth));
-        if (Ui.Button("Close"))
+        EditorUILayout style = Gui.GetLayout();
+        float closeWidth = Gui.MeasureText("Close").X + style.framePadding.X * 2f;
+        float primaryWidth = Gui.MeasureText(primaryLabel).X + style.framePadding.X * 2f;
+        Gui.SetCursorPosX(
+            Gui.GetCursorPosX() + MathF.Max(0f, Gui.GetContentRegionAvailable().X - closeWidth - style.itemSpacing.X - primaryWidth)
+        );
+        if (Gui.Button("Close"))
+        {
             window.CloseGame();
-        Ui.SameLine(0f, -1f);
-        if (Ui.Button(primaryLabel))
+        }
+        Gui.SameLine(0f, -1f);
+        if (Gui.Button(primaryLabel))
+        {
             window.BeginGameExport();
+        }
+    }
+
+    private static bool BeginFields(string id)
+        => Gui.BeginTable(
+            id,
+            2,
+            ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings | ImGuiTableFlags.NoPadOuterX,
+            default,
+            0f
+        );
+
+    private static void BeginField(string label)
+    {
+        Gui.TableNextRow();
+        _ = Gui.TableSetColumnIndex(0);
+        EditorUI.current.widgets.PropertyLabel(label);
+        _ = Gui.TableSetColumnIndex(1);
+    }
+
+    private static void DrawReadOnly(
+        string label,
+        string value
+    ) {
+        BeginField(label);
+        Gui.PushStyleColor((ImGuiCol.Text), EditorPalette.textDisabled);
+        try
+        {
+            EditorUI.current.widgets.WrappedText(value);
+        }
+        finally
+        {
+            Gui.PopStyleColor();
+        }
     }
 
     private static void DrawText(
@@ -215,8 +257,8 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
         Action<string> apply
     ) {
         BeginField(label);
-        Ui.SetNextItemWidth(-1f);
-        _ = Ui.InputText($"##{id}", ref value, C_TEXT_CAPACITY);
+        Gui.SetNextItemWidth(-1f);
+        _ = Gui.InputText($"##{id}", ref value, C_TEXT_CAPACITY);
         apply(value);
     }
 }

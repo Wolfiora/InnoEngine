@@ -1,14 +1,17 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Interactions;
 
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+
 namespace Inno.Editor.ImGui;
+
 internal sealed class EditorModalHost
 {
     private readonly Dictionary<string, Transition> m_transitions = new(StringComparer.Ordinal);
+
     internal bool Update(
         IReadOnlyList<EditorModalExtension> modals,
         double now
@@ -16,8 +19,10 @@ internal sealed class EditorModalHost
         bool newBlockingModalRequested = false;
         for (int i = 0; i < modals.Count; i++)
         {
-            if (modals[i].TryGetPresentation(out EditorModalExtension.Presentation candidate) && candidate.isVisible && candidate.blocksInteraction)
-            {
+            if (modals[i].TryGetPresentation(out EditorModalExtension.Presentation candidate)
+                && candidate.isVisible
+                && candidate.blocksInteraction
+            ) {
                 newBlockingModalRequested = true;
                 break;
             }
@@ -28,14 +33,22 @@ internal sealed class EditorModalHost
         {
             EditorModalExtension extension = modals[i];
             if (!extension.TryGetPresentation(out EditorModalExtension.Presentation presentation))
+            {
                 continue;
+            }
             Transition transition = GetTransition(extension.id);
             if (newBlockingModalRequested && !presentation.isVisible)
+            {
                 transition.HideImmediately();
+            }
             else
+            {
                 transition.Update(presentation.isVisible, now);
+            }
             if (presentation.blocksInteraction && transition.isVisible)
+            {
                 blocksInteraction = true;
+            }
         }
 
         return blocksInteraction;
@@ -67,10 +80,13 @@ internal sealed class EditorModalHost
     }
 
     internal void Clear() => m_transitions.Clear();
+
     private Transition GetTransition(string id)
     {
         if (m_transitions.TryGetValue(id, out Transition? transition))
+        {
             return transition;
+        }
         transition = new Transition();
         m_transitions.Add(id, transition);
         return transition;
@@ -99,7 +115,9 @@ internal sealed class EditorModalHost
                 if (!m_requested)
                 {
                     if (!isVisible)
+                    {
                         m_visibleAt = now;
+                    }
                     isVisible = true;
                 }
 
@@ -122,11 +140,11 @@ internal sealed class EditorModalHost
             if (m_requested || now <= m_hideAt)
             {
                 double fadeIn = (now - m_visibleAt) / EditorUI.current.widgets.style.modalFadeInSeconds;
-                return (float)Math.Clamp(fadeIn, EditorPalette.opacityFaint, EditorPalette.opacityOpaque);
+                return (float)Math.Clamp(fadeIn, EditorPalette.C_OPACITY_FAINT, EditorPalette.C_OPACITY_OPAQUE);
             }
 
             double fadeOut = (now - m_hideAt) / EditorUI.current.widgets.style.modalFadeOutSeconds;
-            return (float)Math.Clamp(1.0 - fadeOut, EditorPalette.opacityFaint, EditorPalette.opacityOpaque);
+            return (float)Math.Clamp(1.0 - fadeOut, EditorPalette.C_OPACITY_FAINT, EditorPalette.C_OPACITY_OPAQUE);
         }
     }
 }

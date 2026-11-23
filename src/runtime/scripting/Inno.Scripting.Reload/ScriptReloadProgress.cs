@@ -3,7 +3,7 @@ namespace Inno.Scripting.Reload;
 /// <summary>
 /// Atomically published progress owned by one reload request, containing no runtime or extension objects.
 /// </summary>
-/// <param name="operationId">
+/// <param name="operationID">
 /// The host-local reload request sequence; zero precedes the first request.
 /// </param>
 /// <param name="fraction">
@@ -19,7 +19,7 @@ namespace Inno.Scripting.Reload;
 /// Whether this exact operation currently admits cancellation.
 /// </param>
 public sealed record ScriptReloadProgress(
-    long operationId,
+    long operationID,
     float fraction,
     string stage,
     bool cancellationRequested,

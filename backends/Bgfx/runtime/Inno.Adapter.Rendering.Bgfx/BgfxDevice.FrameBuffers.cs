@@ -1,20 +1,20 @@
-using Inno.Adapter.Platform;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using Inno.Adapter.Platform;
 using Inno.Native.Bgfx;
 using Inno.Platform;
 using Inno.Rendering;
 
 namespace Inno.Adapter.Rendering.Bgfx;
 
-sealed unsafe partial class BgfxDevice
+public sealed unsafe partial class BgfxDevice
 {
     private void ConfigureViewTarget(
-        ushort viewId,
+        ushort viewID,
         CompiledRenderPass pass
     ) {
         int width = m_backbufferWidth;
@@ -29,20 +29,20 @@ sealed unsafe partial class BgfxDevice
             BgfxWindowSurfaceResource surface = ResolveSurface(pass.surface);
             width = surface.width;
             height = surface.height;
-            bgfx.set_view_frame_buffer(viewId, surface.frameBuffer);
+            bgfx.set_view_frame_buffer(viewID, surface.frameBuffer);
         }
         else if (pass.attachments.Count != 0)
         {
             bgfx.FrameBufferHandle cachedFrameBuffer = FindCachedFrameBuffer(pass);
             if (cachedFrameBuffer.Valid)
             {
-                bgfx.set_view_frame_buffer(viewId, cachedFrameBuffer);
+                bgfx.set_view_frame_buffer(viewID, cachedFrameBuffer);
             }
             else
             {
                 RetireSupersededFrameBuffer(pass.name);
                 bgfx.Attachment* attachments = stackalloc bgfx.Attachment[pass.attachments.Count];
-                GraphAttachmentSignature[] signature = new GraphAttachmentSignature[pass.attachments.Count];
+                var signature = new GraphAttachmentSignature[pass.attachments.Count];
                 for (int index = 0; index < pass.attachments.Count; index++)
                 {
                     CompiledRenderAttachment attachment = pass.attachments[index];
@@ -52,7 +52,8 @@ sealed unsafe partial class BgfxDevice
                         attachment.slot,
                         attachment.isDepth,
                         attachment.mipLevel,
-                        attachment.arrayLayer);
+                        attachment.arrayLayer
+                    );
                     BgfxNativeCalls.AttachmentInit(
                         &attachments[index],
                         nativeTexture,
@@ -60,26 +61,26 @@ sealed unsafe partial class BgfxDevice
                         checked((ushort)attachment.arrayLayer),
                         1,
                         checked((ushort)attachment.mipLevel),
-                        (byte)bgfx.ResolveFlags.None);
+                        (byte)bgfx.ResolveFlags.None
+                    );
                 }
 
                 bgfx.FrameBufferHandle frameBuffer = BgfxNativeCalls.CreateFrameBufferFromAttachment(
                     checked((byte)pass.attachments.Count),
                     attachments,
-                    0);
+                    0
+                );
                 if (!frameBuffer.Valid)
                 {
                     throw new InvalidOperationException($"BGFX could not create framebuffer for pass '{pass.name}'.");
                 }
 
                 m_transientFrameBufferAllocationCount++;
-                m_graphFrameBufferCache.Add(new CachedGraphFrameBuffer(
-                    frameBuffer,
-                    pass.name,
-                    signature,
-                    m_submissionSequence));
+                m_graphFrameBufferCache.Add(
+                    new CachedGraphFrameBuffer(frameBuffer, pass.name, signature, m_submissionSequence)
+                );
                 m_graphFrameBuffers.Add(frameBuffer);
-                bgfx.set_view_frame_buffer(viewId, frameBuffer);
+                bgfx.set_view_frame_buffer(viewID, frameBuffer);
             }
 
             ApplyAttachmentState(
@@ -89,13 +90,13 @@ sealed unsafe partial class BgfxDevice
                 ref clearFlags,
                 ref clearColor,
                 ref clearDepth,
-                ref clearStencil);
+                ref clearStencil
+            );
         }
         else
         {
-            bgfx.set_view_frame_buffer(viewId, new bgfx.FrameBufferHandle { idx = ushort.MaxValue });
+            bgfx.set_view_frame_buffer(viewID, new bgfx.FrameBufferHandle { idx = ushort.MaxValue });
         }
-
 
         if (pass.clearsPresentationTarget)
         {
@@ -103,13 +104,8 @@ sealed unsafe partial class BgfxDevice
             clearColor = PackColor(pass.presentationClearColor);
         }
 
-        bgfx.set_view_rect(
-            viewId,
-            0,
-            0,
-            checked((ushort)width),
-            checked((ushort)height));
-        bgfx.set_view_clear(viewId, (ushort)clearFlags, clearColor, clearDepth, clearStencil);
+        bgfx.set_view_rect(viewID, 0, 0, checked((ushort)width), checked((ushort)height));
+        bgfx.set_view_clear(viewID, (ushort)clearFlags, clearColor, clearDepth, clearStencil);
     }
 
     private bgfx.FrameBufferHandle FindCachedFrameBuffer(CompiledRenderPass pass)
@@ -118,7 +114,9 @@ sealed unsafe partial class BgfxDevice
         {
             CachedGraphFrameBuffer cached = m_graphFrameBufferCache[cacheIndex];
             if (cached.attachments.Length != pass.attachments.Count)
+            {
                 continue;
+            }
 
             bool matches = true;
             for (int attachmentIndex = 0; attachmentIndex < pass.attachments.Count; attachmentIndex++)
@@ -130,15 +128,17 @@ sealed unsafe partial class BgfxDevice
                     || signature.slot != attachment.slot
                     || signature.isDepth != attachment.isDepth
                     || signature.mipLevel != attachment.mipLevel
-                    || signature.arrayLayer != attachment.arrayLayer)
-                {
+                    || signature.arrayLayer != attachment.arrayLayer
+                ) {
                     matches = false;
                     break;
                 }
             }
 
             if (!matches)
+            {
                 continue;
+            }
 
             cached.lastUsedSubmission = m_submissionSequence;
             return cached.handle;
@@ -153,8 +153,8 @@ sealed unsafe partial class BgfxDevice
         {
             CachedGraphFrameBuffer cached = m_graphFrameBufferCache[index];
             if (!string.Equals(cached.passName, passName, StringComparison.Ordinal)
-                || cached.lastUsedSubmission == m_submissionSequence)
-            {
+                || cached.lastUsedSubmission == m_submissionSequence
+            ) {
                 continue;
             }
 
@@ -187,7 +187,9 @@ sealed unsafe partial class BgfxDevice
                 {
                     clearFlags |= bgfx.ClearFlags.Depth;
                     if (descriptor.format == RenderTextureFormat.Depth24Stencil8)
+                    {
                         clearFlags |= bgfx.ClearFlags.Stencil;
+                    }
                     clearDepth = attachment.clearDepth;
                     clearStencil = attachment.clearStencil;
                 }
@@ -201,8 +203,8 @@ sealed unsafe partial class BgfxDevice
             if (attachment.storeAction == RenderStoreAction.Discard)
             {
                 clearFlags |= attachment.isDepth
-                    ? bgfx.ClearFlags.DiscardDepth
-                    : ColorDiscardFlag(attachment.slot);
+                              ? bgfx.ClearFlags.DiscardDepth
+                              : ColorDiscardFlag(attachment.slot);
             }
         }
     }
@@ -213,11 +215,27 @@ sealed unsafe partial class BgfxDevice
         {
             CachedGraphFrameBuffer cached = m_graphFrameBufferCache[index];
             if (!cached.ContainsTexture(textureIndex))
+            {
                 continue;
+            }
             EnqueueDestroy(DeferredResource.ForFrameBuffer(cached.handle));
             m_graphFrameBufferCache.RemoveAt(index);
         }
     }
+
+    private static bgfx.ClearFlags ColorDiscardFlag(int slot)
+        => slot switch
+    {
+        0 => bgfx.ClearFlags.DiscardColor0,
+        1 => bgfx.ClearFlags.DiscardColor1,
+        2 => bgfx.ClearFlags.DiscardColor2,
+        3 => bgfx.ClearFlags.DiscardColor3,
+        4 => bgfx.ClearFlags.DiscardColor4,
+        5 => bgfx.ClearFlags.DiscardColor5,
+        6 => bgfx.ClearFlags.DiscardColor6,
+        7 => bgfx.ClearFlags.DiscardColor7,
+        _ => throw new ArgumentOutOfRangeException(nameof(slot))
+    };
 
     private readonly record struct GraphAttachmentSignature(
         ushort textureIndex,
@@ -243,25 +261,12 @@ sealed unsafe partial class BgfxDevice
             foreach (GraphAttachmentSignature attachment in attachments)
             {
                 if (attachment.textureIndex == textureIndex)
+                {
                     return true;
+                }
             }
 
             return false;
         }
     }
-
-    private static bgfx.ClearFlags ColorDiscardFlag(int slot)
-        => slot switch
-        {
-            0 => bgfx.ClearFlags.DiscardColor0,
-            1 => bgfx.ClearFlags.DiscardColor1,
-            2 => bgfx.ClearFlags.DiscardColor2,
-            3 => bgfx.ClearFlags.DiscardColor3,
-            4 => bgfx.ClearFlags.DiscardColor4,
-            5 => bgfx.ClearFlags.DiscardColor5,
-            6 => bgfx.ClearFlags.DiscardColor6,
-            7 => bgfx.ClearFlags.DiscardColor7,
-            _ => throw new ArgumentOutOfRangeException(nameof(slot))
-        };
-
 }

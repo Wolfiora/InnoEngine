@@ -28,11 +28,11 @@ public static class PlayerSupportPackFiles
     /// <param name="destination">
     /// The isolated source input directory.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels evaluation and source preparation.
-    /// </param>
     /// <param name="environment">
     /// Optional explicitly selected SDK environment.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels evaluation and source preparation.
     /// </param>
     /// <returns>
     /// Completion after all sources have contained, unique publication paths.
@@ -44,35 +44,53 @@ public static class PlayerSupportPackFiles
         PlayerSupportPackBuildContext context,
         string project,
         string destination,
-        CancellationToken cancellationToken,
-        IReadOnlyDictionary<string, string>? environment = null
+        IReadOnlyDictionary<string, string>? environment = null,
+        CancellationToken cancellationToken = default
     ) {
         string evaluated = await ToolchainEnvironment.CaptureOutputAsync(
             context.sdk.hostPath,
-            [context.sdk.cliPath, "msbuild", project, "-getItem:Compile", "-p:Configuration=Release",
-                "-p:DesignTimeBuild=true", "-nodeReuse:false", "-nologo"],
-            context.engineRoot, cancellationToken, DotNetSdkEnvironment.Create(context.sdk.hostPath, environment)).ConfigureAwait(false);
+            [
+                context.sdk.cliPath,
+                "msbuild",
+                project,
+                "-getItem:Compile",
+                "-p:Configuration=Release",
+                "-p:DesignTimeBuild=true",
+                "-nodeReuse:false",
+                "-nologo"
+            ],
+            context.engineRoot,
+            DotNetSdkEnvironment.Create(context.sdk.hostPath, environment),
+            cancellationToken
+        ).ConfigureAwait(false);
         using JsonDocument document = JsonDocument.Parse(evaluated);
         JsonElement sources = document.RootElement.GetProperty("Items").GetProperty("Compile");
         string projectDirectory = Path.GetDirectoryName(project)!;
         var outputs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (JsonElement source in sources.EnumerateArray()
-            .OrderBy(static source => source.GetProperty("Identity").GetString(), StringComparer.Ordinal))
-        {
+            .OrderBy(static source => source.GetProperty("Identity").GetString(), StringComparer.Ordinal)
+        ) {
             cancellationToken.ThrowIfCancellationRequested();
             string input = PathBoundary.RequireUnlinkedPath(
-                context.engineRoot, source.GetProperty("FullPath").GetString()!);
+                context.engineRoot,
+                source.GetProperty("FullPath").GetString()!
+            );
             string relative = source.TryGetProperty("Link", out JsonElement link)
-                && !string.IsNullOrWhiteSpace(link.GetString())
-                ? link.GetString()! : Path.GetRelativePath(projectDirectory, input);
+                              && !string.IsNullOrWhiteSpace(link.GetString())
+                              ? link.GetString()!
+                              : Path.GetRelativePath(projectDirectory, input);
             string output = PathBoundary.Resolve(destination, relative);
             if (!outputs.Add(relative.Replace('\\', '/')))
+            {
                 throw new InvalidDataException($"Player sources repeat publication path '{relative}'.");
+            }
             Directory.CreateDirectory(Path.GetDirectoryName(output)!);
             File.Copy(input, output);
         }
         if (outputs.Count == 0)
+        {
             throw new InvalidDataException("The Player project declares no publication sources.");
+        }
     }
 
     /// <summary>
@@ -93,15 +111,40 @@ public static class PlayerSupportPackFiles
     ) {
         string analyzerDirectory = Path.Combine(playerDirectory, "Analyzers");
         Directory.CreateDirectory(analyzerDirectory);
-        string analyzer = Path.Combine(engineRoot, "src", "runtime", "generators",
-            "Inno.Runtime.Generators", "bin", "Release", "netstandard2.0", "Inno.Runtime.Generators.dll");
+        string analyzer = Path.Combine(
+            engineRoot,
+            "src",
+            "runtime",
+            "generators",
+            "Inno.Runtime.Generators",
+            "bin",
+            "Release",
+            "netstandard2.0",
+            "Inno.Runtime.Generators.dll"
+        );
         if (!File.Exists(analyzer))
+        {
             throw new FileNotFoundException("The runtime registration generator is absent from the prepared build.", analyzer);
+        }
         File.Copy(analyzer, Path.Combine(analyzerDirectory, Path.GetFileName(analyzer)));
-        string serializationAnalyzer = Path.Combine(engineRoot, "src", "foundation", "core",
-            "Inno.Core.Serialization.Generators", "bin", "Release", "netstandard2.0", "Inno.Core.Serialization.Generators.dll");
+        string serializationAnalyzer = Path.Combine(
+            engineRoot,
+            "src",
+            "foundation",
+            "core",
+            "Inno.Core.Serialization.Generators",
+            "bin",
+            "Release",
+            "netstandard2.0",
+            "Inno.Core.Serialization.Generators.dll"
+        );
         if (!File.Exists(serializationAnalyzer))
-            throw new FileNotFoundException("The serialization metadata generator is absent from the prepared build.", serializationAnalyzer);
+        {
+            throw new FileNotFoundException(
+                "The serialization metadata generator is absent from the prepared build.",
+                serializationAnalyzer
+            );
+        }
         File.Copy(serializationAnalyzer, Path.Combine(analyzerDirectory, Path.GetFileName(serializationAnalyzer)));
         string sdkSelection = Path.Combine(engineRoot, "global.json");
         File.Copy(sdkSelection, Path.Combine(playerDirectory, "global.json"));
@@ -129,26 +172,39 @@ public static class PlayerSupportPackFiles
     ) {
         string dependencyFile = Path.Combine(buildOutput, productAssemblyName + ".deps.json");
         if (!File.Exists(dependencyFile))
+        {
             throw new InvalidDataException("Player build has no SDK-selected runtime dependency closure.");
+        }
         using JsonDocument dependencies = JsonDocument.Parse(File.ReadAllBytes(dependencyFile));
         JsonElement root = dependencies.RootElement;
         string target = root.GetProperty("runtimeTarget").GetProperty("name").GetString()
-            ?? throw new InvalidDataException("Player dependencies have no explicit runtime target.");
-        string[] files = root.GetProperty("targets").GetProperty(target).EnumerateObject()
+                        ?? throw new InvalidDataException("Player dependencies have no explicit runtime target.");
+        string[] files = root.GetProperty("targets")
+            .GetProperty(target)
+            .EnumerateObject()
             .Where(static dependency => dependency.Value.TryGetProperty("runtime", out _))
-            .SelectMany(static dependency => dependency.Value.GetProperty("runtime").EnumerateObject()
+            .SelectMany(static dependency => dependency.Value.GetProperty("runtime")
+                .EnumerateObject()
                 .Select(static asset => Path.GetFileName(asset.Name)))
-            .Where(name => name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-                && Path.GetFileNameWithoutExtension(name) != productAssemblyName)
-            .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)
-            .Select(name => PathBoundary.Resolve(buildOutput, name)).ToArray();
+            .Where(name => (
+                name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                && Path.GetFileNameWithoutExtension(name) != productAssemblyName
+            ))
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .Select(name => PathBoundary.Resolve(buildOutput, name))
+            .ToArray();
         if (files.Length == 0)
+        {
             throw new InvalidDataException("Player build produced no target compilation references.");
+        }
         Directory.CreateDirectory(destination);
         foreach (string file in files)
         {
             if (!File.Exists(file))
+            {
                 throw new InvalidDataException($"Selected Player dependency '{Path.GetFileName(file)}' was not deployed by the SDK.");
+            }
             File.Copy(file, Path.Combine(destination, Path.GetFileName(file)));
         }
     }

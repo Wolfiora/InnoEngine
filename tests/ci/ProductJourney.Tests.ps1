@@ -7,12 +7,12 @@ $dotnet = if ($env:DOTNET_HOST_PATH) { $env:DOTNET_HOST_PATH } else { (Get-Comma
 $pwsh = (Get-Command pwsh).Source
 $null = New-Item -ItemType Directory -Path $root
 try {
-    Copy-Item -LiteralPath (Join-Path $repository 'tests/fixtures/editor-ui/ManagedMemorySample.editor.cs') -Destination $root
+    Copy-Item -LiteralPath (Join-Path $repository 'tests/product/fixtures/editor-ui/ManagedMemorySample.editor.cs') -Destination $root
     [IO.File]::WriteAllText((Join-Path $root 'Fixture.csproj'), '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings></PropertyGroup></Project>')
     [IO.File]::WriteAllText((Join-Path $root 'Program.cs'), @'
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using EditorUiAcceptance;
+using EditorUIAcceptance;
 
 if (args is ["memory-sampling"])
 {
@@ -43,7 +43,7 @@ if (mode != "missing-evidence")
     {
         File.WriteAllLines(Path.Combine(evidence, "panel-lifecycle.tsv"),
             new[] { "panel\tcompleted-open-close-cycles", "protocol\tfixture" }.Concat(
-                Enumerable.Range(0, 9).Select(index => $"panel-{index}\t{(mode == "missing-cycle" && index == 0 ? cycles - 1 : cycles)}")));
+                Enumerable.Range(0, 8).Select(index => $"panel-{index}\t{(mode == "missing-cycle" && index == 0 ? cycles - 1 : cycles)}")));
         File.WriteAllLines(Path.Combine(evidence, "panel-lifecycle-preparation.tsv"),
             new[] { "phase", "before-first-panel-draw", mode == "missing-preparation" ? "wrong" : "after-120-drawn-frames" });
         int count = mode == "missing-sample" ? cycles / 10 : cycles / 10 + 1;
@@ -203,8 +203,6 @@ int main(int argc, const char *argv[])
         & /usr/bin/xcrun clang -fobjc-arc -framework AppKit (Join-Path $root 'CocoaFixture.m') -o $cocoa *> (Join-Path $root 'cocoa-build.log')
         if ($LASTEXITCODE -ne 0) { throw "AppKit protocol fixture build failed:`n$(Get-Content (Join-Path $root 'cocoa-build.log') -Raw)" }
     }
-    $source = Join-Path $root 'Source'
-    $null = New-Item -ItemType Directory -Path (Join-Path $source 'Assets')
     $cases = @(
         @{ name='valid'; scenario='Workflows'; cycles=100; success=$true },
         @{ name='missing-evidence'; scenario='Workflows'; cycles=100; reason='did not complete the journey' },
@@ -248,8 +246,8 @@ int main(int argc, const char *argv[])
             $output = Join-Path $root "$($case.scenario)-$($case.name)-$($case.cycles)"
             $hostExecutable = if ($case.name.StartsWith('appkit-', [StringComparison]::Ordinal)) { $cocoa } else { $dotnet }
             $deadline = if ($hostExecutable -ceq $cocoa) { 30 } else { 5 }
-            & $pwsh -NoProfile -File (Join-Path $repository 'tests/Invoke-EditorUiProductJourney.ps1') `
-                -EditorAssembly (Join-Path $root 'bin/Debug/net10.0/Fixture.dll') -ProjectDirectory $source `
+            & $pwsh -NoProfile -File (Join-Path $repository 'tests/product/Invoke-EditorUiProductJourney.ps1') `
+                -EditorAssembly (Join-Path $root 'bin/Debug/net10.0/Fixture.dll') `
                 -ResultsDirectory $output -Dotnet $hostExecutable -GraphicsApi ProtocolFixture -Scenario $case.scenario `
                 -Cycles $case.cycles -TimeoutSeconds $deadline *> "$output.log"
             $code = $LASTEXITCODE

@@ -9,8 +9,8 @@ namespace Inno.Editor.Graph.ImGui;
 public readonly struct GraphCanvasPointerResult
 {
     internal GraphCanvasPointerResult(
-        GraphNodeId? nodePressed,
-        IReadOnlyDictionary<GraphNodeId, GraphPosition>? movedNodes,
+        GraphNodeID? nodePressed,
+        IReadOnlyDictionary<GraphNodeID, GraphPosition>? movedNodes,
         GraphEndpoint? output,
         GraphEndpoint? input,
         GraphEndpoint? releasedOutput
@@ -25,12 +25,12 @@ public readonly struct GraphCanvasPointerResult
     /// <summary>
     /// Gets the pressed node header, or null when no header was pressed.
     /// </summary>
-    public GraphNodeId? nodePressed { get; }
+    public GraphNodeID? nodePressed { get; }
 
     /// <summary>
     /// Gets completed movement positions, or null when no data edit was requested.
     /// </summary>
-    public IReadOnlyDictionary<GraphNodeId, GraphPosition>? movedNodes { get; }
+    public IReadOnlyDictionary<GraphNodeID, GraphPosition>? movedNodes { get; }
 
     /// <summary>
     /// Gets a requested connection's output endpoint; its domain type still requires validation.

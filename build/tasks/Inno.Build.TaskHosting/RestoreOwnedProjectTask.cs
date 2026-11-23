@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Inno.Core.IO;
+using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+using Inno.Core.IO;
 
 namespace Inno.Build.TaskHosting;
 
@@ -13,7 +15,7 @@ namespace Inno.Build.TaskHosting;
 /// Coordinates SDK restore writes for explicitly selected project closures.
 /// Parent solution entry points are excluded from these owned restores.
 /// </summary>
-public sealed class RestoreOwnedProjectTask : Microsoft.Build.Utilities.Task, ICancelableTask
+public sealed class RestoreOwnedProjectTask : Task, ICancelableTask
 {
     private readonly object m_gate = new();
     private readonly CancellationTokenSource m_cancellation = new();
@@ -49,9 +51,13 @@ public sealed class RestoreOwnedProjectTask : Microsoft.Build.Utilities.Task, IC
         try
         {
             if (BuildEngine is not IBuildEngine3 engine || !Path.IsPathFullyQualified(LockPath))
+            {
                 throw new ArgumentException("Owned restore requires an MSBuild node and an absolute write-owner lock.");
+            }
             if (Projects.Length == 0)
+            {
                 throw new ArgumentException("Owned restore requires at least one explicitly selected project.");
+            }
             CancellationToken token = m_cancellation.Token;
             token.ThrowIfCancellationRequested();
             var projects = new List<string>(Projects.Length);
@@ -60,7 +66,9 @@ public sealed class RestoreOwnedProjectTask : Microsoft.Build.Utilities.Task, IC
             {
                 string path = project.GetMetadata("FullPath");
                 if (!File.Exists(path))
+                {
                     throw new FileNotFoundException("An owned restore project is missing.", path);
+                }
                 var properties = new Hashtable(StringComparer.OrdinalIgnoreCase);
                 Apply(project.GetMetadata("AdditionalProperties").Split(';', StringSplitOptions.RemoveEmptyEntries), properties);
                 Apply(Properties, properties);
@@ -72,7 +80,9 @@ public sealed class RestoreOwnedProjectTask : Microsoft.Build.Utilities.Task, IC
             try
             {
                 ownership = FileLease.AcquireAsync(LockPath, Timeout.InfiniteTimeSpan, token)
-                    .AsTask().GetAwaiter().GetResult();
+                    .AsTask()
+                    .GetAwaiter()
+                    .GetResult();
             }
             finally
             {
@@ -89,13 +99,23 @@ public sealed class RestoreOwnedProjectTask : Microsoft.Build.Utilities.Task, IC
                 {
                     "SolutionPath", "SolutionDir", "SolutionName", "SolutionFileName", "SolutionExt",
                     "RestoreGraphProjectInput", "_RestoreSolutionFileUsed"
-                }.Concat(Projects[index].GetMetadata("GlobalPropertiesToRemove")
-                    .Split(';', StringSplitOptions.RemoveEmptyEntries))
+                }
+                    .Concat(
+                        Projects[index].GetMetadata("GlobalPropertiesToRemove")
+                            .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                    )
                     .Where(static name => !name.Equals("ExcludeRestorePackageImports", StringComparison.OrdinalIgnoreCase))
-                    .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
             }
-            BuildEngineResult result = engine.BuildProjectFilesInParallel(projects.ToArray(), ["Restore"],
-                globals.ToArray(), removed, versions, returnTargetOutputs: false);
+            BuildEngineResult result = engine.BuildProjectFilesInParallel(
+                projects.ToArray(),
+                ["Restore"],
+                globals.ToArray(),
+                removed,
+                versions,
+                returnTargetOutputs: false
+            );
             token.ThrowIfCancellationRequested();
             return result.Result;
         }
@@ -121,8 +141,12 @@ public sealed class RestoreOwnedProjectTask : Microsoft.Build.Utilities.Task, IC
     public void Cancel()
     {
         lock (m_gate)
+        {
             if (!m_finished)
+            {
                 m_cancellation.Cancel();
+            }
+        }
     }
 
     private static void Apply(
@@ -133,8 +157,10 @@ public sealed class RestoreOwnedProjectTask : Microsoft.Build.Utilities.Task, IC
         {
             int separator = declaration.IndexOf('=');
             if (separator <= 0)
+            {
                 throw new ArgumentException("Restore properties require explicit name=value declarations.");
-            properties[declaration[..separator]] = Microsoft.Build.Evaluation.ProjectCollection.Unescape(declaration[(separator + 1)..]);
+            }
+            properties[declaration[..separator]] = ProjectCollection.Unescape(declaration[(separator + 1)..]);
         }
     }
 }

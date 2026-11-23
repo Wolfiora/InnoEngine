@@ -41,21 +41,32 @@ public sealed class CoreClrDeploymentCompiler : IManagedDeploymentCompiler
         ArgumentNullException.ThrowIfNull(workspaces);
         m_hostPath = hostPath;
         m_workspaces = workspaces;
-        capabilities = new ManagedDeploymentCapabilities(runtimeIdentifiers,
-            dynamicCode: true, aheadOfTime: false, nativeStaticLinking: false);
+        this.capabilities = new ManagedDeploymentCapabilities(
+            runtimeIdentifiers,
+            dynamicCode: true,
+            aheadOfTime: false,
+            nativeStaticLinking: false
+        );
     }
 
-    /// <inheritdoc />
-    public ManagedDeploymentId id => ManagedDeploymentId.coreClr;
+    /// <inheritdoc/>
+    public ManagedDeploymentID id => ManagedDeploymentID.coreClr;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ManagedDeploymentCapabilities capabilities { get; }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ValueTask<ManagedDeploymentResult> CompileAsync(
         ManagedDeploymentRequest request,
         CancellationToken cancellationToken = default
-    ) => DotNetDeploymentPublisher.PublishAsync(id, capabilities, m_hostPath, m_workspaces, request,
+    ) => DotNetDeploymentPublisher.PublishAsync(
+        id,
+        capabilities,
+        m_hostPath,
+        m_workspaces,
+        request,
         ["SelfContained=true", "PublishSingleFile=true", "PublishTrimmed=true", "TrimMode=full",
-            "IncludeNativeLibrariesForSelfExtract=true"], cancellationToken);
+            "IncludeNativeLibrariesForSelfExtract=true"],
+        cancellationToken
+    );
 }

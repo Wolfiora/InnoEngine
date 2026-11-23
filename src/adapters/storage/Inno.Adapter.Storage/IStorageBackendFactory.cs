@@ -11,7 +11,7 @@ public interface IStorageBackendFactory
     /// <summary>
     /// Gets the exact registrations available in this composition snapshot.
     /// </summary>
-    IReadOnlyList<StorageBackendId> supportedBackends { get; }
+    IReadOnlyList<StorageBackendID> supportedBackends { get; }
 
     /// <summary>
     /// Creates isolated storage for a logical application namespace.
@@ -29,7 +29,7 @@ public interface IStorageBackendFactory
     /// Thrown when the catalog does not contain the selected backend.
     /// </exception>
     IApplicationStorage CreateStorage(
-        StorageBackendId backend,
+        StorageBackendID backend,
         StorageScope scope
     );
 }

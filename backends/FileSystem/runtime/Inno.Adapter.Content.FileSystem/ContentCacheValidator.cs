@@ -17,17 +17,21 @@ internal static class ContentCacheValidator
         CancellationToken cancellationToken
     ) {
         if (!Directory.Exists(root) || (File.GetAttributes(root) & FileAttributes.ReparsePoint) != 0)
+        {
             return false;
-        HashSet<string> files = new(StringComparer.Ordinal);
-        HashSet<string> directories = new(StringComparer.Ordinal);
+        }
+        var files = new HashSet<string>(StringComparer.Ordinal);
+        var directories = new HashSet<string>(StringComparer.Ordinal);
         foreach (ContentEntry entry in index.entries)
         {
             string key = entry.key.value!;
             files.Add(key);
             for (int separator = key.IndexOf('/'); separator >= 0; separator = key.IndexOf('/', separator + 1))
+            {
                 directories.Add(key[..separator]);
+            }
         }
-        Stack<string> pending = new();
+        var pending = new Stack<string>();
         pending.Push(root);
         while (pending.TryPop(out string? directory))
         {
@@ -36,32 +40,44 @@ internal static class ContentCacheValidator
                 cancellationToken.ThrowIfCancellationRequested();
                 FileAttributes attributes = File.GetAttributes(path);
                 if ((attributes & FileAttributes.ReparsePoint) != 0)
+                {
                     return false;
+                }
                 string key = Path.GetRelativePath(root, path).Replace('\\', '/');
                 if ((attributes & FileAttributes.Directory) != 0)
                 {
                     if (!directories.Remove(key))
+                    {
                         return false;
+                    }
                     pending.Push(path);
                     continue;
                 }
                 if (!files.Remove(key))
+                {
                     return false;
+                }
             }
         }
         if (files.Count != 0 || directories.Count != 0)
+        {
             return false;
+        }
         foreach (ContentEntry entry in index.entries)
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                using FileStream input = new(Resolve(root, entry.key), FileMode.Open, FileAccess.Read, FileShare.Read);
+                using var input = new FileStream(Resolve(root, entry.key), FileMode.Open, FileAccess.Read, FileShare.Read);
                 if (input.Length != entry.length)
+                {
                     return false;
+                }
                 string hash = ComputeHash(input, cancellationToken);
                 if (!string.Equals(hash, entry.contentHash, StringComparison.Ordinal))
+                {
                     return false;
+                }
             }
             catch (FileNotFoundException)
             {

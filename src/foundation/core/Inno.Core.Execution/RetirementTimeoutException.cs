@@ -19,5 +19,5 @@ public sealed class RetirementTimeoutException : RetirementPendingException
     public RetirementTimeoutException(
         string message,
         Exception? innerException = null
-    ) : base(message, innerException) { }
+    ) : base(message, innerException) {}
 }

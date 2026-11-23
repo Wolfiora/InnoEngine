@@ -7,12 +7,15 @@ internal readonly struct HierarchyStyle
 {
     private readonly float m_zoom;
 
-    internal HierarchyStyle(EditorStyleMetrics metrics) => m_zoom = metrics.zoom;
+    internal HierarchyStyle(EditorStyleMetrics metrics)
+    {
+        m_zoom = metrics.zoom;
+    }
 
     /// <summary>
     /// Gets the text color of inactive hierarchy entries.
     /// </summary>
-    internal static Vector4 inactiveText { get; } = new(0.52f, 0.52f, 0.54f, EditorPalette.opacityOpaque);
+    internal static Vector4 inactiveText { get; } = new(0.52f, 0.52f, 0.54f, EditorPalette.C_OPACITY_OPAQUE);
 
     /// <summary>
     /// Gets hierarchy item spacing.

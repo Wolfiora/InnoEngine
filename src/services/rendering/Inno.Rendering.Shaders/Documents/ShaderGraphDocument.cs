@@ -13,11 +13,32 @@ public static class ShaderGraphDocument
     /// <summary>
     /// Identifies the graph metadata containing the source-free material and pass contract.
     /// </summary>
-    public const string definitionKey = "inno.shader.definition";
+    public const string C_DEFINITION_KEY = "inno.shader.definition";
+
     /// <summary>
     /// Identifies the optional domain target; absent means explicitly authored generic stages.
     /// </summary>
-    public const string targetKey = "inno.shader.target";
+    public const string C_TARGET_KEY = "inno.shader.target";
+
+    /// <summary>
+    /// Identifies a stage output node; its incoming edges name the stage's GPU outputs.
+    /// </summary>
+    public const string C_OUTPUT_DEFINITION_ID = "inno.shader.stage-output";
+
+    /// <summary>
+    /// Identifies a node property containing its owning stage output node identity.
+    /// </summary>
+    public const string C_STAGE_KEY = "stage";
+
+    /// <summary>
+    /// Identifies the structured settings stored on a stage output node.
+    /// </summary>
+    public const string C_SETTINGS_KEY = "settings";
+
+    /// <summary>
+    /// Prefixes stable port IDs storing explicit typed defaults for unconnected inputs.
+    /// </summary>
+    public const string C_INPUT_DEFAULT_PREFIX = "input-default.";
 
     /// <summary>
     /// Reads the stable domain target assignment without resolving extension instances.
@@ -38,8 +59,9 @@ public static class ShaderGraphDocument
         GraphDocument graph,
         SerializationRegistry serialization,
         SerializationContext context
-    )
-        => graph.metadata.TryGetValue(targetKey, out GraphSerializedValue? value) ? Decode<string>(value, serialization, context) : "";
+    ) => graph.metadata.TryGetValue(C_TARGET_KEY, out GraphSerializedValue? value)
+         ? Decode<string>(value, serialization, context)
+         : string.Empty;
 
     /// <summary>
     /// Assigns a domain target by stable identity without retaining its current provider.
@@ -47,7 +69,7 @@ public static class ShaderGraphDocument
     /// <param name="graph">
     /// Document being authored.
     /// </param>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// Stable target identity; empty selects explicit generic stage authoring.
     /// </param>
     /// <param name="serialization">
@@ -58,32 +80,20 @@ public static class ShaderGraphDocument
     /// </param>
     public static void SetTarget(
         GraphDocument graph,
-        string targetId,
+        string targetID,
         SerializationRegistry serialization,
         SerializationContext context
     ) {
-        ArgumentNullException.ThrowIfNull(targetId);
-        if (targetId.Length == 0)
-            graph.RemoveMetadata(targetKey);
+        ArgumentNullException.ThrowIfNull(targetID);
+        if (targetID.Length == 0)
+        {
+            graph.RemoveMetadata(C_TARGET_KEY);
+        }
         else
-            graph.SetMetadata(targetKey, Encode(targetId, serialization, context));
+        {
+            graph.SetMetadata(C_TARGET_KEY, Encode(targetID, serialization, context));
+        }
     }
-    /// <summary>
-    /// Identifies a stage output node; its incoming edges name the stage's GPU outputs.
-    /// </summary>
-    public const string outputDefinitionId = "inno.shader.stage-output";
-    /// <summary>
-    /// Identifies a node property containing its owning stage output node identity.
-    /// </summary>
-    public const string stageKey = "stage";
-    /// <summary>
-    /// Identifies the structured settings stored on a stage output node.
-    /// </summary>
-    public const string settingsKey = "settings";
-    /// <summary>
-    /// Prefixes stable port IDs storing explicit typed defaults for unconnected inputs.
-    /// </summary>
-    public const string inputDefaultPrefix = "input-default.";
 
     /// <summary>
     /// Creates an empty graph with a source-free shader contract; incomplete graphs remain serializable.
@@ -107,7 +117,7 @@ public static class ShaderGraphDocument
     ) {
         ArgumentNullException.ThrowIfNull(definition);
         var graph = new GraphDocument();
-        graph.SetMetadata(definitionKey, Encode(serialization.Serialize(definition, context), serialization, context));
+        graph.SetMetadata(C_DEFINITION_KEY, Encode(serialization.Serialize(definition, context), serialization, context));
         ShaderGraphPrograms.Write(graph, [], serialization, context);
         return graph;
     }
@@ -133,8 +143,10 @@ public static class ShaderGraphDocument
         SerializationContext context
     ) {
         ArgumentNullException.ThrowIfNull(graph);
-        if (!graph.metadata.TryGetValue(definitionKey, out GraphSerializedValue? value))
+        if (!graph.metadata.TryGetValue(C_DEFINITION_KEY, out GraphSerializedValue? value))
+        {
             throw new InvalidOperationException("The shader graph has no program definition.");
+        }
         return serialization.Deserialize<ShaderDefinition>(Decode<byte[]>(value, serialization, context), context);
     }
 
@@ -225,91 +237,5 @@ public static class ShaderGraphDocument
         T defaultValue,
         SerializationRegistry serialization,
         SerializationContext context
-    )
-        => node.TryGetValue(key, out GraphSerializedValue? value) ? Decode<T>(value!, serialization, context) : defaultValue;
-}
-
-/// <summary>
-/// Stores one stage's explicit output interface and compute dimensions inside its output node.
-/// </summary>
-public sealed class ShaderGraphStageSettings : ISerializable
-{
-    /// <summary>
-    /// Gets or sets the programmable stage.
-    /// </summary>
-    [SerializableProperty] public ShaderStage stage { get; set; } = ShaderStage.Fragment;
-    /// <summary>
-    /// Gets or sets output ports and their GPU destinations.
-    /// </summary>
-    [SerializableProperty] public ShaderGraphOutput[] outputs { get; set; } = [];
-    /// <summary>
-    /// Gets or sets compute workgroup width.
-    /// </summary>
-    [SerializableProperty] public int threadsX { get; set; } = 1;
-    /// <summary>
-    /// Gets or sets compute workgroup height.
-    /// </summary>
-    [SerializableProperty] public int threadsY { get; set; } = 1;
-    /// <summary>
-    /// Gets or sets compute workgroup depth.
-    /// </summary>
-    [SerializableProperty] public int threadsZ { get; set; } = 1;
-}
-
-/// <summary>
-/// Stores one stable output port's destination, independent of adapter source syntax.
-/// </summary>
-public struct ShaderGraphOutput
-{
-    /// <summary>
-    /// Gets or sets the stable input port identity on the stage output node.
-    /// </summary>
-    public string id { get; set; }
-    /// <summary>
-    /// Gets or sets the GPU destination category.
-    /// </summary>
-    public ShaderIrOutputKind kind { get; set; }
-    /// <summary>
-    /// Gets or sets the varying semantic; empty for fixed position, color or depth outputs.
-    /// </summary>
-    public string semantic { get; set; }
-    /// <summary>
-    /// Gets or sets the varying or attachment index.
-    /// </summary>
-    public int location { get; set; }
-}
-
-/// <summary>
-/// Stores a stage input node's logical interface without native names or GPU handles.
-/// </summary>
-public sealed class ShaderGraphInputSettings : ISerializable
-{
-    /// <summary>
-    /// Gets or sets the stable logical binding identity.
-    /// </summary>
-    [SerializableProperty] public string id { get; set; } = "input";
-    /// <summary>
-    /// Gets or sets the complete neutral type descriptor.
-    /// </summary>
-    [SerializableProperty] public ShaderGraphType type { get; set; } = new();
-    /// <summary>
-    /// Gets or sets the stage input category.
-    /// </summary>
-    [SerializableProperty] public ShaderIrInputKind kind { get; set; }
-    /// <summary>
-    /// Gets or sets the target semantic, not a native expression.
-    /// </summary>
-    [SerializableProperty] public string semantic { get; set; } = "position";
-    /// <summary>
-    /// Gets or sets the interface index.
-    /// </summary>
-    [SerializableProperty] public int location { get; set; }
-
-    /// <summary>
-    /// Validates the persisted descriptor and freezes its stage binding.
-    /// </summary>
-    /// <returns>
-    /// An immutable backend-neutral input binding.
-    /// </returns>
-    public ShaderIrStageInput CreateBinding() => new(id, type.CreateType(), kind, semantic, location);
+    ) => node.TryGetValue(key, out GraphSerializedValue? value) ? Decode<T>(value!, serialization, context) : defaultValue;
 }

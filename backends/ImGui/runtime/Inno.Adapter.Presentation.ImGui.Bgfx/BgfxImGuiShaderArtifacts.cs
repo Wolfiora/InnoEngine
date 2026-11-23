@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Inno.Rendering;
@@ -26,17 +27,21 @@ public static class BgfxImGuiShaderArtifacts
     {
         string resource = $"Inno.BuiltInShaders.ImGui.{api}";
         using Stream source = typeof(BgfxImGuiShaderArtifacts).Assembly.GetManifestResourceStream(resource)
-            ?? throw new InvalidDataException($"Missing precompiled ImGui shader '{resource}'. Rebuild or repair the adapter installation; runtime source compilation is not supported.");
+            ?? throw new InvalidDataException(
+                $"Missing precompiled ImGui shader '{resource}'. Rebuild or repair the adapter installation; runtime source compilation is not supported."
+            );
         using var bytes = new MemoryStream();
         source.CopyTo(bytes);
         GraphicsPipelineDescriptor program = GraphicsProgramArtifactCodec.Decode(bytes.ToArray(), BgfxImGuiRenderer.vertexLayout);
-        var bindings = program.bindings;
+        IReadOnlyList<RenderShaderBindingDescriptor> bindings = program.bindings;
         RenderShaderBindingDescriptor? texture = bindings.SingleOrDefault(static binding => binding.id.value == "s_tex");
         RenderShaderBindingDescriptor? outputEncoding = bindings.SingleOrDefault(static binding => binding.id.value == "outputEncoding");
         if (bindings.Count != 2 || texture is null || texture.kind != RenderShaderBindingKind.Texture
             || texture.slot != 0 || outputEncoding is null
-            || outputEncoding.kind != RenderShaderBindingKind.Uniform)
+            || outputEncoding.kind != RenderShaderBindingKind.Uniform
+        ) {
             throw new InvalidDataException("The built-in ImGui graph must expose s_tex and the outputEncoding render-pass uniform.");
+        }
         return program;
     }
 }

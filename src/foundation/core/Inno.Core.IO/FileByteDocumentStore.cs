@@ -23,30 +23,32 @@ public sealed class FileByteDocumentStore : IByteDocumentStore
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         if (!Path.IsPathFullyQualified(path))
+        {
             throw new ArgumentException("A file document requires an absolute path.", nameof(path));
+        }
         m_path = Path.GetFullPath(path);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string documentName => m_path;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool canWrite => true;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool exists => File.Exists(m_path);
 
-    /// <inheritdoc />
-    /// <remarks>
-    /// One rename-compatible handle pins the selected complete publication until its owned bytes are read.
-    /// Writers must atomically replace the document rather than modify the selected file in place.
-    /// </remarks>
     /// <exception cref="IOException">
     /// The document cannot be read completely or exceeds the maximum supported byte-array size.
     /// </exception>
     /// <exception cref="UnauthorizedAccessException">
     /// The selected location denies reading or names a directory instead of a document.
     /// </exception>
+    /// <remarks>
+    /// One rename-compatible handle pins the selected complete publication until its owned bytes are read.
+    /// Writers must atomically replace the document rather than modify the selected file in place.
+    /// </remarks>
+    /// <inheritdoc/>
     public byte[]? Read()
     {
         try
@@ -54,7 +56,9 @@ public sealed class FileByteDocumentStore : IByteDocumentStore
             using var stream = new FileStream(m_path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
             long length = stream.Length;
             if (length > Array.MaxLength)
+            {
                 throw new IOException("The file document exceeds the maximum supported byte-array size.");
+            }
             byte[] data = GC.AllocateUninitializedArray<byte>((int)length);
             stream.ReadExactly(data);
             return data;
@@ -69,6 +73,6 @@ public sealed class FileByteDocumentStore : IByteDocumentStore
         }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Write(ReadOnlySpan<byte> data) => AtomicFile.WriteAllBytes(m_path, data);
 }

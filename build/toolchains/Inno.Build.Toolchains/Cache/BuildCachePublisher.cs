@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -38,10 +39,14 @@ public sealed class BuildCachePublisher
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
         if (!Path.IsPathFullyQualified(directory))
+        {
             throw new ArgumentException("A cache publisher requires an absolute root.", nameof(directory));
+        }
         m_root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
         if (!Enum.IsDefined(role))
+        {
             throw new ArgumentOutOfRangeException(nameof(role));
+        }
         m_role = role;
     }
 
@@ -75,7 +80,9 @@ public sealed class BuildCachePublisher
     {
         string path = Path.Combine(m_root, "owner.lock");
         if (!File.Exists(path))
+        {
             using (await FileLease.AcquireAsync(path, TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(false)) { }
+        }
         return await FileLease.AcquireSharedAsync(path, TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(false);
     }
 
@@ -95,11 +102,11 @@ public sealed class BuildCachePublisher
     /// <param name="currentKey">
     /// A product/target/configuration root identity, or null for an unselected generation.
     /// </param>
+    /// <param name="targetID">
+    /// The producer's product target, or null for a shared host generation.
+    /// </param>
     /// <param name="cancellationToken">
     /// Cancels before metadata selection.
-    /// </param>
-    /// <param name="targetId">
-    /// The producer's product target, or null for a shared host generation.
     /// </param>
     /// <exception cref="IOException">
     /// An owned path escapes the boundary, crosses a directory link, or contains an invalid file link.
@@ -117,27 +124,39 @@ public sealed class BuildCachePublisher
         string leasePath,
         IReadOnlyList<string> dependencies,
         string? currentKey,
-        string? targetId,
+        string? targetID,
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(dependencies);
-        if (targetId is not null)
-            ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
+        if (targetID is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(targetID);
+        }
         BuildCacheCleanupPlan.RequireChild(m_root, directory);
         BuildCacheCleanupPlan.RequireChild(m_root, leasePath);
         if (!Directory.Exists(directory))
+        {
             throw new DirectoryNotFoundException(directory);
+        }
         cancellationToken.ThrowIfCancellationRequested();
         string relative = Path.GetRelativePath(m_root, directory).Replace('\\', '/');
         long bytes = BuildCacheFileInventory.Measure(directory, m_role, cancellationToken);
-        var metadata = new Entry(relative, Path.GetRelativePath(m_root, leasePath), DateTime.UtcNow,
-            dependencies.Select(Path.GetFullPath).ToArray(), bytes, targetId);
+        var metadata = new Entry(
+            relative,
+            Path.GetRelativePath(m_root, leasePath),
+            DateTime.UtcNow,
+            dependencies.Select(Path.GetFullPath).ToArray(),
+            bytes,
+            targetID
+        );
         AtomicFile.WriteAllBytes(Path.Combine(m_root, Key(relative) + ".cache.json"), WriteEntry(metadata));
         if (currentKey is not null && m_role == BuildCacheArtifactRole.ImmutableArtifact)
         {
             string pointer = Path.Combine(m_root, Key(currentKey) + ".current");
             if (!File.Exists(pointer) || File.ReadAllText(pointer) != relative)
+            {
                 AtomicFile.WriteAllBytes(pointer, Encoding.UTF8.GetBytes(relative));
+            }
         }
     }
 
@@ -153,17 +172,12 @@ public sealed class BuildCachePublisher
     /// <param name="dependencies">
     /// The exact dependency closure, in its original publication order.
     /// </param>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The producer's explicit target, or null for shared host work.
     /// </param>
     /// <param name="cancellationToken">
     /// Cancels inspection or initial registration before publication.
     /// </param>
-    /// <remarks>
-    /// This confirms ownership, not content integrity. The producer must verify the immutable payload itself.
-    /// Existing registration age is retained; use an active lease or a current generation dependency to protect
-    /// consumers. This operation neither selects a current root nor records a new use time.
-    /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// This publisher does not own immutable artifacts.
     /// </exception>
@@ -176,18 +190,27 @@ public sealed class BuildCachePublisher
     /// <exception cref="OperationCanceledException">
     /// Inspection or registration was canceled.
     /// </exception>
+    /// <remarks>
+    /// This confirms ownership, not content integrity. The producer must verify the immutable payload itself.
+    /// Existing registration age is retained; use an active lease or a current generation dependency to protect
+    /// consumers. This operation neither selects a current root nor records a new use time.
+    /// </remarks>
     public void EnsureImmutableRegistration(
         string directory,
         string leasePath,
         IReadOnlyList<string> dependencies,
-        string? targetId,
+        string? targetID,
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(dependencies);
-        if (targetId is not null)
-            ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
+        if (targetID is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(targetID);
+        }
         if (m_role != BuildCacheArtifactRole.ImmutableArtifact)
+        {
             throw new InvalidOperationException("Only immutable artifacts can retain publication registration.");
+        }
         BuildCacheCleanupPlan.RequireChild(m_root, directory);
         BuildCacheCleanupPlan.RequireChild(m_root, leasePath);
         string relative = Path.GetRelativePath(m_root, directory).Replace('\\', '/');
@@ -195,16 +218,18 @@ public sealed class BuildCachePublisher
         cancellationToken.ThrowIfCancellationRequested();
         if (!File.Exists(record))
         {
-            Record(directory, leasePath, dependencies, null, targetId, cancellationToken);
+            Record(directory, leasePath, dependencies, null, targetID, cancellationToken);
             return;
         }
         Entry previous = ReadEntry(record);
         long bytes = BuildCacheFileInventory.Measure(directory, m_role, cancellationToken);
         if (previous.directory != relative
-            || !BuildCacheInventory.pathComparer.Equals(PathBoundary.Resolve(m_root, previous.leasePath), Path.GetFullPath(leasePath))
-            || !previous.dependencies.SequenceEqual(dependencies.Select(Path.GetFullPath), BuildCacheInventory.pathComparer)
-            || previous.targetId != targetId || previous.bytes != bytes)
+            || !BuildCacheInventory.PATH_COMPARER.Equals(PathBoundary.Resolve(m_root, previous.leasePath), Path.GetFullPath(leasePath))
+            || !previous.dependencies.SequenceEqual(dependencies.Select(Path.GetFullPath), BuildCacheInventory.PATH_COMPARER)
+            || previous.targetID != targetID || previous.bytes != bytes
+        ) {
             throw new InvalidDataException("Immutable ownership differs from its completed publication registration.");
+        }
     }
 
     /// <summary>
@@ -229,7 +254,7 @@ public sealed class BuildCachePublisher
     /// <param name="leasePath">
     /// The caller's persistent exclusive producer lease outside the workspace.
     /// </param>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The explicit product target, or null for shared host work.
     /// </param>
     /// <param name="cancellationToken">
@@ -244,21 +269,30 @@ public sealed class BuildCachePublisher
     public void BeginWorkingDirectory(
         string directory,
         string leasePath,
-        string? targetId,
+        string? targetID,
         CancellationToken cancellationToken = default
     ) {
         if (m_role != BuildCacheArtifactRole.ReusableWorkspace)
+        {
             throw new InvalidOperationException("Working registration requires a reusable workspace publisher.");
+        }
         BuildCacheCleanupPlan.RequireChild(m_root, directory);
         BuildCacheCleanupPlan.RequireChild(m_root, leasePath);
         cancellationToken.ThrowIfCancellationRequested();
         string relative = Path.GetRelativePath(m_root, directory).Replace('\\', '/');
         string record = Path.Combine(m_root, Key(relative) + ".cache.json");
         if (Directory.Exists(directory) && !File.Exists(record))
+        {
             throw new InvalidOperationException($"An existing unregistered workspace cannot be adopted: '{directory}'.");
+        }
         if (File.Exists(record) && ReadEntry(record).directory != relative)
+        {
             throw new InvalidDataException("Working ownership has an inconsistent directory identity.");
-        AtomicFile.WriteAllBytes(record, WriteEntry(new(relative, Path.GetRelativePath(m_root, leasePath).Replace('\\', '/'), DateTime.UtcNow, [], 0, targetId)));
+        }
+        AtomicFile.WriteAllBytes(
+            record,
+            WriteEntry(new Entry(relative, Path.GetRelativePath(m_root, leasePath).Replace('\\', '/'), DateTime.UtcNow, [], 0, targetID))
+        );
         Directory.CreateDirectory(directory);
     }
 
@@ -296,7 +330,9 @@ public sealed class BuildCachePublisher
         BuildCacheCleanupPlan.RequireChild(m_root, directory);
         BuildCacheCleanupPlan.RequireChild(m_root, leasePath);
         using FileLease writing = FileLease.AcquireAsync(leasePath, TimeSpan.FromSeconds(30), cancellationToken)
-            .AsTask().GetAwaiter().GetResult();
+            .AsTask()
+            .GetAwaiter()
+            .GetResult();
         string relative = Path.GetRelativePath(m_root, directory).Replace('\\', '/');
         string record = Path.Combine(m_root, Key(relative) + ".cache.json");
         string[] retained = [];
@@ -304,16 +340,19 @@ public sealed class BuildCachePublisher
         {
             Entry previous = ReadEntry(record);
             if (previous.directory != relative
-                || !BuildCacheInventory.pathComparer.Equals(PathBoundary.Resolve(m_root, previous.leasePath), Path.GetFullPath(leasePath)))
+                || !BuildCacheInventory.PATH_COMPARER.Equals(PathBoundary.Resolve(m_root, previous.leasePath), Path.GetFullPath(leasePath))
+            ) {
                 throw new InvalidDataException("Process ownership has an inconsistent directory or lease identity.");
+            }
             retained = previous.dependencies;
         }
         string[] closure = retained.Concat(dependencies.Select(Path.GetFullPath))
-            .Distinct(BuildCacheInventory.pathComparer).ToArray();
+            .Distinct(BuildCacheInventory.PATH_COMPARER)
+            .ToArray();
         string owners = Path.Combine(directory, "owners");
         Directory.CreateDirectory(owners);
         ProcessOwnerStamp stamp = ProcessOwnerStamp.CaptureCurrent();
-        string process = stamp.processId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        string process = stamp.processId.ToString(CultureInfo.InvariantCulture);
         AtomicFile.WriteAllBytes(Path.Combine(owners, process + ".pid"), JsonSerializer.SerializeToUtf8Bytes(stamp));
         Record(directory, leasePath, closure, null, null, cancellationToken);
     }
@@ -336,127 +375,184 @@ public sealed class BuildCachePublisher
     ) {
         BuildCacheCleanupPlan.RequireChild(m_root, path);
         foreach (string dependency in dependencies)
+        {
             BuildCacheCleanupPlan.RequireChild(m_root, dependency);
+        }
         string relative = Path.GetRelativePath(m_root, path).Replace('\\', '/');
-        AtomicFile.WriteAllBytes(Path.Combine(m_root, Key(relative) + ".metadata.json"),
-            JsonSerializer.SerializeToUtf8Bytes(new Index(relative, dependencies.ToArray())));
+        AtomicFile.WriteAllBytes(
+            Path.Combine(m_root, Key(relative) + ".metadata.json"),
+            JsonSerializer.SerializeToUtf8Bytes(new Index(relative, dependencies.ToArray()))
+        );
     }
 
-    private void RetireMetadata(CancellationToken cancellation)
+    private void RetireMetadata(CancellationToken cancellationToken)
     {
         if (!Directory.Exists(m_root))
-            return;
-        HashSet<string> currents = ReadRoots(cancellation).ToHashSet(BuildCacheInventory.pathComparer);
-        foreach (string pointer in m_role == BuildCacheArtifactRole.ImmutableArtifact
-            ? Directory.EnumerateFiles(m_root, "*.current") : Enumerable.Empty<string>())
         {
+            return;
+        }
+        HashSet<string> currents = ReadRoots(cancellationToken).ToHashSet(BuildCacheInventory.PATH_COMPARER);
+        foreach (string pointer in m_role == BuildCacheArtifactRole.ImmutableArtifact
+                                   ? Directory.EnumerateFiles(m_root, "*.current")
+                                   : []
+        ) {
             string selected = PathBoundary.Resolve(m_root, File.ReadAllText(PathBoundary.RequireUnlinkedPath(m_root, pointer)));
             if (!Directory.Exists(selected))
+            {
                 throw new InvalidDataException($"Current cache publication is missing: '{selected}'.");
+            }
         }
         foreach (string record in Directory.EnumerateFiles(m_root, "*.cache.json").Order(StringComparer.Ordinal))
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             Entry entry = ReadEntry(PathBoundary.RequireUnlinkedPath(m_root, record));
             if (Path.GetFileName(record) != Key(entry.directory) + ".cache.json")
+            {
                 throw new InvalidDataException("Cache metadata has an inconsistent owner identity.");
+            }
             string directory = PathBoundary.Resolve(m_root, entry.directory);
             string leaf = PathBoundary.Resolve(m_root, entry.leasePath);
             if (Directory.Exists(directory) || currents.Contains(directory))
+            {
                 continue;
+            }
             PathBoundary.RequireUnlinkedPath(m_root, leaf);
-            using (FileLease.AcquireAsync(leaf, TimeSpan.Zero, cancellation).AsTask().GetAwaiter().GetResult()) { }
+            using (FileLease.AcquireAsync(leaf, TimeSpan.Zero, cancellationToken).AsTask().GetAwaiter().GetResult()) { }
             File.Delete(leaf);
             // Keep explicit retirement authority until unlinking the leaf succeeds.
             File.Delete(record);
         }
         foreach (string record in Directory.EnumerateFiles(m_root, "*.metadata.json").Order(StringComparer.Ordinal))
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             Index index = JsonSerializer.Deserialize<Index>(File.ReadAllBytes(PathBoundary.RequireUnlinkedPath(m_root, record)))
-                ?? throw new InvalidDataException("Cache index ownership is incomplete.");
-            if (index.dependencies is null || index.dependencies.Length == 0 || Path.GetFileName(record) != Key(index.path) + ".metadata.json")
+                          ?? throw new InvalidDataException("Cache index ownership is incomplete.");
+            if (index.dependencies is null
+                || index.dependencies.Length == 0
+                || Path.GetFileName(record) != Key(index.path) + ".metadata.json"
+            ) {
                 throw new InvalidDataException("Cache index ownership is inconsistent.");
+            }
             string path = PathBoundary.Resolve(m_root, index.path);
             BuildCacheCleanupPlan.RequireChild(m_root, path);
             foreach (string dependency in index.dependencies)
+            {
                 BuildCacheCleanupPlan.RequireChild(m_root, dependency);
+            }
             if (index.dependencies.All(Directory.Exists))
+            {
                 continue;
+            }
             File.Delete(path);
             File.Delete(record);
         }
-        ProcessOwnedDirectory.RetireMetadataUnderOwnership(m_root, cancellation);
+        ProcessOwnedDirectory.RetireMetadataUnderOwnership(m_root, cancellationToken);
     }
 
-    private sealed record Index(
-        string path,
-        string[] dependencies
-    );
-
-    private IReadOnlyList<BuildCacheArtifactDescriptor> ReadArtifacts(CancellationToken cancellation)
+    private IReadOnlyList<BuildCacheArtifactDescriptor> ReadArtifacts(CancellationToken cancellationToken)
     {
         List<BuildCacheArtifactDescriptor> result = [];
         if (!Directory.Exists(m_root))
+        {
             return result;
+        }
         foreach (string path in Directory.EnumerateFiles(m_root, "*.cache.json").Order(StringComparer.Ordinal))
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             PathBoundary.RequireUnlinkedPath(m_root, path);
             Entry entry = ReadEntry(path);
             string directory = PathBoundary.Resolve(m_root, entry.directory);
             string lease = PathBoundary.Resolve(m_root, entry.leasePath);
             if (Path.GetFileName(path) != Key(entry.directory) + ".cache.json")
+            {
                 throw new InvalidDataException("Cache ownership metadata does not match its identity.");
+            }
             if (!Directory.Exists(directory))
+            {
                 continue;
+            }
             // Completed workspaces are measured by their sole writer. An unfinished registration
             // has zero bytes and must be inspected; this metadata never validates Native contents.
             long bytes = m_role == BuildCacheArtifactRole.ImmutableArtifact
-                || m_role == BuildCacheArtifactRole.ReusableWorkspace && entry.bytes > 0
-                ? entry.bytes : m_inventoryProgress?.Measure(directory, path, lease, m_role, cancellation)
-                    ?? BuildCacheFileInventory.Measure(directory, m_role, cancellation);
-            result.Add(new(directory, lease, entry.targetId, bytes, entry.lastUseUtc, entry.dependencies, m_role));
+                         || m_role == BuildCacheArtifactRole.ReusableWorkspace && entry.bytes > 0
+                         ? entry.bytes
+                         : m_inventoryProgress?.Measure(directory, path, lease, m_role, cancellationToken)
+                           ?? BuildCacheFileInventory.Measure(directory, m_role, cancellationToken);
+            result.Add(
+                new BuildCacheArtifactDescriptor(directory, lease, entry.targetID, bytes, entry.lastUseUtc, entry.dependencies, m_role)
+            );
         }
-        foreach (ProcessOwnedDirectoryDescriptor working in ProcessOwnedDirectory.ReadClaims(m_root, cancellation))
+        foreach (ProcessOwnedDirectoryDescriptor working in ProcessOwnedDirectory.ReadClaims(m_root, cancellationToken))
         {
-            if (result.Any(entry => BuildCacheInventory.pathComparer.Equals(entry.directory, working.directory)))
+            if (result.Any(entry => BuildCacheInventory.PATH_COMPARER.Equals(entry.directory, working.directory)))
+            {
                 continue;
+            }
             string metadata = Path.Combine(m_root, Key(Path.GetRelativePath(m_root, working.directory)) + ".work.json");
             long bytes = working.ownerState == ProcessOwnerState.Exited && m_inventoryProgress is not null
-                ? m_inventoryProgress.Measure(working.directory, metadata, working.leasePath, BuildCacheArtifactRole.ProcessWorkingDirectory, cancellation)
-                : BuildCacheFileInventory.Measure(working.directory, BuildCacheArtifactRole.ProcessWorkingDirectory, cancellation);
-            result.Add(new(working.directory, working.leasePath, null, bytes, Directory.GetLastWriteTimeUtc(working.directory), [], BuildCacheArtifactRole.ProcessWorkingDirectory));
+                         ? m_inventoryProgress.Measure(
+                             working.directory,
+                             metadata,
+                             working.leasePath,
+                             BuildCacheArtifactRole.ProcessWorkingDirectory,
+                             cancellationToken
+                         )
+                         : BuildCacheFileInventory.Measure(
+                             working.directory,
+                             BuildCacheArtifactRole.ProcessWorkingDirectory,
+                             cancellationToken
+                         );
+            result.Add(
+                new BuildCacheArtifactDescriptor(
+                    working.directory,
+                    working.leasePath,
+                    null,
+                    bytes,
+                    Directory.GetLastWriteTimeUtc(working.directory),
+                    [],
+                    BuildCacheArtifactRole.ProcessWorkingDirectory
+                )
+            );
         }
         return result;
     }
 
-    private IReadOnlyList<string> ReadRoots(CancellationToken cancellation)
+    private IReadOnlyList<string> ReadRoots(CancellationToken cancellationToken)
     {
         List<string> result = [];
         if (!Directory.Exists(m_root))
-            return result;
-        foreach (string path in m_role == BuildCacheArtifactRole.ImmutableArtifact
-            ? Directory.EnumerateFiles(m_root, "*.current").Order(StringComparer.Ordinal) : Enumerable.Empty<string>())
         {
-            cancellation.ThrowIfCancellationRequested();
+            return result;
+        }
+        foreach (string path in m_role == BuildCacheArtifactRole.ImmutableArtifact
+                                ? Directory.EnumerateFiles(m_root, "*.current").Order(StringComparer.Ordinal)
+                                : Enumerable.Empty<string>()
+        ) {
+            cancellationToken.ThrowIfCancellationRequested();
             PathBoundary.RequireUnlinkedPath(m_root, path);
             result.Add(PathBoundary.Resolve(m_root, File.ReadAllText(path)));
         }
         foreach (string path in Directory.EnumerateFiles(m_root, "*.cache.json").Order(StringComparer.Ordinal))
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             PathBoundary.RequireUnlinkedPath(m_root, path);
             Entry entry = ReadEntry(path);
             string directory = PathBoundary.Resolve(m_root, entry.directory);
             string owners = Path.Combine(directory, "owners");
             if (m_role != BuildCacheArtifactRole.ReusableWorkspace && Directory.Exists(owners) && PathBoundary.EnumerateFiles(owners)
-                .Where(static file => Path.GetExtension(file) == ".pid").Any(IsProcessAlive))
+                .Where(static file => Path.GetExtension(file) == ".pid")
+                .Any(IsProcessAlive)
+            ) {
                 result.Add(directory);
+            }
         }
-        foreach (ProcessOwnedDirectoryDescriptor working in ProcessOwnedDirectory.ReadClaims(m_root, cancellation))
+        foreach (ProcessOwnedDirectoryDescriptor working in ProcessOwnedDirectory.ReadClaims(m_root, cancellationToken))
+        {
             if (working.ownerState != ProcessOwnerState.Exited)
+            {
                 result.Add(working.directory);
+            }
+        }
         return result;
     }
 
@@ -466,14 +562,21 @@ public sealed class BuildCachePublisher
         {
             using JsonDocument document = JsonDocument.Parse(File.ReadAllBytes(marker));
             JsonElement root = document.RootElement;
-            if (!root.EnumerateObject().Select(static property => property.Name).Order(StringComparer.Ordinal)
-                .SequenceEqual(new[] { "processId", "startedUtcTicks" }, StringComparer.Ordinal))
+            if (!root.EnumerateObject()
+                .Select(static property => property.Name)
+                .Order(StringComparer.Ordinal)
+                .SequenceEqual(new[] { "processId", "startedUtcTicks" }, StringComparer.Ordinal)
+            ) {
                 return true;
-            var stamp = new ProcessOwnerStamp(root.GetProperty("processId").GetInt32(), root.GetProperty("startedUtcTicks").GetInt64());
+            }
+            var stamp = new ProcessOwnerStamp(
+                root.GetProperty("processId").GetInt32(),
+                root.GetProperty("startedUtcTicks").GetInt64()
+            );
             return stamp.Query() != ProcessOwnerState.Exited;
         }
         catch (Exception exception) when (exception is JsonException or ArgumentException or InvalidOperationException
-            or IOException or UnauthorizedAccessException or FormatException or OverflowException)
+                                          or IOException or UnauthorizedAccessException or FormatException or OverflowException)
         {
             return true;
         }
@@ -491,10 +594,12 @@ public sealed class BuildCachePublisher
             writer.WriteString("leasePath", entry.leasePath);
             writer.WriteString("lastUseUtc", entry.lastUseUtc);
             writer.WriteNumber("bytes", entry.bytes);
-            writer.WriteString("targetId", entry.targetId);
+            writer.WriteString("targetId", entry.targetID);
             writer.WriteStartArray("dependencies");
             foreach (string dependency in entry.dependencies)
+            {
                 writer.WriteStringValue(dependency);
+            }
             writer.WriteEndArray();
             writer.WriteEndObject();
         }
@@ -505,16 +610,35 @@ public sealed class BuildCachePublisher
     {
         using JsonDocument document = JsonDocument.Parse(File.ReadAllBytes(path));
         JsonElement root = document.RootElement;
-        if (!root.EnumerateObject().Select(static property => property.Name).Order(StringComparer.Ordinal)
-            .SequenceEqual(new[] { "bytes", "dependencies", "directory", "lastUseUtc", "leasePath", "targetId" }, StringComparer.Ordinal))
+        if (!root.EnumerateObject()
+            .Select(static property => property.Name)
+            .Order(StringComparer.Ordinal)
+            .SequenceEqual(new[] { "bytes", "dependencies", "directory", "lastUseUtc", "leasePath", "targetId" }, StringComparer.Ordinal)
+        ) {
             throw new InvalidDataException("Cache ownership requires one complete current record.");
+        }
         long bytes = root.GetProperty("bytes").GetInt64();
         if (bytes < 0)
+        {
             throw new InvalidDataException("Recorded cache size cannot be negative.");
-        return new(root.GetProperty("directory").GetString()!, root.GetProperty("leasePath").GetString()!,
-            root.GetProperty("lastUseUtc").GetDateTime(), root.GetProperty("dependencies").EnumerateArray()
-                .Select(static dependency => dependency.GetString()!).ToArray(), bytes, root.GetProperty("targetId").GetString());
+        }
+        return new(
+            root.GetProperty("directory").GetString()!,
+            root.GetProperty("leasePath").GetString()!,
+            root.GetProperty("lastUseUtc").GetDateTime(),
+            root.GetProperty("dependencies")
+                .EnumerateArray()
+                .Select(static dependency => dependency.GetString()!)
+                .ToArray(),
+            bytes,
+            root.GetProperty("targetId").GetString()
+        );
     }
+
+    private sealed record Index(
+        string path,
+        string[] dependencies
+    );
 
     private sealed record Entry(
         string directory,
@@ -522,6 +646,6 @@ public sealed class BuildCachePublisher
         DateTime lastUseUtc,
         string[] dependencies,
         long bytes,
-        string? targetId
+        string? targetID
     );
 }

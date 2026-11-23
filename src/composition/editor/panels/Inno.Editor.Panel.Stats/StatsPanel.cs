@@ -1,13 +1,16 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
-using Ui = Inno.Editor.ImGui.ImGui;
+
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Stats;
+
 /// <summary>
 /// Shows lightweight runtime metrics.
 /// </summary>
@@ -20,17 +23,16 @@ internal sealed class StatsPanel : EditorPanel
     private IReadOnlyList<EditorStatistic>? m_previousStatistics;
     private StatisticGroup[] m_groups = [];
     private (string label, string value)[] m_frameValues = [];
-    /// <summary>
-    /// Gets whether use window padding is active for the current instance.
-    /// </summary>
-    public override bool useWindowPadding => false;
 
     /// <summary>
     /// Creates the panel.
     /// </summary>
-    internal StatsPanel()
-    {
-    }
+    internal StatsPanel() {}
+
+    /// <summary>
+    /// Gets whether use window padding is active for the current instance.
+    /// </summary>
+    public override bool useWindowPadding => false;
 
     /// <summary>
     /// Draws this feature using the current editor presentation context.
@@ -55,9 +57,12 @@ internal sealed class StatsPanel : EditorPanel
         IReadOnlyList<EditorStatistic> statistics = context.statistics.GetSnapshot();
         if (!ReferenceEquals(statistics, m_previousStatistics))
         {
-            m_groups = statistics.GroupBy(static statistic => statistic.groupId)
-                .Select(static group => new StatisticGroup(group.First().groupName,
-                    group.Select(static value => (value.label, value.value)).ToArray())).ToArray();
+            m_groups = statistics.GroupBy(static statistic => statistic.groupID)
+                .Select(static group => new StatisticGroup(
+                    group.First().groupName,
+                    group.Select(static value => (value.label, value.value)).ToArray()
+                ))
+                .ToArray();
             m_previousStatistics = statistics;
         }
         if (m_groups.Length == 0)
@@ -66,10 +71,12 @@ internal sealed class StatsPanel : EditorPanel
             return;
         }
         foreach (StatisticGroup group in m_groups)
+        {
             DrawGroup(group.title, group.values);
+        }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override void OnDetach(EditorContext context)
     {
         m_statistics.Reset();
@@ -83,37 +90,45 @@ internal sealed class StatsPanel : EditorPanel
         ReadOnlySpan<(string label, string value)> values
     ) {
         EditorUI.current.widgets.CollectionSectionHeader(title);
-        System.Numerics.Vector2 padding = EditorUI.current.widgets.style.sectionPadding;
-        ImGuiTableFlags flags = ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg | ImGuiTableFlags.NoSavedSettings | ImGuiTableFlags.PadOuterX;
-        Ui.PushStyleVar((ImGuiStyleVar.CellPadding), new System.Numerics.Vector2(padding.X, C_ROW_PADDING * EditorUI.current.widgets.style.zoom));
-        Ui.PushStyleColor((ImGuiCol.TableRowBg), EditorPalette.collectionRow);
-        Ui.PushStyleColor((ImGuiCol.TableRowBgAlt), EditorPalette.collectionRowAlternate);
+        Vector2 padding = EditorUI.current.widgets.style.sectionPadding;
+        ImGuiTableFlags flags = ImGuiTableFlags.SizingStretchProp
+                                | ImGuiTableFlags.RowBg
+                                | ImGuiTableFlags.NoSavedSettings
+                                | ImGuiTableFlags.PadOuterX;
+        Gui.PushStyleVar(
+            (ImGuiStyleVar.CellPadding),
+            new Vector2(padding.X, C_ROW_PADDING * EditorUI.current.widgets.style.zoom)
+        );
+        Gui.PushStyleColor((ImGuiCol.TableRowBg), EditorPalette.collectionRow);
+        Gui.PushStyleColor((ImGuiCol.TableRowBgAlt), EditorPalette.collectionRowAlternate);
         try
         {
-            if (!Ui.BeginTable($"##stats_{title}", 2, flags, default(System.Numerics.Vector2), 0f))
+            if (!Gui.BeginTable($"##stats_{title}", 2, flags, default, 0f))
+            {
                 return;
+            }
             try
             {
-                Ui.TableSetupColumn("##label", (ImGuiTableColumnFlags.WidthStretch), 0.42f);
-                Ui.TableSetupColumn("##value", (ImGuiTableColumnFlags.WidthStretch), 0.58f);
+                Gui.TableSetupColumn("##label", (ImGuiTableColumnFlags.WidthStretch), 0.42f);
+                Gui.TableSetupColumn("##value", (ImGuiTableColumnFlags.WidthStretch), 0.58f);
                 foreach ((string label, string value) in values)
                 {
-                    Ui.TableNextRow();
-                    Ui.TableSetColumnIndex(0);
-                    EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, label);
-                    Ui.TableSetColumnIndex(1);
+                    Gui.TableNextRow();
+                    Gui.TableSetColumnIndex(0);
+                    EditorUI.current.widgets.ColoredText(EditorPalette.textDisabled, label);
+                    Gui.TableSetColumnIndex(1);
                     EditorUI.current.widgets.WrappedText(value);
                 }
             }
             finally
             {
-                Ui.EndTable();
+                Gui.EndTable();
             }
         }
         finally
         {
-            Ui.PopStyleColor(2);
-            Ui.PopStyleVar();
+            Gui.PopStyleColor(2);
+            Gui.PopStyleVar();
         }
     }
 

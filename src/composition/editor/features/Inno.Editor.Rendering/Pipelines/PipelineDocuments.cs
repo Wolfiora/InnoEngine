@@ -2,15 +2,17 @@ using System;
 using System.IO;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Execution;
 using Inno.Core.Serialization;
 using Inno.Editor.Assets;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Extensibility.Types;
-using Inno.Rendering;
 using Inno.Rendering.Assets;
+using Inno.Scripting.Api;
 
 namespace Inno.Editor.Rendering;
+
 /// <summary>
 /// Edits Pipeline sources and typed extension settings without changing canonical rendering assets before Save.
 /// </summary>
@@ -19,23 +21,6 @@ public sealed class PipelineDocuments : EditorModule
 {
     internal const string C_HISTORY = "inno.pipeline/draft";
     private readonly TypeCatalog m_types;
-    /// <summary>
-    /// Gets the authoritative asset pipeline used by source inspectors.
-    /// </summary>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
-    public AssetPipeline assets { get; }
-
-    /// <summary>
-    /// Gets the current owner serialization registry.
-    /// </summary>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
-    public SerializationRegistry serialization { get; }
-
-    /// <summary>
-    /// Gets the source draft owner shared by Pipeline inspectors.
-    /// </summary>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
-    public AssetDraftDocuments<RenderPipelineAsset> drafts { get; }
 
     internal PipelineDocuments(
         AssetPipeline assets,
@@ -46,8 +31,26 @@ public sealed class PipelineDocuments : EditorModule
         this.assets = assets;
         this.serialization = serialization;
         m_types = types;
-        drafts = new(assets, serialization, interactions, "inno.pipeline", C_HISTORY, ".irenderpipeline", "Pipeline");
+        this.drafts = new(assets, serialization, interactions, "inno.pipeline", C_HISTORY, ".irenderpipeline", "Pipeline");
     }
+
+    /// <summary>
+    /// Gets the authoritative asset pipeline used by source inspectors.
+    /// </summary>
+    [ScriptingApiIgnore]
+    public AssetPipeline assets { get; }
+
+    /// <summary>
+    /// Gets the current owner serialization registry.
+    /// </summary>
+    [ScriptingApiIgnore]
+    public SerializationRegistry serialization { get; }
+
+    /// <summary>
+    /// Gets the source draft owner shared by Pipeline inspectors.
+    /// </summary>
+    [ScriptingApiIgnore]
+    public AssetDraftDocuments<RenderPipelineAsset> drafts { get; }
 
     /// <summary>
     /// Opens a native Pipeline source in the shared document service, including failed imports.
@@ -59,20 +62,22 @@ public sealed class PipelineDocuments : EditorModule
     /// The persistent source identity used by draft operations.
     /// </returns>
     public Guid Open(AssetPath path) => drafts.Open(path);
+
     /// <summary>
     /// Reads a detached current-generation Pipeline value; its referenced canonical assets must not be mutated.
     /// </summary>
-    /// <param name="assetId">
+    /// <param name="assetID">
     /// Open Pipeline identity.
     /// </param>
     /// <returns>
     /// The unsaved native Pipeline value.
     /// </returns>
-    public RenderPipelineAsset Read(Guid assetId) => drafts.Read(assetId);
+    public RenderPipelineAsset Read(Guid assetID) => drafts.Read(assetID);
+
     /// <summary>
     /// Changes a draft through shared History without publishing it to Scene/Game.
     /// </summary>
-    /// <param name="assetId">
+    /// <param name="assetID">
     /// Open Pipeline identity.
     /// </param>
     /// <param name="candidate">
@@ -82,17 +87,18 @@ public sealed class PipelineDocuments : EditorModule
     /// The current gesture key, or null for a discrete edit.
     /// </param>
     public void Replace(
-        Guid assetId,
+        Guid assetID,
         RenderPipelineAsset candidate,
         string? mergeKey = null
-    ) => drafts.Replace(assetId, candidate, mergeKey);
+    ) => drafts.Replace(assetID, candidate, mergeKey);
+
     /// <summary>
     /// Captures typed Pipeline settings with this source owner's complete reference and dependency context.
     /// </summary>
     /// <typeparam name="TSettings">
     /// Current plugin settings contract.
     /// </typeparam>
-    /// <param name="assetId">
+    /// <param name="assetID">
     /// Open Pipeline identity.
     /// </param>
     /// <param name="settings">
@@ -102,15 +108,14 @@ public sealed class PipelineDocuments : EditorModule
     /// The current gesture key, or null for a discrete edit.
     /// </param>
     public void ReplaceSettings<TSettings>(
-        Guid assetId,
+        Guid assetID,
         TSettings settings,
         string? mergeKey = null
-    )
-        where TSettings : class, ISerializable
+    ) where TSettings : class, ISerializable
     {
-        RenderPipelineAsset pipeline = Read(assetId);
+        RenderPipelineAsset pipeline = Read(assetID);
         pipeline.pipelineState = new SerializedRenderExtensionState(assets.CaptureProperties(settings));
-        Replace(assetId, pipeline, mergeKey);
+        Replace(assetID, pipeline, mergeKey);
     }
 
     /// <summary>
@@ -122,20 +127,22 @@ public sealed class PipelineDocuments : EditorModule
     /// <returns>
     /// The detached settings, or null when the extension is temporarily unavailable.
     /// </returns>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public ISerializable? RestoreSettings(SerializedRenderExtensionState state)
     {
         if (state.stableTypeId == Guid.Empty)
+        {
             return null;
+        }
         Type type = m_types.Resolve(new TypeRef(state.stableTypeId));
         if (Activator.CreateInstance(type) is not ISerializable settings)
+        {
             throw new InvalidOperationException("Pipeline settings must be a constructible native serializable type.");
+        }
         assets.RestoreProperties(state.stableTypeId, state.propertyData, settings);
         return settings;
     }
 
-    internal static bool Recoverable(Exception error) => error is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException or FormatException
-        && Inno.Core.Execution.RetirementPendingException.Find(error) is null;
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.
     /// </summary>
@@ -143,6 +150,7 @@ public sealed class PipelineDocuments : EditorModule
     /// The context that supplies state and services for this operation.
     /// </param>
     protected override void OnStart(EditorContext context) => drafts.Start();
+
     /// <summary>
     /// Advances this feature using the current runtime state.
     /// </summary>
@@ -150,6 +158,7 @@ public sealed class PipelineDocuments : EditorModule
     /// The context that supplies state and services for this operation.
     /// </param>
     protected override void OnUpdate(EditorContext context) => drafts.Update();
+
     /// <summary>
     /// Stops this feature before its owning runtime releases the active generation.
     /// </summary>
@@ -157,77 +166,8 @@ public sealed class PipelineDocuments : EditorModule
     /// The context that supplies state and services for this operation.
     /// </param>
     protected override void OnStop(EditorContext context) => drafts.Dispose();
-}
 
-[EditorHistoryHandler(PipelineDocuments.C_HISTORY)]
-internal sealed class PipelineDraftHistory(PipelineDocuments documents) : EditorHistoryHandler
-{
-    /// <summary>
-    /// Evaluates whether the requested change can be applied to the current generation.
-    /// </summary>
-    /// <param name="context">
-    /// The operation scope that provides state, services, and ownership boundaries.
-    /// </param>
-    /// <param name="change">
-    /// The neutral change payload to query or apply.
-    /// </param>
-    /// <param name="direction">
-    /// The history direction that determines which state is applied.
-    /// </param>
-    /// <returns>
-    /// The validated editor history availability that represents the completed operation.
-    /// </returns>
-    protected override EditorHistoryAvailability Query(
-        EditorHistoryContext context,
-        EditorHistoryChange change,
-        EditorHistoryDirection direction
-    ) {
-        try
-        {
-            documents.drafts.ValidateHistory(change, direction);
-            return EditorHistoryAvailability.Available();
-        }
-        catch (Exception error) when (PipelineDocuments.Recoverable(error))
-        {
-            return EditorHistoryAvailability.Unavailable(error.Message);
-        }
-    }
-
-    /// <summary>
-    /// Applies a validated change atomically at the caller-controlled commit point.
-    /// </summary>
-    /// <param name="context">
-    /// The operation scope that provides state, services, and ownership boundaries.
-    /// </param>
-    /// <param name="change">
-    /// The neutral change payload to query or apply.
-    /// </param>
-    /// <param name="direction">
-    /// The history direction that determines which state is applied.
-    /// </param>
-    /// <returns>
-    /// The validated editor history result that represents the completed operation.
-    /// </returns>
-    protected override EditorHistoryResult Apply(
-        EditorHistoryContext context,
-        EditorHistoryChange change,
-        EditorHistoryDirection direction
-    ) {
-        try
-        {
-            documents.drafts.ApplyHistory(change, direction);
-            return EditorHistoryResult.Success();
-        }
-        catch (Exception error) when (PipelineDocuments.Recoverable(error))
-        {
-            return EditorHistoryResult.Failure(error.Message);
-        }
-    }
-
-    /// <inheritdoc/>
-    protected override bool TryMerge(
-        EditorHistoryChange older,
-        EditorHistoryChange newer,
-        out EditorHistoryChange? merged
-    ) => documents.drafts.TryMergeHistory(older, newer, out merged);
+    internal static bool Recoverable(Exception error)
+        => error is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException or FormatException
+           && RetirementPendingException.Find(error) is null;
 }

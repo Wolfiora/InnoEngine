@@ -8,9 +8,9 @@ namespace Inno.Native.Sdl3;
 public static unsafe partial class SDL
 {
 #if DEBUG
-    internal const string LibName = "SDL3-debug";
+    internal const string C_LIB_NAME = "SDL3-debug";
 #else
-    internal const string LibName = "SDL3-release";
+    internal const string C_LIB_NAME = "SDL3-release";
 #endif
 
     static SDL()
@@ -20,7 +20,7 @@ public static unsafe partial class SDL
 #elif INNO_STATIC_NATIVE
         FromStatic();
 #else
-        Load(NativeDllLoader.FindNativeLibrary(LibName));
+        Load(NativeDllLoader.FindNativeLibrary(C_LIB_NAME));
 #endif
     }
 }

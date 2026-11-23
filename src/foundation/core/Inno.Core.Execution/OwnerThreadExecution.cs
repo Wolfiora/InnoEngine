@@ -43,7 +43,7 @@ public static class OwnerThreadExecution
         try
         {
             Task<TResult> completion = operation()
-                ?? throw new InvalidOperationException("The owned operation returned a null task.");
+                                       ?? throw new InvalidOperationException("The owned operation returned a null task.");
             context.Pump(completion);
             return completion.GetAwaiter().GetResult();
         }
@@ -56,9 +56,9 @@ public static class OwnerThreadExecution
     private sealed class OwnerContext : SynchronizationContext, IDisposable
     {
         private readonly BlockingCollection<Action> m_callbacks = new();
-        private readonly int m_threadId = Environment.CurrentManagedThreadId;
+        private readonly int m_threadID = Environment.CurrentManagedThreadId;
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override void Post(
             SendOrPostCallback callback,
             object? state
@@ -67,13 +67,13 @@ public static class OwnerThreadExecution
             m_callbacks.Add(() => callback(state));
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override void Send(
             SendOrPostCallback callback,
             object? state
         ) {
             ArgumentNullException.ThrowIfNull(callback);
-            if (Environment.CurrentManagedThreadId == m_threadId)
+            if (Environment.CurrentManagedThreadId == m_threadID)
             {
                 callback(state);
                 return;
@@ -99,20 +99,26 @@ public static class OwnerThreadExecution
             failure?.Throw();
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override SynchronizationContext CreateCopy() => this;
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public void Dispose() => m_callbacks.Dispose();
 
         internal void Pump(Task completion)
         {
             bool notified = false;
-            Task notification = completion.ContinueWith(_ => m_callbacks.Add(() => notified = true),
-                CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+            Task notification = completion.ContinueWith(
+                _ => m_callbacks.Add(() => notified = true),
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default
+            );
             // Observe completion on the owner, after the wake-up item has actually been consumed.
             while (!notified || m_callbacks.Count != 0)
+            {
                 m_callbacks.Take()();
+            }
             notification.GetAwaiter().GetResult();
         }
     }

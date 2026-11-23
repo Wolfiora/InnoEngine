@@ -36,8 +36,8 @@ public sealed class BgfxDeviceOptions
     {
         get => window?.pixelWidth ?? m_backbufferWidth;
         set => m_backbufferWidth = value > 0
-            ? value
-            : throw new ArgumentOutOfRangeException(nameof(value));
+                                   ? value
+                                   : throw new ArgumentOutOfRangeException(nameof(value));
     }
 
     /// <summary>
@@ -47,8 +47,8 @@ public sealed class BgfxDeviceOptions
     {
         get => window?.pixelHeight ?? m_backbufferHeight;
         set => m_backbufferHeight = value > 0
-            ? value
-            : throw new ArgumentOutOfRangeException(nameof(value));
+                                    ? value
+                                    : throw new ArgumentOutOfRangeException(nameof(value));
     }
 
     /// <summary>
@@ -77,7 +77,7 @@ public sealed class BgfxDeviceOptions
     {
         get => m_deferredDestroyFrames;
         set => m_deferredDestroyFrames = value >= 1
-            ? value
-            : throw new ArgumentOutOfRangeException(nameof(value));
+                                         ? value
+                                         : throw new ArgumentOutOfRangeException(nameof(value));
     }
 }

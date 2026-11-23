@@ -14,7 +14,7 @@ namespace Inno.Build.SupportPacks;
 /// </summary>
 public sealed class PlayerSupportPackPublisher
 {
-    private readonly IReadOnlyDictionary<BuildTargetId, IPlayerSupportPackSource> m_sources;
+    private readonly IReadOnlyDictionary<BuildTargetID, IPlayerSupportPackSource> m_sources;
 
     /// <summary>
     /// Freezes the platform sources used by this publisher.
@@ -28,12 +28,14 @@ public sealed class PlayerSupportPackPublisher
     public PlayerSupportPackPublisher(IEnumerable<IPlayerSupportPackSource> sources)
     {
         ArgumentNullException.ThrowIfNull(sources);
-        var registered = new Dictionary<BuildTargetId, IPlayerSupportPackSource>();
+        var registered = new Dictionary<BuildTargetID, IPlayerSupportPackSource>();
         foreach (IPlayerSupportPackSource source in sources)
         {
             if (source is null || string.IsNullOrWhiteSpace(source.target.value)
-                || !registered.TryAdd(source.target, source))
+                || !registered.TryAdd(source.target, source)
+            ) {
                 throw new ArgumentException("Support Pack sources must be non-null and have unique target identities.", nameof(sources));
+            }
         }
         m_sources = registered;
     }
@@ -53,16 +55,15 @@ public sealed class PlayerSupportPackPublisher
     /// <param name="dotnetHost">
     /// The SDK executable selected by the host.
     /// </param>
+    /// <param name="nativeDependencies">
+    /// An explicit native selection disabling third-party production, or null for local source preparation.
+    /// </param>
     /// <param name="cancellationToken">
     /// Cancels preparation before directory installation begins.
     /// </param>
     /// <returns>
     /// Reading ownership of the selected Pack and any post-commit diagnostics. Dispose after consuming its files.
     /// </returns>
-    /// <remarks>
-    /// Writers targeting the same pack share an exclusive, cancelable preparation lease.
-    /// Publication atomically selects a fingerprint directory; previous generations remain valid for readers.
-    /// </remarks>
     /// <exception cref="ArgumentException">
     /// A required path is blank or the target has no registered source.
     /// </exception>
@@ -78,37 +79,46 @@ public sealed class PlayerSupportPackPublisher
     /// <exception cref="OperationCanceledException">
     /// Preparation was canceled; the installed pack is unchanged.
     /// </exception>
-    /// <param name="nativeDependencies">
-    /// An explicit native selection disabling third-party production, or null for local source preparation.
-    /// </param>
+    /// <remarks>
+    /// Writers targeting the same pack share an exclusive, cancelable preparation lease.
+    /// Publication atomically selects a fingerprint directory; previous generations remain valid for readers.
+    /// </remarks>
     public async ValueTask<PlayerSupportPackPublication> PublishAsync(
         string engineRoot,
         string outputRoot,
-        BuildTargetId target,
+        BuildTargetID target,
         string dotnetHost,
-        CancellationToken cancellationToken = default,
-        string? nativeDependencies = null
+        string? nativeDependencies = null,
+        CancellationToken cancellationToken = default
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(engineRoot);
         ArgumentException.ThrowIfNullOrWhiteSpace(outputRoot);
         ArgumentException.ThrowIfNullOrWhiteSpace(dotnetHost);
         if (!m_sources.TryGetValue(target, out IPlayerSupportPackSource? source))
+        {
             throw new ArgumentException($"No Support Pack source is registered for '{target}'.", nameof(target));
+        }
         string root = Path.GetFullPath(engineRoot);
         if (!File.Exists(Path.Combine(root, "InnoEngine.sln")))
+        {
             throw new DirectoryNotFoundException($"Engine root '{root}' has no InnoEngine.sln.");
+        }
         cancellationToken.ThrowIfCancellationRequested();
         PlayerSupportPackPlan plan = await source.CreatePlanAsync(
-            new PlayerSupportPackPlanningContext(root, dotnetHost, nativeDependencies), cancellationToken).ConfigureAwait(false);
+            new PlayerSupportPackPlanningContext(root, dotnetHost, nativeDependencies),
+            cancellationToken
+        ).ConfigureAwait(false);
         if (plan is null || plan.target != target)
+        {
             throw new InvalidDataException("The Support Pack plan does not match its registered target.");
+        }
         cancellationToken.ThrowIfCancellationRequested();
         var cache = new BuildCachePublisher(Path.GetFullPath(outputRoot), BuildCacheArtifactRole.ImmutableArtifact);
         using FileLease cacheUse = await cache.AcquireUseAsync(cancellationToken).ConfigureAwait(false);
         string output = Path.GetFullPath(outputRoot);
         Directory.CreateDirectory(output);
-        using FileLease ownership = await FileLease.AcquireAsync(
-            Path.Combine(output, target.value + ".lock"), Timeout.InfiniteTimeSpan, cancellationToken)
+        using FileLease ownership = await FileLease
+            .AcquireAsync(Path.Combine(output, target.value + ".lock"), Timeout.InfiniteTimeSpan, cancellationToken)
             .ConfigureAwait(false);
         var catalog = new PlayerSupportPackCatalog(output);
         string? prepared = PlayerSupportPackPreparationIndex.Read(output, target.value, plan.preparationIdentity);
@@ -116,8 +126,13 @@ public sealed class PlayerSupportPackPublisher
         {
             try
             {
-                PlayerSupportPackLease selected = await catalog.SelectAsync(target, prepared, source,
-                    plan.VerifyInputsAsync, cancellationToken).ConfigureAwait(false);
+                PlayerSupportPackLease selected = await catalog.SelectAsync(
+                    target,
+                    prepared,
+                    source,
+                    plan.VerifyInputsAsync,
+                    cancellationToken
+                ).ConfigureAwait(false);
                 return Complete(selected, []);
             }
             catch (InvalidDataException)
@@ -140,12 +155,21 @@ public sealed class PlayerSupportPackPublisher
             await plan.PrepareAsync(staging, cancellationToken)
                 .ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
-            published = await catalog.PublishAsync(target, staging, source, cancellationToken,
-                plan.VerifyInputsAsync).ConfigureAwait(false);
+            published = await catalog.PublishAsync(
+                target,
+                staging,
+                source,
+                plan.VerifyInputsAsync,
+                cancellationToken
+            ).ConfigureAwait(false);
             try
             {
-                PlayerSupportPackPreparationIndex.Write(output, target.value, plan.preparationIdentity,
-                    Path.GetFileName(published.directory));
+                PlayerSupportPackPreparationIndex.Write(
+                    output,
+                    target.value,
+                    plan.preparationIdentity,
+                    Path.GetFileName(published.directory)
+                );
             }
             catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)
             {

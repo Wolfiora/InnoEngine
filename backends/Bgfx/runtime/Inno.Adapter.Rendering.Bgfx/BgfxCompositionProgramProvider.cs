@@ -11,7 +11,7 @@ namespace Inno.Adapter.Rendering.Bgfx;
 /// </summary>
 public sealed class BgfxCompositionProgramProvider : IRenderLayerCompositionProgramProvider
 {
-    private static readonly RenderBindingId S_TEXTURE = new("s_tex");
+    private static readonly RenderBindingID TEXTURE = new("s_tex");
 
     /// <summary>
     /// Loads the BGFX target program matching the active device renderer.
@@ -61,31 +61,46 @@ public sealed class BgfxCompositionProgramProvider : IRenderLayerCompositionProg
         Assembly assembly = typeof(BgfxCompositionProgramProvider).Assembly;
         string suffix = "." + capabilities.backend.value;
         string[] resources = assembly.GetManifestResourceNames()
-            .Where(name => name.StartsWith($"Inno.BgfxShaders.{programName}.", StringComparison.Ordinal)
-                && name.EndsWith(suffix, StringComparison.Ordinal))
+            .Where(name => (
+                name.StartsWith($"Inno.BgfxShaders.{programName}.", StringComparison.Ordinal)
+                && name.EndsWith(suffix, StringComparison.Ordinal)
+            ))
             .ToArray();
         if (resources.Length != 1)
+        {
             throw new InvalidDataException(
-                $"The BGFX adapter requires exactly one {programName} shader for '{capabilities.backend}'; found {resources.Length}.");
+                $"The BGFX adapter requires exactly one {programName} shader for '{capabilities.backend}'; found {resources.Length}."
+            );
+        }
         using Stream source = assembly.GetManifestResourceStream(resources[0])
-            ?? throw new InvalidDataException($"The BGFX adapter cannot read {programName} shader '{resources[0]}'.");
+                              ?? throw new InvalidDataException($"The BGFX adapter cannot read {programName} shader '{resources[0]}'.");
         using var bytes = new MemoryStream();
         source.CopyTo(bytes);
         GraphicsPipelineDescriptor program = GraphicsProgramArtifactCodec.Decode(bytes.ToArray(), vertexLayout);
         RenderShaderBindingDescriptor binding = program.bindings.Single();
         if (binding.id.value != "s_tex"
             || binding.kind != RenderShaderBindingKind.Texture
-            || binding.slot != 0)
+            || binding.slot != 0
+        ) {
             throw new InvalidDataException($"The BGFX {programName} shader must expose s_tex at slot zero.");
+        }
         RenderRasterState authored = program.rasterState;
         var raster = new RenderRasterState(
-            RenderCullMode.None, authored.frontFace, RenderDepthCompare.Always,
-            depthWrite: false, blend,
-            authored.colorWriteMask, authored.multisampling, authored.topology);
+            RenderCullMode.None,
+            authored.frontFace,
+            RenderDepthCompare.Always,
+            depthWrite: false,
+            blend,
+            authored.colorWriteMask,
+            authored.multisampling,
+            authored.topology
+        );
         return new GraphicsPipelineDescriptor(
             program.vertexShader.Span,
             program.fragmentShader.Span,
-            [new(S_TEXTURE, RenderShaderBindingKind.Texture, slot: 0, nativeName: binding.nativeName)],
-            vertexLayout, raster);
+            [new RenderShaderBindingDescriptor(TEXTURE, RenderShaderBindingKind.Texture, slot: 0, nativeName: binding.nativeName)],
+            vertexLayout,
+            raster
+        );
     }
 }

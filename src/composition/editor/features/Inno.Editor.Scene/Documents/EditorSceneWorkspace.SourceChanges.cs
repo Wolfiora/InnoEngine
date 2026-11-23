@@ -1,22 +1,21 @@
-using Inno.Extensibility.Reload;
 using System;
-using Inno.References;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Extensibility.Modules;
 using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
+using Inno.Extensibility.Types;
+using Inno.References;
 using Inno.Runtime;
 using Inno.Scene;
 using Inno.Scene.Components;
@@ -26,40 +25,43 @@ namespace Inno.Editor.Scene;
 internal sealed partial class EditorSceneWorkspace
 
 {
-
     private bool SynchronizeSource(
         GameScene scene,
         SceneDocument document
     ) {
-        if (document.sourceAssetId == Guid.Empty)
+        if (document.sourceAssetID == Guid.Empty)
         {
-            m_diagnostics.ResolveSynchronization(scene.identity.persistentId);
+            m_diagnostics.ResolveSynchronization(scene.identity.persistentID);
             return true;
         }
-        if (!m_assets.TryGetInfo(document.sourceAssetId, out AssetInfo? asset) ||
-            asset is null ||
-            asset.status == AssetImportStatus.Missing)
-        {
+        if (!m_assets.TryGetInfo(document.sourceAssetID, out AssetInfo? asset)
+            || asset is null
+            || asset.status == AssetImportStatus.Missing
+        ) {
             document.isDirty = true;
             m_diagnostics.PublishSourceUnavailable(scene, document.sourcePath);
             return false;
         }
 
-        m_diagnostics.ResolveSynchronization(scene.identity.persistentId);
+        m_diagnostics.ResolveSynchronization(scene.identity.persistentID);
         string sourcePath = NormalizePath(asset.assetPath.ToString());
         string sourceName = GetAssetName(sourcePath);
         bool pathChanged = !string.Equals(document.sourcePath, sourcePath, StringComparison.Ordinal);
         if (!pathChanged)
+        {
             return true;
+        }
 
         bool wasDirty = HasSerializedChanges(scene, document);
         document.sourcePath = sourcePath;
         scene.name = sourceName;
         if (!wasDirty)
+        {
             document.savedHash = ComputeSceneHash(scene);
+        }
         document.isDirty = wasDirty;
-        document.nextRefreshTimestamp = Stopwatch.GetTimestamp() +
-                                        (long)(Stopwatch.Frequency * C_DIRTY_REFRESH_SECONDS);
+        document.nextRefreshTimestamp = Stopwatch.GetTimestamp()
+                                        + (long)(Stopwatch.Frequency * C_DIRTY_REFRESH_SECONDS);
         return true;
     }
 
@@ -69,9 +71,9 @@ internal sealed partial class EditorSceneWorkspace
     ) {
         string oldPath = NormalizePath(oldRelativePath);
         string newPath = NormalizePath(newRelativePath);
-        if (m_assets.TryGetFileSystemEntry(AssetPath.Parse(newPath), out Inno.Assets.Pipeline.AssetFileEntry entry) &&
-            entry.isDirectory)
-        {
+        if (m_assets.TryGetFileSystemEntry(AssetPath.Parse(newPath), out AssetFileEntry entry)
+            && entry.isDirectory
+        ) {
             ApplyDirectoryRename(oldPath, newPath);
             return;
         }
@@ -82,7 +84,9 @@ internal sealed partial class EditorSceneWorkspace
             return;
         }
         if (string.Equals(extension, C_PREFAB_EXTENSION, StringComparison.OrdinalIgnoreCase))
+        {
             ApplyPrefabRename(oldPath, newPath);
+        }
     }
 
     private void ApplySceneRename(
@@ -91,9 +95,9 @@ internal sealed partial class EditorSceneWorkspace
     ) {
         foreach (SceneDocument document in m_documents.Values)
         {
-            if (!string.Equals(document.sourcePath, oldPath, StringComparison.OrdinalIgnoreCase) ||
-                document.scene.isDestroyed)
-            {
+            if (!string.Equals(document.sourcePath, oldPath, StringComparison.OrdinalIgnoreCase)
+                || document.scene.isDestroyed
+            ) {
                 continue;
             }
 
@@ -108,9 +112,9 @@ internal sealed partial class EditorSceneWorkspace
         string oldPrefix = oldPath + "/";
         foreach (SceneDocument document in m_documents.Values)
         {
-            if (document.scene.isDestroyed ||
-                !document.sourcePath.StartsWith(oldPrefix, StringComparison.OrdinalIgnoreCase))
-            {
+            if (document.scene.isDestroyed
+                || !document.sourcePath.StartsWith(oldPrefix, StringComparison.OrdinalIgnoreCase)
+            ) {
                 continue;
             }
 
@@ -126,13 +130,17 @@ internal sealed partial class EditorSceneWorkspace
         bool wasDirty = HasSerializedChanges(document.scene, document);
         document.sourcePath = newPath;
         document.scene.name = GetAssetName(newPath);
-        if (m_assets.TryGetPersistentId(AssetPath.Parse(newPath), out Guid sourceAssetId))
-            document.sourceAssetId = sourceAssetId;
+        if (m_assets.TryGetPersistentID(AssetPath.Parse(newPath), out Guid sourceAssetID))
+        {
+            document.sourceAssetID = sourceAssetID;
+        }
         if (!wasDirty)
+        {
             document.savedHash = ComputeSceneHash(document.scene);
+        }
         document.isDirty = wasDirty;
-        document.nextRefreshTimestamp = Stopwatch.GetTimestamp() +
-                                        (long)(Stopwatch.Frequency * C_DIRTY_REFRESH_SECONDS);
+        document.nextRefreshTimestamp = Stopwatch.GetTimestamp()
+                                        + (long)(Stopwatch.Frequency * C_DIRTY_REFRESH_SECONDS);
     }
 
     private string RenameSceneSourceIfNeeded(
@@ -143,11 +151,14 @@ internal sealed partial class EditorSceneWorkspace
         string directory = NormalizePath(Path.GetDirectoryName(currentPath));
         string targetPath = Combine(directory, SanitizeFileName(scene.name) + C_SCENE_EXTENSION);
         if (string.Equals(currentPath, targetPath, StringComparison.Ordinal))
+        {
             return currentPath;
+        }
         if (m_assets.TryGetFileSystemEntry(AssetPath.Parse(targetPath), out _))
         {
             throw new IOException(
-                $"Scene asset '{targetPath}' already exists. Choose a different scene name before saving.");
+                $"Scene asset '{targetPath}' already exists. Choose a different scene name before saving."
+            );
         }
 
         m_assets.Move(AssetPath.Parse(currentPath), AssetPath.Parse(targetPath));
@@ -159,8 +170,10 @@ internal sealed partial class EditorSceneWorkspace
         string oldPath,
         string newPath
     ) {
-        if (!m_assets.TryGetPersistentId(AssetPath.Parse(newPath), out Guid sourceAssetId))
+        if (!m_assets.TryGetPersistentID(AssetPath.Parse(newPath), out Guid sourceAssetID))
+        {
             return;
+        }
         string oldName = GetAssetName(oldPath);
         string newName = GetAssetName(newPath);
         IReadOnlyList<GameScene> scenes = m_runtimeSession.scenes.loadedScenes;
@@ -171,10 +184,10 @@ internal sealed partial class EditorSceneWorkspace
             {
                 GameObject gameObject = objects[objectIndex];
                 PrefabInstanceInfo? prefab = gameObject.prefabInstance;
-                if (prefab?.isRoot == true &&
-                    prefab.sourceAssetId == sourceAssetId &&
-                    string.Equals(gameObject.name, oldName, StringComparison.Ordinal))
-                {
+                if (prefab?.isRoot == true
+                    && prefab.sourceAssetID == sourceAssetID
+                    && string.Equals(gameObject.name, oldName, StringComparison.Ordinal)
+                ) {
                     gameObject.name = newName;
                 }
             }
@@ -185,7 +198,9 @@ internal sealed partial class EditorSceneWorkspace
     {
         m_waitingTypeCatalogVersion = -1;
         for (int i = 0; i < changeSet.changes.Count; i++)
+        {
             m_sourceChanges.Enqueue(changeSet.changes[i]);
+        }
     }
 
     private void ApplyPendingSourceChanges()
@@ -195,9 +210,9 @@ internal sealed partial class EditorSceneWorkspace
             try
             {
                 if (change.kind == AssetChangeKind.Moved)
-                    ApplyRename(
-                        change.previousAssetPath?.ToString() ?? string.Empty,
-                        change.assetPath.ToString());
+                {
+                    ApplyRename(change.previousAssetPath?.ToString() ?? string.Empty, change.assetPath.ToString());
+                }
             }
             catch (Exception exception)
             {
@@ -212,12 +227,11 @@ internal sealed partial class EditorSceneWorkspace
         for (int i = 0; i < loaded.Count; i++)
         {
             GameScene scene = loaded[i];
-            if (m_documents.TryGetValue(scene.identity.persistentId, out SceneDocument? document) &&
-                !ReferenceEquals(document.scene, scene))
-            {
+            if (m_documents.TryGetValue(scene.identity.persistentID, out SceneDocument? document)
+                && !ReferenceEquals(document.scene, scene)
+            ) {
                 document.scene = scene;
             }
         }
     }
-
 }

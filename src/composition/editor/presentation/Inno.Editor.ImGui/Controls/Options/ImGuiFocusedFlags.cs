@@ -1,6 +1,9 @@
 using System;
 
+using NativeFocusedFlags = Inno.Native.ImGui.ImGuiFocusedFlags;
+
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported focused flags choices at the Editor presentation boundary.
 /// </summary>
@@ -10,29 +13,29 @@ public enum ImGuiFocusedFlags : int
     /// <summary>
     /// Uses the ordinary behavior without additional options.
     /// </summary>
-    None = (int)Inno.Native.ImGui.ImGuiFocusedFlags.None,
+    None = (int)NativeFocusedFlags.None,
     /// <summary>
     /// Return true if any children of the window is focused
     /// </summary>
-    ChildWindows = (int)Inno.Native.ImGui.ImGuiFocusedFlags.ChildWindows,
+    ChildWindows = (int)NativeFocusedFlags.ChildWindows,
     /// <summary>
     /// Test from root window (top most parent of the current hierarchy)
     /// </summary>
-    RootWindow = (int)Inno.Native.ImGui.ImGuiFocusedFlags.RootWindow,
+    RootWindow = (int)NativeFocusedFlags.RootWindow,
     /// <summary>
     /// Return true if any window is focused. Important: If you are trying to tell how to dispatch your low-level inputs, do NOT use this. Use 'io.WantCaptureMouse' instead! Please read the FAQ!
     /// </summary>
-    AnyWindow = (int)Inno.Native.ImGui.ImGuiFocusedFlags.AnyWindow,
+    AnyWindow = (int)NativeFocusedFlags.AnyWindow,
     /// <summary>
     /// Do not consider popup hierarchy (do not treat popup emitter as parent of popup) (when used with _ChildWindows or _RootWindow)
     /// </summary>
-    NoPopupHierarchy = (int)Inno.Native.ImGui.ImGuiFocusedFlags.NoPopupHierarchy,
+    NoPopupHierarchy = (int)NativeFocusedFlags.NoPopupHierarchy,
     /// <summary>
     /// Consider docking hierarchy (treat dockspace host as parent of docked window) (when used with _ChildWindows or _RootWindow)
     /// </summary>
-    DockHierarchy = (int)Inno.Native.ImGui.ImGuiFocusedFlags.DockHierarchy,
+    DockHierarchy = (int)NativeFocusedFlags.DockHierarchy,
     /// <summary>
     /// Selects the root and child windows presentation behavior.
     /// </summary>
-    RootAndChildWindows = (int)Inno.Native.ImGui.ImGuiFocusedFlags.RootAndChildWindows,
+    RootAndChildWindows = (int)NativeFocusedFlags.RootAndChildWindows
 }

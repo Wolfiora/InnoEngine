@@ -54,7 +54,9 @@ public static class Sdl3FolderDialog
                 Thread.Sleep(10);
             }
             if (pumpFailure is not null)
+            {
                 throw new InvalidOperationException("Platform event processing failed while selecting a directory.", pumpFailure);
+            }
             return result.Task.GetAwaiter().GetResult();
         }
         finally
@@ -69,13 +71,17 @@ public static class Sdl3FolderDialog
         sbyte** files,
         int filter
     ) {
-        var result = (TaskCompletionSource<string?>)GCHandle.FromIntPtr((nint)userData).Target!;
+        TaskCompletionSource<string?> result = (TaskCompletionSource<string?>)GCHandle.FromIntPtr((nint)userData).Target!;
         try
         {
-            if (files == null)
+            if (files is null)
+            {
                 result.TrySetException(new InvalidOperationException(Sdl3NativeText.ReadError() ?? "The native folder dialog failed."));
+            }
             else
-                result.TrySetResult(files[0] == null ? null : Marshal.PtrToStringUTF8((nint)files[0]));
+            {
+                result.TrySetResult(files[0] is null ? null : Marshal.PtrToStringUTF8((nint)files[0]));
+            }
         }
         catch (Exception failure)
         {

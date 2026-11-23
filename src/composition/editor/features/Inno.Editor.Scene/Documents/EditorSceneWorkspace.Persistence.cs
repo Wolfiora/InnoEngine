@@ -1,22 +1,21 @@
-using Inno.Extensibility.Reload;
 using System;
-using Inno.References;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Extensibility.Modules;
 using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
+using Inno.Extensibility.Types;
+using Inno.References;
 using Inno.Runtime;
 using Inno.Scene;
 using Inno.Scene.Components;
@@ -26,7 +25,6 @@ namespace Inno.Editor.Scene;
 internal sealed partial class EditorSceneWorkspace
 
 {
-
     /// <summary>
     /// Gets whether a scene contains unsaved serialized changes.
     /// </summary>
@@ -49,17 +47,23 @@ internal sealed partial class EditorSceneWorkspace
         try
         {
             if (!SynchronizeSource(scene, document))
+            {
                 return true;
+            }
         }
         catch (Exception exception)
         {
             document.isDirty = true;
             if (m_diagnostics.PublishSynchronizationFailure(scene, exception))
+            {
                 m_log.Write(LogLevel.Error, "Scene document synchronization failed: {0}", [exception]);
+            }
             return true;
         }
         if (string.IsNullOrEmpty(document.sourcePath))
+        {
             return true;
+        }
         if (!string.Equals(scene.name, GetAssetName(document.sourcePath), StringComparison.Ordinal))
         {
             document.isDirty = true;
@@ -68,19 +72,23 @@ internal sealed partial class EditorSceneWorkspace
 
         long now = Stopwatch.GetTimestamp();
         if (now < document.nextRefreshTimestamp)
+        {
             return document.isDirty;
+        }
 
         document.nextRefreshTimestamp = now + (long)(Stopwatch.Frequency * C_DIRTY_REFRESH_SECONDS);
         try
         {
             document.isDirty = HasSerializedChanges(scene, document);
-            m_diagnostics.ResolveDirtyCheck(scene.identity.persistentId);
+            m_diagnostics.ResolveDirtyCheck(scene.identity.persistentID);
         }
         catch (Exception exception)
         {
             document.isDirty = true;
             if (m_diagnostics.PublishDirtyCheckFailure(scene, exception))
+            {
                 m_log.Write(LogLevel.Error, "Scene dirty check failed: {0}", [exception]);
+            }
         }
         return document.isDirty;
     }
@@ -142,9 +150,9 @@ internal sealed partial class EditorSceneWorkspace
         string currentParent = NormalizePath(Path.GetDirectoryName(currentPath));
         string targetDirectory = NormalizePath(currentDirectory);
         string relativePath;
-        if (!string.IsNullOrEmpty(currentPath) &&
-            string.Equals(currentParent, targetDirectory, StringComparison.Ordinal))
-        {
+        if (!string.IsNullOrEmpty(currentPath)
+            && string.Equals(currentParent, targetDirectory, StringComparison.Ordinal)
+        ) {
             relativePath = RenameSceneSourceIfNeeded(scene, document);
         }
         else
@@ -175,10 +183,10 @@ internal sealed partial class EditorSceneWorkspace
         EnsureCanPersist();
         EnsureEditable(gameObject.scene);
         string relativePath = CreateUniquePath(currentDirectory, gameObject.name, C_PREFAB_EXTENSION);
-        if (!m_assets.Save(
-                AssetPath.Project(relativePath),
-                PrefabAsset.Capture(gameObject, m_serialization, m_assets)))
+        if (!m_assets.Save(AssetPath.Project(relativePath), PrefabAsset.Capture(gameObject, m_serialization, m_assets)))
+        {
             throw new InvalidOperationException($"No asset importer could save prefab '{relativePath}'.");
+        }
         return relativePath;
     }
 
@@ -196,10 +204,11 @@ internal sealed partial class EditorSceneWorkspace
         ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
         EnsureCanPersist();
         string normalizedPath = NormalizePath(relativePath);
-        SceneDocument? existing = m_documents.Values.FirstOrDefault(document =>
-            document.scene.isLoaded &&
-            !document.scene.isDestroyed &&
-            string.Equals(document.sourcePath, normalizedPath, StringComparison.OrdinalIgnoreCase));
+        SceneDocument? existing = m_documents.Values.FirstOrDefault(document => (
+            document.scene.isLoaded
+            && !document.scene.isDestroyed
+            && string.Equals(document.sourcePath, normalizedPath, StringComparison.OrdinalIgnoreCase)
+        ));
         if (existing is not null)
         {
             m_runtimeSession.scenes.SetActiveScene(existing.scene);
@@ -212,8 +221,9 @@ internal sealed partial class EditorSceneWorkspace
         byte[] savedHash = ComputeSceneHash(scene);
         m_runtimeSession.scenes.LoadSceneAdditive(scene);
         m_documents.Add(
-            scene.identity.persistentId,
-            new SceneDocument(scene, normalizedPath, asset.identity.persistentId, savedHash));
+            scene.identity.persistentID,
+            new SceneDocument(scene, normalizedPath, asset.identity.persistentID, savedHash)
+        );
         return scene;
     }
 
@@ -238,10 +248,11 @@ internal sealed partial class EditorSceneWorkspace
         {
             EnsurePresentedScene(scene);
             relativePath = playModeSession.TryGetSnapshot(
-                scene.identity.persistentId,
-                out SceneDocumentSnapshot snapshot)
-                ? snapshot.sourcePath
-                : string.Empty;
+                scene.identity.persistentID,
+                out SceneDocumentSnapshot snapshot
+            )
+                           ? snapshot.sourcePath
+                           : string.Empty;
             return !string.IsNullOrEmpty(relativePath);
         }
         SceneDocument document = GetOrCreateDocument(scene);
@@ -249,8 +260,9 @@ internal sealed partial class EditorSceneWorkspace
         {
             SynchronizeSource(scene, document);
         }
-        catch
+        catch (Exception)
         {
+            // The source could not be synchronized. The document stays dirty.
             document.isDirty = true;
         }
         relativePath = document.sourcePath;
@@ -262,38 +274,44 @@ internal sealed partial class EditorSceneWorkspace
         string relativePath
     ) {
         SceneDocument document = GetOrCreateDocument(scene);
-        if (document.sourceAssetId != Guid.Empty &&
-            string.Equals(document.sourcePath, relativePath, StringComparison.Ordinal) && !SynchronizeSource(scene, document))
-            throw new InvalidOperationException($"Scene source '{relativePath}' is unavailable. Restore its source or explicitly save to another directory.");
+        if (document.sourceAssetID != Guid.Empty
+            && string.Equals(document.sourcePath, relativePath, StringComparison.Ordinal) && !SynchronizeSource(scene, document)
+        ) {
+            throw new InvalidOperationException(
+                $"Scene source '{relativePath}' is unavailable. Restore its source or explicitly save to another directory."
+            );
+        }
         scene.name = GetAssetName(relativePath);
         bool exists = m_assets.TryLoad(AssetPath.Parse(relativePath), out SceneAsset? sceneAsset);
         sceneAsset ??= new SceneAsset();
         sceneAsset.CaptureFrom(scene, m_serialization, m_assets);
         bool saved = exists
-            ? m_assets.Save(sceneAsset)
-            : m_assets.Save(AssetPath.Parse(relativePath), sceneAsset);
+                     ? m_assets.Save(sceneAsset)
+                     : m_assets.Save(AssetPath.Parse(relativePath), sceneAsset);
         if (!saved)
+        {
             throw new InvalidOperationException($"No asset importer could save scene '{relativePath}'.");
+        }
 
         byte[] savedHash = ComputeSceneHash(scene);
         document.sourcePath = relativePath;
-        document.sourceAssetId = sceneAsset.identity.persistentId;
+        document.sourceAssetID = sceneAsset.identity.persistentID;
         document.savedHash = savedHash;
         document.isDirty = false;
-        document.nextRefreshTimestamp = Stopwatch.GetTimestamp() +
-                                        (long)(Stopwatch.Frequency * C_DIRTY_REFRESH_SECONDS);
+        document.nextRefreshTimestamp = Stopwatch.GetTimestamp()
+                                        + (long)(Stopwatch.Frequency * C_DIRTY_REFRESH_SECONDS);
     }
 
     private SceneDocument GetOrCreateDocument(GameScene scene)
     {
-        Guid sceneId = scene.identity.persistentId;
-        if (m_documents.TryGetValue(sceneId, out SceneDocument? document))
+        Guid sceneID = scene.identity.persistentID;
+        if (m_documents.TryGetValue(sceneID, out SceneDocument? document))
         {
             document.scene = scene;
             return document;
         }
         document = new SceneDocument(scene, string.Empty, Guid.Empty, []);
-        m_documents.Add(sceneId, document);
+        m_documents.Add(sceneID, document);
         return document;
     }
 
@@ -302,7 +320,8 @@ internal sealed partial class EditorSceneWorkspace
         if (!canPersist)
         {
             throw new InvalidOperationException(
-                "Scene and prefab persistence is unavailable while Play Mode runtime copies are active.");
+                "Scene and prefab persistence is unavailable while Play Mode runtime copies are active."
+            );
         }
     }
 
@@ -314,11 +333,15 @@ internal sealed partial class EditorSceneWorkspace
         SerializationContext context = AssetSerializationContext.Create(m_assets, dependencies);
         SerializationSnapshot captured = m_serialization.CaptureSnapshot(scene, context, document?.observedSnapshot);
         if (document is not null && ReferenceEquals(captured, document.observedSnapshot))
+        {
             return document.observedHash!;
-        using var algorithm = SHA256.Create();
+        }
+        using SHA256 algorithm = SHA256.Create();
         using (var digest = new CryptoStream(Stream.Null, algorithm, CryptoStreamMode.Write, leaveOpen: true))
         using (var output = new BufferedStream(digest, 64 * 1024))
+        {
             captured.WriteTo(output);
+        }
         byte[] hash = algorithm.Hash ?? throw new InvalidOperationException("Scene content hashing did not complete.");
         if (document is not null)
         {
@@ -331,8 +354,7 @@ internal sealed partial class EditorSceneWorkspace
     private bool HasSerializedChanges(
         GameScene scene,
         SceneDocument document
-    )
-        => !ComputeSceneHash(scene, document).AsSpan().SequenceEqual(document.savedHash);
+    ) => !ComputeSceneHash(scene, document).AsSpan().SequenceEqual(document.savedHash);
 
     private string CreateUniquePath(
         string directory,
@@ -343,21 +365,27 @@ internal sealed partial class EditorSceneWorkspace
         string fileName = SanitizeFileName(name);
         string candidate = Combine(directory, fileName + extension);
         for (int suffix = 1; m_assets.TryGetFileSystemEntry(AssetPath.Parse(candidate), out _); suffix++)
+        {
             candidate = Combine(directory, $"{fileName} {suffix}{extension}");
+        }
         return candidate;
     }
 
     private static string CreateUniqueSceneName(IReadOnlyList<GameScene> scenes)
     {
-        const string c_baseName = "Untitled Scene";
-        var names = scenes.Select(static scene => scene.name).ToHashSet(StringComparer.Ordinal);
-        if (!names.Contains(c_baseName))
-            return c_baseName;
+        const string C_BASE_NAME = "Untitled Scene";
+        HashSet<string> names = scenes.Select(static scene => scene.name).ToHashSet(StringComparer.Ordinal);
+        if (!names.Contains(C_BASE_NAME))
+        {
+            return C_BASE_NAME;
+        }
         for (int suffix = 1; ; suffix++)
         {
-            string candidate = $"{c_baseName} {suffix}";
+            string candidate = $"{C_BASE_NAME} {suffix}";
             if (!names.Contains(candidate))
+            {
                 return candidate;
+            }
         }
     }
 
@@ -370,28 +398,29 @@ internal sealed partial class EditorSceneWorkspace
     private static string SanitizeFileName(string value)
     {
         char[] invalid = Path.GetInvalidFileNameChars();
-        string sanitized = new((value ?? string.Empty)
-            .Trim()
-            .Select(character => invalid.Contains(character) ? '_' : character)
-            .ToArray());
+        var sanitized = new string(
+            (value ?? string.Empty)
+                .Trim()
+                .Select(character => invalid.Contains(character) ? '_' : character)
+                .ToArray()
+        );
         return string.IsNullOrWhiteSpace(sanitized) ? "Untitled" : sanitized;
     }
 
     private static string Combine(
         string directory,
         string fileName
-    )
-        => string.IsNullOrEmpty(directory) ? fileName : $"{directory}/{fileName}";
+    ) => string.IsNullOrEmpty(directory) ? fileName : $"{directory}/{fileName}";
 
     private static string NormalizePath(string? path)
         => string.IsNullOrWhiteSpace(path)
-            ? string.Empty
-            : path.Replace('\\', '/').Trim('/');
+           ? string.Empty
+           : path.Replace('\\', '/').Trim('/');
 
     private sealed class SceneDocument(
         GameScene scene,
         string sourcePath,
-        Guid sourceAssetId,
+        Guid sourceAssetID,
         byte[] savedHash
     ) {
         internal SerializationSnapshot? observedSnapshot;
@@ -401,26 +430,30 @@ internal sealed partial class EditorSceneWorkspace
         /// The scene value used as part of this type's public representation.
         /// </summary>
         public GameScene scene = scene;
+
         /// <summary>
         /// The source path value used as part of this type's public representation.
         /// </summary>
         public string sourcePath = sourcePath;
+
         /// <summary>
         /// The source asset id value used as part of this type's public representation.
         /// </summary>
-        public Guid sourceAssetId = sourceAssetId;
+        public Guid sourceAssetID = sourceAssetID;
+
         /// <summary>
         /// The saved hash value used as part of this type's public representation.
         /// </summary>
         public byte[] savedHash = savedHash;
+
         /// <summary>
         /// The is dirty value used as part of this type's public representation.
         /// </summary>
         public bool isDirty;
+
         /// <summary>
         /// The next refresh timestamp value used as part of this type's public representation.
         /// </summary>
         public long nextRefreshTimestamp;
     }
-
 }

@@ -5,10 +5,6 @@ namespace Inno.Adapter.Platform;
 /// <summary>
 /// Borrows surface handles from a live window for cooperating native adapters.
 /// </summary>
-/// <remarks>
-/// Handles remain valid only while their window is alive. Consumers must not release them.
-/// The handle identifier selects the ABI; this value is not a runtime or scripting contract.
-/// </remarks>
 /// <param name="windowHandle">
 /// Native window handle, or a stable UTF-8 canvas selector for browser surfaces.
 /// </param>
@@ -21,8 +17,12 @@ namespace Inno.Adapter.Platform;
 /// <returns>
 /// A borrowed adapter-level surface description.
 /// </returns>
+/// <remarks>
+/// Handles remain valid only while their window is alive. Consumers must not release them.
+/// The handle identifier selects the ABI; this value is not a runtime or scripting contract.
+/// </remarks>
 public readonly record struct PlatformNativeHandles(
-    IntPtr windowHandle,
-    IntPtr displayHandle = default,
-    PlatformNativeHandleId handleKind = default
+    nint windowHandle,
+    nint displayHandle = default,
+    PlatformNativeHandleID handleKind = default
 );

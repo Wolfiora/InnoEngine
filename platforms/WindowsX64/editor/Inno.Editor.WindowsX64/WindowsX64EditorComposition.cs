@@ -14,8 +14,10 @@ using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Storage;
 using Inno.Adapter.Storage.FileSystem;
 using Inno.Build;
+using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.Toolchains.Bgfx.Tools;
+using Inno.Build.WindowsX64;
 using Inno.Core.Execution;
 using Inno.Core.Input;
 using Inno.Core.Logging;
@@ -44,13 +46,13 @@ public static class WindowsX64EditorComposition
     /// <param name="arguments">
     /// An optional project directory and the shared Editor command-line options.
     /// </param>
-    /// <returns>
-    /// Zero on normal exit or dialog cancellation, two on cancellation or invalid arguments, or one on startup failure.
-    /// </returns>
     /// <param name="cancellationToken">
     /// Cancels preparation or requests orderly shutdown of the shared Editor host.
     /// An open native folder dialog retains its callback owner until the user completes or closes it.
     /// </param>
+    /// <returns>
+    /// Zero on normal exit or dialog cancellation, two on cancellation or invalid arguments, or one on startup failure.
+    /// </returns>
     public static int Run(
         string[] arguments,
         CancellationToken cancellationToken
@@ -64,31 +66,39 @@ public static class WindowsX64EditorComposition
                 using var picker = new Sdl3PlatformApplication(new WindowsX64Sdl3HostIntegration());
                 string? selected = Sdl3FolderDialog.SelectFolder(picker);
                 if (selected is null)
+                {
                     return 0;
+                }
                 arguments = [selected];
             }
             EditorCommandLineOptions command = EditorCommandLineOptions.Parse(arguments);
             _ = WindowsX64ApplicationLocations.userDataRoot;
             string project = Path.GetFullPath(command.projectDirectory);
             string persistentRoot = Path.Combine(project, "Library", "PersistentData");
-            var adapters = new DefaultAuthoringAdapterCatalog(new DefaultAdapterCatalogOptions
-            {
-                platform = new PlatformBackendCatalog([new Sdl3PlatformBackendProvider(new WindowsX64Sdl3HostIntegration())]),
-                rendering = new RenderingBackendCatalog([new BgfxRenderingBackendProvider(new WindowsX64BgfxSurfaceIntegration())]),
-                storage = new StorageBackendCatalog([new FileSystemStorageBackendProvider(persistentRoot)])
-            }, [new BgfxAuthoringProvider(WindowsX64BgfxIntegration.shaderProfile)],
-                [new ImGuiPresentationProvider(new ImGuiInteractionOptions(commandKeyBehavior: false, horizontalWheelDirection: 1))]);
-            var buildContext = StandardBuildEnvironment.Capture(Path.GetDirectoryName(typeof(WindowsX64EditorComposition).Assembly.Location)!,
-                Inno.Build.WindowsX64.WindowsX64BuildModule.target.id, nativeDependencies: command.nativeDependencies);
+            var adapters = new DefaultAuthoringAdapterCatalog(
+                new DefaultAdapterCatalogOptions
+                {
+                    platform = new PlatformBackendCatalog([new Sdl3PlatformBackendProvider(new WindowsX64Sdl3HostIntegration())]),
+                    rendering = new RenderingBackendCatalog([new BgfxRenderingBackendProvider(new WindowsX64BgfxSurfaceIntegration())]),
+                    storage = new StorageBackendCatalog([new FileSystemStorageBackendProvider(persistentRoot)])
+                },
+                [new BgfxAuthoringProvider(WindowsX64BgfxIntegration.shaderProfile)],
+                [new ImGuiPresentationProvider(new ImGuiInteractionOptions(commandKeyBehavior: false, horizontalWheelDirection: 1))]
+            );
+            BuildCompositionContext buildContext = StandardBuildEnvironment.Capture(
+                Path.GetDirectoryName(typeof(WindowsX64EditorComposition).Assembly.Location)!,
+                WindowsX64BuildModule.target.id,
+                nativeDependencies: command.nativeDependencies
+            );
             var launch = new EditorLaunchOptions
             {
-                defaultBuildTarget = Inno.Build.WindowsX64.WindowsX64BuildModule.target.id,
+                defaultBuildTarget = WindowsX64BuildModule.target.id,
                 projectDirectory = project,
                 keyboard = new EditorKeyboardPolicy(KeyModifier.Control, "Super"),
                 adapterCatalog = adapters,
                 shell = new ShellOptions
                 {
-                    adapters = StandardAdapterSelection.Create(StorageBackendId.fileSystem),
+                    adapters = StandardAdapterSelection.Create(StorageBackendID.fileSystem),
                     window = new PlatformWindowOptions
                     {
                         title = "Inno Editor",
@@ -101,18 +111,27 @@ public static class WindowsX64EditorComposition
                     preferredGraphicsApi = command.graphicsApi,
                     sRgbBackbuffer = true
                 },
-                presentation = PresentationBackendId.imGui,
+                presentation = PresentationBackendID.imGui,
                 frameDriver = new PollingShellFrameDriver(),
                 distribution = StandardBuildDistribution.Create(buildContext).build,
                 buildContext = buildContext,
-                supportPackRoot = Path.Combine(Path.GetDirectoryName(typeof(WindowsX64EditorComposition).Assembly.Location)!, "SupportPacks"),
+                supportPackRoot = Path.Combine(
+                    Path.GetDirectoryName(typeof(WindowsX64EditorComposition).Assembly.Location)!,
+                    "SupportPacks"
+                ),
                 createEngineHost = CreateEngineHost,
                 createScriptModuleSource = deployment => CreateScriptModuleSource(project, deployment),
                 createSessionLogSink = (
                     kind,
                     session
-                ) => new FileLogSink(Path.Combine(persistentRoot,
-                    kind == RuntimeSessionKind.Play ? "inno.editor.play" : "inno.editor", "Logs", session.ToString())),
+                ) => new FileLogSink(
+                    Path.Combine(
+                        persistentRoot,
+                        kind == RuntimeSessionKind.Play ? "inno.editor.play" : "inno.editor",
+                        "Logs",
+                        session.ToString()
+                    )
+                ),
                 createHostLogSink = () => new ConsoleLogSink(useColors: true),
                 smokeFrameLimit = command.smokeFrameLimit
             };
@@ -138,7 +157,8 @@ public static class WindowsX64EditorComposition
         => new EngineHostBuilder().UseMetadataSources(
             new DotNetAssemblyCatalogSource(typeof(WindowsX64EditorComposition).Assembly),
             new ReflectionTypeCatalogSource(),
-            new ReflectionSerializationMetadataSource()).Build();
+            new ReflectionSerializationMetadataSource()
+        ).Build();
 
     private static IModuleSource CreateScriptModuleSource(
         string project,

@@ -22,16 +22,16 @@ public interface IDiagnosticReporter
     /// <param name="code">
     /// The stable issue code.
     /// </param>
-    /// <param name="semanticId">
+    /// <param name="semanticID">
     /// The optional protocol identifier used at publication.
     /// </param>
-    /// <param name="objectId">
+    /// <param name="objectID">
     /// The optional persistent object identity used at publication.
     /// </param>
     void Resolve(
         string code,
-        string? semanticId = null,
-        Guid? objectId = null
+        string? semanticID = null,
+        Guid? objectID = null
     );
 
     /// <summary>

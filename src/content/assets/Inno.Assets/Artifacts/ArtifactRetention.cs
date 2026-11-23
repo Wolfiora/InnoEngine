@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using Inno.Core.IO;
 
 namespace Inno.Assets;
@@ -20,30 +21,20 @@ public sealed class ArtifactRetention : AssetResidencyProvider
     /// <param name="artifact">
     /// Verified immutable metadata; the provider must serialize acquisition with collection.
     /// </param>
-    /// <returns>
-    /// A lease that releases exactly one reference, including when disposed from another thread.
-    /// </returns>
     /// <param name="openRead">
     /// Opens immutable bytes; this retention owner adds an independent stream pin before invoking it.
     /// </param>
+    /// <returns>
+    /// A lease that releases exactly one reference, including when disposed from another thread.
+    /// </returns>
     public ArtifactLease Retain(
         AssetArtifactInfo artifact,
         Func<Stream> openRead
-    )
-    {
+    ) {
         ArgumentNullException.ThrowIfNull(artifact);
         ArgumentNullException.ThrowIfNull(openRead);
         AddPin(artifact.key);
         return CreateArtifactLease(artifact, () => OpenPinned(artifact.key, openRead), () => Release(artifact.key));
-    }
-
-    private void AddPin(AssetArtifactKey key)
-    {
-        lock (m_sync)
-        {
-            m_counts.TryGetValue(key, out int count);
-            m_counts[key] = checked(count + 1);
-        }
     }
 
     /// <summary>
@@ -55,7 +46,18 @@ public sealed class ArtifactRetention : AssetResidencyProvider
     public IReadOnlyList<AssetArtifactKey> GetRetainedKeys()
     {
         lock (m_sync)
+        {
             return Array.AsReadOnly(m_counts.Keys.ToArray());
+        }
+    }
+
+    private void AddPin(AssetArtifactKey key)
+    {
+        lock (m_sync)
+        {
+            m_counts.TryGetValue(key, out int count);
+            m_counts[key] = checked(count + 1);
+        }
     }
 
     private Stream OpenPinned(
@@ -80,9 +82,13 @@ public sealed class ArtifactRetention : AssetResidencyProvider
         {
             int remaining = m_counts[key] - 1;
             if (remaining == 0)
+            {
                 m_counts.Remove(key);
+            }
             else
+            {
                 m_counts[key] = remaining;
+            }
         }
     }
 
@@ -93,6 +99,6 @@ public sealed class ArtifactRetention : AssetResidencyProvider
     {
         private ArtifactRetention? m_owner = owner;
 
-        public void Dispose() => System.Threading.Interlocked.Exchange(ref m_owner, null)?.Release(key);
+        public void Dispose() => Interlocked.Exchange(ref m_owner, null)?.Release(key);
     }
 }

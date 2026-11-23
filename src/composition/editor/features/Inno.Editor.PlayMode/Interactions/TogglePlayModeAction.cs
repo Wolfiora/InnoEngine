@@ -3,12 +3,13 @@ using Inno.Editor.Interactions;
 
 namespace Inno.Editor.PlayMode;
 
-[EditorAction(PlayModeInteractionIds.C_TOGGLE_PLAY_MODE)]
+[EditorAction(PlayModeInteractionIDs.C_TOGGLE_PLAY_MODE)]
 [EditorToolbarItem(
-    PlayModeInteractionIds.C_MAIN_MENU_AREA,
+    PlayModeInteractionIDs.C_MAIN_MENU_AREA,
     EditorToolbarIcon.Play,
     "Enter Play Mode",
-    activeIcon: EditorToolbarIcon.Stop)]
+    activeIcon: EditorToolbarIcon.Stop
+)]
 [EditorShortcut(KeyCode.P, primary: true)]
 internal sealed class TogglePlayModeAction(IEditorPlayMode playMode) : EditorAction
 {
@@ -23,34 +24,35 @@ internal sealed class TogglePlayModeAction(IEditorPlayMode playMode) : EditorAct
     /// </returns>
     protected override EditorActionState Query(EditorActionContext context)
         => playMode.state switch
-        {
-            EditorPlayModeState.Editing => new EditorActionState(true, true, displayName: "Enter Play Mode"),
-            EditorPlayModeState.Compiling => new EditorActionState(
-                true,
-                true,
-                isChecked: true,
-                displayName: "Cancel Script Compilation Wait"),
-            EditorPlayModeState.Preparing => new EditorActionState(
-                true,
-                false,
-                isChecked: true,
-                displayName: "Preparing Play Mode"),
-            EditorPlayModeState.Playing => new EditorActionState(
-                true,
-                true,
-                isChecked: true,
-                displayName: "Return to Edit Mode"),
-            EditorPlayModeState.Stopping => new EditorActionState(
-                true,
-                false,
-                isChecked: true,
-                displayName: "Restoring Edit Mode"),
-            EditorPlayModeState.Failed => new EditorActionState(
-                true,
-                true,
-                displayName: "Retry Play Mode"),
-            _ => EditorActionState.hidden
-        };
+    {
+        EditorPlayModeState.Editing => new EditorActionState(true, true, displayName: "Enter Play Mode"),
+        EditorPlayModeState.Compiling => new EditorActionState(
+            true,
+            true,
+            isChecked: true,
+            displayName: "Cancel Script Compilation Wait"
+        ),
+        EditorPlayModeState.Preparing => new EditorActionState(
+            true,
+            false,
+            isChecked: true,
+            displayName: "Preparing Play Mode"
+        ),
+        EditorPlayModeState.Playing => new EditorActionState(
+            true,
+            true,
+            isChecked: true,
+            displayName: "Return to Edit Mode"
+        ),
+        EditorPlayModeState.Stopping => new EditorActionState(
+            true,
+            false,
+            isChecked: true,
+            displayName: "Restoring Edit Mode"
+        ),
+        EditorPlayModeState.Failed => new EditorActionState(true, true, displayName: "Retry Play Mode"),
+        _ => EditorActionState.hidden
+    };
 
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.
@@ -61,8 +63,12 @@ internal sealed class TogglePlayModeAction(IEditorPlayMode playMode) : EditorAct
     protected override void Execute(EditorActionContext context)
     {
         if (playMode.state is EditorPlayModeState.Compiling or EditorPlayModeState.Preparing or EditorPlayModeState.Playing)
+        {
             _ = playMode.ExitPlayMode();
+        }
         else
+        {
             _ = playMode.EnterPlayMode();
+        }
     }
 }

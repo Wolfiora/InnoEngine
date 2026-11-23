@@ -1,18 +1,18 @@
-using Inno.Adapter.Rendering;
-using Inno.Adapter.Rendering.Bgfx;
-using Inno.Integration.BrowserWasm32.Bgfx.Runtime;
-using Inno.Adapter.Platform;
-using Inno.Adapter.Platform.Sdl3;
-using Inno.Integration.BrowserWasm32.Sdl3;
 using System;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Net.Http;
 using Inno.Adapter;
 using Inno.Adapter.Default;
+using Inno.Adapter.Platform;
+using Inno.Adapter.Platform.Sdl3;
+using Inno.Adapter.Rendering;
+using Inno.Adapter.Rendering.Bgfx;
 using Inno.Adapter.Storage;
 using Inno.Adapter.Storage.BrowserWasm32;
 using Inno.Core.Logging;
+using Inno.Integration.BrowserWasm32.Bgfx.Runtime;
+using Inno.Integration.BrowserWasm32.Sdl3;
 using Inno.Player.Runtime;
 using Inno.Runtime;
 using Inno.Shell;
@@ -48,10 +48,12 @@ internal static class BrowserWasm32PlayerComposition
                         new BgfxRenderingBackendProvider(new BrowserWasm32BgfxSurfaceIntegration())
                     ])
                 }),
-                adapterSelection = StandardAdapterSelection.Create(StorageBackendId.browser),
+                adapterSelection = StandardAdapterSelection.Create(StorageBackendID.browser),
                 contentSource = new HttpPlayerContentSource(client),
-                createStorage = manifest => storage.CreateStorage(StorageBackendId.browser,
-                    new StorageScope(manifest.applicationId)),
+                createStorage = manifest => storage.CreateStorage(
+                    StorageBackendID.browser,
+                    new StorageScope(manifest.applicationId)
+                ),
                 moduleActivator = Generated.PlayerMetadataComposition.CreateActivator(),
                 frameDriver = new ScheduledShellFrameDriver(NextFrameAsync),
                 graphicsApi = command.graphicsApi,

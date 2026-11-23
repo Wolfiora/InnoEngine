@@ -1,10 +1,11 @@
-using Inno.Rendering;
 using System;
 using System.Text.Json;
+using Inno.Extensibility.Types;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets.Authoring;
 
-[Inno.Extensibility.Types.StableTypeId("d5d5c69c-6d36-541f-bdd6-305af58d8e18")]
+[StableTypeID("d5d5c69c-6d36-541f-bdd6-305af58d8e18")]
 internal static class GltfJson
 {
     internal static JsonElement RequireObject(
@@ -20,7 +21,9 @@ internal static class GltfJson
         string path
     ) {
         if (element.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(element.GetString()))
+        {
             throw new RenderingAssetFormatException(path, "A non-empty string is required.");
+        }
         return element.GetString()!;
     }
 
@@ -30,26 +33,25 @@ internal static class GltfJson
         string path
     ) {
         if (element.ValueKind != kind)
+        {
             throw new RenderingAssetFormatException(path, $"Expected {kind}, found {element.ValueKind}.");
+        }
     }
 
     internal static bool RequireBoolean(
         JsonElement element,
         string path
-    )
-        => element.ValueKind switch
-        {
-            JsonValueKind.True => true,
-            JsonValueKind.False => false,
-            _ => throw new RenderingAssetFormatException(path, "A boolean is required.")
-        };
+    ) => element.ValueKind switch
+    {
+        JsonValueKind.True => true,
+        JsonValueKind.False => false,
+        _ => throw new RenderingAssetFormatException(path, "A boolean is required.")
+    };
 
     internal static int RequireInt32(
         JsonElement element,
         string path
-    )
-        => element.TryGetInt32(out int result)
-            ? result
-            : throw new RenderingAssetFormatException(path, "A 32-bit integer is required.");
+    ) => element.TryGetInt32(out int result)
+         ? result
+         : throw new RenderingAssetFormatException(path, "A 32-bit integer is required.");
 }
-

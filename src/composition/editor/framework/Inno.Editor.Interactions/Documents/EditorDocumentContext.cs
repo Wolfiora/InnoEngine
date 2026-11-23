@@ -12,27 +12,27 @@ public sealed class EditorDocumentContext
     private readonly Dictionary<string, string> m_viewParameters = new(StringComparer.Ordinal);
 
     internal EditorDocumentContext(
-        Guid documentId,
-        Guid assetId,
+        Guid documentID,
+        Guid assetID,
         string assetPath,
-        string providerId
+        string providerID
     ) {
-        this.documentId = documentId;
-        this.assetId = assetId;
+        this.documentID = documentID;
+        this.assetID = assetID;
         this.assetPath = assetPath;
-        this.providerId = providerId;
-        title = Path.GetFileName(assetPath);
+        this.providerID = providerID;
+        this.title = Path.GetFileName(assetPath);
     }
 
     /// <summary>
     /// Gets the stable identity of this open source document.
     /// </summary>
-    public Guid documentId { get; }
+    public Guid documentID { get; }
 
     /// <summary>
     /// Gets the persistent asset identity, or an empty value before the source has one.
     /// </summary>
-    public Guid assetId { get; }
+    public Guid assetID { get; }
 
     /// <summary>
     /// Gets the normalized project asset path.
@@ -42,7 +42,7 @@ public sealed class EditorDocumentContext
     /// <summary>
     /// Gets the stable provider identity used to recover across extension reload.
     /// </summary>
-    public string providerId { get; }
+    public string providerID { get; }
 
     /// <summary>
     /// Gets or sets the author-facing source title used by diagnostics and dedicated editors.
@@ -101,5 +101,4 @@ public sealed class EditorDocumentContext
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         return m_viewParameters.TryGetValue(key, out value!);
     }
-
 }

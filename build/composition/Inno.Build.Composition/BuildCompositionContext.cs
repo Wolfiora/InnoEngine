@@ -34,18 +34,24 @@ public sealed class BuildCompositionContext
         string dotnetHost,
         string applicationDirectory,
         BuildHostDescriptor host,
-        BuildTargetId toolsTarget,
+        BuildTargetID toolsTarget,
         string? nativeDependencies = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(dotnetHost);
         ArgumentException.ThrowIfNullOrWhiteSpace(applicationDirectory);
         ArgumentNullException.ThrowIfNull(host);
         if (string.IsNullOrWhiteSpace(toolsTarget.value))
+        {
             throw new ArgumentException("A build composition must declare its executable native tools target.", nameof(toolsTarget));
+        }
         if (!Path.IsPathFullyQualified(applicationDirectory))
+        {
             throw new ArgumentException("The build host requires an absolute application directory.", nameof(applicationDirectory));
+        }
         if (nativeDependencies is not null && !Path.IsPathFullyQualified(nativeDependencies))
+        {
             throw new ArgumentException("A native dependency selection must be absolute.", nameof(nativeDependencies));
+        }
         this.dotnetHost = dotnetHost;
         this.applicationDirectory = Path.GetFullPath(applicationDirectory);
         this.host = host;
@@ -71,11 +77,10 @@ public sealed class BuildCompositionContext
     /// <summary>
     /// Gets the independently declared native target of build tools executed by this host.
     /// </summary>
-    public BuildTargetId toolsTarget { get; }
+    public BuildTargetID toolsTarget { get; }
 
     /// <summary>
     /// Gets the explicit consume-only selection propagated to product and Support Pack preparation.
     /// </summary>
     public string? nativeDependencies { get; }
-
 }

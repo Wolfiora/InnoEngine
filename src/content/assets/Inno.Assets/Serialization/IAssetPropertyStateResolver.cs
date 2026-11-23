@@ -14,7 +14,7 @@ public interface IAssetPropertyStateResolver
     /// <typeparam name="TValue">
     /// Declared native property contract.
     /// </typeparam>
-    /// <param name="stableTypeId">
+    /// <param name="stableTypeID">
     /// Stable identity captured with the properties.
     /// </param>
     /// <param name="propertyData">
@@ -24,7 +24,7 @@ public interface IAssetPropertyStateResolver
     /// Detached destination. Referenced assets resolve in this owner.
     /// </param>
     void RestoreProperties<TValue>(
-        Guid stableTypeId,
+        Guid stableTypeID,
         byte[] propertyData,
         TValue target
     ) where TValue : class, ISerializable;

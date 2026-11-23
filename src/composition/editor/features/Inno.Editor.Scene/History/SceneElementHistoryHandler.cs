@@ -1,21 +1,21 @@
 using System;
 using System.Collections.Generic;
-
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Types;
 using Inno.Scene;
 
 namespace Inno.Editor.Scene;
 
-[EditorHistoryHandler(SceneHistoryKinds.Element)]
+[EditorHistoryHandler(SceneHistoryKinds.C_ELEMENT)]
 internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
 {
     private readonly EditorSceneWorkspace m_workspace;
 
     internal SceneElementHistoryHandler(EditorSceneWorkspace workspace)
     {
-        m_workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+        ArgumentNullException.ThrowIfNull(workspace);
+        m_workspace = workspace;
     }
 
     /// <summary>
@@ -41,27 +41,30 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
         try
         {
             SceneElementHistoryData data = SceneElementHistoryData.Decode(change.payload.ReadBytes());
-            GameScene? scene = m_workspace.Find<GameScene>(data.sceneId);
+            GameScene? scene = m_workspace.Find<GameScene>(data.sceneID);
             if (scene is not { isLoaded: true, isDestroyed: false })
-                return EditorHistoryAvailability.Unavailable($"Scene '{data.sceneId}' is no longer loaded.");
+            {
+                return EditorHistoryAvailability.Unavailable($"Scene '{data.sceneID}' is no longer loaded.");
+            }
             bool shouldExist = direction == EditorHistoryDirection.Undo
-                ? data.existsBefore
-                : data.existsAfter;
-            EngineObject? current = m_workspace.Find<EngineObject>(data.elementId);
+                               ? data.existsBefore
+                               : data.existsAfter;
+            EngineObject? current = m_workspace.Find<EngineObject>(data.elementID);
             if (!shouldExist)
             {
                 return current is { isDestroyed: false }
-                    ? EditorHistoryAvailability.Available()
-                    : EditorHistoryAvailability.Unavailable(
-                        $"Scene element '{data.elementId}' is no longer available.");
+                       ? EditorHistoryAvailability.Available()
+                       : EditorHistoryAvailability.Unavailable(
+                           $"Scene element '{data.elementID}' is no longer available."
+                       );
             }
             if (current is { isDestroyed: false })
             {
                 TypeRef typeRef = data.type;
                 bool typeMatches = current switch
                 {
-                    MissingGameComponent missing => missing.missingType.stableId == typeRef.stableId,
-                    MissingGameSystem missing => missing.missingType.stableId == typeRef.stableId,
+                    MissingGameComponent missing => missing.missingType.stableID == typeRef.stableID,
+                    MissingGameSystem missing => missing.missingType.stableID == typeRef.stableID,
                     _ => m_workspace.types.TryResolve(typeRef, out Type? resolvedType) && current.GetType() == resolvedType
                 };
                 bool kindMatches = data.elementKind switch
@@ -71,15 +74,17 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                     _ => false
                 };
                 return typeMatches && kindMatches
-                    ? EditorHistoryAvailability.Available()
-                    : EditorHistoryAvailability.Unavailable(
-                        $"Scene element '{data.elementId}' no longer matches stable type '{data.type.stableId}'.");
+                       ? EditorHistoryAvailability.Available()
+                       : EditorHistoryAvailability.Unavailable(
+                           $"Scene element '{data.elementID}' no longer matches stable type '{data.type.stableID}'."
+                       );
             }
-            if (data.elementKind == SceneElementKind.Component &&
-                m_workspace.Find<GameObject>(data.ownerId) is not { isRuntimeValid: true })
-            {
+            if (data.elementKind == SceneElementKind.Component
+                && m_workspace.Find<GameObject>(data.ownerID) is not { isRuntimeValid: true }
+            ) {
                 return EditorHistoryAvailability.Unavailable(
-                    $"Component owner '{data.ownerId}' is no longer available.");
+                    $"Component owner '{data.ownerID}' is no longer available."
+                );
             }
             return EditorHistoryAvailability.Available();
         }
@@ -112,15 +117,17 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
         try
         {
             SceneElementHistoryData data = SceneElementHistoryData.Decode(change.payload.ReadBytes());
-            GameScene? scene = m_workspace.Find<GameScene>(data.sceneId);
+            GameScene? scene = m_workspace.Find<GameScene>(data.sceneID);
             if (scene is not { isLoaded: true, isDestroyed: false })
-                return EditorHistoryResult.Failure($"Scene '{data.sceneId}' is no longer loaded.");
+            {
+                return EditorHistoryResult.Failure($"Scene '{data.sceneID}' is no longer loaded.");
+            }
             bool shouldExist = direction == EditorHistoryDirection.Undo
-                ? data.existsBefore
-                : data.existsAfter;
+                               ? data.existsBefore
+                               : data.existsAfter;
             int index = direction == EditorHistoryDirection.Undo ? data.beforeIndex : data.afterIndex;
             byte[] state = direction == EditorHistoryDirection.Undo ? data.beforeState : data.afterState;
-            EngineObject? current = m_workspace.Find<EngineObject>(data.elementId);
+            EngineObject? current = m_workspace.Find<EngineObject>(data.elementID);
             if (shouldExist)
             {
                 bool restored = current is null;
@@ -132,36 +139,41 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                     }
                     catch (Exception exception)
                     {
-                        EngineObject? partial = m_workspace.Find<EngineObject>(data.elementId);
+                        EngineObject? partial = m_workspace.Find<EngineObject>(data.elementID);
                         if (partial is null || partial.isDestroyed)
+                        {
                             return EditorHistoryResult.Failure(exception.Message);
+                        }
                         SceneHistoryCompensationResult cleanup = SceneHistoryCompensation.Remove(
                             partial,
                             () => Remove(data, scene, partial),
-                            $"Partially restored scene element '{data.elementId}'",
-                            m_workspace);
+                            $"Partially restored scene element '{data.elementID}'",
+                            m_workspace
+                        );
                         return cleanup.statePreserved
-                            ? EditorHistoryResult.Failure(JoinFailures(exception.Message, cleanup.message))
-                            : StateIntegrityFailure(JoinFailures(exception.Message, cleanup.message));
+                               ? EditorHistoryResult.Failure(JoinFailures(exception.Message, cleanup.message))
+                               : StateIntegrityFailure(JoinFailures(exception.Message, cleanup.message));
                     }
                 }
                 if (current.isDestroyed)
-                    return EditorHistoryResult.Failure($"Scene element '{data.elementId}' is destroyed.");
+                {
+                    return EditorHistoryResult.Failure($"Scene element '{data.elementID}' is destroyed.");
+                }
                 if (restored)
                 {
-                    SceneReferenceRestoreResult referenceResult =
-                        SceneReferenceIndex.RestoreIncoming(data.incomingReferences, m_workspace);
+                    SceneReferenceRestoreResult referenceResult = SceneReferenceIndex.RestoreIncoming(data.incomingReferences, m_workspace);
                     if (!referenceResult.succeeded)
                     {
                         SceneHistoryCompensationResult cleanup = SceneHistoryCompensation.Remove(
                             current,
                             () => Remove(data, scene, current),
-                            $"Restored scene element '{data.elementId}'",
-                            m_workspace);
+                            $"Restored scene element '{data.elementID}'",
+                            m_workspace
+                        );
                         string failure = JoinFailures(referenceResult.message, cleanup.message);
                         return referenceResult.statePreserved && cleanup.statePreserved
-                            ? EditorHistoryResult.Failure(failure)
-                            : StateIntegrityFailure(failure);
+                               ? EditorHistoryResult.Failure(failure)
+                               : StateIntegrityFailure(failure);
                     }
                 }
                 else
@@ -169,23 +181,29 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                     byte[] rollbackState = SceneElementSerialization.CaptureState(
                         current,
                         m_workspace.serialization,
-                        m_workspace.assets);
+                        m_workspace.assets
+                    );
                     int rollbackIndex = GetIndex(data, scene, current);
-                    SceneReferenceRollbackState[] rollbackReferences =
-                        SceneReferenceIndex.CaptureCurrent(data.incomingReferences, m_workspace);
+                    SceneReferenceRollbackState[] rollbackReferences = SceneReferenceIndex.CaptureCurrent(
+                        data.incomingReferences,
+                        m_workspace
+                    );
                     try
                     {
                         if (state.Length > 0)
                         {
                             SceneElementSerialization.RestoreState(
-                                    current,
-                                    state,
-                                    m_workspace.serialization,
-                                    m_workspace.assets);
+                                current,
+                                state,
+                                m_workspace.serialization,
+                                m_workspace.assets
+                            );
                         }
                         SetIndex(data, scene, current, index);
-                        SceneReferenceRestoreResult referenceResult =
-                            SceneReferenceIndex.RestoreIncoming(data.incomingReferences, m_workspace);
+                        SceneReferenceRestoreResult referenceResult = SceneReferenceIndex.RestoreIncoming(
+                            data.incomingReferences,
+                            m_workspace
+                        );
                         if (!referenceResult.succeeded)
                         {
                             return RollbackExisting(
@@ -195,7 +213,8 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                                 rollbackState,
                                 rollbackIndex,
                                 rollbackReferences,
-                                referenceResult.message);
+                                referenceResult.message
+                            );
                         }
                     }
                     catch (Exception exception)
@@ -207,7 +226,8 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                             rollbackState,
                             rollbackIndex,
                             rollbackReferences,
-                            exception.Message);
+                            exception.Message
+                        );
                     }
                 }
             }
@@ -216,34 +236,40 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                 byte[] rollbackState = SceneElementSerialization.CaptureState(
                     current,
                     m_workspace.serialization,
-                    m_workspace.assets);
+                    m_workspace.assets
+                );
                 int rollbackIndex = GetIndex(data, scene, current);
-                SceneReferenceRollbackState[] rollbackReferences =
-                    SceneReferenceIndex.CaptureCurrent(data.incomingReferences, m_workspace);
+                SceneReferenceRollbackState[] rollbackReferences = SceneReferenceIndex.CaptureCurrent(data.incomingReferences, m_workspace);
                 try
                 {
                     if (!Remove(data, scene, current))
-                        return EditorHistoryResult.Failure($"Scene element '{data.elementId}' could not be removed.");
+                    {
+                        return EditorHistoryResult.Failure($"Scene element '{data.elementID}' could not be removed.");
+                    }
                 }
                 catch (Exception exception)
                 {
-                    EngineObject? remaining = m_workspace.Find<EngineObject>(data.elementId);
+                    EngineObject? remaining = m_workspace.Find<EngineObject>(data.elementID);
                     if (remaining is { isDestroyed: false })
+                    {
                         return EditorHistoryResult.Failure(exception.Message);
+                    }
                     try
                     {
                         EngineObject restored = Restore(data, scene, rollbackIndex, rollbackState);
-                            SceneReferenceRestoreResult references =
-                            SceneReferenceIndex.RestoreCurrent(rollbackReferences, m_workspace);
+                            SceneReferenceRestoreResult references = SceneReferenceIndex.RestoreCurrent(rollbackReferences, m_workspace);
                         if (!references.succeeded)
+                        {
                             throw new InvalidOperationException(references.message);
+                        }
                         _ = restored;
                     }
                     catch (Exception rollbackException)
                     {
                         return StateIntegrityFailure(
-                            $"Scene element removal failed: {exception.Message} " +
-                            $"Rollback failed: {rollbackException.Message}");
+                            $"Scene element removal failed: {exception.Message} "
+                            + $"Rollback failed: {rollbackException.Message}"
+                        );
                     }
                     return EditorHistoryResult.Failure(exception.Message);
                 }
@@ -261,67 +287,29 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
         GameScene scene,
         int index,
         byte[] state
-    )
-        => data.elementKind switch
-        {
-            SceneElementKind.Component => SceneElementSerialization.RestoreComponent(
-                m_workspace.Find<GameObject>(data.ownerId)
-                ?? throw new InvalidOperationException($"Component owner '{data.ownerId}' is unavailable."),
-                data.type,
-                data.elementId,
-                index,
-                state,
-                m_workspace.serialization,
-                m_workspace.assets),
-            SceneElementKind.System => SceneElementSerialization.RestoreSystem(
-                scene,
-                data.type,
-                data.elementId,
-                index,
-                state,
-                m_workspace.serialization,
-                m_workspace.assets),
-            _ => throw new InvalidOperationException($"Unsupported scene element kind '{data.elementKind}'.")
-        };
-
-    private static bool Remove(
-        SceneElementHistoryData data,
-        GameScene scene,
-        EngineObject current
-    )
-        => data.elementKind switch
-        {
-            SceneElementKind.Component when current is GameComponent component =>
-                component.gameObject.RemoveComponent(component),
-            SceneElementKind.System when current is GameSystem system => scene.RemoveSystem(system),
-            _ => false
-        };
-
-    private static void SetIndex(
-        SceneElementHistoryData data,
-        GameScene scene,
-        EngineObject current,
-        int index
-    ) {
-        if (data.elementKind == SceneElementKind.Component && current is GameComponent component)
-            component.gameObject.SetComponentIndex(component, index);
-        else if (data.elementKind == SceneElementKind.System && current is GameSystem system)
-            scene.SetSystemIndex(system, index);
-    }
-
-    private static int GetIndex(
-        SceneElementHistoryData data,
-        GameScene scene,
-        EngineObject current
-    )
-        => data.elementKind switch
-        {
-            SceneElementKind.Component when current is GameComponent component =>
-                component.gameObject.GetComponentIndex(component),
-            SceneElementKind.System when current is GameSystem system => scene.GetSystemIndex(system),
-            _ => throw new InvalidOperationException(
-                $"Scene element '{data.elementId}' does not match history kind '{data.elementKind}'.")
-        };
+    ) => data.elementKind switch
+    {
+        SceneElementKind.Component => SceneElementSerialization.RestoreComponent(
+            m_workspace.Find<GameObject>(data.ownerID)
+            ?? throw new InvalidOperationException($"Component owner '{data.ownerID}' is unavailable."),
+            data.type,
+            data.elementID,
+            index,
+            state,
+            m_workspace.serialization,
+            m_workspace.assets
+        ),
+        SceneElementKind.System => SceneElementSerialization.RestoreSystem(
+            scene,
+            data.type,
+            data.elementID,
+            index,
+            state,
+            m_workspace.serialization,
+            m_workspace.assets
+        ),
+        _ => throw new InvalidOperationException($"Unsupported scene element kind '{data.elementKind}'.")
+    };
 
     private EditorHistoryResult RollbackExisting(
         SceneElementHistoryData data,
@@ -332,14 +320,15 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
         IReadOnlyList<SceneReferenceRollbackState> rollbackReferences,
         string failure
     ) {
-        var failures = new System.Collections.Generic.List<string>();
+        List<string> failures = [];
         try
         {
             SceneElementSerialization.RestoreState(
-                    current,
-                    rollbackState,
-                    m_workspace.serialization,
-                    m_workspace.assets);
+                current,
+                rollbackState,
+                m_workspace.serialization,
+                m_workspace.assets
+            );
         }
         catch (Exception exception)
         {
@@ -355,18 +344,63 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
         }
         SceneReferenceRestoreResult referenceResult = SceneReferenceIndex.RestoreCurrent(
             rollbackReferences,
-            m_workspace);
+            m_workspace
+        );
         if (!referenceResult.succeeded)
+        {
             failures.Add($"reference rollback: {referenceResult.message}");
+        }
         return failures.Count == 0
-            ? EditorHistoryResult.Failure(failure)
-            : StateIntegrityFailure(
-                $"Scene element transition failed: {failure} Rollback failed: {string.Join("; ", failures)}");
+               ? EditorHistoryResult.Failure(failure)
+               : StateIntegrityFailure(
+                   $"Scene element transition failed: {failure} Rollback failed: {string.Join("; ", failures)}"
+               );
     }
+
+    private static bool Remove(
+        SceneElementHistoryData data,
+        GameScene scene,
+        EngineObject current
+    ) => data.elementKind switch
+    {
+        SceneElementKind.Component when current is GameComponent component =>
+            component.gameObject.RemoveComponent(component),
+        SceneElementKind.System when current is GameSystem system => scene.RemoveSystem(system),
+        _ => false
+    };
+
+    private static void SetIndex(
+        SceneElementHistoryData data,
+        GameScene scene,
+        EngineObject current,
+        int index
+    ) {
+        if (data.elementKind == SceneElementKind.Component && current is GameComponent component)
+        {
+            component.gameObject.SetComponentIndex(component, index);
+        }
+        else if (data.elementKind == SceneElementKind.System && current is GameSystem system)
+        {
+            scene.SetSystemIndex(system, index);
+        }
+    }
+
+    private static int GetIndex(
+        SceneElementHistoryData data,
+        GameScene scene,
+        EngineObject current
+    ) => data.elementKind switch
+    {
+        SceneElementKind.Component when current is GameComponent component =>
+            component.gameObject.GetComponentIndex(component),
+        SceneElementKind.System when current is GameSystem system => scene.GetSystemIndex(system),
+        _ => throw new InvalidOperationException(
+            $"Scene element '{data.elementID}' does not match history kind '{data.elementKind}'."
+        )
+    };
 
     private static string JoinFailures(
         string failure,
         string cleanup
-    )
-        => string.IsNullOrWhiteSpace(cleanup) ? failure : $"{failure} {cleanup}";
+    ) => string.IsNullOrWhiteSpace(cleanup) ? failure : $"{failure} {cleanup}";
 }

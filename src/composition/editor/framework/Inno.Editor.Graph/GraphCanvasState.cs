@@ -1,6 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Frozen;
+using System.Collections.Generic;
+using System.Numerics;
 using Inno.Core.Graphs;
 using Inno.Editor.Interactions;
 
@@ -11,10 +12,10 @@ namespace Inno.Editor.Graph;
 /// </summary>
 public sealed class GraphCanvasState
 {
-    private readonly HashSet<GraphNodeId> m_selectedNodes = [];
-    private readonly HashSet<GraphEdgeId> m_selectedEdges = [];
-    private FrozenSet<GraphNodeId>? m_nodeSelection;
-    private FrozenSet<GraphEdgeId>? m_edgeSelection;
+    private readonly HashSet<GraphNodeID> m_selectedNodes = [];
+    private readonly HashSet<GraphEdgeID> m_selectedEdges = [];
+    private FrozenSet<GraphNodeID>? m_nodeSelection;
+    private FrozenSet<GraphEdgeID>? m_edgeSelection;
 
     /// <summary>
     /// Gets the graph-space origin mapped to canvas screen origin.
@@ -29,12 +30,12 @@ public sealed class GraphCanvasState
     /// <summary>
     /// Gets selected node identities.
     /// </summary>
-    public IReadOnlyCollection<GraphNodeId> selectedNodes => m_nodeSelection ??= m_selectedNodes.ToFrozenSet();
+    public IReadOnlyCollection<GraphNodeID> selectedNodes => m_nodeSelection ??= m_selectedNodes.ToFrozenSet();
 
     /// <summary>
     /// Gets selected edge identities.
     /// </summary>
-    public IReadOnlyCollection<GraphEdgeId> selectedEdges => m_edgeSelection ??= m_selectedEdges.ToFrozenSet();
+    public IReadOnlyCollection<GraphEdgeID> selectedEdges => m_edgeSelection ??= m_selectedEdges.ToFrozenSet();
 
     /// <summary>
     /// Gets the endpoint currently being connected, or <see langword="null"/>.
@@ -60,7 +61,9 @@ public sealed class GraphCanvasState
         float zoom
     ) {
         if (!float.IsFinite(pan.x) || !float.IsFinite(pan.y))
+        {
             throw new ArgumentOutOfRangeException(nameof(pan));
+        }
         if (!float.IsFinite(zoom))
         {
             throw new ArgumentOutOfRangeException(nameof(zoom));
@@ -107,7 +110,7 @@ public sealed class GraphCanvasState
         }
 
         float next = Math.Clamp(zoom * factor, 0.1f, 4f);
-        System.Numerics.Vector2 origin = EditorPlanarNavigation.ZoomOrigin(new(pan.x, pan.y), new(pivotX, pivotY), zoom, next);
+        Vector2 origin = EditorPlanarNavigation.ZoomOrigin(new Vector2(pan.x, pan.y), new Vector2(pivotX, pivotY), zoom, next);
         pan = new GraphPosition(origin.X, origin.Y);
         zoom = next;
     }
@@ -118,7 +121,7 @@ public sealed class GraphCanvasState
     /// <param name="nodes">
     /// Complete selected-node set.
     /// </param>
-    public void SelectNodes(IEnumerable<GraphNodeId> nodes)
+    public void SelectNodes(IEnumerable<GraphNodeID> nodes)
     {
         ArgumentNullException.ThrowIfNull(nodes);
         m_selectedNodes.Clear();
@@ -129,15 +132,15 @@ public sealed class GraphCanvasState
     /// <summary>
     /// Toggles one node while preserving the remaining selection.
     /// </summary>
-    /// <param name="nodeId">
+    /// <param name="nodeID">
     /// Node to toggle.
     /// </param>
-    public void ToggleNode(GraphNodeId nodeId)
+    public void ToggleNode(GraphNodeID nodeID)
     {
         m_nodeSelection = null;
-        if (!m_selectedNodes.Remove(nodeId))
+        if (!m_selectedNodes.Remove(nodeID))
         {
-            m_selectedNodes.Add(nodeId);
+            m_selectedNodes.Add(nodeID);
         }
     }
 
@@ -151,6 +154,14 @@ public sealed class GraphCanvasState
         m_nodeSelection = null;
         m_edgeSelection = null;
     }
+
+    /// <summary>
+    /// Begins a connection drag from one output endpoint.
+    /// </summary>
+    /// <param name="output">
+    /// Stable output endpoint.
+    /// </param>
+    public void BeginConnection(GraphEndpoint output) => BeginConnection(output, GraphPortDirection.Output);
 
     /// <summary>
     /// Begins a connection drag from one endpoint.
@@ -168,14 +179,6 @@ public sealed class GraphCanvasState
         pendingConnection = endpoint;
         pendingConnectionDirection = direction;
     }
-
-    /// <summary>
-    /// Begins a connection drag from one output endpoint.
-    /// </summary>
-    /// <param name="output">
-    /// Stable output endpoint.
-    /// </param>
-    public void BeginConnection(GraphEndpoint output) => BeginConnection(output, GraphPortDirection.Output);
 
     /// <summary>
     /// Cancels any active connection drag.

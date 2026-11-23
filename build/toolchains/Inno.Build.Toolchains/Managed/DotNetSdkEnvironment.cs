@@ -10,7 +10,7 @@ namespace Inno.Build.Toolchains;
 /// </summary>
 public static class DotNetSdkEnvironment
 {
-    private static readonly string[] AmbientSdkVariables =
+    private static readonly string[] AMBIENT_SDK_VARIABLES =
     [
         "MSBuildSDKsPath", "MSBUILD_EXE_PATH", "MSBuildExtensionsPath",
         "MSBuildExtensionsPath32", "MSBuildExtensionsPath64",
@@ -45,10 +45,16 @@ public static class DotNetSdkEnvironment
         string host = ToolchainEnvironment.ResolveExecutable(hostPath);
         var selected = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         if (environment is not null)
+        {
             foreach ((string name, string value) in environment)
+            {
                 selected[name] = value;
-        foreach (string variable in AmbientSdkVariables)
+            }
+        }
+        foreach (string variable in AMBIENT_SDK_VARIABLES)
+        {
             selected[variable] = null;
+        }
         selected["DOTNET_HOST_PATH"] = host;
         selected["DOTNET_ROOT"] = Path.GetDirectoryName(host)!;
         return new ReadOnlyDictionary<string, string?>(selected);

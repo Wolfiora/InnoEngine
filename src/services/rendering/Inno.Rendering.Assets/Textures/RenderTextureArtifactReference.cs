@@ -1,19 +1,20 @@
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
+using Inno.Extensibility.Types;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
 /// <summary>
 /// Identifies one immutable texture source across authoring, deployment, and runtime generations.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("045f13ba-3cc0-5470-b025-08f9febf40e6")]
+[StableTypeID("045f13ba-3cc0-5470-b025-08f9febf40e6")]
 public readonly record struct RenderTextureArtifactReference
 {
     /// <summary>
     /// Creates a reference to one texture slot owned by an imported asset generation.
     /// </summary>
-    /// <param name="assetId">
+    /// <param name="assetID">
     /// Persistent identity of the asset that owns the named source artifact.
     /// </param>
     /// <param name="contentRevision">
@@ -23,19 +24,23 @@ public readonly record struct RenderTextureArtifactReference
     /// Stable texture slot declaration.
     /// </param>
     /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="assetId"/> is empty or <paramref name="contentRevision"/> is negative.
+    /// Thrown when <paramref name="assetID"/> is empty or <paramref name="contentRevision"/> is negative.
     /// </exception>
     public RenderTextureArtifactReference(
-        Guid assetId,
+        Guid assetID,
         long contentRevision,
         RenderTextureArtifactSlot slot
     ) {
-        if (assetId == Guid.Empty)
-            throw new ArgumentException("A texture artifact reference requires a persistent asset identity.", nameof(assetId));
+        if (assetID == Guid.Empty)
+        {
+            throw new ArgumentException("A texture artifact reference requires a persistent asset identity.", nameof(assetID));
+        }
         ArgumentOutOfRangeException.ThrowIfNegative(contentRevision);
         if (string.IsNullOrWhiteSpace(slot.id) || string.IsNullOrWhiteSpace(slot.sourceOutputName))
+        {
             throw new ArgumentException("A texture artifact reference requires a valid slot.", nameof(slot));
-        this.assetId = assetId;
+        }
+        this.assetID = assetID;
         this.contentRevision = contentRevision;
         this.slot = slot;
     }
@@ -43,7 +48,7 @@ public readonly record struct RenderTextureArtifactReference
     /// <summary>
     /// Gets the persistent identity of the owning asset.
     /// </summary>
-    public Guid assetId { get; }
+    public Guid assetID { get; }
 
     /// <summary>
     /// Gets the committed owner content revision used for last-good replacement.
@@ -54,6 +59,4 @@ public readonly record struct RenderTextureArtifactReference
     /// Gets the referenced stable texture slot.
     /// </summary>
     public RenderTextureArtifactSlot slot { get; }
-
 }
-

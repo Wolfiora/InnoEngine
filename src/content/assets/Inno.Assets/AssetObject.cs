@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-
+using System.Threading;
 using Inno.Core.Execution;
 using Inno.Core.Identity;
 using Inno.Core.Serialization;
@@ -29,9 +29,10 @@ public abstract class AssetObject : IdentityObject, ISerializable
     /// <summary>
     /// Gets a display name derived from the source-local path.
     /// </summary>
-    public string name => string.IsNullOrWhiteSpace(assetPath.localPath)
-        ? GetType().Name
-        : Path.GetFileName(assetPath.localPath);
+    public string name
+        => string.IsNullOrWhiteSpace(assetPath.localPath)
+           ? GetType().Name
+           : Path.GetFileName(assetPath.localPath);
 
     /// <summary>
     /// Gets whether this instance represents an unavailable persistent asset.
@@ -54,7 +55,7 @@ public abstract class AssetObject : IdentityObject, ISerializable
     /// <typeparam name="TValue">
     /// Current settings contract with a stable type identity.
     /// </typeparam>
-    /// <param name="stableTypeId">
+    /// <param name="stableTypeID">
     /// Persisted settings type identity.
     /// </param>
     /// <param name="propertyData">
@@ -67,15 +68,21 @@ public abstract class AssetObject : IdentityObject, ISerializable
     /// The asset is unowned, retired, or lacks property-state services.
     /// </exception>
     public void RestoreProperties<TValue>(
-        Guid stableTypeId,
+        Guid stableTypeID,
         byte[] propertyData,
         TValue target
     ) where TValue : class, ISerializable
     {
-        if (m_runtimeResourcesReleased || m_propertyStateOwner is null || !m_propertyStateOwner.TryGetTarget(out var owner))
+        if (m_runtimeResourcesReleased
+            || m_propertyStateOwner is null
+            || !m_propertyStateOwner.TryGetTarget(out IAssetPropertyStateResolver? owner)
+        ) {
             throw new InvalidOperationException("The asset's property-state owner is unavailable.");
-        owner.RestoreProperties(stableTypeId, propertyData, target);
+        }
+        owner.RestoreProperties(stableTypeID, propertyData, target);
     }
+
+    internal string sourceHash => m_sourceHash;
 
     /// <summary>
     /// Called after a new runtime payload has been committed to this instance.
@@ -89,32 +96,29 @@ public abstract class AssetObject : IdentityObject, ISerializable
     protected virtual void OnRuntimePayloadChanged(
         ReadOnlyMemory<byte> previousPayload,
         ReadOnlyMemory<byte> currentPayload
-    ) {
-    }
+    ) {}
 
     /// <summary>
     /// Releases the runtime resources owned by this asset without clearing its payload before quiescence.
     /// </summary>
+    /// <exception cref="RetirementPendingException">
+    /// Owned work has not quiesced; runtime payload and ownership must remain intact until a later attempt.
+    /// </exception>
     /// <remarks>
     /// An unfinished release may throw RetirementPendingException. The owner retains the asset and retries
     /// this hook; completed steps must not be repeated. Other failures are terminal and are reported by the owner.
     /// </remarks>
-    /// <exception cref="RetirementPendingException">
-    /// Owned work has not quiesced; runtime payload and ownership must remain intact until a later attempt.
-    /// </exception>
-    protected virtual void OnUnloading()
-    {
-    }
-
-    internal string sourceHash => m_sourceHash;
+    protected virtual void OnUnloading() {}
 
     internal void ClaimRuntimeOwner(
         object authority,
         WeakReference<IAssetPropertyStateResolver>? properties
     ) {
-        object? previous = System.Threading.Interlocked.CompareExchange(ref m_runtimeOwner, authority, null);
+        object? previous = Interlocked.CompareExchange(ref m_runtimeOwner, authority, null);
         if (previous is not null && !ReferenceEquals(previous, authority))
+        {
             throw new InvalidOperationException("The asset belongs to another runtime owner.");
+        }
         m_propertyStateOwner = properties;
     }
 
@@ -153,15 +157,14 @@ public abstract class AssetObject : IdentityObject, ISerializable
         }
     }
 
-    internal void UpdateAssetPath(AssetPath assetPath)
-    {
-        this.assetPath = assetPath;
-    }
+    internal void UpdateAssetPath(AssetPath assetPath) => this.assetPath = assetPath;
 
     internal void ReleaseRuntimeResources()
     {
         if (m_runtimeResourcesReleased)
+        {
             return;
+        }
         try
         {
             OnUnloading();

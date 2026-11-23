@@ -7,7 +7,7 @@ namespace Inno.Core.Jobs;
 /// </summary>
 public readonly struct JobSchedulerOptions
 {
-    private const int DEFAULT_MAX_WORKER_THREADS = 64;
+    private const int C_DEFAULT_MAX_WORKER_THREADS = 64;
 
     /// <summary>
     /// Gets the worker-pool thread count, clamped to 1 through 64 for positive values.
@@ -31,18 +31,10 @@ public readonly struct JobSchedulerOptions
     /// </summary>
     public int mainThreadDrainBudget { get; init; }
 
-    internal int ResolveFrameCapacity() => ResolvePositive(maxFrameJobs, 65536);
+    internal int ResolveFrameCapacity() => ResolvePositive(maxFrameJobs, 65_536);
 
     internal MainThreadWorkQueue CreateMainThreadQueue()
-        => new(ResolvePositive(mainThreadCapacity, 65536), ResolvePositive(mainThreadDrainBudget, 4096));
-
-    private static int ResolvePositive(
-        int value,
-        int defaultValue
-    ) {
-        ArgumentOutOfRangeException.ThrowIfNegative(value);
-        return value == 0 ? defaultValue : value;
-    }
+        => new(ResolvePositive(mainThreadCapacity, 65_536), ResolvePositive(mainThreadDrainBudget, 4096));
 
     internal int ResolveWorkerCount()
     {
@@ -53,11 +45,19 @@ public readonly struct JobSchedulerOptions
 
         if (workerCount == 0)
         {
-            var cpuCount = Environment.ProcessorCount;
-            var resolved = cpuCount > 1 ? cpuCount - 1 : 1;
-            return Math.Clamp(resolved, 1, DEFAULT_MAX_WORKER_THREADS);
+            int cpuCount = Environment.ProcessorCount;
+            int resolved = cpuCount > 1 ? cpuCount - 1 : 1;
+            return Math.Clamp(resolved, 1, C_DEFAULT_MAX_WORKER_THREADS);
         }
 
-        return Math.Clamp(workerCount, 1, DEFAULT_MAX_WORKER_THREADS);
+        return Math.Clamp(workerCount, 1, C_DEFAULT_MAX_WORKER_THREADS);
+    }
+
+    private static int ResolvePositive(
+        int value,
+        int defaultValue
+    ) {
+        ArgumentOutOfRangeException.ThrowIfNegative(value);
+        return value == 0 ? defaultValue : value;
     }
 }

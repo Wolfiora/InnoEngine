@@ -7,43 +7,47 @@ namespace Inno.Core.Identity;
 /// </summary>
 /// <remarks>
 /// This value is suitable for transient interaction payloads only and must never be persisted.
-    /// Equality compares the stored domain and runtime identifier; it does not verify that an object is still live.
+/// Equality compares the stored domain and runtime identifier; it does not verify that an object is still live.
 /// </remarks>
 public readonly struct RuntimeIdentity : IEquatable<RuntimeIdentity>
 {
     /// <summary>
     /// Creates a runtime identity from its domain and generation-safe object identifier.
     /// </summary>
-    /// <param name="domainId">
+    /// <param name="domainID">
     /// The identity domain that owns the runtime identifier.
     /// </param>
-    /// <param name="runtimeId">
+    /// <param name="runtimeID">
     /// The generation-safe runtime identifier allocated inside the domain.
     /// </param>
     /// <exception cref="ArgumentException">
     /// Thrown when either value is invalid.
     /// </exception>
     public RuntimeIdentity(
-        IdentityDomainId domainId,
-        int runtimeId
+        IdentityDomainID domainID,
+        int runtimeID
     ) {
-        if (!domainId.isValid)
-            throw new ArgumentException("A runtime identity requires a valid domain.", nameof(domainId));
-        if (runtimeId <= 0)
-            throw new ArgumentException("A runtime identity requires a positive runtime identifier.", nameof(runtimeId));
-        this.domainId = domainId;
-        this.runtimeId = runtimeId;
+        if (!domainID.isValid)
+        {
+            throw new ArgumentException("A runtime identity requires a valid domain.", nameof(domainID));
+        }
+        if (runtimeID <= 0)
+        {
+            throw new ArgumentException("A runtime identity requires a positive runtime identifier.", nameof(runtimeID));
+        }
+        this.domainID = domainID;
+        this.runtimeID = runtimeID;
     }
 
     /// <summary>
     /// Gets the identity domain that owns this runtime identifier.
     /// </summary>
-    public IdentityDomainId domainId { get; }
+    public IdentityDomainID domainID { get; }
 
     /// <summary>
-    /// Gets the generation-safe identifier interpreted inside <see cref="domainId"/>.
+    /// Gets the generation-safe identifier interpreted inside <see cref="domainID"/>.
     /// </summary>
-    public int runtimeId { get; }
+    public int runtimeID { get; }
 
     /// <summary>
     /// Determines whether this value and another value address the same live identity slot.
@@ -54,7 +58,7 @@ public readonly struct RuntimeIdentity : IEquatable<RuntimeIdentity>
     /// <returns>
     /// <see langword="true"/> when both the domain and runtime identifier are equal; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool Equals(RuntimeIdentity other) => domainId == other.domainId && runtimeId == other.runtimeId;
+    public bool Equals(RuntimeIdentity other) => domainID == other.domainID && runtimeID == other.runtimeID;
 
     /// <summary>
     /// Determines whether an object addresses the same live identity slot.
@@ -73,7 +77,7 @@ public readonly struct RuntimeIdentity : IEquatable<RuntimeIdentity>
     /// <returns>
     /// A hash code consistent with runtime identity equality.
     /// </returns>
-    public override int GetHashCode() => HashCode.Combine(domainId, runtimeId);
+    public override int GetHashCode() => HashCode.Combine(domainID, runtimeID);
 
     /// <summary>
     /// Formats this transient identity for diagnostics.
@@ -81,7 +85,7 @@ public readonly struct RuntimeIdentity : IEquatable<RuntimeIdentity>
     /// <returns>
     /// A domain-qualified runtime identifier.
     /// </returns>
-    public override string ToString() => $"{domainId}:{runtimeId}";
+    public override string ToString() => $"{domainID}:{runtimeID}";
 
     /// <summary>
     /// Determines whether two runtime identities are equal.

@@ -1,0 +1,56 @@
+using System;
+using System.Threading;
+using Inno.Assets.Pipeline;
+
+namespace Inno.Editor.Scripting.Tests;
+
+[AssetSampleSourceRewriter("tests.scripting.controlled-sample")]
+internal sealed class ControlledSampleSourceRewriter : IAssetSampleSourceRewriter
+{
+    private static readonly AsyncLocal<Control?> CURRENT = new();
+    private readonly Control? m_control = CURRENT.Value;
+
+    /// <summary>
+    /// Captures the current test-owned control through the real source rewriter discovery contract.
+    /// </summary>
+    public ControlledSampleSourceRewriter() {}
+
+    /// <inheritdoc/>
+    public void Transform(AssetSampleTransformContext context)
+    {
+        if (m_control is null)
+        {
+            return;
+        }
+        m_control.workerThread = Environment.CurrentManagedThreadId;
+        m_control.started.Set();
+        using CancellationTokenRegistration cancellation = context.cancellationToken.Register(m_control.canceled.Set);
+        if (!m_control.release.Wait(TimeSpan.FromSeconds(15)))
+        {
+            throw new TimeoutException("The test-owned source rewriter was not released.");
+        }
+        context.cancellationToken.ThrowIfCancellationRequested();
+    }
+
+    internal static Control? current
+    {
+        get => CURRENT.Value;
+        set => CURRENT.Value = value;
+    }
+
+    internal sealed class Control : IDisposable
+    {
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            started.Dispose();
+            release.Dispose();
+            canceled.Dispose();
+        }
+
+        internal ManualResetEventSlim started { get; } = new();
+        internal ManualResetEventSlim release { get; } = new();
+        internal ManualResetEventSlim canceled { get; } = new();
+        internal int workerThread { get; set; }
+    }
+}

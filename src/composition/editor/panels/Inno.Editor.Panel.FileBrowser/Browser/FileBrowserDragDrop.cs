@@ -1,14 +1,17 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using System;
+using System.Numerics;
+using Inno.Assets.Pipeline;
 using Inno.Editor.Assets;
 using Inno.Editor.Assets.ImGui;
-using System;
-using Inno.Assets.Pipeline;
 using Inno.Editor.Core;
-using Inno.Editor.Interactions;
 using Inno.Editor.ImGui;
-using Ui = Inno.Editor.ImGui.ImGui;
+using Inno.Editor.Interactions;
+
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
+
 /// <summary>
 /// Binds managed File Browser drag sessions to native entry and directory items.
 /// </summary>
@@ -30,19 +33,18 @@ internal sealed class FileBrowserDragDrop(AssetBrowserModule assets)
         EditorContext context,
         AssetFileEntry entry
     ) {
-        if (!assets.edits.TryCreateContext(
-            context,
-            entry.assetPath.ToString(),
-            out AssetEditorContext? assetContext
-        )
+        if (!assets.edits.TryCreateContext(context, entry.assetPath.ToString(), out AssetEditorContext? assetContext)
             || assetContext is null
-            || !assets.edits.TryCreateDragData(
-            assetContext,
-            out EditorDragData? data
-        )
-            || data is null)
+            || !assets.edits.TryCreateDragData(assetContext, out EditorDragData? data)
+            || data is null
+        ) {
             return;
-        _ = EditorDragDropRenderer.Source(assets.edits.interactions.For(FileBrowserInteractionIds.C_AREA, entry), data, () => Ui.Text(data.label));
+        }
+        _ = EditorDragDropRenderer.Source(
+            assets.edits.interactions.For(FileBrowserInteractionIDs.C_AREA, entry),
+            data,
+            () => Gui.Text(data.label)
+        );
     }
 
     /// <summary>
@@ -59,12 +61,18 @@ internal sealed class FileBrowserDragDrop(AssetBrowserModule assets)
         string relativePath
     ) {
         if (FileBrowserUtility.IsReadOnlySource(assets.edits.pipeline, relativePath))
+        {
             return;
-        System.Numerics.Vector2 minimum = Ui.GetItemMinimum();
-        System.Numerics.Vector2 maximum = Ui.GetItemMaximum();
-        EditorDropWidgetResult result = EditorDragDropRenderer.Target(assets.edits.interactions.For(FileBrowserInteractionIds.C_AREA, relativePath));
+        }
+        Vector2 minimum = Gui.GetItemMinimum();
+        Vector2 maximum = Gui.GetItemMaximum();
+        EditorDropWidgetResult result = EditorDragDropRenderer.Target(
+            assets.edits.interactions.For(FileBrowserInteractionIDs.C_AREA, relativePath)
+        );
         if (!result.isPreviewing || !result.status.canDrop)
+        {
             return;
+        }
         EditorUI.current.widgets.DropTargetHighlight(minimum, maximum);
     }
 }

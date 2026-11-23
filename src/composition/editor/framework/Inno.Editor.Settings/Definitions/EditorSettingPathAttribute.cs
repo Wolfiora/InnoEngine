@@ -26,12 +26,13 @@ public sealed class EditorSettingPathAttribute : Attribute
         int order = 0
     ) {
         string normalized = EditorSettingsPathUtility.Normalize(path);
-        if (!string.Equals(normalized, "Editor", StringComparison.Ordinal) &&
-            !normalized.StartsWith("Editor/", StringComparison.Ordinal))
-        {
+        if (!string.Equals(normalized, "Editor", StringComparison.Ordinal)
+            && !normalized.StartsWith("Editor/", StringComparison.Ordinal)
+        ) {
             throw new ArgumentException(
                 "An Editor setting path must be 'Editor' or begin with 'Editor/'.",
-                nameof(path));
+                nameof(path)
+            );
         }
         this.path = normalized;
         this.order = order;

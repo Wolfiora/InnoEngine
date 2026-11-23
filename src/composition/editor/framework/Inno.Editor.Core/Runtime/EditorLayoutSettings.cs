@@ -57,7 +57,9 @@ internal sealed class EditorLayoutSettings
         get
         {
             lock (m_sync)
+            {
                 return m_imguiLayout;
+            }
         }
     }
 
@@ -125,7 +127,9 @@ internal sealed class EditorLayoutSettings
     {
         Parse(layout ?? string.Empty, out string parsedLayout, out _);
         lock (m_sync)
+        {
             m_imguiLayout = parsedLayout;
+        }
     }
 
     /// <summary>
@@ -155,7 +159,9 @@ internal sealed class EditorLayoutSettings
         }
 
         lock (m_sync)
+        {
             m_sections[sectionName] = replacement;
+        }
     }
 
     /// <summary>
@@ -174,7 +180,9 @@ internal sealed class EditorLayoutSettings
     {
         ValidateSectionName(sectionName);
         lock (m_sync)
+        {
             return m_sections.Remove(sectionName);
+        }
     }
 
     /// <summary>
@@ -189,7 +197,9 @@ internal sealed class EditorLayoutSettings
         {
             string document = Compose(m_imguiLayout, m_sections);
             if (string.Equals(document, m_lastSavedDocument, StringComparison.Ordinal))
+            {
                 return false;
+            }
             WriteDocument(document);
             return true;
         }
@@ -201,7 +211,9 @@ internal sealed class EditorLayoutSettings
     internal void Save()
     {
         lock (m_sync)
+        {
             WriteDocument(Compose(m_imguiLayout, m_sections));
+        }
     }
 
     private void WriteDocument(string document)
@@ -213,9 +225,13 @@ internal sealed class EditorLayoutSettings
     private string ReadDocument(string? initialDocument)
     {
         if (File.Exists(m_path))
+        {
             return File.ReadAllText(m_path);
+        }
         if (initialDocument is null)
+        {
             return string.Empty;
+        }
         try
         {
             AtomicFile.WriteAllBytes(m_path, Encoding.UTF8.GetBytes(initialDocument), overwrite: false);
@@ -246,17 +262,23 @@ internal sealed class EditorLayoutSettings
             }
 
             if (line.StartsWith("[", StringComparison.Ordinal))
+            {
                 currentEditorSection = null;
+            }
 
             if (currentEditorSection is not null)
             {
                 int separator = line.IndexOf('=');
                 if (separator <= 0)
+                {
                     continue;
+                }
                 string key = line[..separator].Trim();
                 string value = line[(separator + 1)..].Trim();
                 if (IsValidKey(key) && IsValidValue(value))
+                {
                     currentEditorSection[key] = value;
+                }
                 continue;
             }
 
@@ -273,7 +295,9 @@ internal sealed class EditorLayoutSettings
         var builder = new StringBuilder();
         string normalizedLayout = NormalizeLayout(layout);
         if (normalizedLayout.Length > 0)
+        {
             builder.Append(normalizedLayout).AppendLine().AppendLine();
+        }
 
         string[] names = sections.Keys.OrderBy(static name => name, StringComparer.Ordinal).ToArray();
         for (int sectionIndex = 0; sectionIndex < names.Length; sectionIndex++)
@@ -282,9 +306,13 @@ internal sealed class EditorLayoutSettings
             builder.Append(C_SECTION_PREFIX).Append(name).AppendLine("]");
             Dictionary<string, string> section = sections[name];
             foreach (KeyValuePair<string, string> pair in OrderValues(section))
+            {
                 builder.Append(pair.Key).Append('=').AppendLine(pair.Value);
+            }
             if (sectionIndex + 1 < names.Length)
+            {
                 builder.AppendLine();
+            }
         }
         return builder.ToString();
     }
@@ -296,9 +324,9 @@ internal sealed class EditorLayoutSettings
         string line,
         out string sectionName
     ) {
-        if (line.StartsWith(C_SECTION_PREFIX, StringComparison.Ordinal) &&
-            line.EndsWith(']'))
-        {
+        if (line.StartsWith(C_SECTION_PREFIX, StringComparison.Ordinal)
+            && line.EndsWith(']')
+        ) {
             sectionName = line[C_SECTION_PREFIX.Length..^1];
             return IsValidSectionName(sectionName);
         }
@@ -313,7 +341,8 @@ internal sealed class EditorLayoutSettings
         {
             throw new ArgumentException(
                 "Editor settings section names cannot contain brackets or line breaks.",
-                nameof(sectionName));
+                nameof(sectionName)
+            );
         }
     }
 
@@ -324,7 +353,8 @@ internal sealed class EditorLayoutSettings
         {
             throw new ArgumentException(
                 "Editor settings keys cannot contain an equals sign or line break.",
-                nameof(key));
+                nameof(key)
+            );
         }
     }
 
@@ -333,24 +363,22 @@ internal sealed class EditorLayoutSettings
         ArgumentNullException.ThrowIfNull(value);
         if (!IsValidValue(value))
         {
-            throw new ArgumentException(
-                "Editor settings values cannot contain line breaks.",
-                nameof(value));
+            throw new ArgumentException("Editor settings values cannot contain line breaks.", nameof(value));
         }
     }
 
     private static bool IsValidSectionName(string value)
-        => !string.IsNullOrWhiteSpace(value) &&
-           value.IndexOfAny(['[', ']', '\r', '\n']) < 0;
+        => !string.IsNullOrWhiteSpace(value)
+           && value.IndexOfAny(['[', ']', '\r', '\n']) < 0;
 
     private static bool IsValidKey(string value)
-        => !string.IsNullOrWhiteSpace(value) &&
-           value.IndexOfAny(['=', '\r', '\n']) < 0;
+        => !string.IsNullOrWhiteSpace(value)
+           && value.IndexOfAny(['=', '\r', '\n']) < 0;
 
     private static bool IsValidValue(string value) => value.IndexOfAny(['\r', '\n']) < 0;
 
     private static string NormalizeLayout(string? layout)
         => string.IsNullOrWhiteSpace(layout)
-            ? string.Empty
-            : layout.TrimEnd('\r', '\n');
+           ? string.Empty
+           : layout.TrimEnd('\r', '\n');
 }

@@ -9,7 +9,6 @@ public enum JobExecutionMode
     /// Executes jobs deterministically on the scheduler owner thread.
     /// </summary>
     SingleThread,
-
     /// <summary>
     /// Executes ready jobs on a bounded work-stealing worker pool.
     /// </summary>

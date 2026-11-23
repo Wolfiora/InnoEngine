@@ -354,33 +354,40 @@ public static class Log
         ArgumentNullException.ThrowIfNull(sourceType);
         LogRouter router = LogRouter.current;
         if (!router.IsEnabled(level))
+        {
             return;
+        }
 
         AssemblyDomain domain = sourceType.Assembly.GetInnoAssemblyDomain();
         AssemblyScope scope = sourceType.Assembly.GetInnoAssemblyScope();
         string category = GetCategory(filePath);
         string rendered = arguments is null || arguments.Count == 0
-            ? message : string.Format(message, arguments.ToArray());
-        router.Dispatch(new LogEntry(
-            level,
-            domain,
-            scope,
-            category,
-            rendered,
-            string.IsNullOrWhiteSpace(filePath) ? C_DEFAULT_CATEGORY : filePath,
-            lineNumber,
-            new StackTrace(2, true).ToString(),
-            LogSessionContext.current));
+                          ? message
+                          : string.Format(message, arguments.ToArray());
+        router.Dispatch(
+            new LogEntry(
+                level,
+                domain,
+                scope,
+                category,
+                rendered,
+                string.IsNullOrWhiteSpace(filePath) ? C_DEFAULT_CATEGORY : filePath,
+                lineNumber,
+                new StackTrace(2, true).ToString(),
+                LogSessionContext.current
+            )
+        );
     }
 
     private static string GetCategory(string filePath)
     {
         if (string.IsNullOrWhiteSpace(filePath))
+        {
             return C_DEFAULT_CATEGORY;
+        }
 
         // Compiler source paths belong to the authoring host, which can differ from the runtime host.
         int fileNameStart = Math.Max(filePath.LastIndexOf('/'), filePath.LastIndexOf('\\')) + 1;
         return Path.GetFileNameWithoutExtension(filePath.AsSpan(fileNameStart)).ToString();
     }
-
 }

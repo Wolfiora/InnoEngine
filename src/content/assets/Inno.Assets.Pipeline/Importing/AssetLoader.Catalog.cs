@@ -7,24 +7,23 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Collections;
 using Inno.Core.Diagnostics;
-using Inno.Core.Identity;
-using Inno.References;
 using Inno.Core.Execution;
 using Inno.Core.IO;
+using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
-using Inno.Core.Collections;
+using Inno.Extensibility.Types;
+using Inno.References;
 
 using IOFile = System.IO.File;
 
 namespace Inno.Assets.Pipeline;
 
-sealed partial class AssetLoader
+public sealed partial class AssetLoader
 {
     /// <summary>
     /// Creates an isolated source-mount and catalog candidate without changing the active catalog.
@@ -55,7 +54,8 @@ sealed partial class AssetLoader
                 libraryRoot,
                 "AssetDatabase",
                 "Candidates",
-                Guid.NewGuid().ToString("N"));
+                Guid.NewGuid().ToString("N")
+            );
             AssetLoader? candidateLoader = null;
             try
             {
@@ -69,7 +69,8 @@ sealed partial class AssetLoader
                     mounts,
                     libraryRoot,
                     candidateLibraryRoot,
-                    sourcePolicy ?? m_sourcePolicy);
+                    sourcePolicy ?? m_sourcePolicy
+                );
                 candidateLoader.m_identitiesActive = false;
                 candidateLoader.m_deferUnavailableExtensions = true;
                 candidateLoader.m_preserveInitialExtensionDiscovery = m_deferUnavailableExtensions;
@@ -81,23 +82,13 @@ sealed partial class AssetLoader
             {
                 candidateLoader?.Dispose();
                 if (Directory.Exists(candidateLibraryRoot))
+                {
                     Directory.Delete(candidateLibraryRoot, recursive: true);
+                }
                 throw;
             }
         });
     }
-
-    internal void PromoteCatalogTo(string destinationLibraryRoot)
-        => Execute(() =>
-        {
-            if (m_sourceMetadataStage is not null)
-            {
-                m_sourceMetadataStage.Commit(() => m_catalog.PromoteTo(destinationLibraryRoot));
-                m_sourceMetadataStage = null;
-            }
-            else
-                m_catalog.PromoteTo(destinationLibraryRoot);
-        });
 
     /// <summary>
     /// Tries to get a catalog snapshot by isolated source path.
@@ -128,7 +119,7 @@ sealed partial class AssetLoader
     /// <summary>
     /// Tries to get a catalog snapshot by persistent identity.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The stable persistent identity used for lookup.
     /// </param>
     /// <param name="info">
@@ -138,12 +129,14 @@ sealed partial class AssetLoader
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool TryGetInfo(
-        Guid persistentId,
+        Guid persistentID,
         out AssetInfo? info
     ) {
-        AssetInfo? result = Execute(() => m_recordsById.TryGetValue(persistentId, out AssetRecord? record)
+        AssetInfo? result = Execute(() => (
+            m_recordsByID.TryGetValue(persistentID, out AssetRecord? record)
             ? CreateInfo(record)
-            : null);
+            : null
+        ));
         info = result;
         return result is not null;
     }
@@ -154,23 +147,23 @@ sealed partial class AssetLoader
     /// <param name="path">
     /// The isolated source path.
     /// </param>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The resolved identity.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when catalog metadata exists.
     /// </returns>
-    public bool TryGetPersistentId(
+    public bool TryGetPersistentID(
         AssetPath path,
-        out Guid persistentId
+        out Guid persistentID
     ) {
         if (!TryNormalizeCatalogPath(path, out string normalized))
         {
-            persistentId = Guid.Empty;
+            persistentID = Guid.Empty;
             return false;
         }
-        Guid result = Execute(() => FindRecordLocked(normalized)?.persistentId ?? Guid.Empty);
-        persistentId = result;
+        Guid result = Execute(() => FindRecordLocked(normalized)?.persistentID ?? Guid.Empty);
+        persistentID = result;
         return result != Guid.Empty;
     }
 
@@ -214,6 +207,20 @@ sealed partial class AssetLoader
             .ThenBy(static path => path.localPath, StringComparer.Ordinal)
             .ToArray());
 
+    internal void PromoteCatalogTo(string destinationLibraryRoot)
+        => Execute(() =>
+        {
+            if (m_sourceMetadataStage is not null)
+            {
+                m_sourceMetadataStage.Commit(() => m_catalog.PromoteTo(destinationLibraryRoot));
+                m_sourceMetadataStage = null;
+            }
+            else
+            {
+                m_catalog.PromoteTo(destinationLibraryRoot);
+            }
+        });
+
     private void LoadCatalogLocked()
     {
         AssetMeta[] catalogEntries;
@@ -224,41 +231,47 @@ sealed partial class AssetLoader
         catch (Exception exception)
         {
             if (m_diagnostics.PublishCatalogFailure(exception))
+            {
                 m_log.Write(LogLevel.Error, "Asset catalog load failed: {0}", [exception]);
+            }
             throw;
         }
         for (int i = 0; i < catalogEntries.Length; i++)
+        {
             MergeCatalogMetaLocked(catalogEntries[i]);
+        }
 
         foreach (AssetSourceMount mount in m_mounts.Values)
         {
             foreach (string metaPath in Directory.GetFiles(
-                         mount.rootPath,
-                         "*" + C_META_POSTFIX,
-                         SearchOption.AllDirectories))
-            {
+                mount.rootPath,
+                "*" + C_META_POSTFIX,
+                SearchOption.AllDirectories
+            )) {
                 string localMeta = Path.GetRelativePath(mount.rootPath, metaPath).Replace('\\', '/');
-                string relative = new AssetPath(
-                    mount.id,
-                    localMeta[..^C_META_POSTFIX.Length]).ToString();
+                string relative = new AssetPath(mount.id, localMeta[..^C_META_POSTFIX.Length]).ToString();
                 string sourcePath = GetSourcePath(relative);
                 if (Directory.Exists(sourcePath))
+                {
                     continue;
+                }
                 try
                 {
                     AssetSourceMeta sourceMeta = m_serialization.Deserialize<AssetSourceMeta>(
-                        ReadMetadata(metaPath) ?? throw new IOException("Source metadata is no longer available."));
+                        ReadMetadata(metaPath) ?? throw new IOException("Source metadata is no longer available.")
+                    );
                     if (sourceMeta.persistentId != Guid.Empty)
                     {
-                        AssetRecord? existing = FindRecordByIdWithoutLoading(sourceMeta.persistentId);
-                        if (existing is not null &&
-                            !string.Equals(existing.relativePath, relative, StringComparison.OrdinalIgnoreCase) &&
-                            IOFile.Exists(GetSourcePath(existing.relativePath)))
-                        {
+                        AssetRecord? existing = FindRecordByIDWithoutLoading(sourceMeta.persistentId);
+                        if (existing is not null
+                            && !string.Equals(existing.relativePath, relative, StringComparison.OrdinalIgnoreCase)
+                            && IOFile.Exists(GetSourcePath(existing.relativePath))
+                        ) {
                             if (mount.isReadOnly)
                             {
                                 throw new InvalidDataException(
-                                    $"Read-only source '{relative}' duplicates persistent ID '{sourceMeta.persistentId}'.");
+                                    $"Read-only source '{relative}' duplicates persistent ID '{sourceMeta.persistentId}'."
+                                );
                             }
                             sourceMeta.persistentId = Guid.NewGuid();
                             WriteAtomic(metaPath, m_serialization.Serialize(sourceMeta));
@@ -283,25 +296,32 @@ sealed partial class AssetLoader
         m_recordsByPath.TryGetValue(relativePath, out AssetRecord? record);
         string metaPath = GetMetaPath(relativePath);
         if (!TryReadSourceMeta(metaPath, out AssetSourceMeta sourceMeta))
+        {
             return record;
+        }
         if (sourceMeta.persistentId == Guid.Empty)
+        {
             return record;
-        if (record is not null && record.persistentId == sourceMeta.persistentId)
+        }
+        if (record is not null && record.persistentID == sourceMeta.persistentId)
+        {
             return record;
-        if (record is not null && record.persistentId != Guid.Empty)
+        }
+        if (record is not null && record.persistentID != Guid.Empty)
         {
             // The source sidecar owns path identity. A catalog entry at the same path can be
             // historical after an interrupted save or catalog promotion and must not replace it.
             RetireRecordLocked(
                 record,
-                $"Source '{relativePath}' now declares persistent id '{sourceMeta.persistentId}'.");
+                $"Source '{relativePath}' now declares persistent id '{sourceMeta.persistentId}'."
+            );
             record = null;
         }
-        if (m_recordsById.TryGetValue(sourceMeta.persistentId, out AssetRecord? tombstone) &&
-            tombstone.meta.isTombstone)
-        {
+        if (m_recordsByID.TryGetValue(sourceMeta.persistentId, out AssetRecord? tombstone)
+            && tombstone.meta.isTombstone
+        ) {
             tombstone.relativePath = relativePath;
-            tombstone.persistentId = sourceMeta.persistentId;
+            tombstone.persistentID = sourceMeta.persistentId;
             tombstone.meta = new AssetMeta
             {
                 relativePath = relativePath,
@@ -312,24 +332,24 @@ sealed partial class AssetLoader
             AddOrReplaceRecordLocked(tombstone);
             return tombstone;
         }
-        if (m_recordsById.TryGetValue(sourceMeta.persistentId, out AssetRecord? sameId) &&
-            !string.Equals(sameId.relativePath, relativePath, StringComparison.OrdinalIgnoreCase))
-        {
-            if (IOFile.Exists(GetSourcePath(sameId.relativePath)) ||
-                Directory.Exists(GetSourcePath(sameId.relativePath)))
-            {
+        if (m_recordsByID.TryGetValue(sourceMeta.persistentId, out AssetRecord? sameID)
+            && !string.Equals(sameID.relativePath, relativePath, StringComparison.OrdinalIgnoreCase)
+        ) {
+            if (IOFile.Exists(GetSourcePath(sameID.relativePath))
+                || Directory.Exists(GetSourcePath(sameID.relativePath))
+            ) {
                 sourceMeta.persistentId = Guid.NewGuid();
                 WriteAtomic(metaPath, m_serialization.Serialize(sourceMeta));
             }
             else
             {
-                HandleRenameLocked(sameId.relativePath, relativePath);
-                return sameId;
+                HandleRenameLocked(sameID.relativePath, relativePath);
+                return sameID;
             }
         }
-        record = m_recordsById.GetValueOrDefault(sourceMeta.persistentId) ?? record ?? new AssetRecord();
+        record = m_recordsByID.GetValueOrDefault(sourceMeta.persistentId) ?? record ?? new AssetRecord();
         record.relativePath = relativePath;
-        record.persistentId = sourceMeta.persistentId;
+        record.persistentID = sourceMeta.persistentId;
         if (record.meta.isTombstone || record.meta.persistentId == Guid.Empty)
         {
             record.meta = new AssetMeta
@@ -346,21 +366,22 @@ sealed partial class AssetLoader
 
     private void AddOrReplaceRecordLocked(AssetRecord record)
     {
-        if (record.persistentId == Guid.Empty)
+        if (record.persistentID == Guid.Empty)
         {
             m_recordsByPath[record.relativePath] = record;
             return;
         }
-        if (m_recordsById.TryGetValue(record.persistentId, out AssetRecord? sameId) &&
-            !ReferenceEquals(sameId, record) &&
-            !string.Equals(sameId.relativePath, record.relativePath, StringComparison.OrdinalIgnoreCase))
-        {
+        if (m_recordsByID.TryGetValue(record.persistentID, out AssetRecord? sameID)
+            && !ReferenceEquals(sameID, record)
+            && !string.Equals(sameID.relativePath, record.relativePath, StringComparison.OrdinalIgnoreCase)
+        ) {
             throw new InvalidOperationException(
-                $"Asset persistent id '{record.persistentId}' is used by both " +
-                $"'{sameId.relativePath}' and '{record.relativePath}'.");
+                $"Asset persistent id '{record.persistentID}' is used by both "
+                + $"'{sameID.relativePath}' and '{record.relativePath}'."
+            );
         }
         m_recordsByPath[record.relativePath] = record;
-        m_recordsById[record.persistentId] = record;
+        m_recordsByID[record.persistentID] = record;
     }
 
     private void RebindTombstoneLocked(
@@ -379,26 +400,32 @@ sealed partial class AssetLoader
         bool removeGeneratedFiles = true
     ) {
         m_recordsByPath.Remove(record.relativePath);
-        if (record.persistentId != Guid.Empty)
+        if (record.persistentID != Guid.Empty)
         {
-            m_recordsById.Remove(record.persistentId);
-            m_runtimeGraph.RemoveNode(record.persistentId);
+            m_recordsByID.Remove(record.persistentID);
+            m_runtimeGraph.RemoveNode(record.persistentID);
         }
         m_importGraph.RemoveNode(record.relativePath);
         if (removeGeneratedFiles)
+        {
             DeleteIfExists(GetMetaPath(record.relativePath));
+        }
     }
 
     private Type? ResolveRecordType(AssetRecord? record)
     {
         if (record is null)
+        {
             return null;
+        }
         if (record.asset is not null)
+        {
             return record.asset.GetType();
-        TypeRef typeRef = new(record.stableTypeId);
+        }
+        var typeRef = new TypeRef(record.stableTypeID);
         return m_types.TryResolve(typeRef, out Type? type) && typeof(AssetObject).IsAssignableFrom(type)
-            ? type
-            : m_importers.FindById(record.meta.importerId)?.targetAssetType;
+               ? type
+               : m_importers.FindByID(record.meta.importerId)?.targetAssetType;
     }
 
     private Type ResolveDependencyExpectedType(AssetDependency dependency)
@@ -416,7 +443,9 @@ sealed partial class AssetLoader
         out string normalized
     ) {
         if (!path.isValid)
+        {
             throw new ArgumentException("A valid isolated asset path is required.", nameof(path));
+        }
         _ = GetMount(path);
         if (string.IsNullOrWhiteSpace(path.localPath))
         {
@@ -430,25 +459,28 @@ sealed partial class AssetLoader
     private AssetInfo? CreateInfo(AssetRecord? record)
     {
         if (record is null)
+        {
             return null;
+        }
         return new AssetInfo(
-            record.persistentId,
+            record.persistentID,
             AssetPath.Parse(record.relativePath),
             record.meta.isDirectory ? AssetSourceKind.Directory : AssetSourceKind.File,
             Enum.IsDefined(typeof(AssetImportStatus), record.meta.importStatus)
-                ? (AssetImportStatus)record.meta.importStatus
-                : AssetImportStatus.Failed,
+            ? (AssetImportStatus)record.meta.importStatus
+            : AssetImportStatus.Failed,
             record.meta.importerId,
-            record.stableTypeId,
+            record.stableTypeID,
             new AssetArtifactKey(record.meta.artifactKey),
             new AssetArtifactKey(record.meta.lastSuccessfulArtifactKey),
-            record.meta.diagnostics);
+            record.meta.diagnostics
+        );
     }
 
     private void CommitCatalogLocked()
     {
-        AssetMeta[] entries = m_recordsById.Values
-            .Concat(m_recordsByPath.Values.Where(static record => record.persistentId == Guid.Empty))
+        AssetMeta[] entries = m_recordsByID.Values
+            .Concat(m_recordsByPath.Values.Where(static record => record.persistentID == Guid.Empty))
             .Distinct()
             .Select(static record => record.meta)
             .OrderBy(static meta => meta.relativePath, StringComparer.OrdinalIgnoreCase)
@@ -461,7 +493,9 @@ sealed partial class AssetLoader
         catch (Exception exception)
         {
             if (m_diagnostics.PublishCatalogFailure(exception))
+            {
                 m_log.Write(LogLevel.Error, "Asset catalog commit failed: {0}", [exception]);
+            }
             throw;
         }
         m_diagnostics.SynchronizeImports(entries);
@@ -470,57 +504,63 @@ sealed partial class AssetLoader
     private void MergeCatalogMetaLocked(AssetMeta meta)
     {
         if (string.IsNullOrWhiteSpace(meta.relativePath))
+        {
             return;
+        }
         if (meta.isTombstone)
         {
             if (meta.persistentId == Guid.Empty)
-                return;
-            AssetRecord tombstone = FindRecordByIdWithoutLoading(meta.persistentId) ?? new AssetRecord();
-            if (!string.IsNullOrWhiteSpace(tombstone.relativePath) &&
-                m_recordsByPath.TryGetValue(tombstone.relativePath, out AssetRecord? pathRecord) &&
-                ReferenceEquals(pathRecord, tombstone))
             {
+                return;
+            }
+            AssetRecord tombstone = FindRecordByIDWithoutLoading(meta.persistentId) ?? new AssetRecord();
+            if (!string.IsNullOrWhiteSpace(tombstone.relativePath)
+                && m_recordsByPath.TryGetValue(tombstone.relativePath, out AssetRecord? pathRecord)
+                && ReferenceEquals(pathRecord, tombstone)
+            ) {
                 m_recordsByPath.Remove(tombstone.relativePath);
             }
             tombstone.relativePath = meta.relativePath;
-            tombstone.persistentId = meta.persistentId;
-            tombstone.stableTypeId = meta.stableAssetTypeId;
+            tombstone.persistentID = meta.persistentId;
+            tombstone.stableTypeID = meta.stableAssetTypeId;
             tombstone.meta = meta;
             tombstone.payload = [];
-            m_recordsById[meta.persistentId] = tombstone;
+            m_recordsByID[meta.persistentId] = tombstone;
             return;
         }
         AssetRecord record = meta.persistentId == Guid.Empty
-            ? m_recordsByPath.GetValueOrDefault(meta.relativePath) ?? new AssetRecord()
-            : FindRecordByIdWithoutLoading(meta.persistentId) ?? new AssetRecord();
-        if (!string.IsNullOrWhiteSpace(record.relativePath) &&
-            !string.Equals(record.relativePath, meta.relativePath, StringComparison.OrdinalIgnoreCase))
-        {
-            if (m_recordsByPath.TryGetValue(record.relativePath, out AssetRecord? pathRecord) &&
-                ReferenceEquals(pathRecord, record))
-            {
+                             ? m_recordsByPath.GetValueOrDefault(meta.relativePath) ?? new AssetRecord()
+                             : FindRecordByIDWithoutLoading(meta.persistentId) ?? new AssetRecord();
+        if (!string.IsNullOrWhiteSpace(record.relativePath)
+            && !string.Equals(record.relativePath, meta.relativePath, StringComparison.OrdinalIgnoreCase)
+        ) {
+            if (m_recordsByPath.TryGetValue(record.relativePath, out AssetRecord? pathRecord)
+                && ReferenceEquals(pathRecord, record)
+            ) {
                 m_recordsByPath.Remove(record.relativePath);
             }
         }
         record.relativePath = meta.relativePath;
-        record.persistentId = meta.persistentId;
-        record.stableTypeId = meta.stableAssetTypeId;
+        record.persistentID = meta.persistentId;
+        record.stableTypeID = meta.stableAssetTypeId;
         record.meta = meta;
         record.payload = m_artifacts.Read(new AssetArtifactKey(meta.artifactKey), "runtime");
         record.importerGeneration = m_importers.GetGeneration(meta.importerId);
         AddOrReplaceRecordLocked(record);
-        if (record.persistentId != Guid.Empty)
+        if (record.persistentID != Guid.Empty)
+        {
             UpdateGraphsLocked(record);
+        }
     }
 
-    private AssetRecord? FindRecordByIdWithoutLoading(Guid persistentId)
-        => m_recordsById.TryGetValue(persistentId, out AssetRecord? record) ? record : null;
+    private AssetRecord? FindRecordByIDWithoutLoading(Guid persistentID)
+        => m_recordsByID.TryGetValue(persistentID, out AssetRecord? record) ? record : null;
 
     private sealed class AssetRecord
     {
         internal string relativePath = string.Empty;
-        internal Guid persistentId;
-        internal Guid stableTypeId;
+        internal Guid persistentID;
+        internal Guid stableTypeID;
         internal AssetMeta meta = new();
         internal byte[] payload = [];
         internal AssetObject? asset;
@@ -529,5 +569,4 @@ sealed partial class AssetLoader
         internal long failedTypeGeneration;
         internal AssetSourceFileStamp settingsStamp;
     }
-
 }

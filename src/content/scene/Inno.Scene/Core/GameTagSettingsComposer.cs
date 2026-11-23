@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Inno.Core.Serialization;
 using Inno.Core.Settings;
 
 namespace Inno.Scene;
@@ -11,8 +9,7 @@ namespace Inno.Scene;
 /// Composes sparse tag additions and removals from multiple setting contributors.
 /// </summary>
 [ProjectSettingComposer("inno.scene.tags")]
-internal sealed class GameTagSettingsComposer
-    : ProjectSettingComposer<GameTagCatalog, GameTagSettingContribution>
+internal sealed class GameTagSettingsComposer : ProjectSettingComposer<GameTagCatalog, GameTagSettingContribution>
 {
     /// <summary>
     /// Captures the contribution introduced by the supplied project setting value.
@@ -67,67 +64,41 @@ internal sealed class GameTagSettingsComposer
         GameTagCatalog target,
         IReadOnlyList<ProjectSettingContribution<GameTagSettingContribution>> contributions
     ) {
-        var owners = target.GetTags().ToDictionary(static tag => tag, static _ => "host", StringComparer.Ordinal);
+        Dictionary<string, string> owners = target.GetTags().ToDictionary(static tag => tag, static _ => "host", StringComparer.Ordinal);
         foreach (ProjectSettingContribution<GameTagSettingContribution> contribution in contributions)
         {
             contribution.value.Validate();
             foreach (string tag in contribution.value.removals)
             {
                 if (!target.IsDefined(tag))
+                {
                     continue;
+                }
                 string owner = owners[tag];
                 if (!contribution.context.CanOverride(owner))
                 {
                     throw new InvalidOperationException(
-                        $"GameTag contribution '{contribution.context.contributorId}' cannot remove tag '{tag}' " +
-                        $"owned by '{owner}'.");
+                        $"GameTag contribution '{contribution.context.contributorID}' cannot remove tag '{tag}' "
+                        + $"owned by '{owner}'."
+                    );
                 }
                 if (!target.Remove(tag))
                 {
                     throw new InvalidOperationException(
-                        $"GameTag contribution '{contribution.context.contributorId}' cannot remove built-in tag '{tag}'.");
+                        $"GameTag contribution '{contribution.context.contributorID}' cannot remove built-in tag '{tag}'."
+                    );
                 }
                 owners.Remove(tag);
             }
             foreach (string tag in contribution.value.additions)
             {
                 if (target.IsDefined(tag))
+                {
                     continue;
+                }
                 _ = target.Add(tag);
-                owners.Add(tag, contribution.context.contributorId);
+                owners.Add(tag, contribution.context.contributorID);
             }
         }
-    }
-}
-
-/// <summary>
-/// Stores sparse semantic operations for one GameTag setting contribution.
-/// </summary>
-internal sealed class GameTagSettingContribution : ISerializable
-{
-    [SerializableProperty]
-    internal string[] additions { get; set; } = [];
-
-    [SerializableProperty]
-    internal string[] removals { get; set; } = [];
-
-    internal void Validate()
-    {
-        if (additions is null || removals is null)
-            throw new InvalidOperationException("GameTag contribution arrays cannot be null.");
-        string[] normalizedAdditions = additions.Select(GameTagCatalog.Normalize).Order(StringComparer.Ordinal).ToArray();
-        string[] normalizedRemovals = removals.Select(GameTagCatalog.Normalize).Order(StringComparer.Ordinal).ToArray();
-        if (!normalizedAdditions.SequenceEqual(additions, StringComparer.Ordinal)
-            || normalizedAdditions.Distinct(StringComparer.Ordinal).Count() != normalizedAdditions.Length)
-        {
-            throw new InvalidOperationException("GameTag additions must be unique, normalized, and ordered.");
-        }
-        if (!normalizedRemovals.SequenceEqual(removals, StringComparer.Ordinal)
-            || normalizedRemovals.Distinct(StringComparer.Ordinal).Count() != normalizedRemovals.Length)
-        {
-            throw new InvalidOperationException("GameTag removals must be unique, normalized, and ordered.");
-        }
-        if (normalizedAdditions.Intersect(normalizedRemovals, StringComparer.Ordinal).Any())
-            throw new InvalidOperationException("A GameTag contribution cannot add and remove the same tag.");
     }
 }

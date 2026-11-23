@@ -1,12 +1,11 @@
 using System;
-
 using Inno.Core.Logging;
 using Inno.Editor.Interactions;
 using Inno.Scene;
 
 namespace Inno.Editor.Scene;
 
-[EditorHistoryHandler(SceneHistoryKinds.Order)]
+[EditorHistoryHandler(SceneHistoryKinds.C_ORDER)]
 internal sealed class SceneOrderHistoryHandler : EditorHistoryHandler
 {
     private readonly EditorSceneWorkspace m_workspace;
@@ -16,7 +15,8 @@ internal sealed class SceneOrderHistoryHandler : EditorHistoryHandler
         EditorSceneWorkspace workspace,
         LogRouter logs
     ) {
-        m_workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+        ArgumentNullException.ThrowIfNull(workspace);
+        m_workspace = workspace;
         ArgumentNullException.ThrowIfNull(logs);
         m_log = logs.CreateLogger<SceneOrderHistoryHandler>();
     }
@@ -44,9 +44,9 @@ internal sealed class SceneOrderHistoryHandler : EditorHistoryHandler
         try
         {
             SceneOrderHistoryData data = SceneOrderHistoryData.Decode(change.payload.ReadBytes());
-            return m_workspace.Find<GameScene>(data.sceneId) is { isLoaded: true, isDestroyed: false }
-                ? EditorHistoryAvailability.Available()
-                : EditorHistoryAvailability.Unavailable($"Scene '{data.sceneId}' is no longer loaded.");
+            return m_workspace.Find<GameScene>(data.sceneID) is { isLoaded: true, isDestroyed: false }
+                   ? EditorHistoryAvailability.Available()
+                   : EditorHistoryAvailability.Unavailable($"Scene '{data.sceneID}' is no longer loaded.");
         }
         catch (Exception exception)
         {
@@ -77,15 +77,18 @@ internal sealed class SceneOrderHistoryHandler : EditorHistoryHandler
         try
         {
             SceneOrderHistoryData data = SceneOrderHistoryData.Decode(change.payload.ReadBytes());
-            GameScene? scene = m_workspace.Find<GameScene>(data.sceneId);
+            GameScene? scene = m_workspace.Find<GameScene>(data.sceneID);
             if (scene is not { isLoaded: true, isDestroyed: false })
-                return EditorHistoryResult.Failure($"Scene '{data.sceneId}' is no longer loaded.");
+            {
+                return EditorHistoryResult.Failure($"Scene '{data.sceneID}' is no longer loaded.");
+            }
             int rollbackIndex = m_workspace.world.GetSceneIndex(scene);
             try
             {
                 m_workspace.world.SetSceneIndex(
                     scene,
-                    direction == EditorHistoryDirection.Undo ? data.beforeIndex : data.afterIndex);
+                    direction == EditorHistoryDirection.Undo ? data.beforeIndex : data.afterIndex
+                );
             }
             catch (Exception exception)
             {
@@ -96,7 +99,8 @@ internal sealed class SceneOrderHistoryHandler : EditorHistoryHandler
                 catch (Exception rollbackException)
                 {
                     return StateIntegrityFailure(
-                        $"Scene reorder failed: {exception.Message} Rollback failed: {rollbackException.Message}");
+                        $"Scene reorder failed: {exception.Message} Rollback failed: {rollbackException.Message}"
+                    );
                 }
                 return EditorHistoryResult.Failure(exception.Message);
             }

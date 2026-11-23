@@ -13,7 +13,15 @@ public sealed class FileLease : IDisposable
 {
     private readonly FileStream m_stream;
 
-    private FileLease(FileStream stream) => m_stream = stream;
+    private FileLease(FileStream stream)
+    {
+        m_stream = stream;
+    }
+
+    /// <summary>
+    /// Releases ownership; repeated disposal has no effect and the lease file is retained.
+    /// </summary>
+    public void Dispose() => m_stream.Dispose();
 
     /// <summary>
     /// Waits for exclusive ownership without blocking an owner thread or changing shared data.
@@ -30,10 +38,6 @@ public sealed class FileLease : IDisposable
     /// <returns>
     /// The exclusive lease whose disposal permits the next participant to acquire ownership.
     /// </returns>
-    /// <remarks>
-    /// Lease files remain after disposal. Removing them would let Unix processes lock different
-    /// inodes for the same path while an earlier participant still owns the original inode.
-    /// </remarks>
     /// <exception cref="ArgumentException">
     /// The path is empty or relative, or the timeout is negative and not infinite.
     /// </exception>
@@ -49,12 +53,22 @@ public sealed class FileLease : IDisposable
     /// <exception cref="UnauthorizedAccessException">
     /// The operating system denies access to the lease path.
     /// </exception>
+    /// <remarks>
+    /// Lease files remain after disposal. Removing them would let Unix processes lock different
+    /// inodes for the same path while an earlier participant still owns the original inode.
+    /// </remarks>
     public static async ValueTask<FileLease> AcquireAsync(
         string path,
         TimeSpan timeout,
         CancellationToken cancellationToken = default
-    ) => await AcquireCoreAsync(path, timeout, FileMode.OpenOrCreate, FileAccess.ReadWrite,
-        FileShare.None, cancellationToken).ConfigureAwait(false);
+    ) => await AcquireCoreAsync(
+        path,
+        timeout,
+        FileMode.OpenOrCreate,
+        FileAccess.ReadWrite,
+        FileShare.None,
+        cancellationToken
+    ).ConfigureAwait(false);
 
     /// <summary>
     /// Pins an existing generation against exclusive retirement while permitting other readers.
@@ -84,13 +98,14 @@ public sealed class FileLease : IDisposable
         string path,
         TimeSpan timeout,
         CancellationToken cancellationToken = default
-    ) => await AcquireCoreAsync(path, timeout, FileMode.Open, FileAccess.Read,
-        FileShare.Read, cancellationToken).ConfigureAwait(false);
-
-    /// <summary>
-    /// Releases ownership; repeated disposal has no effect and the lease file is retained.
-    /// </summary>
-    public void Dispose() => m_stream.Dispose();
+    ) => await AcquireCoreAsync(
+        path,
+        timeout,
+        FileMode.Open,
+        FileAccess.Read,
+        FileShare.Read,
+        cancellationToken
+    ).ConfigureAwait(false);
 
     private static async ValueTask<FileLease> AcquireCoreAsync(
         string path,
@@ -102,9 +117,13 @@ public sealed class FileLease : IDisposable
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         if (!Path.IsPathFullyQualified(path))
+        {
             throw new ArgumentException("A file lease requires an absolute path.", nameof(path));
+        }
         if (timeout < TimeSpan.Zero && timeout != Timeout.InfiniteTimeSpan)
+        {
             throw new ArgumentOutOfRangeException(nameof(timeout));
+        }
         cancellationToken.ThrowIfCancellationRequested();
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         Stopwatch elapsed = Stopwatch.StartNew();
@@ -113,7 +132,7 @@ public sealed class FileLease : IDisposable
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                FileStream stream = new(path, mode, access, sharing);
+                var stream = new FileStream(path, mode, access, sharing);
                 if (cancellationToken.IsCancellationRequested)
                 {
                     stream.Dispose();
@@ -124,19 +143,25 @@ public sealed class FileLease : IDisposable
             catch (IOException failure) when (IsCompetingOwnership(failure))
             {
                 if (timeout != Timeout.InfiniteTimeSpan && elapsed.Elapsed >= timeout)
+                {
                     throw new TimeoutException($"File ownership timed out at '{path}'.", failure);
+                }
                 TimeSpan delay = TimeSpan.FromMilliseconds(20);
                 if (timeout != Timeout.InfiniteTimeSpan && timeout - elapsed.Elapsed < delay)
+                {
                     delay = timeout - elapsed.Elapsed;
+                }
                 if (delay > TimeSpan.Zero)
+                {
                     await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+                }
             }
         }
     }
 
     private static bool IsCompetingOwnership(IOException failure)
         // .NET reports Unix flock contention as raw errno; Darwin uses EWOULDBLOCK 35.
-        => OperatingSystem.IsWindows() ? (failure.HResult & 0xffff) is 32 or 33
-            : failure.HResult == (OperatingSystem.IsMacOS() ? 35 : 11);
-
+        => OperatingSystem.IsWindows()
+           ? (failure.HResult & 0xFFFF) is 32 or 33
+           : failure.HResult == (OperatingSystem.IsMacOS() ? 35 : 11);
 }

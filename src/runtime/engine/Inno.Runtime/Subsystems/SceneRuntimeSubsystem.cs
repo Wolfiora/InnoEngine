@@ -3,30 +3,6 @@ using Inno.Scene;
 
 namespace Inno.Runtime;
 
-internal sealed class SceneRuntimeSubsystemFactory(
-    SceneWorld scenes,
-    RuntimeSessionKind kind
-) : IRuntimeSubsystemFactory
-{
-    internal static readonly RuntimeSubsystemId subsystemId = new("inno.runtime.scene");
-
-    /// <summary>
-    /// Gets the stable descriptor for the built-in scene simulation subsystem.
-    /// </summary>
-    public RuntimeSubsystemDescriptor descriptor { get; } = new(subsystemId, order: 0);
-
-    /// <summary>
-    /// Creates the scene subsystem for the isolated runtime session.
-    /// </summary>
-    /// <param name="context">
-    /// The session context that supplies the scene world and session kind.
-    /// </param>
-    /// <returns>
-    /// A new subsystem that advances the context's scene world.
-    /// </returns>
-    public IRuntimeSubsystem Create(RuntimeSubsystemContext context) => new SceneRuntimeSubsystem(scenes, kind);
-}
-
 internal sealed class SceneRuntimeSubsystem(
     SceneWorld scenes,
     RuntimeSessionKind sessionKind
@@ -41,7 +17,9 @@ internal sealed class SceneRuntimeSubsystem(
     protected override void OnFixedUpdate(RuntimeFixedFrame frame)
     {
         if (sessionKind != RuntimeSessionKind.Edit)
+        {
             scenes.FixedUpdate(frame.deltaTime);
+        }
     }
 
     /// <summary>
@@ -53,7 +31,9 @@ internal sealed class SceneRuntimeSubsystem(
     protected override void OnUpdate(RuntimeFrame frame)
     {
         if (sessionKind != RuntimeSessionKind.Edit && !frame.isPaused)
+        {
             scenes.Update(frame.deltaTime);
+        }
     }
 
     /// <summary>
@@ -65,6 +45,8 @@ internal sealed class SceneRuntimeSubsystem(
     protected override void OnLateUpdate(RuntimeFrame frame)
     {
         if (sessionKind != RuntimeSessionKind.Edit && !frame.isPaused)
+        {
             scenes.LateUpdate(frame.deltaTime);
+        }
     }
 }

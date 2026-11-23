@@ -1,10 +1,11 @@
-using Inno.Rendering;
 using System;
 using System.Linq;
+using Inno.Extensibility.Types;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
-[Inno.Extensibility.Types.StableTypeId("3f7f8f3e-f933-57dd-a513-4165386a62ae")]
+[StableTypeID("3f7f8f3e-f933-57dd-a513-4165386a62ae")]
 internal sealed class ShaderDefinitionSnapshot
 {
     private readonly ShaderDefinition m_definition;
@@ -12,9 +13,9 @@ internal sealed class ShaderDefinitionSnapshot
     internal ShaderDefinitionSnapshot(ShaderDefinition definition)
     {
         ArgumentNullException.ThrowIfNull(definition);
-        if (definition.properties is null || definition.keywords is null ||
-            definition.passes is null || definition.techniques is null)
-        {
+        if (definition.properties is null || definition.keywords is null
+            || definition.passes is null || definition.techniques is null
+        ) {
             throw new ArgumentException("Shader declaration collections cannot be null.", nameof(definition));
         }
         m_definition = Copy(definition);
@@ -36,16 +37,15 @@ internal sealed class ShaderDefinitionSnapshot
 
     private static ShaderDefinition Copy(ShaderDefinition definition)
         => new()
+    {
+        name = definition.name,
+        properties = definition.properties.ToArray(),
+        keywords = definition.keywords.Select(static keyword => new ShaderKeywordDefinition
         {
-            name = definition.name,
-            properties = definition.properties.ToArray(),
-            keywords = definition.keywords.Select(static keyword => new ShaderKeywordDefinition
-            {
-                id = keyword.id,
-                options = keyword.options?.ToArray() ?? []
-            }).ToArray(),
-            passes = definition.passes.Select(Copy).ToArray(),
-            techniques = definition.techniques.Select(Copy).ToArray()
-        };
+            id = keyword.id,
+            options = keyword.options?.ToArray() ?? []
+        }).ToArray(),
+        passes = definition.passes.Select(Copy).ToArray(),
+        techniques = definition.techniques.Select(Copy).ToArray()
+    };
 }
-

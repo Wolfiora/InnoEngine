@@ -1,12 +1,11 @@
 using System;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Extensibility.Types;
 using Inno.Core.Logging;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Types;
 using Inno.Runtime;
 
 namespace Inno.Editor.Scene;
@@ -34,7 +33,8 @@ public sealed class EditorSceneWorkspaceHost : IDisposable
             serialization,
             new EditorReloadCoordinator(),
             logs,
-            selection);
+            selection
+        );
     }
 
     /// <summary>
@@ -58,7 +58,9 @@ public sealed class EditorSceneWorkspaceHost : IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_workspace.DisposeUnattached();
         m_disposed = true;
     }

@@ -4,6 +4,7 @@ using System.Threading;
 using Microsoft.Build.Framework;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
+
 using BuildTask = Microsoft.Build.Utilities.Task;
 
 namespace Inno.Build.TaskHosting;
@@ -62,8 +63,12 @@ public sealed class MaterializeBindingsTask : BuildTask, ICancelableTask
     public void Cancel()
     {
         lock (m_lifecycle)
+        {
             if (!m_completed)
+            {
                 m_cancellation.Cancel();
+            }
+        }
     }
 
     /// <summary>
@@ -79,17 +84,23 @@ public sealed class MaterializeBindingsTask : BuildTask, ICancelableTask
             CancellationToken cancellation = m_cancellation.Token;
             cancellation.ThrowIfCancellationRequested();
             if (!Path.IsPathFullyQualified(Source) || !Path.IsPathFullyQualified(IntermediateDirectory)
-                || !Path.IsPathFullyQualified(ComponentProject))
+                || !Path.IsPathFullyQualified(ComponentProject)
+            ) {
                 throw new ArgumentException("Binding consumption requires absolute source and owner paths.");
+            }
             string source = Path.GetFullPath(Source);
             using IDisposable ownership = Acquire(source, cancellation);
             string destination = Path.Combine(Path.GetFullPath(IntermediateDirectory), "bindings", "Bindings.cs");
             if (SamePath(source, destination))
+            {
                 throw new ArgumentException("The SDK consumer must not overwrite the publisher's source.");
+            }
             byte[] content = File.ReadAllBytes(source);
             cancellation.ThrowIfCancellationRequested();
             if (!File.Exists(destination) || !content.AsSpan().SequenceEqual(File.ReadAllBytes(destination)))
+            {
                 AtomicFile.WriteAllBytes(destination, content);
+            }
             MaterializedSource = destination;
             return true;
         }
@@ -110,14 +121,14 @@ public sealed class MaterializeBindingsTask : BuildTask, ICancelableTask
 
     private IDisposable Acquire(
         string source,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         IBuildEngine3? engine = BuildEngine as IBuildEngine3;
         IDisposable? ownership = null;
         engine?.Yield();
         try
         {
-            ownership = AcquirePublication(source, cancellation);
+            ownership = AcquirePublication(source, cancellationToken);
             return ownership;
         }
         finally
@@ -136,28 +147,45 @@ public sealed class MaterializeBindingsTask : BuildTask, ICancelableTask
 
     private IDisposable AcquirePublication(
         string source,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         if (ArtifactDirectory.Length != 0)
         {
             if (!Path.IsPathFullyQualified(ArtifactDirectory))
+            {
                 throw new ArgumentException("Binding artifacts require an absolute publication owner.");
+            }
             string directory = Path.GetFullPath(ArtifactDirectory);
             if (!SamePath(source, Path.Combine(directory, "Generated", "Bindings.cs")))
+            {
                 throw new ArgumentException("The selected source is outside its declared binding artifact.");
-            return BuildArtifactReadLease.AcquireAsync(directory, ArtifactOwnerDirectory, Fingerprint, ["Native", "Generated"], cancellation)
-                .AsTask().GetAwaiter().GetResult();
+            }
+            return BuildArtifactReadLease
+                .AcquireAsync(directory, ArtifactOwnerDirectory, Fingerprint, ["Native", "Generated"], cancellationToken: cancellationToken)
+                .AsTask()
+                .GetAwaiter()
+                .GetResult();
         }
         string owner = Path.GetDirectoryName(Path.GetFullPath(ComponentProject))!;
         if (!SamePath(source, Path.Combine(owner, "Generated", "Bindings.cs")))
+        {
             throw new ArgumentException("Host bindings must belong to their Native project's Generated directory.");
-        return FileLease.AcquireAsync(Path.Combine(owner, "obj", "bindings", "generation.lock"),
-            Timeout.InfiniteTimeSpan, cancellation).AsTask().GetAwaiter().GetResult();
+        }
+        return FileLease.AcquireAsync(
+            Path.Combine(owner, "obj", "bindings", "generation.lock"),
+            Timeout.InfiniteTimeSpan,
+            cancellationToken
+        ).AsTask().GetAwaiter().GetResult();
     }
 
     private static bool SamePath(
         string left,
         string right
-    ) => string.Equals(left, right, OperatingSystem.IsWindows()
-        ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+    ) => string.Equals(
+        left,
+        right,
+        OperatingSystem.IsWindows()
+        ? StringComparison.OrdinalIgnoreCase
+        : StringComparison.Ordinal
+    );
 }

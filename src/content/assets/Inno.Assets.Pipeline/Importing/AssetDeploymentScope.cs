@@ -9,7 +9,6 @@ public enum AssetDeploymentScope
     /// The asset is deployed and must produce a named <c>runtime</c> artifact output.
     /// </summary>
     Runtime,
-
     /// <summary>
     /// The asset exists only for authoring workflows and is omitted from deployed catalogs.
     /// </summary>

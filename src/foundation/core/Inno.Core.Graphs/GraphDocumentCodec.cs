@@ -35,7 +35,7 @@ public static class GraphDocumentCodec
             ) =>
             {
                 nodeWriter.Write("id", node.id.value);
-                nodeWriter.Write("definition", node.definitionId);
+                nodeWriter.Write("definition", node.definitionID);
                 nodeWriter.Write("positionX", node.position.x);
                 nodeWriter.Write("positionY", node.position.y);
                 nodeWriter.WriteObjectArray(
@@ -48,7 +48,8 @@ public static class GraphDocumentCodec
                     {
                         valueWriter.Write("id", pair.Key);
                         valueWriter.Write("data", pair.Value.ToArray());
-                    });
+                    }
+                );
             });
             writer.WriteObjectArray("edges", document.edges, static (
                 edgeWriter,
@@ -56,10 +57,10 @@ public static class GraphDocumentCodec
             ) =>
             {
                 edgeWriter.Write("id", edge.id.value);
-                edgeWriter.Write("outputNode", edge.output.nodeId.value);
-                edgeWriter.Write("outputPort", edge.output.portId.value);
-                edgeWriter.Write("inputNode", edge.input.nodeId.value);
-                edgeWriter.Write("inputPort", edge.input.portId.value);
+                edgeWriter.Write("outputNode", edge.output.nodeID.value);
+                edgeWriter.Write("outputPort", edge.output.portID.value);
+                edgeWriter.Write("inputNode", edge.input.nodeID.value);
+                edgeWriter.Write("inputPort", edge.input.portID.value);
             });
             writer.WriteObjectArray(
                 "metadata",
@@ -71,7 +72,8 @@ public static class GraphDocumentCodec
                 {
                     metadataWriter.Write("id", pair.Key);
                     metadataWriter.Write("data", pair.Value.ToArray());
-                });
+                }
+            );
         });
     }
 
@@ -98,37 +100,46 @@ public static class GraphDocumentCodec
             foreach (SerializationReader nodeReader in reader.ReadObjectArray("nodes"))
             {
                 var node = new GraphNodeRecord(
-                    new GraphNodeId(nodeReader.Read<string>("id")),
-                    nodeReader.Read<string>("definition"))
+                    new GraphNodeID(nodeReader.Read<string>("id")),
+                    nodeReader.Read<string>("definition")
+                )
                 {
                     position = new GraphPosition(
                         nodeReader.Read<float>("positionX"),
-                        nodeReader.Read<float>("positionY"))
+                        nodeReader.Read<float>("positionY")
+                    )
                 };
                 foreach (SerializationReader valueReader in nodeReader.ReadObjectArray("values"))
                 {
                     node.SetValue(
                         valueReader.Read<string>("id"),
-                        new GraphSerializedValue(valueReader.Read<byte[]>("data")));
+                        new GraphSerializedValue(valueReader.Read<byte[]>("data"))
+                    );
                 }
                 document.AddNode(node);
             }
             foreach (SerializationReader edgeReader in reader.ReadObjectArray("edges"))
             {
-                document.AddEdge(new GraphEdgeRecord(
-                    new GraphEdgeId(edgeReader.Read<string>("id")),
-                    new GraphEndpoint(
-                        new GraphNodeId(edgeReader.Read<string>("outputNode")),
-                        new GraphPortId(edgeReader.Read<string>("outputPort"))),
-                    new GraphEndpoint(
-                        new GraphNodeId(edgeReader.Read<string>("inputNode")),
-                        new GraphPortId(edgeReader.Read<string>("inputPort")))));
+                document.AddEdge(
+                    new GraphEdgeRecord(
+                        new GraphEdgeID(edgeReader.Read<string>("id")),
+                        new GraphEndpoint(
+                            new GraphNodeID(edgeReader.Read<string>("outputNode")),
+                            new GraphPortID(edgeReader.Read<string>("outputPort"))
+                        ),
+                        new GraphEndpoint(
+                            new GraphNodeID(edgeReader.Read<string>("inputNode")),
+                            new GraphPortID(edgeReader.Read<string>("inputPort"))
+                        )
+                    )
+                );
             }
             foreach (SerializationReader metadataReader in reader.ReadObjectArray("metadata"))
             {
                 document.SetMetadata(
                     metadataReader.Read<string>("id"),
-                    new GraphSerializedValue(metadataReader.Read<byte[]>("data")));
+                    new GraphSerializedValue(metadataReader.Read<byte[]>("data"))
+                );
             }
             return document;
         });

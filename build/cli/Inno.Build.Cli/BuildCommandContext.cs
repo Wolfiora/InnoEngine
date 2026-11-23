@@ -14,54 +14,72 @@ internal sealed class BuildCommandContext
 {
     internal BuildCommandContext(BuildCommandLine options)
     {
-        nativeDependencies = options.Read("native-dependencies", string.Empty);
-        root = ResolveEngineRoot(options.Read("engine-root", string.Empty));
+        this.nativeDependencies = options.Read("native-dependencies", string.Empty);
+        this.root = ResolveEngineRoot(options.Read("engine-root", string.Empty));
         if (nativeDependencies.Length > 0)
-            nativeDependencies = Path.GetFullPath(nativeDependencies, root);
-        configuration = options.Read("configuration", "Release");
+        {
+            this.nativeDependencies = Path.GetFullPath(nativeDependencies, root);
+        }
+        this.configuration = options.Read("configuration", "Release");
         ToolchainEnvironment.ValidateConfiguration(configuration.ToLowerInvariant());
-        configuration = configuration.Equals("debug", StringComparison.OrdinalIgnoreCase) ? "Debug" : "Release";
-        toolsTarget = new BuildTargetId(options.Require("tools-target"));
-        target = new BuildTargetId(options.Read("target", toolsTarget.value));
+        this.configuration = configuration.Equals("debug", StringComparison.OrdinalIgnoreCase) ? "Debug" : "Release";
+        this.toolsTarget = new BuildTargetID(options.Require("tools-target"));
+        this.target = new BuildTargetID(options.Read("target", toolsTarget.value));
         string dotnet = ToolchainEnvironment.ResolveExecutable(options.Read("dotnet", "dotnet"));
-        composition = StandardBuildEnvironment.Capture(Path.GetDirectoryName(typeof(BuildApplication).Assembly.Location)!, toolsTarget, dotnet,
-            nativeDependencies.Length == 0 ? null : nativeDependencies);
-        distribution = StandardBuildDistribution.Create(composition).build;
+        this.composition = StandardBuildEnvironment.Capture(
+            Path.GetDirectoryName(typeof(BuildApplication).Assembly.Location)!,
+            toolsTarget,
+            dotnet,
+            nativeDependencies.Length == 0 ? null : nativeDependencies
+        );
+        this.distribution = StandardBuildDistribution.Create(composition).build;
     }
 
     internal string nativeDependencies { get; }
     internal string root { get; }
     internal string configuration { get; }
-    internal BuildTargetId target { get; }
-    internal BuildTargetId toolsTarget { get; }
+    internal BuildTargetID target { get; }
+    internal BuildTargetID toolsTarget { get; }
     internal BuildCompositionContext composition { get; }
     internal BuildDistribution distribution { get; }
-
-    internal static string ResolveEngineRoot(string? selectedRoot)
-    {
-        string root = Path.GetFullPath(string.IsNullOrWhiteSpace(selectedRoot) ? ToolchainEnvironment.FindRepoRoot() : selectedRoot);
-        if (!File.Exists(Path.Combine(root, "InnoEngine.sln")))
-            throw new DirectoryNotFoundException($"Engine checkout is unavailable at '{root}'.");
-        return root;
-    }
 
     internal async Task<string> PreflightEditorAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         BuildPlatformContribution? platform = distribution.platforms.SingleOrDefault(value => value.descriptor.id == target);
         string project = platform?.editorProject
-            ?? throw new NotSupportedException($"Target '{target}' does not provide an Editor product.");
+                         ?? throw new NotSupportedException($"Target '{target}' does not provide an Editor product.");
         var native = new NativeBuildContext(root, configuration.ToLowerInvariant());
         if (nativeDependencies.Length == 0)
-            await distribution.ResolveNativeToolchain(target.value).ResolveAsync(native, composition.host,
-            target.value, cancellationToken).ConfigureAwait(false);
+        {
+            await distribution.ResolveNativeToolchain(target.value).ResolveAsync(
+                native,
+                composition.host,
+                target.value,
+                cancellationToken
+            ).ConfigureAwait(false);
+        }
         return Path.Combine(root, "entry", "InnoEngine.Editor", "InnoEngine.Editor.csproj");
     }
 
-    internal string[] ProductArguments(string project) =>
-    [
-        project, "--configuration", configuration,
-        "--disable-build-servers", "-m:1", "-nodeReuse:false",
-        ..(nativeDependencies.Length == 0 ? Array.Empty<string>() : ["-p:InnoNativeDependencyManifest=" + nativeDependencies])
-    ];
+    internal string[] ProductArguments(string project)
+        => [
+            project,
+            "--configuration",
+            configuration,
+            "--disable-build-servers",
+            "-m:1",
+            "-nodeReuse:false",
+            ..(nativeDependencies.Length == 0 ? Array.Empty<string>() : ["-p:InnoNativeDependencyManifest=" + nativeDependencies])
+        ];
+
+    internal static string ResolveEngineRoot(string? selectedRoot)
+    {
+        string root = Path.GetFullPath(string.IsNullOrWhiteSpace(selectedRoot) ? ToolchainEnvironment.FindRepoRoot() : selectedRoot);
+        if (!File.Exists(Path.Combine(root, "InnoEngine.sln")))
+        {
+            throw new DirectoryNotFoundException($"Engine checkout is unavailable at '{root}'.");
+        }
+        return root;
+    }
 }

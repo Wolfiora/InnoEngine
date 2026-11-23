@@ -14,7 +14,7 @@ function Invoke-WebRequest($Uri,$Headers,$OutFile) {
     if (!$Uri.EndsWith('/actions/artifacts/4/zip')) { throw 'Unexpected proof download.' }
     [IO.File]::Copy($fixture,$OutFile,$true)
 }
-function Read-Proof { & "$PSScriptRoot/Get-BackendTestEvidence.ps1" -ApiBase https://fixture.invalid -Headers @{} -HostTarget fixture -EnvironmentIdentity $identity -DefaultBranch master -RepositoryId 2 }
+function Read-Proof { & "$PSScriptRoot/../../tools/ci/Get-BackendTestEvidence.ps1" -ApiBase https://fixture.invalid -Headers @{} -HostTarget fixture -EnvironmentIdentity $identity -DefaultBranch master -RepositoryId 2 }
 try {
     $stream = [IO.File]::Open($fixture,'Create')
     $zip = [IO.Compression.ZipArchive]::new($stream,[IO.Compression.ZipArchiveMode]::Create)

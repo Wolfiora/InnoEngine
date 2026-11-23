@@ -1,0 +1,350 @@
+using System;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using Xunit;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Core.Identity;
+
+namespace Inno.Core.Serialization.Tests;
+
+public sealed partial class SerializationBehaviorTests
+{
+    [Fact]
+    public void DeclaredCaptureKeysReuseOnlyCompleteCurrentInputsAndNeverChangeEncodedBytes()
+    {
+        var identities = new IdentityAllocator();
+        var value = new CaptureKeyRoot { number = 4, text = "text" };
+        Assert.True(identities.Register(value));
+        SerializationSnapshot before = m_serialization.CaptureSnapshot(value);
+        byte[] bytes = before.ToArray();
+        Assert.Equal(m_serialization.Serialize(value), bytes);
+        int writes = value.writeCalls;
+        Assert.Same(before, m_serialization.CaptureSnapshot(value, previous: before));
+        Assert.Equal(writes, value.writeCalls);
+
+        value.Touch();
+        value.number = 9;
+        SerializationSnapshot changed = m_serialization.CaptureSnapshot(value, previous: before);
+        Assert.NotSame(before, changed);
+        Assert.Equal(m_serialization.Serialize(value), changed.ToArray());
+        Assert.Equal(bytes, before.ToArray());
+        Assert.Same(changed, m_serialization.CaptureSnapshot(value, previous: changed));
+
+        int keys = value.keyCalls;
+        _ = m_serialization.Serialize(value);
+        Assert.Equal(keys, value.keyCalls);
+    }
+
+    [Fact]
+    public void AParentKeyCannotImplicitlyCertifyANestedConverterState()
+    {
+        var identities = new IdentityAllocator();
+        var value = new CaptureKeyRoot { converted = new CaptureConvertedValue { number = 4 } };
+        Assert.True(identities.Register(value));
+        SerializationSnapshot before = m_serialization.CaptureSnapshot(value);
+        int calls = CaptureConvertedValueConverter.calls;
+        SerializationSnapshot changed = m_serialization.CaptureSnapshot(value, previous: before);
+        Assert.Equal(calls + 1, CaptureConvertedValueConverter.calls);
+        Assert.NotEqual(before.ToArray(), changed.ToArray());
+        Assert.Equal(2, value.writeCalls);
+    }
+
+    [Fact]
+    public void CaptureKeysIncludeContextInputsAndCurrentConverterGeneration()
+    {
+        var identities = new IdentityAllocator();
+        var value = new CaptureKeyRoot();
+        Assert.True(identities.Register(value));
+        var dependency = new CaptureKeyContext { value = 1 };
+        SerializationContext context = SerializationContext.empty.With(dependency);
+        SerializationSnapshot before = m_serialization.CaptureSnapshot(value, context);
+        Assert.Same(before, m_serialization.CaptureSnapshot(value, context, before));
+        dependency.value = 2;
+        SerializationSnapshot changed = m_serialization.CaptureSnapshot(value, context, before);
+        Assert.Equal(m_serialization.Serialize(value, context), changed.ToArray());
+        Assert.NotEqual(before.ToArray(), changed.ToArray());
+
+        int writes = value.writeCalls;
+        m_types.Rebuild();
+        SerializationSnapshot refreshed = m_serialization.CaptureSnapshot(value, context, changed);
+        Assert.True(value.writeCalls > writes);
+        Assert.Equal(changed.ToArray(), refreshed.ToArray());
+        Assert.Same(refreshed, m_serialization.CaptureSnapshot(value, context, refreshed));
+    }
+
+    [Fact]
+    public void CaptureKeysQualifyIdentityByDomainAndRejectRetiredBindings()
+    {
+        var first = new IdentityAllocator();
+        var second = new IdentityAllocator();
+        var original = new CaptureKeyRoot();
+        var replacement = new CaptureKeyRoot();
+        Assert.True(first.Register(original));
+        Assert.True(second.Register(replacement, original.identity.persistentID));
+        SerializationSnapshot before = m_serialization.CaptureSnapshot(original);
+        SerializationSnapshot changed = m_serialization.CaptureSnapshot(replacement, previous: before);
+        Assert.NotSame(before, changed);
+        Assert.Equal(before.ToArray(), changed.ToArray());
+        Assert.Equal(1, replacement.writeCalls);
+
+        Assert.True(second.Unregister(replacement));
+        Assert.True(second.Register(replacement));
+        int writes = replacement.writeCalls;
+        SerializationSnapshot rebound = m_serialization.CaptureSnapshot(replacement, previous: changed);
+        Assert.True(replacement.writeCalls > writes);
+        Assert.NotSame(changed, rebound);
+        Assert.Equal(changed.ToArray(), rebound.ToArray());
+    }
+
+    [Fact]
+    public void DeclinedAndUnavailableKeysCannotPreserveAnEarlierHint()
+    {
+        var identities = new IdentityAllocator();
+        var value = new CaptureKeyRoot();
+        Assert.True(identities.Register(value));
+        SerializationSnapshot before = m_serialization.CaptureSnapshot(value);
+        value.allowKey = false;
+        SerializationSnapshot declined = m_serialization.CaptureSnapshot(value, previous: before);
+        int writes = value.writeCalls;
+        _ = m_serialization.CaptureSnapshot(value, previous: declined);
+        Assert.Equal(writes + 1, value.writeCalls);
+        Assert.Equal(before.ToArray(), declined.ToArray());
+
+        value.allowKey = true;
+        value.revision = null;
+        value.ignoreDecline = true;
+        value.number = 7;
+        SerializationSnapshot unavailable = m_serialization.CaptureSnapshot(value, previous: declined);
+        Assert.Equal(m_serialization.Serialize(value), unavailable.ToArray());
+        writes = value.writeCalls;
+        _ = m_serialization.CaptureSnapshot(value, previous: unavailable);
+        Assert.Equal(writes + 1, value.writeCalls);
+    }
+
+    [Fact]
+    public void UntrackedDirectPropertyWritesRemainAuthoritativeEvenWhenAProducerIgnoresDecline()
+    {
+        var identities = new IdentityAllocator();
+        var properties = new UntrackedCaptureProperties();
+        var value = new CaptureKeyRoot { properties = properties, ignoreDecline = true };
+        Assert.True(identities.Register(value));
+        Assert.True(identities.Register(properties));
+        SerializationSnapshot before = m_serialization.CaptureSnapshot(value);
+        properties.number = 27;
+        SerializationSnapshot changed = m_serialization.CaptureSnapshot(value, previous: before);
+        Assert.Equal(m_serialization.Serialize(value), changed.ToArray());
+        Assert.NotEqual(before.ToArray(), changed.ToArray());
+        int writes = value.writeCalls;
+        _ = m_serialization.CaptureSnapshot(value, previous: changed);
+        Assert.Equal(writes + 1, value.writeCalls);
+    }
+
+    [Fact]
+    public void ProvenPropertyRevisionsInvalidateWithoutPersistingTheirCounter()
+    {
+        var identities = new IdentityAllocator();
+        var properties = new CaptureRevisionProperties { number = 3 };
+        var value = new CaptureKeyRoot { properties = properties };
+        Assert.True(identities.Register(value));
+        Assert.True(identities.Register(properties));
+        _ = m_serialization.CapturePropertiesData(properties);
+        SerializationSnapshot before = m_serialization.CaptureSnapshot(value);
+        int writes = value.writeCalls;
+        Assert.Same(before, m_serialization.CaptureSnapshot(value, previous: before));
+        Assert.Equal(writes, value.writeCalls);
+
+        properties.number = 12;
+        SerializationSnapshot changed = m_serialization.CaptureSnapshot(value, previous: before);
+        Assert.NotEqual(before.ToArray(), changed.ToArray());
+        Assert.Equal(m_serialization.Serialize(value), changed.ToArray());
+        Assert.Single(m_serialization.CaptureProperties(properties));
+        Assert.Equal("number", m_serialization.CaptureProperties(properties)[0].name);
+    }
+
+    [Fact]
+    public void CaptureKeyQueriesDoNotConstructOrSkipStatefulConverters()
+    {
+        CaptureConvertedValueConverter.EVENTS.Clear();
+        CaptureConvertedValueConverter.calls = 0;
+        var identities = new IdentityAllocator();
+        var properties = new ConvertedCaptureProperties();
+        var value = new CaptureKeyRoot
+        {
+            properties = properties,
+            onWrite = () => CaptureConvertedValueConverter.EVENTS.Add("root-write")
+        };
+        Assert.True(identities.Register(value));
+        Assert.True(identities.Register(properties));
+        SerializationSnapshot before = m_serialization.CaptureSnapshot(value);
+        Assert.Equal(new[] { "root-write", "construct", "convert-write" }, CaptureConvertedValueConverter.EVENTS);
+        SerializationSnapshot changed = m_serialization.CaptureSnapshot(value, previous: before);
+        Assert.Equal(2, CaptureConvertedValueConverter.calls);
+        Assert.NotEqual(before.ToArray(), changed.ToArray());
+    }
+
+    [Fact]
+    public void PureFieldMetadataPreservesExactFloatBitsAcrossTrackedPropertyChanges()
+    {
+        var identities = new IdentityAllocator();
+        var properties = new PureFieldCaptureProperties { value = new PureCaptureFields { number = -0f } };
+        var value = new CaptureKeyRoot { properties = properties };
+        Assert.True(identities.Register(value));
+        Assert.True(identities.Register(properties));
+        _ = m_serialization.CapturePropertiesData(properties);
+        SerializationSnapshot before = m_serialization.CaptureSnapshot(value);
+        Assert.Same(before, m_serialization.CaptureSnapshot(value, previous: before));
+        properties.value = new PureCaptureFields { number = 0f };
+        SerializationSnapshot zero = m_serialization.CaptureSnapshot(value, previous: before);
+        Assert.NotEqual(before.ToArray(), zero.ToArray());
+        foreach (int bits in new[] { 0x7FC0_0001, 0x7FC0_0002 })
+        {
+            properties.value = new PureCaptureFields { number = BitConverter.Int32BitsToSingle(bits) };
+            SerializationSnapshot changed = m_serialization.CaptureSnapshot(value, previous: zero);
+            Assert.NotEqual(zero.ToArray(), changed.ToArray());
+            Assert.Equal(m_serialization.Serialize(value), changed.ToArray());
+            zero = changed;
+        }
+    }
+
+    [Fact]
+    public void NestedPropertyGettersCannotBeMistakenForPureValueFields()
+    {
+        CaptureGetterStruct.calls = 0;
+        var identities = new IdentityAllocator();
+        var properties = new GetterCaptureProperties();
+        var value = new CaptureKeyRoot { properties = properties };
+        Assert.True(identities.Register(value));
+        Assert.True(identities.Register(properties));
+        SerializationSnapshot before = m_serialization.CaptureSnapshot(value);
+        int calls = CaptureGetterStruct.calls;
+        int writes = value.writeCalls;
+        _ = m_serialization.CaptureSnapshot(value, previous: before);
+        Assert.Equal(calls + 1, CaptureGetterStruct.calls);
+        Assert.Equal(writes + 1, value.writeCalls);
+    }
+
+    [Fact]
+    public void CaptureKeyFailureAndMutationNeverPublishOverThePreviousSnapshot()
+    {
+        var identities = new IdentityAllocator();
+        var value = new CaptureKeyRoot { number = 2 };
+        Assert.True(identities.Register(value));
+        SerializationSnapshot before = m_serialization.CaptureSnapshot(value);
+        byte[] bytes = before.ToArray();
+        value.failKey = true;
+        Assert.Throws<InvalidOperationException>(() => m_serialization.CaptureSnapshot(value, previous: before));
+        Assert.Throws<InvalidOperationException>(() => value.savedBuilder!.AddValue(1));
+        value.failKey = false;
+        value.Touch();
+        value.failWrite = true;
+        Assert.Throws<InvalidOperationException>(() => m_serialization.CaptureSnapshot(value, previous: before));
+        value.failWrite = false;
+        value.onWrite = value.Touch;
+        Assert.Throws<InvalidOperationException>(() => m_serialization.CaptureSnapshot(value, previous: before));
+        Assert.Equal(bytes, before.ToArray());
+        value.onWrite = null;
+        Assert.Equal(m_serialization.Serialize(value), m_serialization.CaptureSnapshot(value, previous: before).ToArray());
+    }
+
+    [Fact]
+    public void CaptureKeysValidateEveryBorrowedIdentityAfterTheWrite()
+    {
+        var identities = new IdentityAllocator();
+        var properties = new CaptureRevisionProperties();
+        var value = new CaptureKeyRoot { properties = properties };
+        Assert.True(identities.Register(value));
+        Assert.True(identities.Register(properties));
+        _ = m_serialization.CapturePropertiesData(properties);
+        value.onWrite = () => Assert.True(identities.Unregister(properties));
+        Assert.Throws<InvalidOperationException>(() => m_serialization.CaptureSnapshot(value));
+        Assert.Throws<InvalidOperationException>(() => value.savedBuilder!.context);
+        value.onWrite = null;
+        Assert.True(identities.Register(properties));
+        Assert.NotEmpty(m_serialization.CaptureSnapshot(value).ToArray());
+    }
+
+    [Fact]
+    public void CaptureKeyBuildersRejectAnotherThreadAndRetireAfterEveryCallback()
+    {
+        var identities = new IdentityAllocator();
+        var value = new CaptureKeyRoot
+        {
+            onKey = key => Task.Run(() =>
+                Assert.Throws<InvalidOperationException>(() => key.AddText("wrong thread"))).GetAwaiter().GetResult()
+        };
+        Assert.True(identities.Register(value));
+        _ = m_serialization.CaptureSnapshot(value);
+        SerializationCaptureKeyBuilder builder = value.savedBuilder!;
+        Assert.Throws<InvalidOperationException>(() => builder.context);
+        Assert.Throws<InvalidOperationException>(() => builder.EnsureCapacity(1));
+        Assert.Throws<InvalidOperationException>(() => builder.TryAddOwner(value, 0));
+    }
+
+    [Fact]
+    public void EquivalentFreshMetadataDeclinesHintsWithoutBreakingOrdinaryCapture()
+    {
+        using var serialization = new SerializationRegistry(m_types, new FreshCaptureMetadataSource());
+        var identities = new IdentityAllocator();
+        var value = new CaptureKeyRoot();
+        Assert.True(identities.Register(value));
+        SerializationSnapshot before = serialization.CaptureSnapshot(value);
+        int writes = value.writeCalls;
+        SerializationSnapshot after = serialization.CaptureSnapshot(value, previous: before);
+        Assert.Equal(writes + 1, value.writeCalls);
+        Assert.Equal(before.ToArray(), after.ToArray());
+        Assert.Equal(serialization.Serialize(value), after.ToArray());
+    }
+
+    [Fact]
+    public void MetadataRevisionDeclarationsRejectCountersInTheSerializedPayload()
+    {
+        var metadata = new ReflectionSerializationMetadataSource();
+        Assert.Throws<InvalidOperationException>(() => metadata.GetMetadata(typeof(SerializedCaptureCounter)));
+    }
+
+    [Fact]
+    public void RetainedCaptureKeysAndRetiredBuildersDoNotPinACollectiblePropertyAssembly()
+    {
+        (
+            SerializationSnapshot snapshot,
+            SerializationCaptureKeyBuilder builder,
+            WeakReference assembly,
+            WeakReference context
+        ) = CaptureCollectibleProperties();
+        for (int index = 0; index < 10 && (assembly.IsAlive || context.IsAlive); index++)
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+        }
+        Assert.False(assembly.IsAlive);
+        Assert.False(context.IsAlive);
+        Assert.Throws<InvalidOperationException>(() => builder.context);
+        Assert.NotEmpty(snapshot.ToArray());
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private (SerializationSnapshot, SerializationCaptureKeyBuilder, WeakReference, WeakReference) CaptureCollectibleProperties()
+    {
+        var context = new CapturePropertyLoadContext();
+        Assembly assembly = context.LoadFromAssemblyPath(typeof(CaptureRevisionProperties).Assembly.Location);
+        Type type = assembly.GetType(typeof(CaptureRevisionProperties).FullName!, throwOnError: true)!;
+        ISerializable properties = (ISerializable)Activator.CreateInstance(type)!;
+        var identities = new IdentityAllocator();
+        var value = new CaptureKeyRoot { properties = properties };
+        Assert.True(identities.Register(value));
+        Assert.True(identities.Register((IdentityObject)properties));
+        _ = m_serialization.CapturePropertiesData(properties);
+        SerializationSnapshot snapshot = m_serialization.CaptureSnapshot(value);
+        Assert.Same(snapshot, m_serialization.CaptureSnapshot(value, previous: snapshot));
+        SerializationCaptureKeyBuilder builder = value.savedBuilder!;
+        Assert.True(identities.Unregister((IdentityObject)properties));
+        Assert.True(identities.Unregister(value));
+        value.properties = null;
+        var assemblyReference = new WeakReference(assembly);
+        var contextReference = new WeakReference(context);
+        context.Unload();
+        return (snapshot, builder, assemblyReference, contextReference);
+    }
+}

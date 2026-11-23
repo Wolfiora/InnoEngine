@@ -4,12 +4,14 @@ using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Assets;
+
 /// <summary>
 /// Provides an immutable snapshot for an asset editor operation.
 /// </summary>
 public sealed class AssetEditorContext
 {
     private readonly Func<EditorDragData> m_createDefaultDragData;
+
     /// <summary>
     /// Creates an immutable snapshot used by one asset-editor operation.
     /// </summary>
@@ -50,40 +52,51 @@ public sealed class AssetEditorContext
         Type? assetType,
         Func<EditorDragData> createDefaultDragData
     ) {
-        this.editorContext = editorContext ?? throw new ArgumentNullException(nameof(editorContext));
-        this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-        this.relativePath = relativePath ?? throw new ArgumentNullException(nameof(relativePath));
-        this.name = name ?? throw new ArgumentNullException(nameof(name));
+        ArgumentNullException.ThrowIfNull(editorContext);
+        ArgumentNullException.ThrowIfNull(interactions);
+        ArgumentNullException.ThrowIfNull(relativePath);
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(createDefaultDragData);
+        this.editorContext = editorContext;
+        this.interactions = interactions;
+        this.relativePath = relativePath;
+        this.name = name;
         this.isDirectory = isDirectory;
         this.info = info;
         this.assetType = assetType;
-        m_createDefaultDragData = createDefaultDragData ?? throw new ArgumentNullException(nameof(createDefaultDragData));
+        m_createDefaultDragData = createDefaultDragData;
     }
 
     /// <summary>
     /// Gets the shared editor context.
     /// </summary>
     public EditorContext editorContext { get; }
+
     /// <summary>
     /// Gets the active editor interaction entry point.
     /// </summary>
     public EditorInteractions interactions { get; }
+
     /// <summary>
     /// Gets the source-relative path.
     /// </summary>
     public string relativePath { get; }
+
     /// <summary>
     /// Gets the final source path segment.
     /// </summary>
     public string name { get; }
+
     /// <summary>
     /// Gets whether the source represents a directory.
     /// </summary>
     public bool isDirectory { get; }
+
     /// <summary>
     /// Gets the cataloged asset information when available.
     /// </summary>
     public AssetInfo? info { get; }
+
     /// <summary>
     /// Gets the resolved imported asset type when available.
     /// </summary>

@@ -1,18 +1,21 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Inno.Editor.Assets;
 using System;
 using Inno.Assets.Pipeline;
+using Inno.Editor.Assets;
 using Inno.Editor.Core;
-using Inno.Editor.Inspection;
-using Inno.Editor.Interactions;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+using Inno.Editor.Inspection;
+using Inno.Editor.Interactions;
+
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 
 namespace Inno.Editor.Assets.ImGui;
+
 [InspectionDrawer(typeof(AssetFileEntry))]
 internal sealed class AssetSelectionInspectionDrawer : InspectionDrawer<AssetFileEntry>
 {
     private readonly AssetBrowserModule m_assets;
+
     /// <summary>
     /// Creates an Asset source drawer that shares the Asset Browser presentation registry.
     /// </summary>
@@ -24,13 +27,14 @@ internal sealed class AssetSelectionInspectionDrawer : InspectionDrawer<AssetFil
     /// </exception>
     internal AssetSelectionInspectionDrawer(AssetBrowserModule assets)
     {
-        m_assets = assets ?? throw new ArgumentNullException(nameof(assets));
+        ArgumentNullException.ThrowIfNull(assets);
+        m_assets = assets;
     }
 
     /// <summary>
     /// Gets the icon glyph used to represent this item in the editor.
     /// </summary>
-    public override string icon => ImGuiIcon.File;
+    public override string icon => ImGuiIcon.C_FILE;
 
     /// <summary>
     /// Retrieves the requested icon value from current authoritative state.
@@ -48,6 +52,7 @@ internal sealed class AssetSelectionInspectionDrawer : InspectionDrawer<AssetFil
         InspectionDrawContext context,
         AssetFileEntry target
     ) => m_assets.GetIcon(target);
+
     /// <summary>
     /// Binds a caller-visible label to the current inspection target.
     /// </summary>
@@ -64,6 +69,7 @@ internal sealed class AssetSelectionInspectionDrawer : InspectionDrawer<AssetFil
         InspectionDrawContext context,
         AssetFileEntry target
     ) => (target.nameWithoutExtension, null);
+
     /// <summary>
     /// Renders the header presentation for the current editor frame.
     /// </summary>
@@ -77,6 +83,7 @@ internal sealed class AssetSelectionInspectionDrawer : InspectionDrawer<AssetFil
         InspectionDrawContext context,
         AssetFileEntry target
     ) => EditorUI.current.widgets.ColoredText(EditorPalette.contextText, target.assetPath.ToString());
+
     /// <summary>
     /// Renders the value presentation for the current editor frame.
     /// </summary>
@@ -90,15 +97,17 @@ internal sealed class AssetSelectionInspectionDrawer : InspectionDrawer<AssetFil
         InspectionDrawContext context,
         AssetFileEntry entry
     ) {
-        if (!EditorUI.current.widgets.SectionHeader("Asset", "This view describes the selected source entry. Structured assets may replace it with a dedicated authoring drawer."))
-        {
+        if (!EditorUI.current.widgets.SectionHeader(
+            "Asset",
+            "This view describes the selected source entry. Structured assets may replace it with a dedicated authoring drawer."
+        )) {
             return;
         }
 
         DrawMetadata(
             "Type",
             m_assets.edits.IsPluginRoot(entry) ? "IPlugin" : entry.isDirectory
-                && AssetSample.HasSampleDirectoryName(entry.assetPath) ? "ISample" : entry.isDirectory ? "Directory" : "File"
+            && AssetSample.HasSampleDirectoryName(entry.assetPath) ? "ISample" : entry.isDirectory ? "Directory" : "File"
         );
         if (!entry.isDirectory)
         {
@@ -109,7 +118,5 @@ internal sealed class AssetSelectionInspectionDrawer : InspectionDrawer<AssetFil
     private static void DrawMetadata(
         string label,
         string value
-    ) {
-        EditorUI.current.widgets.PropertyRow("asset.metadata." + label, label, () => EditorUI.current.widgets.Hint(value));
-    }
+    ) => EditorUI.current.widgets.PropertyRow("asset.metadata." + label, label, () => EditorUI.current.widgets.Hint(value));
 }

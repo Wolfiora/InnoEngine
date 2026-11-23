@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$script = Join-Path $PSScriptRoot 'Get-BackendReleasePlan.ps1'
+$script = Join-Path $PSScriptRoot '../../tools/ci/Get-BackendReleasePlan.ps1'
 $assets = @(Get-Content (Join-Path $PSScriptRoot '../../.github/native-targets.json') -Raw | ConvertFrom-Json)
 $revision = 'a' * 40
 $date = [datetime]'2026-11-19T00:00:00Z'

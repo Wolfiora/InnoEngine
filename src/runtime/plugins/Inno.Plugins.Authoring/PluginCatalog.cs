@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Frozen;
+using System.Collections.Generic;
 using System.Linq;
 using Inno.Assets;
 using Inno.Core.Execution;
@@ -13,14 +13,9 @@ namespace Inno.Plugins.Authoring;
 internal sealed class PluginCatalog
 {
     private readonly object m_sync = new();
-    private Snapshot s_current = Snapshot.empty;
-    private PluginScanResult s_discovery = new([], []);
-    private long s_revision;
-
-    /// <summary>
-    /// Occurs after installed discovery or active Plugin state changes.
-    /// </summary>
-    public event Action? Changed;
+    private Snapshot m_current = Snapshot.empty;
+    private PluginScanResult m_discovery = new([], []);
+    private long m_revision;
 
     /// <summary>
     /// Gets dependency-ordered active Plugins.
@@ -30,7 +25,9 @@ internal sealed class PluginCatalog
         get
         {
             lock (m_sync)
-                return s_current.ordered;
+            {
+                return m_current.ordered;
+            }
         }
     }
 
@@ -42,7 +39,9 @@ internal sealed class PluginCatalog
         get
         {
             lock (m_sync)
-                return s_revision;
+            {
+                return m_revision;
+            }
         }
     }
 
@@ -54,9 +53,16 @@ internal sealed class PluginCatalog
         get
         {
             lock (m_sync)
-                return s_discovery;
+            {
+                return m_discovery;
+            }
         }
     }
+
+    /// <summary>
+    /// Occurs after installed discovery or active Plugin state changes.
+    /// </summary>
+    public event Action? changed;
 
     /// <summary>
     /// Tries to resolve the active Plugin that owns an asset source.
@@ -71,11 +77,13 @@ internal sealed class PluginCatalog
     /// <see langword="true"/> when the source belongs to an active Plugin.
     /// </returns>
     public bool TryGet(
-        AssetSourceId source,
+        AssetSourceID source,
         out PluginCandidate? plugin
     ) {
         lock (m_sync)
-            return s_current.bySource.TryGetValue(source, out plugin);
+        {
+            return m_current.bySource.TryGetValue(source, out plugin);
+        }
     }
 
     /// <summary>
@@ -88,18 +96,19 @@ internal sealed class PluginCatalog
     {
         ArgumentNullException.ThrowIfNull(result);
         PluginCandidate[] ordered = PluginSourceService.GetActivatableCandidates(result).ToArray();
-        var bySource = ordered.ToFrozenDictionary(
+        FrozenDictionary<AssetSourceID, PluginCandidate> bySource = ordered.ToFrozenDictionary(
             static candidate => candidate.sourceMount.id,
-            static candidate => candidate);
-        Action? changed;
+            static candidate => candidate
+        );
+        Action? handlers;
         lock (m_sync)
         {
-            s_discovery = result;
-            s_current = new Snapshot(Array.AsReadOnly(ordered), bySource);
-            s_revision++;
-            changed = Changed;
+            m_discovery = result;
+            m_current = new Snapshot(Array.AsReadOnly(ordered), bySource);
+            m_revision++;
+            handlers = changed;
         }
-        InvokeObservers(changed);
+        InvokeObservers(handlers);
     }
 
     /// <summary>
@@ -111,13 +120,13 @@ internal sealed class PluginCatalog
     public void PublishDiscovery(PluginScanResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
-        Action? changed;
+        Action? handlers;
         lock (m_sync)
         {
-            s_discovery = result;
-            changed = Changed;
+            m_discovery = result;
+            handlers = changed;
         }
-        InvokeObservers(changed);
+        InvokeObservers(handlers);
     }
 
     /// <summary>
@@ -127,17 +136,19 @@ internal sealed class PluginCatalog
     {
         lock (m_sync)
         {
-            s_current = Snapshot.empty;
-            s_discovery = new PluginScanResult([], []);
-            s_revision++;
-            Changed = null;
+            m_current = Snapshot.empty;
+            m_discovery = new PluginScanResult([], []);
+            m_revision++;
+            changed = null;
         }
     }
 
     private static void InvokeObservers(Action? handlers)
     {
         if (handlers is null)
+        {
             return;
+        }
         List<Exception>? failures = null;
         foreach (Delegate handler in handlers.GetInvocationList())
         {
@@ -148,7 +159,12 @@ internal sealed class PluginCatalog
             catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
             {
                 if (failures is not null)
-                    throw new AggregateException("Plugin catalog observers reported unfinished retirement.", [.. failures, pendingRetirement]);
+                {
+                    throw new AggregateException(
+                        "Plugin catalog observers reported unfinished retirement.",
+                        [.. failures, pendingRetirement]
+                    );
+                }
                 throw;
             }
             catch (Exception exception)
@@ -159,18 +175,17 @@ internal sealed class PluginCatalog
         }
         if (failures is not null)
         {
-            throw new AggregateException(
-                "One or more Plugin catalog observers failed after publication.",
-                failures);
+            throw new AggregateException("One or more Plugin catalog observers failed after publication.", failures);
         }
     }
 
     private sealed record Snapshot(
         IReadOnlyList<PluginCandidate> ordered,
-        FrozenDictionary<AssetSourceId, PluginCandidate> bySource
+        FrozenDictionary<AssetSourceID, PluginCandidate> bySource
     ) {
         internal static Snapshot empty { get; } = new(
             [],
-            new Dictionary<AssetSourceId, PluginCandidate>().ToFrozenDictionary());
+            new Dictionary<AssetSourceID, PluginCandidate>().ToFrozenDictionary()
+        );
     }
 }

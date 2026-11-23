@@ -1,5 +1,5 @@
 using System;
-
+using System.Collections.Generic;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
@@ -7,12 +7,11 @@ using Inno.Scene;
 
 namespace Inno.Editor.Panel.Hierarchy;
 
-[EditorDrop(HierarchyInteractionIds.C_AREA)]
+[EditorDrop(HierarchyInteractionIDs.C_AREA)]
 internal sealed class ReorderSceneDropHandler(
     IEditorSceneWorkspace workspace,
     SceneEdits edits
-)
-    : EditorDrop<GameScene, HierarchySceneDropTarget>
+) : EditorDrop<GameScene, HierarchySceneDropTarget>
 {
     /// <summary>
     /// Evaluates whether the requested change can be applied to the current generation.
@@ -28,11 +27,14 @@ internal sealed class ReorderSceneDropHandler(
         GameScene source = context.source;
         GameScene target = context.target.scene;
         if (ReferenceEquals(source, target) || !source.isLoaded || !target.isLoaded)
+        {
             return EditorDropStatus.rejected;
+        }
         return EditorDropStatus.Accept(
             context.placement == EditorDropPlacement.After
-                ? EditorDropVisual.InsertAfter
-                : EditorDropVisual.InsertBefore);
+            ? EditorDropVisual.InsertAfter
+            : EditorDropVisual.InsertBefore
+        );
     }
 
     /// <summary>
@@ -52,20 +54,24 @@ internal sealed class ReorderSceneDropHandler(
         int targetIndex = IndexOf(workspace.scenes, target);
         int insertionIndex = targetIndex + (context.placement == EditorDropPlacement.After ? 1 : 0);
         if (sourceIndex < insertionIndex)
+        {
             insertionIndex--;
+        }
         edits.SetSceneIndex(source, insertionIndex);
         _ = context.interactions.For(context.area, source).Select();
         return EditorDropResult.Accepted(source);
     }
 
     private static int IndexOf(
-        System.Collections.Generic.IReadOnlyList<GameScene> scenes,
+        IReadOnlyList<GameScene> scenes,
         GameScene scene
     ) {
         for (int index = 0; index < scenes.Count; index++)
         {
             if (ReferenceEquals(scenes[index], scene))
+            {
                 return index;
+            }
         }
         throw new InvalidOperationException("Only a loaded scene can be reordered.");
     }

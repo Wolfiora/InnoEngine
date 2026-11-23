@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Extensibility.Catalogs;
 
 namespace Inno.Extensibility.Types;
@@ -77,12 +76,10 @@ internal sealed class TypeQueryRegistry
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
     public IReadOnlyList<TypeRef> GetSubTypesOf<T>(TypeIdentityRegistry typeIdentityRegistry)
-    {
-        return typeIdentityRegistry.TryGetRuntimeTypeId(typeof(T), out int keyId) &&
-               m_subclassCache.TryGetValue(keyId, out IReadOnlyList<TypeRef>? set)
-            ? set
-            : [];
-    }
+        => typeIdentityRegistry.TryGetRuntimeTypeID(typeof(T), out int keyID)
+           && m_subclassCache.TryGetValue(keyID, out IReadOnlyList<TypeRef>? set)
+           ? set
+           : [];
 
     /// <summary>
     /// Retrieves the requested types implementing value from current authoritative state.
@@ -97,12 +94,10 @@ internal sealed class TypeQueryRegistry
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
     public IReadOnlyList<TypeRef> GetTypesImplementing<TInterface>(TypeIdentityRegistry typeIdentityRegistry)
-    {
-        return typeIdentityRegistry.TryGetRuntimeTypeId(typeof(TInterface), out int keyId) &&
-               m_interfaceCache.TryGetValue(keyId, out IReadOnlyList<TypeRef>? set)
-            ? set
-            : [];
-    }
+        => typeIdentityRegistry.TryGetRuntimeTypeID(typeof(TInterface), out int keyID)
+           && m_interfaceCache.TryGetValue(keyID, out IReadOnlyList<TypeRef>? set)
+           ? set
+           : [];
 
     /// <summary>
     /// Retrieves the requested types with attribute value from current authoritative state.
@@ -117,13 +112,10 @@ internal sealed class TypeQueryRegistry
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
     public IReadOnlyList<TypeRef> GetTypesWithAttribute<TAttr>(TypeIdentityRegistry typeIdentityRegistry)
-        where TAttr : Attribute
-    {
-        return typeIdentityRegistry.TryGetRuntimeTypeId(typeof(TAttr), out int keyId) &&
-               m_attributeCache.TryGetValue(keyId, out IReadOnlyList<TypeRef>? set)
-            ? set
-            : [];
-    }
+        where TAttr : Attribute => typeIdentityRegistry.TryGetRuntimeTypeID(typeof(TAttr), out int keyID)
+                                   && m_attributeCache.TryGetValue(keyID, out IReadOnlyList<TypeRef>? set)
+                                   ? set
+                                   : [];
 
     private static void AddToIndex(
         Dictionary<int, HashSet<Type>> index,
@@ -131,11 +123,11 @@ internal sealed class TypeQueryRegistry
         Type valueType,
         TypeIdentityRegistry typeIdentityRegistry
     ) {
-        int keyId = typeIdentityRegistry.GetOrAddRuntimeTypeId(keyType);
-        if (!index.TryGetValue(keyId, out HashSet<Type>? set))
+        int keyID = typeIdentityRegistry.GetOrAddRuntimeTypeID(keyType);
+        if (!index.TryGetValue(keyID, out HashSet<Type>? set))
         {
-            set = new HashSet<Type>();
-            index[keyId] = set;
+            set = [];
+            index[keyID] = set;
         }
 
         set.Add(valueType);
@@ -148,9 +140,7 @@ internal sealed class TypeQueryRegistry
         var frozen = new Dictionary<int, IReadOnlyList<TypeRef>>(index.Count);
         foreach ((int key, HashSet<Type> value) in index)
         {
-            frozen[key] = Array.AsReadOnly(value
-                .Select(typeIdentityRegistry.GetTypeRef)
-                .ToArray());
+            frozen[key] = Array.AsReadOnly(value.Select(typeIdentityRegistry.GetTypeRef).ToArray());
         }
 
         return frozen;

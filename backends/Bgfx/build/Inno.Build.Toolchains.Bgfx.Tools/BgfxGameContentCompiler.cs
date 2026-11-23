@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Serialization;
-using Inno.Rendering;
 using Inno.Extensibility.Types;
+using Inno.Rendering;
 using Inno.Rendering.Assets;
 using Inno.Rendering.Assets.Authoring;
 
@@ -63,26 +63,33 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
     ) {
         ArgumentNullException.ThrowIfNull(assets);
         ArgumentNullException.ThrowIfNull(serialization);
+        ArgumentNullException.ThrowIfNull(types);
         ArgumentNullException.ThrowIfNull(backends);
         ArgumentNullException.ThrowIfNull(tools);
         m_tools = tools;
         GraphicsApi[] snapshot = backends.Distinct().ToArray();
         if (snapshot.Length == 0)
+        {
             throw new ArgumentException("At least one Player graphics backend is required.", nameof(backends));
-        if (snapshot.Contains(GraphicsApi.Noop))
+        }
+        if (snapshot.Contains(GraphicsApi.noop))
+        {
             throw new ArgumentException("A deployable Player cannot target the Noop graphics backend.", nameof(backends));
+        }
         m_assets = assets;
-        m_types = types ?? throw new ArgumentNullException(nameof(types));
+        m_types = types;
         m_serialization = serialization;
         ArgumentNullException.ThrowIfNull(platform);
         foreach (GraphicsApi backend in snapshot)
+        {
             platform.Resolve(backend);
+        }
         m_platform = platform;
         m_backends = snapshot;
     }
 
-    /// <inheritdoc />
-    public BuildTargetId target => new(m_platform.id);
+    /// <inheritdoc/>
+    public BuildTargetID target => new(m_platform.id);
 
     /// <summary>
     /// Captures the active Asset generation and compiles every required runtime variant.
@@ -109,7 +116,9 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
         ArgumentNullException.ThrowIfNull(context);
         cancellationToken.ThrowIfCancellationRequested();
         if (context.profile.target != target)
+        {
             throw new ArgumentException("The content context target does not match the compiler.", nameof(context));
+        }
         ContentSnapshot snapshot = CaptureSnapshot();
         string outputRoot = Path.GetFullPath(context.outputDirectory);
         Directory.CreateDirectory(outputRoot);
@@ -120,39 +129,47 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
             ShaderCompileTarget target = shaderCompiler.CreateTarget(
                 capabilities,
                 optimize: true,
-                debugInformation: false);
+                debugInformation: false
+            );
             foreach (ShaderInput shader in snapshot.shaders)
             {
                 foreach (RenderShaderVariant variant in shader.variants.OrderBy(static value => value.value, StringComparer.Ordinal))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    ShaderCompilationResult result = await shaderCompiler.CompileGraphAsync(
+                    ShaderCompilationResult result = await shaderCompiler
+                        .CompileGraphAsync(
                             shader.asset,
                             target,
                             variant,
-                            m_types, m_serialization, AssetSerializationContext.Create(m_assets), m_assets,
-                            cancellationToken)
+                            m_types,
+                            m_serialization,
+                            AssetSerializationContext.Create(m_assets),
+                            m_assets,
+                            cancellationToken
+                        )
                         .ConfigureAwait(false);
                     if (!result.succeeded)
                     {
                         string diagnostics = string.Join(
                             Environment.NewLine,
-                            result.diagnostics.Select(static value => $"[{value.code}] {value.message}"));
+                            result.diagnostics.Select(static value => $"[{value.code}] {value.message}")
+                        );
                         throw new InvalidOperationException(
-                            $"Shader '{shader.asset.assetPath}' failed target compilation for '{backend}':{Environment.NewLine}" +
-                            diagnostics);
+                            $"Shader '{shader.asset.assetPath}' failed target compilation for '{backend}':{Environment.NewLine}"
+                            + diagnostics
+                        );
                     }
                     string destination = ResolveOutput(
                         outputRoot,
-                        RenderTargetArtifactPath.GetShaderPath(
-                            shader.asset.identity.persistentId,
-                            backend,
-                            variant));
+                        RenderTargetArtifactPath.GetShaderPath(shader.asset.identity.persistentID, backend, variant)
+                    );
                     Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-                    await File.WriteAllBytesAsync(
+                    await File
+                        .WriteAllBytesAsync(
                             destination,
                             RenderShaderArtifactCodec.Encode(result.artifact!.CreateRuntimeArtifact()),
-                            cancellationToken)
+                            cancellationToken
+                        )
                         .ConfigureAwait(false);
                 }
             }
@@ -164,19 +181,15 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
             cancellationToken.ThrowIfCancellationRequested();
             byte[] bytes;
             using (ArtifactLease source = m_assets.AcquireArtifact(
-                texture.reference.assetId,
-                texture.reference.slot.sourceOutputName))
-            {
+                texture.reference.assetID,
+                texture.reference.slot.sourceOutputName
+            )) {
                 using Stream encoded = source.OpenRead();
-                bytes = await textureCompiler.CompileKtxAsync(
-                        encoded,
-                        texture.reference.slot.colorSpace,
-                        cancellationToken)
+                bytes = await textureCompiler
+                    .CompileKtxAsync(encoded, texture.reference.slot.colorSpace, cancellationToken)
                     .ConfigureAwait(false);
             }
-            string destination = ResolveOutput(
-                outputRoot,
-                RenderTargetArtifactPath.GetTexturePath(texture.reference));
+            string destination = ResolveOutput(outputRoot, RenderTargetArtifactPath.GetTexturePath(texture.reference));
             Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
             await File.WriteAllBytesAsync(destination, bytes, cancellationToken).ConfigureAwait(false);
         }
@@ -185,31 +198,40 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
     private ContentSnapshot CaptureSnapshot()
     {
         if (!m_assets.isInitialized)
+        {
             throw new InvalidOperationException("BGFX target compilation requires an active authoring Asset database.");
-        Dictionary<AssetSourceId, AssetSourceMount> mounts = m_assets.sourceMounts.ToDictionary(
-            static mount => mount.id);
+        }
+        Dictionary<AssetSourceID, AssetSourceMount> mounts = m_assets.sourceMounts.ToDictionary(
+            static mount => mount.id
+        );
         var shaders = new Dictionary<Guid, ShaderInput>();
         var textures = new Dictionary<TextureArtifactKey, TextureInput>();
-        var materialVariants = new List<(ShaderAsset shader, RenderShaderVariant variant)>();
+        List<(ShaderAsset shader, RenderShaderVariant variant)> materialVariants = [];
         AssetFileEntry[] entries = m_assets.GetFileSystemEntries(includeDirectories: false)
             .OrderBy(static entry => entry.assetPath.ToString(), StringComparer.Ordinal)
             .ToArray();
         foreach (AssetFileEntry entry in entries)
         {
             if (!m_assets.TryGetAssetType(entry.assetPath, out Type? assetType) || assetType is null)
+            {
                 continue;
+            }
             if (typeof(MaterialAsset).IsAssignableFrom(assetType))
             {
                 MaterialAsset material = m_assets.Load<MaterialAsset>(entry.assetPath);
                 if (material.shader is not null)
+                {
                     materialVariants.Add((material.shader, RenderShaderVariant.FromMaterial(material)));
+                }
             }
             if (typeof(ShaderAsset).IsAssignableFrom(assetType))
             {
                 ShaderAsset shader = m_assets.Load<ShaderAsset>(entry.assetPath);
                 // Passless graphs are reusable authoring nodes, not executable shaders.
                 if (shader.definition is { passes.Length: > 0 })
+                {
                     AddShader(shaders, mounts, shader, RenderShaderVariant.empty);
+                }
             }
             if (typeof(IRenderTextureArtifactSource).IsAssignableFrom(assetType))
             {
@@ -218,13 +240,16 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
             }
         }
         foreach ((ShaderAsset shader, RenderShaderVariant variant) in materialVariants)
+        {
             AddShader(shaders, mounts, shader, variant);
+        }
         return new ContentSnapshot(
-            shaders.Values.OrderBy(static value => value.asset.identity.persistentId).ToArray(),
+            shaders.Values.OrderBy(static value => value.asset.identity.persistentID).ToArray(),
             textures.Values
-                .OrderBy(static value => value.reference.assetId)
+                .OrderBy(static value => value.reference.assetID)
                 .ThenBy(static value => value.reference.slot.id, StringComparer.Ordinal)
-                .ToArray());
+                .ToArray()
+        );
     }
 
     private static void AddTextures(
@@ -232,7 +257,9 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
         AssetObject asset
     ) {
         if (asset is not IRenderTextureArtifactSource source)
+        {
             return;
+        }
         Guid id = RequireIdentity(asset);
         var slots = new HashSet<string>(StringComparer.Ordinal);
         foreach (RenderTextureArtifactSlot slot in source.textureArtifacts)
@@ -240,12 +267,14 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
             if (string.IsNullOrWhiteSpace(slot.id) || string.IsNullOrWhiteSpace(slot.sourceOutputName))
             {
                 throw new InvalidOperationException(
-                    $"Texture source asset '{asset.assetPath}' declares an invalid artifact slot.");
+                    $"Texture source asset '{asset.assetPath}' declares an invalid artifact slot."
+                );
             }
             if (!slots.Add(slot.id))
             {
                 throw new InvalidOperationException(
-                    $"Texture source asset '{asset.assetPath}' declares duplicate slot '{slot.id}'.");
+                    $"Texture source asset '{asset.assetPath}' declares duplicate slot '{slot.id}'."
+                );
             }
             var reference = new RenderTextureArtifactReference(id, asset.contentVersion, slot);
             textures.Add(new TextureArtifactKey(id, slot.id), new TextureInput(reference));
@@ -254,7 +283,7 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
 
     private static void AddShader(
         IDictionary<Guid, ShaderInput> shaders,
-        IReadOnlyDictionary<AssetSourceId, AssetSourceMount> mounts,
+        IReadOnlyDictionary<AssetSourceID, AssetSourceMount> mounts,
         ShaderAsset shader,
         RenderShaderVariant variant
     ) {
@@ -270,18 +299,22 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
 
     private static Guid RequireIdentity(AssetObject asset)
     {
-        Guid id = asset.identity.persistentId;
+        Guid id = asset.identity.persistentID;
         if (id == Guid.Empty)
+        {
             throw new InvalidOperationException($"Runtime asset '{asset.assetPath}' has no persistent identity.");
+        }
         return id;
     }
 
     private static void RequireMount(
-        IReadOnlyDictionary<AssetSourceId, AssetSourceMount> mounts,
+        IReadOnlyDictionary<AssetSourceID, AssetSourceMount> mounts,
         AssetPath path
     ) {
         if (!mounts.ContainsKey(path.source))
+        {
             throw new InvalidOperationException($"Asset source mount '{path.source}' is not active.");
+        }
     }
 
     private static string ResolveOutput(
@@ -291,10 +324,12 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
         string result = Path.GetFullPath(Path.Combine(root, relativePath));
         string prefix = Path.TrimEndingDirectorySeparator(root) + Path.DirectorySeparatorChar;
         StringComparison comparison = OperatingSystem.IsWindows()
-            ? StringComparison.OrdinalIgnoreCase
-            : StringComparison.Ordinal;
+                                      ? StringComparison.OrdinalIgnoreCase
+                                      : StringComparison.Ordinal;
         if (!result.StartsWith(prefix, comparison))
+        {
             throw new InvalidOperationException("A target artifact path escaped its staging directory.");
+        }
         return result;
     }
 
@@ -315,8 +350,8 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
     }
 
     private readonly record struct TextureArtifactKey(
-        Guid assetId,
-        string slotId
+        Guid assetID,
+        string slotID
     );
 
     private sealed record TextureInput(RenderTextureArtifactReference reference);

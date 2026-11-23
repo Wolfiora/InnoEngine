@@ -2,49 +2,25 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Inno.Assets;
 using Inno.Core.Serialization;
 
 namespace Inno.Assets.Pipeline;
-
-/// <summary>
-/// Declares the immutable protocol identity of an automatically discovered asset importer.
-/// </summary>
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-public sealed class AssetImporterAttribute : Attribute
-{
-    /// <summary>
-    /// Creates importer discovery metadata.
-    /// </summary>
-    /// <param name="id">
-    /// Globally stable importer protocol identifier.
-    /// </param>
-    public AssetImporterAttribute(string id)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        this.id = id.Trim();
-    }
-
-    /// <summary>
-    /// Gets the globally stable importer protocol identifier.
-    /// </summary>
-    public string id { get; }
-}
 
 /// <summary>
 /// Defines metadata shared by automatically discovered asset importers.
 /// </summary>
 public abstract class AssetImporter
 {
-    private string? m_importerId;
+    private string? m_importerID;
 
     /// <summary>
     /// Gets the stable importer implementation identifier.
     /// </summary>
-    public string importerId => m_importerId
-        ?? throw new InvalidOperationException(
-            $"Asset importer '{GetType().FullName}' has not been bound to discovery metadata.");
+    public string importerID
+        => m_importerID
+           ?? throw new InvalidOperationException(
+               $"Asset importer '{GetType().FullName}' has not been bound to discovery metadata."
+           );
 
     /// <summary>
     /// Gets whether imported assets are deployed or retained only for authoring workflows.
@@ -74,21 +50,23 @@ public abstract class AssetImporter
         AssetImportContext context,
         CancellationToken cancellationToken
     );
+
     internal abstract ValueTask<ReadOnlyMemory<byte>?> ExportInternalAsync(
         AssetExportContext context,
         AssetObject asset,
         CancellationToken cancellationToken
     );
 
-    internal void BindImporterId(string id)
+    internal void BindImporterID(string id)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        if (m_importerId is not null && !string.Equals(m_importerId, id, StringComparison.Ordinal))
+        if (m_importerID is not null && !string.Equals(m_importerID, id, StringComparison.Ordinal))
         {
             throw new InvalidOperationException(
-                $"Asset importer '{GetType().FullName}' cannot be bound to more than one protocol ID.");
+                $"Asset importer '{GetType().FullName}' cannot be bound to more than one protocol ID."
+            );
         }
-        m_importerId = id;
+        m_importerID = id;
     }
 }
 
@@ -98,7 +76,8 @@ public abstract class AssetImporter
 /// <typeparam name="TAsset">
 /// The concrete imported asset type.
 /// </typeparam>
-public abstract class AssetImporter<TAsset> : AssetImporter where TAsset : AssetObject
+public abstract class AssetImporter<TAsset> : AssetImporter
+    where TAsset : AssetObject
 {
     /// <summary>
     /// Gets the runtime asset type accepted by this importer implementation.
@@ -145,8 +124,7 @@ public abstract class AssetImporter<TAsset> : AssetImporter where TAsset : Asset
         AssetExportContext context,
         TAsset asset,
         CancellationToken cancellationToken
-    )
-        => ValueTask.FromResult<ReadOnlyMemory<byte>?>(null);
+    ) => ValueTask.FromResult<ReadOnlyMemory<byte>?>(null);
 
     internal sealed override async ValueTask<AssetImportProduct> ImportInternalAsync(
         AssetImportContext context,
@@ -163,26 +141,9 @@ public abstract class AssetImporter<TAsset> : AssetImporter where TAsset : Asset
         CancellationToken cancellationToken
     ) {
         if (asset is TAsset typed)
+        {
             return ExportAsync(context, typed, cancellationToken);
+        }
         return ValueTask.FromResult<ReadOnlyMemory<byte>?>(null);
     }
-}
-
-internal readonly struct AssetImportProduct(
-    AssetObject asset,
-    IReadOnlyDictionary<string, ReadOnlyMemory<byte>> outputs,
-    IReadOnlyList<string> diagnostics,
-    IReadOnlySet<string> authoringOutputs,
-    AssetDeploymentScope? deploymentScope
-) {
-    internal AssetObject asset { get; } = asset ?? throw new ArgumentNullException(nameof(asset));
-    internal IReadOnlyDictionary<string, ReadOnlyMemory<byte>> outputs { get; } = outputs;
-    internal IReadOnlyList<string> diagnostics { get; } = diagnostics;
-    internal IReadOnlySet<string> authoringOutputs { get; } = authoringOutputs;
-    internal AssetDeploymentScope? deploymentScope { get; } = deploymentScope;
-
-    internal ReadOnlyMemory<byte> runtimePayload
-        => outputs.TryGetValue("runtime", out ReadOnlyMemory<byte> bytes)
-            ? bytes
-            : ReadOnlyMemory<byte>.Empty;
 }

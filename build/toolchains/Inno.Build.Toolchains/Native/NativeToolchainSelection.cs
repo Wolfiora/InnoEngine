@@ -16,7 +16,7 @@ public sealed class NativeToolchainSelection
     /// <summary>
     /// Captures an immutable, explicit compiler and SDK selection supplied by a platform provider.
     /// </summary>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The exact native target identity.
     /// </param>
     /// <param name="host">
@@ -34,11 +34,11 @@ public sealed class NativeToolchainSelection
     /// <param name="cmakeArguments">
     /// Ordered configuration arguments pinning compiler, generator and SDK.
     /// </param>
-    /// <param name="multiConfiguration">
-    /// Whether configuration is selected during build rather than configure.
-    /// </param>
     /// <param name="linkPlan">
     /// The sole source of target library formats and linker capabilities.
+    /// </param>
+    /// <param name="multiConfiguration">
+    /// Whether configuration is selected during build rather than configure.
     /// </param>
     /// <param name="compilerInputs">
     /// Explicit SDK parser inputs, or null when no native parser is provided.
@@ -53,7 +53,7 @@ public sealed class NativeToolchainSelection
     /// A selected executable or SDK input is unavailable before preparation begins.
     /// </exception>
     public NativeToolchainSelection(
-        string targetId,
+        string targetID,
         BuildHostDescriptor host,
         IReadOnlyDictionary<string, string> tools,
         IReadOnlyDictionary<string, string> environment,
@@ -63,56 +63,77 @@ public sealed class NativeToolchainSelection
         bool multiConfiguration,
         NativeCompilerInputs? compilerInputs = null
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetID);
         ArgumentNullException.ThrowIfNull(host);
         ArgumentNullException.ThrowIfNull(tools);
         ArgumentNullException.ThrowIfNull(environment);
         ArgumentNullException.ThrowIfNull(inputPaths);
         ArgumentNullException.ThrowIfNull(cmakeArguments);
         ArgumentNullException.ThrowIfNull(linkPlan);
-        if (tools.Count == 0 || tools.Any(static entry => string.IsNullOrWhiteSpace(entry.Key)
-            || string.IsNullOrWhiteSpace(entry.Value) || !Path.IsPathFullyQualified(entry.Value)))
+        if (tools.Count == 0 || tools.Any(static entry => (
+            string.IsNullOrWhiteSpace(entry.Key)
+            || string.IsNullOrWhiteSpace(entry.Value) || !Path.IsPathFullyQualified(entry.Value)
+        ))) {
             throw new ArgumentException("A native tool selection requires explicit executables.", nameof(tools));
+        }
         string[] inputs = inputPaths.Concat(tools.Values).Distinct(StringComparer.Ordinal).ToArray();
         string[] arguments = cmakeArguments.ToArray();
         if (inputs.Any(static path => string.IsNullOrWhiteSpace(path) || !Path.IsPathFullyQualified(path)))
+        {
             throw new ArgumentException("Native SDK inputs require absolute locations.", nameof(inputPaths));
+        }
         if (arguments.Any(static argument => argument is null))
+        {
             throw new ArgumentException("CMake arguments cannot contain null entries.", nameof(cmakeArguments));
+        }
         if (environment.Any(static entry => string.IsNullOrWhiteSpace(entry.Key) || entry.Value is null))
+        {
             throw new ArgumentException("Native environments require assigned names and values.", nameof(environment));
+        }
         foreach (string executable in tools.Values)
+        {
             if (!File.Exists(executable))
+            {
                 throw new FileNotFoundException("A selected native executable is unavailable.", executable);
+            }
+        }
         foreach (string input in inputs)
+        {
             if (!File.Exists(input) && !Directory.Exists(input))
+            {
                 throw new FileNotFoundException("A selected native SDK input is unavailable.", input);
-        this.targetId = targetId;
+            }
+        }
+        this.targetID = targetID;
         this.host = host;
         m_tools = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>(tools, StringComparer.Ordinal));
         this.environment = new ReadOnlyDictionary<string, string>(
-            new Dictionary<string, string>(environment,
-                host.services.environmentComparer));
+            new Dictionary<string, string>(environment, host.services.environmentComparer)
+        );
         this.inputPaths = Array.AsReadOnly(inputs);
         this.cmakeArguments = Array.AsReadOnly(arguments);
         this.multiConfiguration = multiConfiguration;
         this.compilerInputs = compilerInputs ?? new NativeCompilerInputs();
         this.linkPlan = linkPlan;
-        declarations = Array.AsReadOnly(this.environment.OrderBy(static entry => entry.Key, StringComparer.Ordinal)
-            .Select(static entry => entry.Key + "=" + entry.Value)
-            .Concat(m_tools.OrderBy(static entry => entry.Key, StringComparer.Ordinal)
-                .Select(static entry => entry.Key + "=" + entry.Value))
-            .Concat(this.cmakeArguments)
-            .Concat(this.compilerInputs.declarations)
-            .Concat(this.linkPlan.declarations)
-            .Concat([targetId, host.system, host.architecture, multiConfiguration.ToString()])
-            .ToArray());
+        this.declarations = Array.AsReadOnly(
+            this.environment.OrderBy(static entry => entry.Key, StringComparer.Ordinal)
+                .Select(static entry => entry.Key + "=" + entry.Value)
+                .Concat(
+                    m_tools.OrderBy(static entry => entry.Key, StringComparer.Ordinal)
+                        .Select(static entry => entry.Key + "=" + entry.Value)
+                )
+                .Concat(this.cmakeArguments)
+                .Concat(this.compilerInputs.declarations)
+                .Concat(this.linkPlan.declarations)
+                .Concat([targetID, host.system, host.architecture, multiConfiguration.ToString()])
+                .ToArray()
+        );
     }
 
     /// <summary>
     /// Gets the target identity, without inferring it from the execution host.
     /// </summary>
-    public string targetId { get; }
+    public string targetID { get; }
 
     /// <summary>
     /// Gets the declared tool execution host.
@@ -190,11 +211,22 @@ public sealed class NativeToolchainSelection
         foreach ((string name, string executable) in tools)
         {
             if (combined.TryGetValue(name, out string? existing) && existing != executable)
+            {
                 throw new ArgumentException($"Integration tool '{name}' conflicts with the frozen SDK selection.", nameof(tools));
+            }
             combined[name] = executable;
         }
-        return new NativeToolchainSelection(targetId, host, combined, environment, inputPaths.Concat(inputs),
-            cmakeArguments, linkPlan, multiConfiguration, compilerInputs);
+        return new NativeToolchainSelection(
+            targetID,
+            host,
+            combined,
+            environment,
+            inputPaths.Concat(inputs),
+            cmakeArguments,
+            linkPlan,
+            multiConfiguration,
+            compilerInputs
+        );
     }
 
     /// <summary>
@@ -209,9 +241,10 @@ public sealed class NativeToolchainSelection
     /// <exception cref="InvalidOperationException">
     /// The provider did not register the requested command.
     /// </exception>
-    public string ResolveExecutable(string name) => m_tools.TryGetValue(name, out string? executable)
-        ? executable
-        : throw new InvalidOperationException($"Native target '{targetId}' has no '{name}' executable.");
+    public string ResolveExecutable(string name)
+        => m_tools.TryGetValue(name, out string? executable)
+           ? executable
+           : throw new InvalidOperationException($"Native target '{targetID}' has no '{name}' executable.");
 
     /// <summary>
     /// Checks an optional tool capability without discovering a command from the process environment.

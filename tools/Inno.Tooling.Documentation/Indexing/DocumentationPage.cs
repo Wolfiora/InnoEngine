@@ -2,18 +2,6 @@ using System.Collections.Generic;
 
 namespace Inno.Tooling.Documentation.Indexing;
 
-internal sealed record DocumentationMetadata(
-    string uid,
-    string kind,
-    string[] owners,
-    string[] aliases,
-    string[] contracts,
-    string? apiSurface,
-    DocumentationExampleContext? examples,
-    string? apiScope = null,
-    string[]? apiSurfaces = null
-);
-
 internal sealed record DocumentationPage(
     string path,
     string identity,
@@ -25,6 +13,18 @@ internal sealed record DocumentationPage(
     IReadOnlyList<string> includes,
     IReadOnlyList<string> links,
     IReadOnlyList<DocumentationCodeBlockInfo> codeBlocks
+);
+
+internal sealed record DocumentationMetadata(
+    string uid,
+    string kind,
+    string[] owners,
+    string[] aliases,
+    string[] contracts,
+    string? apiSurface,
+    DocumentationExampleContext? examples,
+    string? apiScope = null,
+    string[]? apiSurfaces = null
 );
 
 internal sealed record DocumentationSection(

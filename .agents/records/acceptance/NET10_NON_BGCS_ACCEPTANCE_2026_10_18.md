@@ -24,7 +24,7 @@
 
 回归证明：带有拒绝构建的 ambient MSBuild 文件时，生成工程仍正常构建；checkout 子目录的独立 Solution 能还原自己的工程。SourceDebug 下根 Solution 和托管 `.slnf` 保留 224 个源码还原根（Debug 包含 Editor entry，为 225 个），嵌套项目的引擎还原根数量为 0。修复后的全源码 Debug / Release 均构建通过，0 警告、0 错误。
 
-相关实现：[Solution 还原](../../../Directory.Solution.props)、[Solution owner](../../../Directory.Solution.targets)、[工程生成器](../../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptProjectGenerator.cs)、[回归测试](../../../tests/scripting/Inno.Scripting.Compiler.Tests/IdeProjectIsolationTests.cs)。
+相关实现：[Solution 还原](../../../Directory.Solution.props)、[Solution owner](../../../Directory.Solution.targets)、[工程生成器](../../../src/runtime/scripting/Inno.Scripting.Compiler/Compilation/ScriptProjectGenerator.cs)、[回归测试](https://github.com/Wolfiora/InnoEngine/blob/1cb2cee8d026ca64dafbe8f63c6dadf19d1826ed/tests/scripting/Inno.Scripting.Compiler.Tests/IdeProjectIsolationTests.cs)。
 
 ## 验收结果
 
@@ -83,7 +83,7 @@
 | 优先级 | 范围 | 当前事实 / 后续关闭条件 |
 | --- | --- | --- |
 | P2 | 并行录制分配 | 当前 .NET 10 实测仍存在；优化后需相同公开边界回放与分配对照，保留并行和异常语义。 |
-| P2 | 验收调度 | [隔离测试入口](../../../tests/Invoke-IsolatedTests.ps1) 在共享套件或单个隔离用例失败后直接抛出，后续独立用例不会继续；应最终汇总失败，同时完成能独立执行的用例。 |
+| P2 | 验收调度 | [隔离测试入口](https://github.com/Wolfiora/InnoEngine/blob/1cb2cee8d026ca64dafbe8f63c6dadf19d1826ed/tests/Invoke-IsolatedTests.ps1) 在共享套件或单个隔离用例失败后直接抛出，后续独立用例不会继续；应最终汇总失败，同时完成能独立执行的用例。 |
 | P2 | 超时诊断 | [NativeWindowTestHost](https://github.com/Wolfiora/InnoEngine/blob/a9b6c08ba080afcda697ba1bb18238f4f80d87d8/backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/NativeWindowTestHost.cs) 的超时分支终止进程后没有保留已读 stdout/stderr；属于诊断缺口。本轮未重现 macOS 退休超时，不能宣布该问题根治。 |
 | P3 | XML 说明质量 | 仍有模板化的参数/ownership 文案；符号、标签和签名门禁通过不代表行为说明充分。 |
 | 环境 | 默认 SDK | 系统默认 `dotnet --version` 无法满足仓库的 SDK 声明；本轮明确使用 `C:\Users\23842\.dotnet\dotnet.exe`。普通终端 / IDE 的 SDK 选择尚未由本轮验证为开箱可用。 |

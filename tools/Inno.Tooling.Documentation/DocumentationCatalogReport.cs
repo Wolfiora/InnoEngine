@@ -52,6 +52,7 @@ public sealed record DocumentationCatalogReport(
     /// Gets the matching trusted source certificate identity, or null for an unverified catalog.
     /// </summary>
     public string? sourceEvidenceIdentity { get; init; }
+
     /// <summary>
     /// Gets every original source identity, including individual API pages and their source-fact registry.
     /// </summary>

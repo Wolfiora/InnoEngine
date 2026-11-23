@@ -1,0 +1,156 @@
+using System;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+using Xunit;
+using Inno.Build.Toolchains;
+using Inno.Testing.Source;
+
+namespace Inno.Build.Bindings.Integration.Tests;
+
+public sealed class BindingSelectionLifetimeTests
+{
+    [Fact]
+    public async Task PublicationWithoutItsCompiledSelectionFailsBeforePreparingTheTaskRuntime()
+    {
+        string engine = TestRepository.GetRoot(typeof(BindingSelectionLifetimeTests).Assembly);
+        string root = Path.Combine(Path.GetTempPath(), "InnoSelectionPreflight", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            File.Copy(Path.Combine(engine, "global.json"), Path.Combine(root, "global.json"));
+            string project = Path.Combine(root, "Fixture.proj");
+            new XDocument(
+                new XElement(
+                    "Project",
+                    new XElement("Import", new XAttribute("Project", Path.Combine(engine, "Directory.Build.targets"))),
+                    new XElement("PropertyGroup", new XElement("InnoProductId", "player")),
+                    new XElement(
+                        "Target",
+                        new XAttribute("Name", "PrepareInnoBuildTaskHost"),
+                        new XElement("Error", new XAttribute("Text", "An invalid publication prepared the task runtime."))
+                    )
+                )
+            )
+                .Save(project);
+            string sdk = Path.Combine(
+                Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
+                OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
+            );
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+            using var output = new StringWriter();
+            using var error = new StringWriter();
+            Exception? failure = await Record.ExceptionAsync(() => ToolchainEnvironment.RunAsync(
+                sdk,
+                ["msbuild", project, "-t:PublishProductNativeDeployment", "-nodeReuse:false", "-v:minimal"],
+                root,
+                null,
+                output,
+                error,
+                timeout.Token
+            ));
+            Assert.NotNull(failure);
+            string messages = output.ToString() + error;
+            Assert.Contains("Native publication requires the exact binding selection", messages);
+            Assert.DoesNotContain("An invalid publication prepared the task runtime.", messages);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task SelectionRemainsProductOwnedThroughBuildAndPublish()
+    {
+        string engine = TestRepository.GetRoot(typeof(BindingSelectionLifetimeTests).Assembly);
+        string root = Path.Combine(Path.GetTempPath(), "InnoSelectionLifetime", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            File.Copy(Path.Combine(engine, "global.json"), Path.Combine(root, "global.json"));
+            File.WriteAllText(Path.Combine(root, "Directory.Build.props"), "<Project />");
+            string selection = Path.Combine(root, "NativeBindingSelection.props");
+            new XDocument(
+                new XElement(
+                    "Project",
+                    new XElement("Import", new XAttribute("Project", Path.Combine(engine, "Directory.Build.targets"))),
+                    new XElement(
+                        "PropertyGroup",
+                        new XElement("_InnoOwnedProductBindingSelection", selection),
+                        new XElement("InnoNativeBindingSelection", selection)
+                    ),
+                    new XElement(
+                        "Target",
+                        new XAttribute("Name", "CreateFixtureSelection"),
+                        new XAttribute("BeforeTargets", "PrepareForBuild"),
+                        new XElement(
+                            "WriteLinesToFile",
+                            new XAttribute("File", selection),
+                            new XAttribute("Lines", "<Project />"),
+                            new XAttribute("Overwrite", "true")
+                        )
+                    ),
+                    new XElement(
+                        "Target",
+                        new XAttribute("Name", "RequireCompiledSelectionForPublication"),
+                        new XAttribute("BeforeTargets", "Publish"),
+                        new XElement(
+                            "Error",
+                            new XAttribute("Condition", $"!Exists('{selection}')"),
+                            new XAttribute("Text", "Build retired the selection before its publication consumer.")
+                        )
+                    )
+                )
+            )
+                .Save(Path.Combine(root, "Directory.Build.targets"));
+            string project = Path.Combine(root, "Fixture.csproj");
+            new XDocument(
+                new XElement(
+                    "Project",
+                    new XAttribute("Sdk", "Microsoft.NET.Sdk"),
+                    new XElement(
+                        "PropertyGroup",
+                        new XElement("TargetFramework", "net10.0"),
+                        new XElement("ImplicitUsings", "disable"),
+                        new XElement("Nullable", "enable")
+                    )
+                )
+            )
+                .Save(project);
+            File.WriteAllText(Path.Combine(root, "Api.cs"), "public static class Api { public static int value => 42; }");
+
+            await ExecuteAsync("build");
+            Assert.True(File.Exists(selection));
+            await ExecuteAsync("publish");
+            Assert.True(File.Exists(selection));
+
+            async Task ExecuteAsync(string command)
+            {
+                string sdk = Path.Combine(
+                    Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
+                    OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
+                );
+                using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+                using var output = new StringWriter();
+                using var error = new StringWriter();
+                Exception? failure = await Record.ExceptionAsync(() => ToolchainEnvironment.RunAsync(
+                    sdk,
+                    [command, project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "-v:minimal"],
+                    root,
+                    null,
+                    output,
+                    error,
+                    timeout.Token
+                ));
+                Assert.True(failure is null, output.ToString() + error + failure);
+            }
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+}

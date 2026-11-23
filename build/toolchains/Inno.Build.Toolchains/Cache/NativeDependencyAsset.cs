@@ -1,4 +1,5 @@
 namespace Inno.Build.Toolchains;
+
 /// <summary>
 /// Identifies one immutable native archive selected for a backend product closure.
 /// </summary>

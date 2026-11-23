@@ -1,275 +1,17 @@
-using Inno.Editor.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using System;
 using System.Collections.Generic;
-using Inno.Build;
-using Inno.Build.Managed;
-using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Settings;
-internal enum BuildSettingsKey
-{
-    GameProductName,
-    GamePersistentDataPath,
-    GameStartupScene,
-    GameWindowWidth,
-    GameWindowHeight,
-    GameTarget,
-    GameManagedDeployment,
-    GameOutputDirectory,
-    PluginDisplayName,
-    PluginOutputPath,
-    IncludePluginDependencies
-}
-
-internal sealed class BuildSettingsField
-{
-    private const int C_TEXT_CAPACITY = 4096;
-    internal BuildSettingsField(
-        BuildSettingsKey key,
-        string path,
-        string section,
-        string description
-    ) {
-        this.key = key;
-        this.path = path;
-        pagePath = path[..path.LastIndexOf('/')];
-        label = path[(path.LastIndexOf('/') + 1)..];
-        this.section = section;
-        this.description = description;
-    }
-
-    internal BuildSettingsKey key { get; }
-    internal string path { get; }
-    internal string pagePath { get; }
-    internal string label { get; }
-    internal string section { get; }
-    internal string description { get; }
-
-    internal bool Draw(
-        BuildSettings settings,
-        BuildPipeline buildPipeline
-    ) => key switch
-    {
-        BuildSettingsKey.GameProductName => DrawTextValue(settings.gameProductName, value => settings.gameProductName = value),
-        BuildSettingsKey.GamePersistentDataPath => DrawTextValue(settings.gamePersistentDataPath, value => settings.gamePersistentDataPath = value),
-        BuildSettingsKey.GameStartupScene => DrawTextValue(settings.gameStartupScene, value => settings.gameStartupScene = value),
-        BuildSettingsKey.GameWindowWidth => DrawPositiveInt(settings.gameWindowWidth, value => settings.gameWindowWidth = value),
-        BuildSettingsKey.GameWindowHeight => DrawPositiveInt(settings.gameWindowHeight, value => settings.gameWindowHeight = value),
-        BuildSettingsKey.GameTarget => DrawTarget(settings, buildPipeline),
-        BuildSettingsKey.GameManagedDeployment => DrawManagedDeployment(settings, buildPipeline),
-        BuildSettingsKey.GameOutputDirectory => DrawTextValue(settings.gameOutputDirectory, value => settings.gameOutputDirectory = value),
-        BuildSettingsKey.PluginDisplayName => DrawTextValue(settings.pluginDisplayName, value => settings.pluginDisplayName = value),
-        BuildSettingsKey.PluginOutputPath => DrawTextValue(settings.pluginOutputPath, value => settings.pluginOutputPath = value),
-        BuildSettingsKey.IncludePluginDependencies => DrawIncludeDependencies(settings),
-        _ => throw new InvalidOperationException($"Unknown Build Settings field '{key}'.")};
-    internal bool IsDefault(
-        BuildSettings settings,
-        BuildSettings defaults
-    ) => key switch
-    {
-        BuildSettingsKey.GameProductName => settings.gameProductName == defaults.gameProductName,
-        BuildSettingsKey.GamePersistentDataPath => settings.gamePersistentDataPath == defaults.gamePersistentDataPath,
-        BuildSettingsKey.GameStartupScene => settings.gameStartupScene == defaults.gameStartupScene,
-        BuildSettingsKey.GameWindowWidth => settings.gameWindowWidth == defaults.gameWindowWidth,
-        BuildSettingsKey.GameWindowHeight => settings.gameWindowHeight == defaults.gameWindowHeight,
-        BuildSettingsKey.GameTarget => settings.gameTarget == defaults.gameTarget,
-        BuildSettingsKey.GameManagedDeployment => settings.gameManagedDeployment == defaults.gameManagedDeployment,
-        BuildSettingsKey.GameOutputDirectory => settings.gameOutputDirectory == defaults.gameOutputDirectory,
-        BuildSettingsKey.PluginDisplayName => settings.pluginDisplayName == defaults.pluginDisplayName,
-        BuildSettingsKey.PluginOutputPath => settings.pluginOutputPath == defaults.pluginOutputPath,
-        BuildSettingsKey.IncludePluginDependencies => settings.includePluginDependencies == defaults.includePluginDependencies,
-        _ => throw new InvalidOperationException($"Unknown Build Settings field '{key}'.")};
-    internal void Reset(
-        BuildSettings settings,
-        BuildSettings defaults
-    ) {
-        switch (key)
-        {
-            case BuildSettingsKey.GameProductName:
-                settings.gameProductName = defaults.gameProductName;
-                break;
-            case BuildSettingsKey.GamePersistentDataPath:
-                settings.gamePersistentDataPath = defaults.gamePersistentDataPath;
-                break;
-            case BuildSettingsKey.GameStartupScene:
-                settings.gameStartupScene = defaults.gameStartupScene;
-                break;
-            case BuildSettingsKey.GameWindowWidth:
-                settings.gameWindowWidth = defaults.gameWindowWidth;
-                break;
-            case BuildSettingsKey.GameWindowHeight:
-                settings.gameWindowHeight = defaults.gameWindowHeight;
-                break;
-            case BuildSettingsKey.GameManagedDeployment:
-                settings.gameManagedDeployment = defaults.gameManagedDeployment;
-                break;
-            case BuildSettingsKey.GameTarget:
-                settings.gameTarget = defaults.gameTarget;
-                break;
-            case BuildSettingsKey.GameOutputDirectory:
-                settings.gameOutputDirectory = defaults.gameOutputDirectory;
-                break;
-            case BuildSettingsKey.PluginDisplayName:
-                settings.pluginDisplayName = defaults.pluginDisplayName;
-                break;
-            case BuildSettingsKey.PluginOutputPath:
-                settings.pluginOutputPath = defaults.pluginOutputPath;
-                break;
-            case BuildSettingsKey.IncludePluginDependencies:
-                settings.includePluginDependencies = defaults.includePluginDependencies;
-                break;
-            default:
-                throw new InvalidOperationException($"Unknown Build Settings field '{key}'.");
-        }
-    }
-
-    internal static bool ValuesEqual(
-        BuildSettings left,
-        BuildSettings right
-    ) => string.Equals(
-        left.gameProductName,
-        right.gameProductName,
-        StringComparison.Ordinal
-    )
-        && string.Equals(
-        left.gamePersistentDataPath,
-        right.gamePersistentDataPath,
-        StringComparison.Ordinal
-    )
-        && string.Equals(
-        left.gameStartupScene,
-        right.gameStartupScene,
-        StringComparison.Ordinal
-    )
-        && string.Equals(
-        left.gameOutputDirectory,
-        right.gameOutputDirectory,
-        StringComparison.Ordinal
-    )
-        && left.gameWindowWidth == right.gameWindowWidth
-        && left.gameWindowHeight == right.gameWindowHeight
-        && left.gameTarget == right.gameTarget
-        && left.gameManagedDeployment == right.gameManagedDeployment
-        && string.Equals(
-        left.pluginDisplayName,
-        right.pluginDisplayName,
-        StringComparison.Ordinal
-    )
-        && string.Equals(
-        left.pluginOutputPath,
-        right.pluginOutputPath,
-        StringComparison.Ordinal
-    )
-        && left.includePluginDependencies == right.includePluginDependencies;
-    private static bool DrawTextValue(
-        string value,
-        Action<string> apply
-    ) {
-        Ui.SetNextItemWidth(-1f);
-        if (!Ui.InputText("##value", ref value, C_TEXT_CAPACITY))
-            return false;
-        apply(value);
-        return true;
-    }
-
-    private static bool DrawPositiveInt(
-        int value,
-        Action<int> apply
-    ) {
-        Ui.SetNextItemWidth(-1f);
-        if (!Ui.InputInt("##value", ref value, 1, 100, 0))
-            return false;
-        apply(Math.Max(1, value));
-        return true;
-    }
-
-    private static bool DrawManagedDeployment(
-        BuildSettings settings,
-        BuildPipeline buildPipeline
-    ) {
-        bool changed = false;
-        Ui.SetNextItemWidth(-1f);
-        if (!EditorUI.current.widgets.BeginBoundedCombo("##value", settings.gameManagedDeployment?.value ?? "Platform default"))
-            return false;
-        try
-        {
-            if (Ui.Selectable("Platform default", settings.gameManagedDeployment is null))
-            {
-                settings.gameManagedDeployment = null;
-                changed = true;
-            }
-
-            foreach (ManagedDeploymentId deployment in buildPipeline.GetManagedDeployments(settings.gameTarget))
-            {
-                if (!Ui.Selectable(deployment.value, settings.gameManagedDeployment == deployment))
-                    continue;
-                settings.gameManagedDeployment = deployment;
-                changed = true;
-            }
-        }
-        finally
-        {
-            EditorUI.current.widgets.EndBoundedCombo();
-        }
-
-        return changed;
-    }
-
-    private static bool DrawTarget(
-        BuildSettings settings,
-        BuildPipeline buildPipeline
-    ) {
-        bool changed = false;
-        Ui.SetNextItemWidth(-1f);
-        if (!EditorUI.current.widgets.BeginBoundedCombo("##value", GetTargetLabel(settings.gameTarget, buildPipeline)))
-            return false;
-        try
-        {
-            foreach (BuildTargetId target in buildPipeline.availableGameTargets)
-                changed |= DrawTargetChoice(settings, target, buildPipeline);
-        }
-        finally
-        {
-            EditorUI.current.widgets.EndBoundedCombo();
-        }
-
-        return changed;
-    }
-
-    private static bool DrawIncludeDependencies(BuildSettings settings)
-    {
-        bool value = settings.includePluginDependencies;
-        if (!Ui.Checkbox("##value", ref value))
-            return false;
-        settings.includePluginDependencies = value;
-        return true;
-    }
-
-    private static bool DrawTargetChoice(
-        BuildSettings settings,
-        BuildTargetId target,
-        BuildPipeline buildPipeline
-    ) {
-        bool selected = settings.gameTarget == target;
-        bool changed = Ui.Selectable(GetTargetLabel(target, buildPipeline), selected);
-        if (changed)
-            settings.gameTarget = target;
-        if (selected)
-            Ui.SetItemDefaultFocus();
-        return changed;
-    }
-
-    private static string GetTargetLabel(
-        BuildTargetId target,
-        BuildPipeline buildPipeline
-    ) => buildPipeline.TryGetGameTargetDisplayName(target, out string displayName) ? displayName : $"Missing ({target})";
-}
 
 internal static class BuildSettingsPresentation
 {
-    internal static IReadOnlyList<BuildSettingsField> fields { get; } = [
-        new BuildSettingsField(BuildSettingsKey.GameProductName, "Build/Game/Product Name", "Game Export Defaults", "Player-facing product name copied into each game export."),
+    internal static IReadOnlyList<BuildSettingsField> fields { get; } =
+    [
+        new BuildSettingsField(
+            BuildSettingsKey.GameProductName,
+            "Build/Game/Product Name",
+            "Game Export Defaults",
+            "Player-facing product name copied into each game export."
+        ),
         new BuildSettingsField(
             BuildSettingsKey.GamePersistentDataPath,
             "Build/Game/Persistent Data Folder",
@@ -282,9 +24,24 @@ internal static class BuildSettingsPresentation
             "Game Export Defaults",
             "Mount-qualified Scene path loaded when the exported Player starts."
         ),
-        new BuildSettingsField(BuildSettingsKey.GameWindowWidth, "Build/Game/Initial Window Width", "Game Export Defaults", "Initial logical Player window width."),
-        new BuildSettingsField(BuildSettingsKey.GameWindowHeight, "Build/Game/Initial Window Height", "Game Export Defaults", "Initial logical Player window height."),
-        new BuildSettingsField(BuildSettingsKey.GameTarget, "Build/Game/Target", "Game Export Defaults", "Platform target selected when the game export window opens."),
+        new BuildSettingsField(
+            BuildSettingsKey.GameWindowWidth,
+            "Build/Game/Initial Window Width",
+            "Game Export Defaults",
+            "Initial logical Player window width."
+        ),
+        new BuildSettingsField(
+            BuildSettingsKey.GameWindowHeight,
+            "Build/Game/Initial Window Height",
+            "Game Export Defaults",
+            "Initial logical Player window height."
+        ),
+        new BuildSettingsField(
+            BuildSettingsKey.GameTarget,
+            "Build/Game/Target",
+            "Game Export Defaults",
+            "Platform target selected when the game export window opens."
+        ),
         new BuildSettingsField(
             BuildSettingsKey.GameManagedDeployment,
             "Build/Game/Managed Deployment",
@@ -316,4 +73,19 @@ internal static class BuildSettingsPresentation
             "Whether dependency Plugin packages are embedded by default. Export changes remain temporary."
         )
     ];
+}
+
+internal enum BuildSettingsKey
+{
+    GameProductName,
+    GamePersistentDataPath,
+    GameStartupScene,
+    GameWindowWidth,
+    GameWindowHeight,
+    GameTarget,
+    GameManagedDeployment,
+    GameOutputDirectory,
+    PluginDisplayName,
+    PluginOutputPath,
+    IncludePluginDependencies
 }

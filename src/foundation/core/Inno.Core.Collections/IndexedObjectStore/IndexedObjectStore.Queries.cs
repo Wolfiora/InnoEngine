@@ -5,15 +5,12 @@ using System.Threading;
 
 namespace Inno.Core.Collections;
 
-sealed partial class IndexedObjectStore<T>
-where T : class
+public sealed partial class IndexedObjectStore<T>
+    where T : class
 {
     /// <summary>
     /// Finds items by key and returns a lazy fail-fast enumerable.
     /// </summary>
-    /// <remarks>
-    /// Enumeration throws if the store is modified during iteration.
-    /// </remarks>
     /// <typeparam name="TKey">
     /// Key type.
     /// </typeparam>
@@ -26,21 +23,21 @@ where T : class
     /// <returns>
     /// Lazy fail-fast enumerable of matching items.
     /// </returns>
+    /// <remarks>
+    /// Enumeration throws if the store is modified during iteration.
+    /// </remarks>
     public IEnumerable<T> FindFast<TKey>(
         IndexedObjectKey<TKey> key,
         TKey value
     ) where TKey : notnull
     {
-        var index = GetIndex(key);
+        IndexedObjectIndex<T, TKey> index = GetIndex(key);
         return EnumerateFind(index, value);
     }
 
     /// <summary>
     /// Finds items by key and returns a stable snapshot.
     /// </summary>
-    /// <remarks>
-    /// The returned list is detached from subsequent store mutations.
-    /// </remarks>
     /// <typeparam name="TKey">
     /// Key type.
     /// </typeparam>
@@ -53,6 +50,9 @@ where T : class
     /// <returns>
     /// A stable snapshot list of matching items.
     /// </returns>
+    /// <remarks>
+    /// The returned list is detached from subsequent store mutations.
+    /// </remarks>
     public IReadOnlyList<T> Find<TKey>(
         IndexedObjectKey<TKey> key,
         TKey value
@@ -61,63 +61,13 @@ where T : class
         m_lock.EnterReadLock();
         try
         {
-            var index = GetIndex(key);
+            IndexedObjectIndex<T, TKey> index = GetIndex(key);
             return BuildFindSnapshot(index, value);
         }
         finally
         {
             m_lock.ExitReadLock();
         }
-    }
-
-    private IEnumerable<T> EnumerateFind<TKey>(
-        IndexedObjectIndex<T, TKey> index,
-        TKey value
-    ) where TKey : notnull
-    {
-        var version = Volatile.Read(ref m_version);
-        if ((index.flags & IndexedObjectKeyFlags.Unique) != 0 && index.TryGetSingle(value, out var single) && single != null)
-        {
-            EnsureVersion(version);
-            yield return single;
-            yield break;
-        }
-
-        var set = index.FindUnsafe(value);
-        if (set == null || set.Count == 0)
-            yield break;
-
-        foreach (var item in set)
-        {
-            EnsureVersion(version);
-            yield return item;
-        }
-    }
-
-    private List<T> BuildFindSnapshot<TKey>(
-        IndexedObjectIndex<T, TKey> index,
-        TKey value
-    ) where TKey : notnull
-    {
-        var result = new List<T>();
-        if ((index.flags & IndexedObjectKeyFlags.Unique) != 0 && index.TryGetSingle(value, out var single) && single != null)
-        {
-            result.Add(single);
-            return result;
-        }
-
-        var set = index.FindUnsafe(value);
-        if (set == null || set.Count == 0)
-        {
-            return result;
-        }
-
-        foreach (var item in set)
-        {
-            result.Add(item);
-        }
-
-        return result;
     }
 
     /// <summary>
@@ -143,8 +93,10 @@ where T : class
         m_lock.EnterReadLock();
         try
         {
-            if (GetIndex(key).TryGetSingle(value, out var item))
+            if (GetIndex(key).TryGetSingle(value, out T? item))
+            {
                 return item;
+            }
             return null;
         }
         finally
@@ -156,12 +108,12 @@ where T : class
     /// <summary>
     /// Returns all stored items as a stable snapshot.
     /// </summary>
-    /// <remarks>
-    /// The returned list is detached from subsequent store mutations.
-    /// </remarks>
     /// <returns>
     /// A snapshot list of all stored items.
     /// </returns>
+    /// <remarks>
+    /// The returned list is detached from subsequent store mutations.
+    /// </remarks>
     public IReadOnlyList<T> All()
     {
         m_lock.EnterReadLock();
@@ -180,16 +132,16 @@ where T : class
     /// <summary>
     /// Returns all stored items as a lazy fail-fast enumerable.
     /// </summary>
-    /// <remarks>
-    /// Enumeration throws if the store is modified during iteration.
-    /// </remarks>
     /// <returns>
     /// Lazy fail-fast enumerable of all stored items.
     /// </returns>
+    /// <remarks>
+    /// Enumeration throws if the store is modified during iteration.
+    /// </remarks>
     public IEnumerable<T> AllFast()
     {
-        var version = Volatile.Read(ref m_version);
-        foreach (var item in m_activeList)
+        int version = Volatile.Read(ref m_version);
+        foreach (T item in m_activeList)
         {
             EnsureVersion(version);
             yield return item;
@@ -211,7 +163,7 @@ where T : class
         m_lock.EnterReadLock();
         try
         {
-            var result = new List<T>();
+            List<T> result = [];
             if (conditions.Count == 0)
             {
                 result.AddRange(m_activeList);
@@ -235,7 +187,7 @@ where T : class
                 return result;
             }
 
-            if (seedCount == 1 && conditions[seedIndex].TryGetSingle(this, out var single))
+            if (seedCount == 1 && conditions[seedIndex].TryGetSingle(this, out T single))
             {
                 bool ok = true;
                 for (int i = 0; i < conditions.Count; i++)
@@ -255,10 +207,10 @@ where T : class
                 return result;
             }
 
-            var seed = conditions[seedIndex].GetSet(this);
-            if (seed == null)
+            HashSet<T>? seed = conditions[seedIndex].GetSet(this);
+            if (seed is null)
             {
-                foreach (var item in m_activeList)
+                foreach (T item in m_activeList)
                 {
                     bool ok = true;
                     for (int i = 0; i < conditions.Count; i++)
@@ -279,7 +231,7 @@ where T : class
                 return result;
             }
 
-            foreach (var item in seed)
+            foreach (T item in seed)
             {
                 bool ok = true;
                 for (int i = 0; i < conditions.Count; i++)
@@ -305,12 +257,160 @@ where T : class
         }
     }
 
+    internal T? ExecuteFirst(List<IIndexedObjectQueryCondition<T>> conditions)
+    {
+        m_lock.EnterReadLock();
+        try
+        {
+            if (conditions.Count == 0)
+            {
+                return m_activeList.Count > 0 ? m_activeList[0] : null;
+            }
+
+            int seedIndex = 0;
+            int seedCount = conditions[0].GetCandidateCount(this);
+
+            for (int i = 1; i < conditions.Count; i++)
+            {
+                int candidateCount = conditions[i].GetCandidateCount(this);
+                if (candidateCount < seedCount)
+                {
+                    seedCount = candidateCount;
+                    seedIndex = i;
+                }
+            }
+
+            if (seedCount == 0)
+            {
+                return null;
+            }
+
+            if (seedCount == 1 && conditions[seedIndex].TryGetSingle(this, out T single))
+            {
+                for (int i = 0; i < conditions.Count; i++)
+                {
+                    if (!conditions[i].Validate(this, single))
+                    {
+                        return null;
+                    }
+                }
+
+                return single;
+            }
+
+            HashSet<T>? seed = conditions[seedIndex].GetSet(this);
+            if (seed is null)
+            {
+                foreach (T item in m_activeList)
+                {
+                    bool ok = true;
+                    for (int i = 0; i < conditions.Count; i++)
+                    {
+                        if (!conditions[i].Validate(this, item))
+                        {
+                            ok = false;
+                            break;
+                        }
+                    }
+
+                    if (ok)
+                    {
+                        return item;
+                    }
+                }
+
+                return null;
+            }
+
+            if (seed.Count == 0)
+            {
+                return null;
+            }
+
+            foreach (T item in seed)
+            {
+                bool ok = true;
+                for (int i = 0; i < conditions.Count; i++)
+                {
+                    if (!conditions[i].Validate(this, item))
+                    {
+                        ok = false;
+                        break;
+                    }
+                }
+
+                if (ok)
+                {
+                    return item;
+                }
+            }
+
+            return null;
+        }
+        finally
+        {
+            m_lock.ExitReadLock();
+        }
+    }
+
+    private IEnumerable<T> EnumerateFind<TKey>(
+        IndexedObjectIndex<T, TKey> index,
+        TKey value
+    ) where TKey : notnull
+    {
+        int version = Volatile.Read(ref m_version);
+        if ((index.flags & IndexedObjectKeyFlags.Unique) != 0 && index.TryGetSingle(value, out T? single) && single is not null)
+        {
+            EnsureVersion(version);
+            yield return single;
+            yield break;
+        }
+
+        HashSet<T>? set = index.FindUnsafe(value);
+        if (set is null || set.Count == 0)
+        {
+            yield break;
+        }
+
+        foreach (T item in set)
+        {
+            EnsureVersion(version);
+            yield return item;
+        }
+    }
+
+    private List<T> BuildFindSnapshot<TKey>(
+        IndexedObjectIndex<T, TKey> index,
+        TKey value
+    ) where TKey : notnull
+    {
+        List<T> result = [];
+        if ((index.flags & IndexedObjectKeyFlags.Unique) != 0 && index.TryGetSingle(value, out T? single) && single is not null)
+        {
+            result.Add(single);
+            return result;
+        }
+
+        HashSet<T>? set = index.FindUnsafe(value);
+        if (set is null || set.Count == 0)
+        {
+            return result;
+        }
+
+        foreach (T item in set)
+        {
+            result.Add(item);
+        }
+
+        return result;
+    }
+
     private IEnumerable<T> EnumerateQuery(List<IIndexedObjectQueryCondition<T>> conditions)
     {
-        var version = Volatile.Read(ref m_version);
+        int version = Volatile.Read(ref m_version);
         if (conditions.Count == 0)
         {
-            foreach (var item in m_activeList)
+            foreach (T item in m_activeList)
             {
                 EnsureVersion(version);
                 yield return item;
@@ -323,7 +423,7 @@ where T : class
 
         for (int i = 1; i < conditions.Count; i++)
         {
-            var candidateCount = conditions[i].GetCandidateCount(this);
+            int candidateCount = conditions[i].GetCandidateCount(this);
             if (candidateCount < seedCount)
             {
                 seedCount = candidateCount;
@@ -332,9 +432,11 @@ where T : class
         }
 
         if (seedCount == 0)
+        {
             yield break;
+        }
 
-        if (seedCount == 1 && conditions[seedIndex].TryGetSingle(this, out var single))
+        if (seedCount == 1 && conditions[seedIndex].TryGetSingle(this, out T single))
         {
             bool ok = true;
             for (int i = 0; i < conditions.Count; i++)
@@ -347,15 +449,17 @@ where T : class
             }
 
             if (ok)
+            {
                 yield return single;
+            }
 
             yield break;
         }
 
-        var seed = conditions[seedIndex].GetSet(this);
-        if (seed == null)
+        HashSet<T>? seed = conditions[seedIndex].GetSet(this);
+        if (seed is null)
         {
-            foreach (var item in m_activeList)
+            foreach (T item in m_activeList)
             {
                 bool ok = true;
                 for (int i = 0; i < conditions.Count; i++)
@@ -378,9 +482,11 @@ where T : class
         }
 
         if (seed.Count == 0)
+        {
             yield break;
+        }
 
-        foreach (var item in seed)
+        foreach (T item in seed)
         {
             bool ok = true;
             for (int i = 0; i < conditions.Count; i++)
@@ -400,90 +506,6 @@ where T : class
         }
     }
 
-    internal T? ExecuteFirst(List<IIndexedObjectQueryCondition<T>> conditions)
-    {
-        m_lock.EnterReadLock();
-        try
-        {
-            if (conditions.Count == 0)
-                return m_activeList.Count > 0 ? m_activeList[0] : null;
-
-            int seedIndex = 0;
-            int seedCount = conditions[0].GetCandidateCount(this);
-
-            for (int i = 1; i < conditions.Count; i++)
-            {
-                var candidateCount = conditions[i].GetCandidateCount(this);
-                if (candidateCount < seedCount)
-                {
-                    seedCount = candidateCount;
-                    seedIndex = i;
-                }
-            }
-
-            if (seedCount == 0)
-                return null;
-
-            if (seedCount == 1 && conditions[seedIndex].TryGetSingle(this, out var single))
-            {
-                for (int i = 0; i < conditions.Count; i++)
-                {
-                    if (!conditions[i].Validate(this, single))
-                        return null;
-                }
-
-                return single;
-            }
-
-            var seed = conditions[seedIndex].GetSet(this);
-            if (seed == null)
-            {
-                foreach (var item in m_activeList)
-                {
-                    bool ok = true;
-                    for (int i = 0; i < conditions.Count; i++)
-                    {
-                        if (!conditions[i].Validate(this, item))
-                        {
-                            ok = false;
-                            break;
-                        }
-                    }
-
-                    if (ok)
-                        return item;
-                }
-
-                return null;
-            }
-
-            if (seed.Count == 0)
-                return null;
-
-            foreach (var item in seed)
-            {
-                bool ok = true;
-                for (int i = 0; i < conditions.Count; i++)
-                {
-                    if (!conditions[i].Validate(this, item))
-                    {
-                        ok = false;
-                        break;
-                    }
-                }
-
-                if (ok)
-                    return item;
-            }
-
-            return null;
-        }
-        finally
-        {
-            m_lock.ExitReadLock();
-        }
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool ValidateConditions(
         List<IIndexedObjectQueryCondition<T>> conditions,
@@ -492,9 +514,10 @@ where T : class
         for (int i = 0; i < conditions.Count; i++)
         {
             if (!conditions[i].Validate(this, item))
+            {
                 return false;
+            }
         }
         return true;
     }
-
 }

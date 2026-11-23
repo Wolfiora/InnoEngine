@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
+using Inno.Adapter.Presentation;
 using Inno.Core.Events;
 using Inno.Core.Execution;
 using Inno.Core.Layers;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
-using Inno.Adapter.Presentation;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.PlayMode;
+using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Hosting;
+
 /// <summary>
 /// Bridges the engine layer lifecycle to the attribute-discovered editor runtime.
 /// </summary>
@@ -29,14 +30,16 @@ internal sealed class EditorLayer : Layer
     private bool m_isShutdownPrepared;
     private float m_totalTime;
     private double m_nextPersistenceRetryTime;
+
     internal EditorLayer(
         IPresentationContext presentation,
         EditorContext context,
         TypeCatalog types,
         LogRouter logs,
-        System.Collections.Generic.IEnumerable<object>? hostServices = null
+        IEnumerable<object>? hostServices = null
     ) {
-        m_presentation = presentation ?? throw new ArgumentNullException(nameof(presentation));
+        ArgumentNullException.ThrowIfNull(presentation);
+        m_presentation = presentation;
         m_context = context;
         m_log = logs.CreateLogger<EditorLayer>();
         m_resources.Own(m_diagnostics);
@@ -45,16 +48,6 @@ internal sealed class EditorLayer : Layer
         m_prepareFrame = m_runtime.PrepareFrame;
     }
 
-    internal int panelCount => m_runtime.panelCount;
-    internal bool isFocused { get; set; }
-    internal float totalTime { set => m_totalTime = value; }
-
-    internal void DisposeUnattached()
-    {
-        m_resources.Dispose();
-    }
-
-    internal void QuiescePlayMode() => m_playModeLoop.Quiesce();
     /// <summary>
     /// Starts the editor extension runtime and subscribes its host-level input handling.
     /// </summary>
@@ -80,6 +73,7 @@ internal sealed class EditorLayer : Layer
     /// The elapsed frame time in seconds.
     /// </param>
     public override void OnUpdate(float deltaTime) => m_playModeLoop.Tick(deltaTime);
+
     /// <summary>
     /// Updates editor presentation after the active Play Mode session has advanced.
     /// </summary>
@@ -93,15 +87,24 @@ internal sealed class EditorLayer : Layer
         SaveLayoutIfChanged();
     }
 
-    private void HandleKeyPressed(KeyPressedEvent keyEvent)
+    internal int panelCount => m_runtime.panelCount;
+    internal bool isFocused { get; set; }
+
+    internal float totalTime
     {
-        m_runtime.HandleKeyPressed(keyEvent);
+        set => m_totalTime = value;
     }
+
+    internal void DisposeUnattached() => m_resources.Dispose();
+
+    internal void QuiescePlayMode() => m_playModeLoop.Quiesce();
 
     internal bool PrepareShutdown()
     {
         if (m_isShutdownPrepared)
+        {
             return true;
+        }
         try
         {
             // Extension-state capture freezes its periodic writer before reading module state. Layout is
@@ -123,6 +126,8 @@ internal sealed class EditorLayer : Layer
             return false;
         }
     }
+
+    private void HandleKeyPressed(KeyPressedEvent keyEvent) => m_runtime.HandleKeyPressed(keyEvent);
 
     private void SaveLayoutIfChanged()
     {
@@ -151,7 +156,9 @@ internal sealed class EditorLayer : Layer
     private bool CaptureLayout(bool force)
     {
         if (!m_presentation.TryCaptureLayout(out string layout, force))
+        {
             return false;
+        }
         m_context.SetImGuiLayout(layout);
         return true;
     }
@@ -160,7 +167,7 @@ internal sealed class EditorLayer : Layer
         IEnumerable<object>? hostServices,
         EditorPlayModeLoop playModeLoop
     ) {
-        List<object> services = hostServices is null ? [] : new List<object>(hostServices);
+        List<object> services = hostServices is null ? [] : [.. hostServices];
         services.Add(playModeLoop);
         return services;
     }

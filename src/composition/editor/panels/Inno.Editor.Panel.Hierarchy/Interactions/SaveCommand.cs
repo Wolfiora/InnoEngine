@@ -1,14 +1,15 @@
 using System;
 using System.Collections.Generic;
-using Inno.Core.Logging;
 using Inno.Core.Input;
+using Inno.Core.Logging;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
 using Inno.Scene;
 
 namespace Inno.Editor.Panel.Hierarchy;
-[EditorAction(HierarchyInteractionIds.C_SAVE)]
-[EditorMenu(HierarchyInteractionIds.C_MAIN_MENU_AREA, "File/Save", order: 100)]
+
+[EditorAction(HierarchyInteractionIDs.C_SAVE)]
+[EditorMenu(HierarchyInteractionIDs.C_MAIN_MENU_AREA, "File/Save", order: 100)]
 [EditorShortcut(KeyCode.S, primary: true)]
 internal sealed class SaveCommand(
     IEditorSceneWorkspace workspace,
@@ -16,6 +17,7 @@ internal sealed class SaveCommand(
 ) : EditorAction
 {
     private readonly Logger m_log = (logs ?? throw new ArgumentNullException(nameof(logs))).CreateLogger<SaveCommand>();
+
     /// <summary>
     /// Evaluates whether the requested change can be applied to the current generation.
     /// </summary>
@@ -25,8 +27,10 @@ internal sealed class SaveCommand(
     /// <returns>
     /// The validated editor action state that represents the completed operation.
     /// </returns>
-    protected override EditorActionState Query(EditorActionContext context) => workspace.canPersist
-        && workspace.activeScene is not null ? EditorActionState.enabled : EditorActionState.disabled;
+    protected override EditorActionState Query(EditorActionContext context)
+        => workspace.canPersist
+           && workspace.activeScene is not null ? EditorActionState.enabled : EditorActionState.disabled;
+
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.
     /// </summary>

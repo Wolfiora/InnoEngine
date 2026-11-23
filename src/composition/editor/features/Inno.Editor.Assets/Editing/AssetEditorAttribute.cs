@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.Assets;
+
 /// <summary>
 /// Associates an asset editor with an imported asset type.
 /// </summary>
@@ -27,7 +28,8 @@ public sealed class AssetEditorAttribute : Attribute
         bool useForChildren = false,
         int priority = 0
     ) {
-        this.assetType = assetType ?? throw new ArgumentNullException(nameof(assetType));
+        ArgumentNullException.ThrowIfNull(assetType);
+        this.assetType = assetType;
         this.useForChildren = useForChildren;
         this.priority = priority;
     }
@@ -36,10 +38,12 @@ public sealed class AssetEditorAttribute : Attribute
     /// Gets the imported asset type handled by the editor.
     /// </summary>
     public Type assetType { get; }
+
     /// <summary>
     /// Gets whether derived asset types are accepted.
     /// </summary>
     public bool useForChildren { get; }
+
     /// <summary>
     /// Gets the tie-breaking priority.
     /// </summary>

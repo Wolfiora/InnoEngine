@@ -27,9 +27,13 @@ public readonly record struct ScriptCompilationStageTiming
         TimeSpan elapsed
     ) {
         if (string.IsNullOrWhiteSpace(stage))
+        {
             throw new ArgumentException("A compilation stage name is required.", nameof(stage));
+        }
         if (elapsed < TimeSpan.Zero)
+        {
             throw new ArgumentOutOfRangeException(nameof(elapsed), "Stage duration cannot be negative.");
+        }
         this.stage = stage;
         this.elapsed = elapsed;
     }

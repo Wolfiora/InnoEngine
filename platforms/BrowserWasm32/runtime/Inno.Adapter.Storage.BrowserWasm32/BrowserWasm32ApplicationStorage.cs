@@ -27,7 +27,9 @@ public sealed partial class BrowserWasm32ApplicationStorage : IApplicationStorag
     public BrowserWasm32ApplicationStorage(StorageScope scope)
     {
         if (!scope.isValid)
+        {
             throw new ArgumentException("Browser storage requires an assigned namespace.", nameof(scope));
+        }
         m_prefix = scope.value + ":";
     }
 
@@ -116,7 +118,9 @@ public sealed partial class BrowserWasm32ApplicationStorage : IApplicationStorag
         cancellationToken.ThrowIfCancellationRequested();
         string storageKey = Resolve(key);
         if (GetItem(storageKey) is null)
+        {
             return ValueTask.FromResult(false);
+        }
         RemoveItem(storageKey);
         return ValueTask.FromResult(true);
     }
@@ -138,29 +142,34 @@ public sealed partial class BrowserWasm32ApplicationStorage : IApplicationStorag
         CancellationToken cancellationToken = default
     ) {
         cancellationToken.ThrowIfCancellationRequested();
-        var keys = new List<StorageKey>();
+        List<StorageKey> keys = [];
         for (int index = 0; index < GetItemCount(); index++)
         {
             string? browserKey = GetKeyAt(index);
             if (browserKey is null || !browserKey.StartsWith(m_prefix, StringComparison.Ordinal))
+            {
                 continue;
+            }
             var key = new StorageKey(browserKey[m_prefix.Length..]);
             if (prefix is { } requested
                 && key != requested
-                && !key.value.StartsWith(requested.value + "/", StringComparison.Ordinal))
-            {
+                && !key.value.StartsWith(requested.value + "/", StringComparison.Ordinal)
+            ) {
                 continue;
             }
             keys.Add(key);
         }
         return ValueTask.FromResult<IReadOnlyList<StorageKey>>(
-            keys.OrderBy(static key => key.value, StringComparer.Ordinal).ToArray());
+            keys.OrderBy(static key => key.value, StringComparer.Ordinal).ToArray()
+        );
     }
 
     private string Resolve(StorageKey key)
     {
         if (!key.isValid)
+        {
             throw new ArgumentException("A valid storage key is required.", nameof(key));
+        }
         return m_prefix + key.value;
     }
 

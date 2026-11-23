@@ -9,7 +9,7 @@ namespace Inno.Adapter.Presentation;
 /// </summary>
 public sealed class PresentationBackendCatalog : IPresentationBackendFactory
 {
-    private readonly Dictionary<PresentationBackendId, PresentationBackendProvider> m_providers = [];
+    private readonly Dictionary<PresentationBackendID, PresentationBackendProvider> m_providers = [];
 
     /// <summary>
     /// Validates and captures a complete provider set without creating any service.
@@ -29,26 +29,30 @@ public sealed class PresentationBackendCatalog : IPresentationBackendFactory
         foreach (PresentationBackendProvider provider in providers)
         {
             if (provider is null || !provider.id.isValid || !m_providers.TryAdd(provider.id, provider))
+            {
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
+            }
         }
-        supportedBackends = new ReadOnlyCollection<PresentationBackendId>(new List<PresentationBackendId>(m_providers.Keys));
+        this.supportedBackends = new ReadOnlyCollection<PresentationBackendID>([.. m_providers.Keys]);
     }
 
-    /// <inheritdoc />
-    public IReadOnlyList<PresentationBackendId> supportedBackends { get; }
+    /// <inheritdoc/>
+    public IReadOnlyList<PresentationBackendID> supportedBackends { get; }
 
-    /// <inheritdoc />
     /// <exception cref="InvalidOperationException">
     /// The selected provider returned no service.
     /// </exception>
+    /// <inheritdoc/>
     public IPresentationContext CreateContext(
-        PresentationBackendId backend,
+        PresentationBackendID backend,
         PresentationBackendOptions options
     ) {
         ArgumentNullException.ThrowIfNull(options);
         if (!m_providers.TryGetValue(backend, out PresentationBackendProvider? provider))
+        {
             throw new NotSupportedException("Presentation backend '" + backend + "' is not registered.");
+        }
         return provider.CreateContext(options)
-            ?? throw new InvalidOperationException("Presentation provider '" + backend + "' returned no context.");
+               ?? throw new InvalidOperationException("Presentation provider '" + backend + "' returned no context.");
     }
 }

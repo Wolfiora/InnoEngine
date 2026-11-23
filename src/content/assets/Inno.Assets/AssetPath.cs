@@ -5,57 +5,6 @@ using System.Linq;
 namespace Inno.Assets;
 
 /// <summary>
-/// Identifies one isolated asset source mount.
-/// </summary>
-public record struct AssetSourceId
-{
-    /// <summary>
-    /// Gets the writable project source identifier.
-    /// </summary>
-    public static AssetSourceId project => new("project");
-
-    /// <summary>
-    /// Creates a globally stable source identifier.
-    /// </summary>
-    /// <param name="value">
-    /// Lowercase project or Plugin source identity.
-    /// </param>
-    public AssetSourceId(string value)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(value);
-        string normalized = value.Trim();
-        if (normalized.Any(static character =>
-                !(character is >= 'a' and <= 'z'
-                  || character is >= '0' and <= '9'
-                  || character is '.' or '_' or '-')))
-        {
-            throw new ArgumentException(
-                "An asset source ID may contain lowercase ASCII letters, digits, '.', '_', and '-' only.",
-                nameof(value));
-        }
-        this.value = normalized;
-    }
-
-    /// <summary>
-    /// Gets or sets the globally stable source value.
-    /// </summary>
-    public string value { get; set; }
-
-    /// <summary>
-    /// Gets whether the source identity has a usable value.
-    /// </summary>
-    public readonly bool isValid => !string.IsNullOrWhiteSpace(value);
-
-    /// <summary>
-    /// Formats this value as a human-readable representation.
-    /// </summary>
-    /// <returns>
-    /// The human-readable representation of this value.
-    /// </returns>
-    public readonly override string ToString() => value ?? string.Empty;
-}
-
-/// <summary>
 /// Addresses one asset without conflating isolated source mounts.
 /// </summary>
 public record struct AssetPath
@@ -72,11 +21,13 @@ public record struct AssetPath
     /// Source-local path using forward slashes.
     /// </param>
     public AssetPath(
-        AssetSourceId source,
+        AssetSourceID source,
         string localPath
     ) {
         if (!source.isValid)
+        {
             throw new ArgumentException("An asset source ID must be valid.", nameof(source));
+        }
         this.source = source;
         this.localPath = NormalizeLocalPath(localPath);
     }
@@ -84,7 +35,7 @@ public record struct AssetPath
     /// <summary>
     /// Gets or sets the owning source mount.
     /// </summary>
-    public AssetSourceId source { get; set; }
+    public AssetSourceID source { get; set; }
 
     /// <summary>
     /// Gets or sets the source-local path.
@@ -97,15 +48,26 @@ public record struct AssetPath
     public readonly bool isValid => source.isValid && localPath is not null;
 
     /// <summary>
-    /// Creates a path in the writable project source.
+    /// Formats this value as a human-readable representation.
     /// </summary>
     /// <returns>
-    /// A project-owned asset path.
+    /// The human-readable representation of this value.
     /// </returns>
+    public override readonly string ToString()
+        => source == AssetSourceID.project
+           ? localPath ?? string.Empty
+           : $"{source}{C_SOURCE_SEPARATOR}{localPath}";
+
+    /// <summary>
+    /// Creates a path in the writable project source.
+    /// </summary>
     /// <param name="localPath">
     /// The local path text validated by the project operation.
     /// </param>
-    public static AssetPath Project(string localPath) => new(AssetSourceId.project, localPath);
+    /// <returns>
+    /// A project-owned asset path.
+    /// </returns>
+    public static AssetPath Project(string localPath) => new(AssetSourceID.project, localPath);
 
     /// <summary>
     /// Parses a canonical path, treating an unqualified value as project-owned.
@@ -121,20 +83,9 @@ public record struct AssetPath
         ArgumentNullException.ThrowIfNull(value);
         int separator = value.IndexOf(C_SOURCE_SEPARATOR, StringComparison.Ordinal);
         return separator < 0
-            ? Project(value)
-            : new AssetPath(new AssetSourceId(value[..separator]), value[(separator + C_SOURCE_SEPARATOR.Length)..]);
+               ? Project(value)
+               : new AssetPath(new AssetSourceID(value[..separator]), value[(separator + C_SOURCE_SEPARATOR.Length)..]);
     }
-
-    /// <summary>
-    /// Formats this value as a human-readable representation.
-    /// </summary>
-    /// <returns>
-    /// The human-readable representation of this value.
-    /// </returns>
-    public readonly override string ToString()
-        => source == AssetSourceId.project
-            ? localPath ?? string.Empty
-            : $"{source}{C_SOURCE_SEPARATOR}{localPath}";
 
     private static string NormalizeLocalPath(string value)
     {
@@ -142,17 +93,19 @@ public record struct AssetPath
         if (Path.IsPathRooted(value)
             || value.StartsWith("/", StringComparison.Ordinal)
             || value.StartsWith('\\')
-            || value.Length >= 2 && char.IsAsciiLetter(value[0]) && value[1] == ':')
-        {
+            || value.Length >= 2 && char.IsAsciiLetter(value[0]) && value[1] == ':'
+        ) {
             throw new ArgumentException("An asset path must be source-relative.", nameof(value));
         }
         string path = value.Replace('\\', '/').Trim();
         while (path.StartsWith("./", StringComparison.Ordinal))
+        {
             path = path[2..];
+        }
         path = path.Trim('/');
         if (path.Split('/', StringSplitOptions.RemoveEmptyEntries)
-            .Any(static segment => segment is "." or ".."))
-        {
+            .Any(static segment => segment is "." or "..")
+        ) {
             throw new ArgumentException("An asset path cannot contain traversal segments.", nameof(value));
         }
         return path;

@@ -5,13 +5,14 @@ namespace Inno.Adapter.UI.RmlUi;
 /// <summary>
 /// Supplies independently owned retained UI backend generations.
 /// </summary>
-public sealed class RmlUiBackendProvider : UiBackendProvider
+public sealed class RmlUiBackendProvider : UIBackendProvider
 {
     /// <summary>
     /// Creates a composition-owned registration for the bundled implementation.
     /// </summary>
-    public RmlUiBackendProvider() : base(UiBackendId.rmlUi) { }
+    public RmlUiBackendProvider()
+        : base(UIBackendID.rmlUI) {}
 
-    /// <inheritdoc />
-    public override IUiBackend CreateBackend() => new RmlUiBackend();
+    /// <inheritdoc/>
+    public override IUIBackend CreateBackend() => new RmlUiBackend();
 }

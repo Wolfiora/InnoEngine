@@ -1,19 +1,23 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Inno.Editor.Assets;
-using Inno.Core.Identity;
-using Inno.Editor.Assets.ImGui;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Identity;
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
-using Ui = Inno.Editor.ImGui.ImGui;
+
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
+
 internal sealed partial class FileBrowserTree
 {
     private readonly FileBrowserData m_data;
@@ -26,6 +30,7 @@ internal sealed partial class FileBrowserTree
     private bool m_currentDirectoryOpenRequest;
     private string m_currentDirectoryOpenTarget = string.Empty;
     private string? m_lastCurrentDirectoryOpenTarget;
+
     internal FileBrowserTree(
         FileBrowserData data,
         FileBrowserNavigation navigation,
@@ -42,6 +47,36 @@ internal sealed partial class FileBrowserTree
         m_assets = assets;
     }
 
+    internal void PrepareOpenRequests()
+    {
+        BeginNavigation();
+        string currentDirectory = NormalizePath(m_assets.browser.currentDirectory);
+        if (!m_currentDirectoryOpenRequest && !string.Equals(m_lastCurrentDirectoryOpenTarget, currentDirectory, StringComparison.Ordinal))
+        {
+            m_currentDirectoryOpenTarget = currentDirectory;
+            m_currentDirectoryOpenRequest = true;
+            m_lastCurrentDirectoryOpenTarget = currentDirectory;
+        }
+    }
+
+    internal void ClearOpenRequests()
+    {
+        m_rootOpenRequest = false;
+        m_currentDirectoryOpenRequest = false;
+        ClearNavigationFrame();
+    }
+
+    internal void RequestOpenRoot() => m_rootOpenRequest = true;
+
+    internal void RequestOpenTreeToPath(string path)
+    {
+        string normalizedPath = NormalizePath(path);
+        string treePath = IsDirectoryPath(m_assets.edits.pipeline, normalizedPath) ? normalizedPath : GetParentDirectory(normalizedPath);
+        m_currentDirectoryOpenTarget = treePath;
+        m_currentDirectoryOpenRequest = true;
+        m_lastCurrentDirectoryOpenTarget = treePath;
+    }
+
     private void DrawRow(
         EditorContext context,
         BrowserTreeRow row
@@ -49,27 +84,37 @@ internal sealed partial class FileBrowserTree
         AssetFileEntry? entry = null;
         if (row.identity is { } identity)
         {
-            if (!m_assets.edits.interactions.TryResolveIdentity(identity, out Inno.Core.Identity.IdentityObject? resolved)
-                || resolved is not AssetFileEntry current)
-            {
-                Ui.Dummy(new(1f, Ui.GetFrameHeight()));
+            if (!m_assets.edits.interactions.TryResolveIdentity(identity, out IdentityObject? resolved)
+                || resolved is not AssetFileEntry current
+            ) {
+                Gui.Dummy(new Vector2(1f, Gui.GetFrameHeight()));
                 return;
             }
             entry = current;
         }
         bool selected = entry is not null && m_assets.edits.interactions.selection.Contains(entry);
-        bool currentDirectory = row.virtualRoot ? string.IsNullOrEmpty(m_assets.browser.currentDirectory)
+        bool currentDirectory = row.virtualRoot
+            ? string.IsNullOrEmpty(m_assets.browser.currentDirectory)
             : (entry?.isDirectory ?? row.isRoot) && string.Equals(m_assets.browser.currentDirectory, row.path, StringComparison.Ordinal)
-                && (m_assets.browser.root == AssetBrowserRoot.Assets) == (AssetPath.Parse(row.path).source == AssetSourceId.project);
+              && (m_assets.browser.root == AssetBrowserRoot.Assets) == (AssetPath.Parse(row.path).source == AssetSourceID.project);
         string icon = entry is { isDirectory: false } ? m_assets.GetIcon(entry) : m_assets.folderIcon;
         bool editing = !row.isRoot && m_rename.IsEditing(context, row.path, FileBrowserPresentation.Tree);
         TreeNodeResult result = EditorUI.current.widgets.TreeNode(
-            row.nodeId,
-            drawContext => DrawRowContent(context, row.nodeId, row.path, row.label, icon, currentDirectory, editing, drawContext.rowHeight),
-            new TreeNodeOptions { depth = row.depth, selected = selected, isLeaf = row.isLeaf,
-                requestFocus = RequestsKeyboardFocus(entry, row.isRoot), keepContentActive = editing });
+            row.nodeID,
+            drawContext => DrawRowContent(context, row.nodeID, row.path, row.label, icon, currentDirectory, editing, drawContext.rowHeight),
+            new TreeNodeOptions
+            {
+                depth = row.depth,
+                selected = selected,
+                isLeaf = row.isLeaf,
+                requestFocus = RequestsKeyboardFocus(entry, row.isRoot),
+                keepContentActive = editing
+            }
+        );
         if (!result.isSubmitted)
+        {
             return;
+        }
         if (entry is not null && result.isDoubleClicked)
         {
             m_rename.MarkInteraction(FileBrowserPresentation.Tree);
@@ -82,13 +127,17 @@ internal sealed partial class FileBrowserTree
             m_pendingSelection = entry.identity.runtimeIdentity;
         }
         else if (row.isRoot && (result.isClicked || result.isDoubleClicked))
+        {
             m_pendingRootNavigation = true;
+        }
         if (entry is not null && !editing)
         {
             m_dragDrop.DrawAssetSource(context, entry);
             m_contextMenu.DrawEntry(context, "##asset_tree_context_" + row.path, row.path, FileBrowserPresentation.Tree);
             if (entry.isDirectory && !entry.isReadOnly)
+            {
                 m_dragDrop.DrawDirectoryTarget(context, row.path);
+            }
         }
         else if (row.isRoot && !row.virtualRoot)
         {
@@ -114,37 +163,8 @@ internal sealed partial class FileBrowserTree
         }
 
         EditorUI.current.widgets.IconText(icon, string.Empty, false);
-        Ui.SameLine(0f, 0f);
-        m_rename.Draw(context, id, relativePath, FileBrowserPresentation.Tree, Ui.GetContentRegionAvailable().X, rowHeight);
-    }
-
-    internal void PrepareOpenRequests()
-    {
-        BeginNavigation();
-        string currentDirectory = NormalizePath(m_assets.browser.currentDirectory);
-        if (!m_currentDirectoryOpenRequest && !string.Equals(m_lastCurrentDirectoryOpenTarget, currentDirectory, StringComparison.Ordinal))
-        {
-            m_currentDirectoryOpenTarget = currentDirectory;
-            m_currentDirectoryOpenRequest = true;
-            m_lastCurrentDirectoryOpenTarget = currentDirectory;
-        }
-    }
-
-    internal void ClearOpenRequests()
-    {
-        m_rootOpenRequest = false;
-        m_currentDirectoryOpenRequest = false;
-        ClearNavigationFrame();
-    }
-
-    internal void RequestOpenRoot() => m_rootOpenRequest = true;
-    internal void RequestOpenTreeToPath(string path)
-    {
-        string normalizedPath = NormalizePath(path);
-        string treePath = IsDirectoryPath(m_assets.edits.pipeline, normalizedPath) ? normalizedPath : GetParentDirectory(normalizedPath);
-        m_currentDirectoryOpenTarget = treePath;
-        m_currentDirectoryOpenRequest = true;
-        m_lastCurrentDirectoryOpenTarget = treePath;
+        Gui.SameLine(0f, 0f);
+        m_rename.Draw(context, id, relativePath, FileBrowserPresentation.Tree, Gui.GetContentRegionAvailable().X, rowHeight);
     }
 
     private bool ShouldOpenTreeEntry(
@@ -153,7 +173,9 @@ internal sealed partial class FileBrowserTree
         bool isDirectory
     ) {
         if (!isDirectory)
+        {
             return false;
+        }
         if (isRoot)
         {
             if (string.IsNullOrEmpty(relativePath))

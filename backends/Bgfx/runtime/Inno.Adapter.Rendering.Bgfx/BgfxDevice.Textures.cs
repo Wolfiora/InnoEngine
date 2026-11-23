@@ -1,17 +1,17 @@
-using Inno.Adapter.Platform;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using Inno.Adapter.Platform;
 using Inno.Native.Bgfx;
 using Inno.Platform;
 using Inno.Rendering;
 
 namespace Inno.Adapter.Rendering.Bgfx;
 
-sealed unsafe partial class BgfxDevice
+public sealed unsafe partial class BgfxDevice
 {
     /// <summary>
     /// Creates a texture using this implementation's validated inputs.
@@ -40,14 +40,15 @@ sealed unsafe partial class BgfxDevice
 
         int textureNameLength = Encoding.UTF8.GetByteCount(name);
         Span<byte> textureNameBytes = textureNameLength < 256
-            ? stackalloc byte[256] : new byte[checked(textureNameLength + 1)];
+                                      ? stackalloc byte[256]
+                                      : new byte[checked(textureNameLength + 1)];
         Encoding.UTF8.GetBytes(name, textureNameBytes);
         textureNameBytes[textureNameLength] = 0;
         fixed (byte* textureNamePointer = textureNameBytes)
         {
             BgfxNativeCalls.SetTextureName(nativeTexture, (sbyte*)textureNamePointer, textureNameLength);
         }
-        ulong id = m_nextPersistentId++;
+        ulong id = m_nextPersistentID++;
         m_persistentTextures.Add(id, nativeTexture);
         m_persistentTextureDescriptors.Add(id, descriptor);
         return CreatePersistentTextureHandle(id, generation);
@@ -100,7 +101,8 @@ sealed unsafe partial class BgfxDevice
             memory,
             sRgb ? (ulong)bgfx.TextureFlags.Srgb : 0,
             0,
-            &info);
+            &info
+        );
         if (!nativeTexture.Valid)
         {
             throw new InvalidOperationException($"BGFX could not create encoded texture '{name}'.");
@@ -108,14 +110,15 @@ sealed unsafe partial class BgfxDevice
 
         int textureNameLength = Encoding.UTF8.GetByteCount(name);
         Span<byte> textureNameBytes = textureNameLength < 256
-            ? stackalloc byte[256] : new byte[checked(textureNameLength + 1)];
+                                      ? stackalloc byte[256]
+                                      : new byte[checked(textureNameLength + 1)];
         Encoding.UTF8.GetBytes(name, textureNameBytes);
         textureNameBytes[textureNameLength] = 0;
         fixed (byte* textureNamePointer = textureNameBytes)
         {
             BgfxNativeCalls.SetTextureName(nativeTexture, (sbyte*)textureNamePointer, textureNameLength);
         }
-        ulong id = m_nextPersistentId++;
+        ulong id = m_nextPersistentID++;
         m_persistentTextures.Add(id, nativeTexture);
         return CreatePersistentTextureHandle(id, generation);
     }
@@ -146,14 +149,14 @@ sealed unsafe partial class BgfxDevice
         ArgumentOutOfRangeException.ThrowIfNegative(arrayLayer);
         ValidatePersistentHandle(texture);
         if (!m_persistentTextures.TryGetValue(GetHandleIdentity(texture).value, out bgfx.TextureHandle nativeTexture)
-            || !m_persistentTextureDescriptors.TryGetValue(GetHandleIdentity(texture).value, out RenderTextureDescriptor? descriptor))
-        {
+            || !m_persistentTextureDescriptors.TryGetValue(GetHandleIdentity(texture).value, out RenderTextureDescriptor? descriptor)
+        ) {
             throw new ArgumentException("Persistent texture is not active on this device.", nameof(texture));
         }
 
         if (mipLevel >= descriptor.mipCount
-            || arrayLayer >= descriptor.GetSubresourceLayerCount(mipLevel))
-        {
+            || arrayLayer >= descriptor.GetSubresourceLayerCount(mipLevel)
+        ) {
             throw new ArgumentOutOfRangeException(nameof(mipLevel), "Texture subresource is outside the descriptor.");
         }
 
@@ -164,7 +167,8 @@ sealed unsafe partial class BgfxDevice
         {
             throw new ArgumentException(
                 $"Texture update requires exactly {expectedSize} tightly packed bytes.",
-                nameof(data));
+                nameof(data)
+            );
         }
 
         bgfx.Memory* memory;
@@ -185,7 +189,8 @@ sealed unsafe partial class BgfxDevice
                     checked((ushort)width),
                     checked((ushort)height),
                     memory,
-                    ushort.MaxValue);
+                    ushort.MaxValue
+                );
                 break;
             case RenderTextureDimension.Texture3D:
                 BgfxNativeCalls.UpdateTexture3d(
@@ -197,7 +202,8 @@ sealed unsafe partial class BgfxDevice
                     checked((ushort)width),
                     checked((ushort)height),
                     1,
-                    memory);
+                    memory
+                );
                 break;
             case RenderTextureDimension.Cube:
                 BgfxNativeCalls.UpdateTextureCube(
@@ -210,7 +216,8 @@ sealed unsafe partial class BgfxDevice
                     checked((ushort)width),
                     checked((ushort)height),
                     memory,
-                    ushort.MaxValue);
+                    ushort.MaxValue
+                );
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(descriptor));
@@ -237,26 +244,29 @@ sealed unsafe partial class BgfxDevice
         EnsureFrameSafetyPoint();
         ValidatePersistentHandle(texture);
         if (!m_persistentTextures.TryGetValue(GetHandleIdentity(texture).value, out bgfx.TextureHandle nativeTexture)
-            || !m_persistentTextureDescriptors.TryGetValue(GetHandleIdentity(texture).value, out RenderTextureDescriptor? descriptor))
-        {
+            || !m_persistentTextureDescriptors.TryGetValue(GetHandleIdentity(texture).value, out RenderTextureDescriptor? descriptor)
+        ) {
             throw new ArgumentException("Persistent texture is not active on this device.", nameof(texture));
         }
         if (region.mip >= descriptor.mipCount)
+        {
             throw new ArgumentOutOfRangeException(nameof(region), "Texture mip is outside its descriptor.");
+        }
         int mipWidth = Math.Max(1, descriptor.width >> region.mip);
         int mipHeight = Math.Max(1, descriptor.height >> region.mip);
         int layerCount = descriptor.GetSubresourceLayerCount(region.mip);
-        if (region.x + region.width > mipWidth ||
-            region.y + region.height > mipHeight ||
-            region.layer + region.depth > layerCount)
-        {
+        if (region.x + region.width > mipWidth
+            || region.y + region.height > mipHeight
+            || region.layer + region.depth > layerCount
+        ) {
             throw new ArgumentOutOfRangeException(nameof(region), "Texture update region is outside its descriptor.");
         }
         if (descriptor.dimension != RenderTextureDimension.Texture3D && region.depth != 1)
         {
             throw new ArgumentException(
                 "Two-dimensional and cubemap updates address exactly one layer or face.",
-                nameof(region));
+                nameof(region)
+            );
         }
         int rowPitch = checked(region.width * BytesPerPixel(descriptor.format));
         int expectedSize = checked(rowPitch * region.height * region.depth);
@@ -264,12 +274,15 @@ sealed unsafe partial class BgfxDevice
         {
             throw new ArgumentException(
                 $"Texture region update requires exactly {expectedSize} tightly packed bytes.",
-                nameof(data));
+                nameof(data)
+            );
         }
 
         bgfx.Memory* memory;
         fixed (byte* pointer = data)
+        {
             memory = bgfx.Raw.copy(pointer, checked((uint)data.Length));
+        }
         switch (descriptor.dimension)
         {
             case RenderTextureDimension.Texture2D:
@@ -282,7 +295,8 @@ sealed unsafe partial class BgfxDevice
                     checked((ushort)region.width),
                     checked((ushort)region.height),
                     memory,
-                    checked((ushort)rowPitch));
+                    checked((ushort)rowPitch)
+                );
                 break;
             case RenderTextureDimension.Texture3D:
                 BgfxNativeCalls.UpdateTexture3d(
@@ -294,7 +308,8 @@ sealed unsafe partial class BgfxDevice
                     checked((ushort)region.width),
                     checked((ushort)region.height),
                     checked((ushort)region.depth),
-                    memory);
+                    memory
+                );
                 break;
             case RenderTextureDimension.Cube:
                 BgfxNativeCalls.UpdateTextureCube(
@@ -307,7 +322,8 @@ sealed unsafe partial class BgfxDevice
                     checked((ushort)region.width),
                     checked((ushort)region.height),
                     memory,
-                    checked((ushort)rowPitch));
+                    checked((ushort)rowPitch)
+                );
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(descriptor));
@@ -339,8 +355,8 @@ sealed unsafe partial class BgfxDevice
     {
         if (m_activeGraph is null
             || GetHandleIdentity(texture).generation != m_activeGraph.generation
-            || !m_graphTextures.TryGetValue(GetHandleIdentity(texture).index, out bgfx.TextureHandle nativeTexture))
-        {
+            || !m_graphTextures.TryGetValue(GetHandleIdentity(texture).index, out bgfx.TextureHandle nativeTexture)
+        ) {
             throw new ArgumentException("Texture is not active in the current BGFX graph.", nameof(texture));
         }
 
@@ -361,88 +377,93 @@ sealed unsafe partial class BgfxDevice
     {
         if (descriptor.width > capabilities.limits.maxTextureSize
             || descriptor.height > capabilities.limits.maxTextureSize
-            || descriptor.depth > capabilities.limits.maxTextureSize)
-        {
-            throw new NotSupportedException(
-                "The texture descriptor exceeds the active backend extent limit.");
+            || descriptor.depth > capabilities.limits.maxTextureSize
+        ) {
+            throw new NotSupportedException("The texture descriptor exceeds the active backend extent limit.");
         }
 
         if (!capabilities.SupportsSampled(descriptor.format, descriptor.dimension)
-            && (descriptor.usage & RenderTextureUsage.Sampled) != 0)
-        {
+            && (descriptor.usage & RenderTextureUsage.Sampled) != 0
+        ) {
             throw new NotSupportedException(
-                $"The active graphics backend cannot sample {descriptor.dimension} textures in format '{descriptor.format}'.");
+                $"The active graphics backend cannot sample {descriptor.dimension} textures in format '{descriptor.format}'."
+            );
         }
 
         if ((descriptor.usage
-                & (RenderTextureUsage.ColorAttachment | RenderTextureUsage.DepthStencilAttachment)) != 0
-            && !capabilities.SupportsRenderTarget(descriptor.format))
-        {
+             & (RenderTextureUsage.ColorAttachment | RenderTextureUsage.DepthStencilAttachment)) != 0
+            && !capabilities.SupportsRenderTarget(descriptor.format)
+        ) {
             throw new NotSupportedException(
-                $"The active graphics backend cannot attach texture format '{descriptor.format}'.");
+                $"The active graphics backend cannot attach texture format '{descriptor.format}'."
+            );
         }
 
         if ((descriptor.usage
-                & (RenderTextureUsage.ColorAttachment | RenderTextureUsage.DepthStencilAttachment)) != 0
+             & (RenderTextureUsage.ColorAttachment | RenderTextureUsage.DepthStencilAttachment)) != 0
             && descriptor.sampleCount > 1
-            && !capabilities.SupportsMultisampleRenderTarget(descriptor.format))
-        {
+            && !capabilities.SupportsMultisampleRenderTarget(descriptor.format)
+        ) {
             throw new NotSupportedException(
-                $"The active graphics backend cannot multisample texture format '{descriptor.format}'.");
+                $"The active graphics backend cannot multisample texture format '{descriptor.format}'."
+            );
         }
 
         if ((descriptor.usage & RenderTextureUsage.Storage) != 0
             && (!capabilities.Supports(GraphicsCapability.Compute)
                 || !capabilities.Supports(GraphicsCapability.StorageTexture)
                 || (!capabilities.SupportsStorage(descriptor.format, RenderStorageAccess.Read)
-                    && !capabilities.SupportsStorage(descriptor.format, RenderStorageAccess.Write))))
-        {
+                    && !capabilities.SupportsStorage(descriptor.format, RenderStorageAccess.Write)))
+        ) {
             throw new NotSupportedException(
-                $"The active graphics backend cannot use texture format '{descriptor.format}' for storage access.");
+                $"The active graphics backend cannot use texture format '{descriptor.format}' for storage access."
+            );
         }
 
         if ((descriptor.usage & RenderTextureUsage.Readback) != 0)
         {
             if (!capabilities.Supports(GraphicsCapability.TextureReadback))
-                throw new NotSupportedException("The active graphics backend does not support texture readback.");
-            if (descriptor.sampleCount != 1 ||
-                (descriptor.usage & (RenderTextureUsage.ColorAttachment |
-                                     RenderTextureUsage.DepthStencilAttachment |
-                                     RenderTextureUsage.Storage)) != 0)
             {
+                throw new NotSupportedException("The active graphics backend does not support texture readback.");
+            }
+            if (descriptor.sampleCount != 1
+                || (descriptor.usage & (RenderTextureUsage.ColorAttachment
+                                        | RenderTextureUsage.DepthStencilAttachment
+                                        | RenderTextureUsage.Storage)) != 0
+            ) {
                 throw new ArgumentException(
                     "Readback textures must be single-sampled transfer resources, not attachments or storage images.",
-                    nameof(descriptor));
+                    nameof(descriptor)
+                );
             }
         }
 
         if (descriptor.dimension == RenderTextureDimension.Texture2D
             && descriptor.arrayLayers > 1
-            && !capabilities.Supports(GraphicsCapability.Texture2DArray))
-        {
+            && !capabilities.Supports(GraphicsCapability.Texture2DArray)
+        ) {
             throw new NotSupportedException(
-                "The active graphics backend does not support two-dimensional texture arrays.");
+                "The active graphics backend does not support two-dimensional texture arrays."
+            );
         }
 
         if (descriptor.dimension == RenderTextureDimension.Texture3D
-            && !capabilities.Supports(GraphicsCapability.Texture3D))
-        {
-            throw new NotSupportedException(
-                "The active graphics backend does not support three-dimensional textures.");
+            && !capabilities.Supports(GraphicsCapability.Texture3D)
+        ) {
+            throw new NotSupportedException("The active graphics backend does not support three-dimensional textures.");
         }
 
         if (descriptor.dimension == RenderTextureDimension.Cube
             && descriptor.arrayLayers > 1
-            && !capabilities.Supports(GraphicsCapability.TextureCubeArray))
-        {
-            throw new NotSupportedException(
-                "The active graphics backend does not support cubemap texture arrays.");
+            && !capabilities.Supports(GraphicsCapability.TextureCubeArray)
+        ) {
+            throw new NotSupportedException("The active graphics backend does not support cubemap texture arrays.");
         }
 
         bgfx.TextureFlags flags = bgfx.TextureFlags.None;
         if ((descriptor.usage
-            & (RenderTextureUsage.ColorAttachment | RenderTextureUsage.DepthStencilAttachment)) != 0)
-        {
+             & (RenderTextureUsage.ColorAttachment | RenderTextureUsage.DepthStencilAttachment)) != 0
+        ) {
             flags |= descriptor.sampleCount switch
             {
                 1 => bgfx.TextureFlags.Rt,
@@ -484,7 +505,8 @@ sealed unsafe partial class BgfxDevice
                 BgfxCapabilityMapper.ToNativeFormat(descriptor.format),
                 (ulong)flags,
                 null,
-                0),
+                0
+            ),
             RenderTextureDimension.Texture3D => BgfxNativeCalls.CreateTexture3d(
                 checked((ushort)descriptor.width),
                 checked((ushort)descriptor.height),
@@ -493,7 +515,8 @@ sealed unsafe partial class BgfxDevice
                 BgfxCapabilityMapper.ToNativeFormat(descriptor.format),
                 (ulong)flags,
                 null,
-                0),
+                0
+            ),
             RenderTextureDimension.Cube => BgfxNativeCalls.CreateTextureCube(
                 checked((ushort)descriptor.width),
                 descriptor.mipCount > 1 ? (byte)1 : (byte)0,
@@ -501,22 +524,22 @@ sealed unsafe partial class BgfxDevice
                 BgfxCapabilityMapper.ToNativeFormat(descriptor.format),
                 (ulong)flags,
                 null,
-                0),
+                0
+            ),
             _ => throw new ArgumentOutOfRangeException(nameof(descriptor))
         };
     }
 
     private static int BytesPerPixel(RenderTextureFormat format)
         => format switch
-        {
-            RenderTextureFormat.R8 => 1,
-            RenderTextureFormat.RG8 => 2,
-            RenderTextureFormat.RGBA8 or RenderTextureFormat.RGBA8Srgb
-                or RenderTextureFormat.RGB10A2 or RenderTextureFormat.RG11B10Float
-                or RenderTextureFormat.R32Float or RenderTextureFormat.Depth24Stencil8
-                or RenderTextureFormat.Depth32Float => 4,
-            RenderTextureFormat.RGBA16Float => 8,
-            _ => throw new ArgumentOutOfRangeException(nameof(format))
-        };
-
+    {
+        RenderTextureFormat.R8 => 1,
+        RenderTextureFormat.RG8 => 2,
+        RenderTextureFormat.RGBA8 or RenderTextureFormat.RGBA8Srgb
+        or RenderTextureFormat.RGB10A2 or RenderTextureFormat.RG11B10Float
+        or RenderTextureFormat.R32Float or RenderTextureFormat.Depth24Stencil8
+        or RenderTextureFormat.Depth32Float => 4,
+        RenderTextureFormat.RGBA16Float => 8,
+        _ => throw new ArgumentOutOfRangeException(nameof(format))
+    };
 }

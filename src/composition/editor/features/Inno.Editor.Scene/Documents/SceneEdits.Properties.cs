@@ -1,19 +1,19 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.ExceptionServices;
+using System.Globalization;
 using System.Linq;
-
-using Inno.Extensibility.Types;
+using System.Runtime.ExceptionServices;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Types;
 using Inno.Scene;
 using Inno.Scene.Components;
 using Inno.Scene.Layers;
 
 namespace Inno.Editor.Scene;
 
-sealed partial class SceneEdits
+public sealed partial class SceneEdits
 {
     /// <summary>
     /// Renames a loaded scene and records the two display strings.
@@ -43,7 +43,8 @@ sealed partial class SceneEdits
             name,
             value => scene.name = value,
             historyName,
-            $"scene-name:{scene.identity.persistentId:N}");
+            $"scene-name:{scene.identity.persistentID:N}"
+        );
     }
 
     /// <summary>
@@ -74,7 +75,8 @@ sealed partial class SceneEdits
             name,
             value => gameObject.name = value,
             historyName,
-            $"game-object-name:{gameObject.identity.persistentId:N}");
+            $"game-object-name:{gameObject.identity.persistentID:N}"
+        );
     }
 
     /// <summary>
@@ -106,7 +108,8 @@ sealed partial class SceneEdits
             after,
             value => gameObject.SetActive(string.Equals(value, "1", StringComparison.Ordinal)),
             historyName ?? (active ? "Activate GameObject" : "Deactivate GameObject"),
-            mergeKey: null);
+            mergeKey: null
+        );
     }
 
     /// <summary>
@@ -145,7 +148,8 @@ sealed partial class SceneEdits
             requestedTag,
             value => gameObject.tag = value,
             historyName,
-            $"game-object-tag:{gameObject.identity.persistentId:N}");
+            $"game-object-tag:{gameObject.identity.persistentID:N}"
+        );
     }
 
     /// <summary>
@@ -178,12 +182,12 @@ sealed partial class SceneEdits
         ChangeScalar(
             gameObject,
             SceneScalarKind.GameObjectLayer,
-            gameObject.layer.index.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            layer.index.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            value => gameObject.layer = new GameLayer(
-                int.Parse(value, System.Globalization.CultureInfo.InvariantCulture)),
+            gameObject.layer.index.ToString(CultureInfo.InvariantCulture),
+            layer.index.ToString(CultureInfo.InvariantCulture),
+            value => gameObject.layer = new GameLayer(int.Parse(value, CultureInfo.InvariantCulture)),
             historyName,
-            $"game-object-layer:{gameObject.identity.persistentId:N}");
+            $"game-object-layer:{gameObject.identity.persistentID:N}"
+        );
     }
 
     /// <summary>
@@ -221,16 +225,15 @@ sealed partial class SceneEdits
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
         m_workspace.EnsureEditable(ResolveOwnerScene(target));
         IReadOnlyList<SerializationPropertySnapshot> before = OrderPropertySnapshots(
-            ScenePropertySerialization.CapturePropertySnapshots(
-                target,
-                m_workspace.serialization,
-                m_workspace.assets),
-            propertyName);
+            ScenePropertySerialization.CapturePropertySnapshots(target, m_workspace.serialization, m_workspace.assets),
+            propertyName
+        );
         if (!before.Any(snapshot => string.Equals(snapshot.name, propertyName, StringComparison.Ordinal)))
         {
             throw new ArgumentException(
                 $"Serializable property '{propertyName}' was not found on '{target.GetType().FullName}'.",
-                nameof(propertyName));
+                nameof(propertyName)
+            );
         }
         IReadOnlyList<SerializationPropertySnapshot> after;
         try
@@ -240,8 +243,10 @@ sealed partial class SceneEdits
                 ScenePropertySerialization.CapturePropertySnapshots(
                     target,
                     m_workspace.serialization,
-                    m_workspace.assets),
-                propertyName);
+                    m_workspace.assets
+                ),
+                propertyName
+            );
         }
         catch (Exception exception)
         {
@@ -251,44 +256,50 @@ sealed partial class SceneEdits
 
         IReadOnlyDictionary<string, SerializationPropertySnapshot> afterByName = after.ToDictionary(
             static snapshot => snapshot.name,
-            StringComparer.Ordinal);
-        var deltas = new List<ScenePropertyValueDelta>();
+            StringComparer.Ordinal
+        );
+        List<ScenePropertyValueDelta> deltas = [];
         for (int index = 0; index < before.Count; index++)
         {
             SerializationPropertySnapshot previous = before[index];
             if (!afterByName.TryGetValue(previous.name, out SerializationPropertySnapshot? current))
+            {
                 continue;
+            }
             if (previous.data.Span.SequenceEqual(current.data.Span))
+            {
                 continue;
-            deltas.Add(new ScenePropertyValueDelta(
-                previous.name,
-                m_workspace.serialization.EncodePropertySnapshots([previous]),
-                m_workspace.serialization.EncodePropertySnapshots([current])));
+            }
+            deltas.Add(
+                new ScenePropertyValueDelta(
+                    previous.name,
+                    m_workspace.serialization.EncodePropertySnapshots([previous]),
+                    m_workspace.serialization.EncodePropertySnapshots([current])
+                )
+            );
         }
         if (deltas.Count == 0)
+        {
             return false;
+        }
         ScenePropertyHistoryData data = ScenePropertyHistoryData.Create(
-            target.identity.persistentId,
+            target.identity.persistentID,
             propertyName,
-            deltas);
+            deltas
+        );
         RecordWithRollback(
             () => m_interactions.history.RecordApplied(
                 historyName,
                 new EditorHistoryChange(
-                    SceneHistoryKinds.Property,
+                    SceneHistoryKinds.C_PROPERTY,
                     EditorHistoryPayload.FromBytes(data.Encode()),
-                    mergeKey)),
-            () => RestorePropertyDeltas(target, deltas, useAfter: false));
+                    mergeKey
+                )
+            ),
+            () => RestorePropertyDeltas(target, deltas, useAfter: false)
+        );
         return true;
     }
-
-    private static IReadOnlyList<SerializationPropertySnapshot> OrderPropertySnapshots(
-        IReadOnlyList<SerializationPropertySnapshot> snapshots,
-        string primaryPropertyName
-    )
-        => snapshots
-            .OrderBy(snapshot => string.Equals(snapshot.name, primaryPropertyName, StringComparison.Ordinal) ? 0 : 1)
-            .ToArray();
 
     private void RestoreSnapshots(
         EngineObject target,
@@ -296,9 +307,7 @@ sealed partial class SceneEdits
     ) {
         for (int index = 0; index < snapshots.Count; index++)
         {
-            RequirePropertyRestore(
-                target,
-                m_workspace.serialization.EncodePropertySnapshots([snapshots[index]]));
+            RequirePropertyRestore(target, m_workspace.serialization.EncodePropertySnapshots([snapshots[index]]));
         }
     }
 
@@ -308,7 +317,9 @@ sealed partial class SceneEdits
         bool useAfter
     ) {
         for (int index = 0; index < deltas.Count; index++)
+        {
             RequirePropertyRestore(target, useAfter ? deltas[index].after : deltas[index].before);
+        }
     }
 
     private void ChangeScalar(
@@ -321,19 +332,23 @@ sealed partial class SceneEdits
         string? mergeKey
     ) {
         if (string.Equals(before, after, StringComparison.Ordinal))
+        {
             return;
+        }
         RecordWithRollback(
             () =>
             {
                 setter(after);
                 SceneScalarHistoryData data = SceneScalarHistoryData.Create(
-                    target.identity.persistentId,
+                    target.identity.persistentID,
                     scalarKind,
                     before,
-                    after);
-                Record(historyName, SceneHistoryKinds.Scalar, data.Encode(), mergeKey);
+                    after
+                );
+                Record(historyName, SceneHistoryKinds.C_SCALAR, data.Encode(), mergeKey);
             },
-            () => setter(before));
+            () => setter(before)
+        );
     }
 
     private void RequirePropertyRestore(
@@ -344,15 +359,26 @@ sealed partial class SceneEdits
             target,
             data,
             m_workspace.serialization,
-            m_workspace.assets);
+            m_workspace.assets
+        );
         if (!result.success || result.ignoredCount != 0 || result.restoredCount == 0)
+        {
             throw new InvalidOperationException("Scene property compensation was incomplete.");
+        }
     }
+
+    private static IReadOnlyList<SerializationPropertySnapshot> OrderPropertySnapshots(
+        IReadOnlyList<SerializationPropertySnapshot> snapshots,
+        string primaryPropertyName
+    ) => snapshots
+        .OrderBy(snapshot => string.Equals(snapshot.name, primaryPropertyName, StringComparison.Ordinal) ? 0 : 1)
+        .ToArray();
 
     private static void RequireReferenceRestore(SceneReferenceRestoreResult result)
     {
         if (!result.succeeded)
+        {
             throw new InvalidOperationException(result.message);
+        }
     }
-
 }

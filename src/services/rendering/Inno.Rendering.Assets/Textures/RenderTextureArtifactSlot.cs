@@ -1,13 +1,14 @@
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
+using Inno.Extensibility.Types;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
 /// <summary>
 /// Declares an immutable source artifact that is compiled into one sampled texture slot.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("e1b8347a-2b49-5793-b693-f32aba02030e")]
+[StableTypeID("e1b8347a-2b49-5793-b693-f32aba02030e")]
 public readonly record struct RenderTextureArtifactSlot
 {
     /// <summary>
@@ -52,4 +53,3 @@ public readonly record struct RenderTextureArtifactSlot
     /// </summary>
     public TextureColorSpace colorSpace { get; }
 }
-

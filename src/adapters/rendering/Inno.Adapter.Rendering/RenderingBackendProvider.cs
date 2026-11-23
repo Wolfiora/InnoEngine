@@ -17,17 +17,19 @@ public abstract class RenderingBackendProvider
     /// <exception cref="ArgumentException">
     /// The identity is unassigned.
     /// </exception>
-    protected RenderingBackendProvider(RenderingBackendId id)
+    protected RenderingBackendProvider(RenderingBackendID id)
     {
         if (!id.isValid)
+        {
             throw new ArgumentException("A provider requires an assigned backend ID.", nameof(id));
+        }
         this.id = id;
     }
 
     /// <summary>
     /// Gets the stable implementation identity paired with its authoring tools.
     /// </summary>
-    public RenderingBackendId id { get; }
+    public RenderingBackendID id { get; }
 
     /// <summary>
     /// Creates a caller-owned device using backend-neutral surface options.

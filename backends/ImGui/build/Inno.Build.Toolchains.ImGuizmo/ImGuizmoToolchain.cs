@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Build.Toolchains;
 
 namespace Inno.Build.Toolchains.ImGuizmo;
@@ -20,7 +19,8 @@ public static class ImGuizmoToolchain
         "cimguizmo",
         "backends/ImGui/native/Inno.Native.ImGuizmo/Inno.Native.ImGuizmo.csproj",
         "backends/ImGui/build/Inno.Build.Toolchains.ImGuizmo/Inno.Build.Toolchains.ImGuizmo.csproj",
-        bindingDefinition: "backends/ImGui/native/Inno.Native.ImGuizmo/Bindings/bindings.props");
+        bindingDefinition: "backends/ImGui/native/Inno.Native.ImGuizmo/Bindings/bindings.props"
+    );
 
     /// <summary>
     /// Builds and installs the component for the explicitly selected native target.
@@ -31,18 +31,18 @@ public static class ImGuizmoToolchain
     /// <param name="imGui">
     /// The matching published ImGui product providing the native link dependency.
     /// </param>
-    /// <exception cref="ArgumentException">
-    /// The configuration is invalid.
-    /// </exception>
-    /// <exception cref="InvalidOperationException">
-    /// A native build process fails.
-    /// </exception>
     /// <param name="cancellationToken">
     /// Cancels child processes and prevents artifact installation after cancellation.
     /// </param>
     /// <returns>
     /// The validated gizmo library linked against the explicitly supplied ImGui product.
     /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The configuration is invalid.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// A native build process fails.
+    /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was canceled.
     /// </exception>
@@ -55,13 +55,18 @@ public static class ImGuizmoToolchain
         ArgumentNullException.ThrowIfNull(imGui);
         NativeToolchainSelection selection = context.RequireToolchain();
         NativeBuildRecipe sourceRecipe = CreateRecipe(context);
-        if (imGui.component != "cimgui" || imGui.targetId != selection.targetId)
+        if (imGui.component != "cimgui" || imGui.targetID != selection.targetID)
+        {
             throw new ArgumentException("The supplied ImGui product does not match this gizmo target.", nameof(imGui));
+        }
         NativeArtifactRole role = imGui.artifacts.Any(static artifact => artifact.role == NativeArtifactRole.ImportLibrary)
-            ? NativeArtifactRole.ImportLibrary : NativeArtifactRole.SharedLibrary;
+                                  ? NativeArtifactRole.ImportLibrary
+                                  : NativeArtifactRole.SharedLibrary;
         string[] libraries = imGui.artifacts.Where(artifact => artifact.role == role).Select(static artifact => artifact.file).ToArray();
         if (libraries.Length != 1)
+        {
             throw new InvalidOperationException("The ImGui product must provide exactly one link library.");
+        }
         string cimguiDir = Path.Combine(context.engineRoot, "extern", "cimgui");
         NativeBuildRecipe recipe = BindImGui(context, sourceRecipe, imGui);
         return await NativeArtifactPublisher.PublishAsync(
@@ -71,24 +76,38 @@ public static class ImGuizmoToolchain
                 @scoped,
                 output,
                 token
-            ) => {
-                string build = await NativeCMakeExecutor.BuildAsync(scoped, componentDescriptor,
-                    componentDescriptor.GetToolchainRoot(scoped.engineRoot), "cimguizmo",
-                    ["-DINNO_CIMGUI_SOURCE_DIR=" + cimguiDir,
-                        "-DINNO_CIMGUI_LIBRARY=" + libraries[0]], token).ConfigureAwait(false);
+            ) =>
+            {
+                string build = await NativeCMakeExecutor.BuildAsync(
+                    scoped,
+                    componentDescriptor,
+                    componentDescriptor.GetToolchainRoot(scoped.engineRoot),
+                    "cimguizmo",
+                    [
+                        "-DINNO_CIMGUI_SOURCE_DIR=" + cimguiDir,
+                        "-DINNO_CIMGUI_LIBRARY=" + libraries[0]
+                    ],
+                    token
+                ).ConfigureAwait(false);
                 string library = NativeCMakeExecutor.FindOutput(scoped, build, "*cimguizmo" + selection.sharedLibraryExtension);
                 string name = "libcimguizmo-" + scoped.configuration + selection.sharedLibraryExtension;
                 File.Copy(library, Path.Combine(output, name));
                 token.ThrowIfCancellationRequested();
-
-            }, cancellationToken, describeOutputs: static (
+            },
+            describeOutputs: static (
                 @scoped,
                 output
             ) =>
                 Directory.EnumerateFiles(output, "*", SearchOption.AllDirectories).Select(file =>
-                    new NativeArtifact(Path.GetRelativePath(output, file), file,
+                    new NativeArtifact(
+                        Path.GetRelativePath(output, file),
+                        file,
                         Path.GetRelativePath(output, file).StartsWith("Link" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
-                            ? NativeArtifactRole.ImportLibrary : NativeArtifactRole.SharedLibrary)).ToArray()).ConfigureAwait(false);
+                        ? NativeArtifactRole.ImportLibrary
+                        : NativeArtifactRole.SharedLibrary
+                    )).ToArray(),
+            cancellationToken: cancellationToken
+        ).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -114,15 +133,26 @@ public static class ImGuizmoToolchain
         ArgumentNullException.ThrowIfNull(context);
         NativeToolchainSelection selection = context.RequireToolchain();
         if (context.RequireComponentOptions(componentDescriptor).libraryKind != NativeLibraryKind.Shared)
+        {
             throw new NotSupportedException("This presentation recipe supports shared linkage only.");
+        }
         string source = componentDescriptor.GetToolchainRoot(context.engineRoot);
         string upstream = Path.Combine(context.engineRoot, "extern", "cimguizmo");
         string imGui = Path.Combine(context.engineRoot, "extern", "cimgui");
         CImguizmoBuildUtils.ValidateSource(upstream, imGui);
-        return NativeBuildRecipe.CreateForComponent(context, componentDescriptor,
-            "cimguizmo", selection.targetId, [upstream, imGui, Path.Combine(source, "CMakeLists.txt")],
-            ["dependency=cimgui"], [Path.Combine(source, "CImguizmoBuildConstants.cs"),
-                Path.Combine(source, "CImguizmoBuildUtils.cs"), Path.Combine(source, "ImGuizmoToolchain.cs")]);
+        return NativeBuildRecipe.CreateForComponent(
+            context,
+            componentDescriptor,
+            "cimguizmo",
+            selection.targetID,
+            [upstream, imGui, Path.Combine(source, "CMakeLists.txt")],
+            ["dependency=cimgui"],
+            [
+                Path.Combine(source, "CImguizmoBuildConstants.cs"),
+                Path.Combine(source, "CImguizmoBuildUtils.cs"),
+                Path.Combine(source, "ImGuizmoToolchain.cs")
+            ]
+        );
     }
 
     /// <summary>
@@ -155,13 +185,18 @@ public static class ImGuizmoToolchain
         ArgumentNullException.ThrowIfNull(sourceRecipe);
         ArgumentNullException.ThrowIfNull(imGui);
         NativeToolchainSelection selection = context.RequireToolchain();
-        if (imGui.component != "cimgui" || imGui.targetId != selection.targetId)
+        if (imGui.component != "cimgui" || imGui.targetID != selection.targetID)
+        {
             throw new ArgumentException("The supplied ImGui product does not match this gizmo target.", nameof(imGui));
+        }
         NativeArtifactRole role = imGui.artifacts.Any(static artifact => artifact.role == NativeArtifactRole.ImportLibrary)
-            ? NativeArtifactRole.ImportLibrary : NativeArtifactRole.SharedLibrary;
+                                  ? NativeArtifactRole.ImportLibrary
+                                  : NativeArtifactRole.SharedLibrary;
         string[] libraries = imGui.artifacts.Where(artifact => artifact.role == role).Select(static artifact => artifact.file).ToArray();
         if (libraries.Length != 1)
+        {
             throw new InvalidOperationException("The ImGui product must provide exactly one link library.");
+        }
         return sourceRecipe.WithDependency(NativeBuildInput.FromPath(context.engineRoot, libraries[0]), imGui.fingerprint);
     }
 }

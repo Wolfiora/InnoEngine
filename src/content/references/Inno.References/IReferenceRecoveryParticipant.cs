@@ -15,5 +15,4 @@ public interface IReferenceRecoveryParticipant : IGenerationChange
     /// The complete immutable set of candidate recovery changes; optional missing slots remain preserved.
     /// </param>
     void Validate(IReadOnlyList<ReferenceRecoveryChange> changes);
-
 }

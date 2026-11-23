@@ -1,16 +1,18 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Inno.Editor.Interactions;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
 using Inno.Scene;
 using Inno.Scene.Layers;
-using Ui = Inno.Editor.ImGui.ImGui;
+
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
+
 /// <summary>
 /// Draws the project layer picker used by GameObject target headers.
 /// </summary>
@@ -18,6 +20,7 @@ internal sealed class GameObjectLayerSelector
 {
     private readonly SceneProjectSettingsModule m_settings;
     private readonly SceneEdits m_edits;
+
     /// <summary>
     /// Creates a layer selector backed by the project Settings layer catalog.
     /// </summary>
@@ -34,8 +37,10 @@ internal sealed class GameObjectLayerSelector
         SceneProjectSettingsModule settings,
         SceneEdits edits
     ) {
-        m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
-        m_edits = edits ?? throw new ArgumentNullException(nameof(edits));
+        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(edits);
+        m_settings = settings;
+        m_edits = edits;
     }
 
     /// <summary>
@@ -57,18 +62,26 @@ internal sealed class GameObjectLayerSelector
     ) {
         ArgumentNullException.ThrowIfNull(targets);
         if (targets.Count == 0)
+        {
             return;
+        }
         GameObject target = targets[0];
         bool mixed = targets.Any(value => value.layer != target.layer);
         GameLayerCatalog stack = m_settings.layerStack;
         string preview = FormatLayerPreview(stack.GetName(target.layer));
         if (mixed)
-            preview = "Mixed values";
-        EditorUI.current.widgets.LabelChip("Layer", InspectorTargetStyle.layerLabel);
-        Ui.SameLine(0f, 0f);
-        float selectorWidth = MathF.Max(1f, width);
-        if (!EditorUI.current.widgets.BeginMenuSelector($"game_object_layer_{target.identity.persistentId:N}", preview, selectorWidth, selectorWidth))
         {
+            preview = "Mixed values";
+        }
+        EditorUI.current.widgets.LabelChip("Layer", InspectorTargetStyle.layerLabel);
+        Gui.SameLine(0f, 0f);
+        float selectorWidth = MathF.Max(1f, width);
+        if (!EditorUI.current.widgets.BeginMenuSelector(
+            $"game_object_layer_{target.identity.persistentID:N}",
+            preview,
+            selectorWidth,
+            selectorWidth
+        )) {
             return;
         }
 
@@ -79,11 +92,13 @@ internal sealed class GameObjectLayerSelector
             {
                 GameLayerDefinition definition = definitions[i];
                 string label = FormatLayerLabel(definition.layer, definition.name);
-                if (Ui.Selectable(label, definition.layer == target.layer))
+                if (Gui.Selectable(label, definition.layer == target.layer))
                 {
                     using EditorHistoryTransaction transaction = interactions.history.BeginTransaction("Set Selection Layer");
                     foreach (GameObject selected in targets)
+                    {
                         m_edits.SetGameObjectLayer(selected, definition.layer);
+                    }
                     transaction.Commit();
                 }
             }
@@ -104,9 +119,11 @@ internal sealed class GameObjectLayerSelector
     /// <see langword="true"/> when the layer can be selected.
     /// </returns>
     internal bool IsLayerDefined(GameLayer layer) => m_settings.layerStack.IsDefined(layer);
+
     private static string FormatLayerLabel(
         GameLayer layer,
         string name
     ) => $"({layer.index}) {name}";
+
     private static string FormatLayerPreview(string? name) => name ?? "Undefined";
 }

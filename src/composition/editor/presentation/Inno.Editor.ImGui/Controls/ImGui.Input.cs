@@ -1,8 +1,11 @@
 using System.Numerics;
 using Inno.Native.ImGui;
+
+using NativeKey = Inno.Native.ImGui.ImGuiKey;
 using RawImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Reads copied input values from the active Editor UI session.
 /// </summary>
@@ -16,7 +19,7 @@ public static partial class ImGui
     /// </returns>
     public static Vector2 GetMousePos()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.GetMousePos();
     }
 
@@ -36,7 +39,7 @@ public static partial class ImGui
         ImGuiMouseButton button,
         bool repeat = false
     ) {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.IsMouseClicked((int)button, repeat);
     }
 
@@ -51,7 +54,7 @@ public static partial class ImGui
     /// </returns>
     public static bool IsMouseReleased(ImGuiMouseButton button)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.IsMouseReleased((int)button);
     }
 
@@ -66,7 +69,7 @@ public static partial class ImGui
     /// </returns>
     public static bool IsMouseDoubleClicked(ImGuiMouseButton button)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.IsMouseDoubleClicked((int)button);
     }
 
@@ -81,8 +84,8 @@ public static partial class ImGui
     /// </returns>
     public static bool IsKeyDown(ImGuiKey key)
     {
-        EditorUiSession.current.EnsureDrawing();
-        return RawImGui.IsKeyDown((Inno.Native.ImGui.ImGuiKey)key);
+        EditorUISession.current.EnsureDrawing();
+        return RawImGui.IsKeyDown((NativeKey)key);
     }
 
     /// <summary>
@@ -101,8 +104,8 @@ public static partial class ImGui
         ImGuiKey key,
         bool repeat = true
     ) {
-        EditorUiSession.current.EnsureDrawing();
-        return RawImGui.IsKeyPressed((Inno.Native.ImGui.ImGuiKey)key, repeat);
+        EditorUISession.current.EnsureDrawing();
+        return RawImGui.IsKeyPressed((NativeKey)key, repeat);
     }
 
     /// <summary>
@@ -113,7 +116,7 @@ public static partial class ImGui
     /// </param>
     public static void ResetMouseDragDelta(ImGuiMouseButton button)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.ResetMouseDragDelta((int)button);
     }
 
@@ -125,7 +128,7 @@ public static partial class ImGui
     /// </param>
     public static void SetMouseCursor(ImGuiMouseCursor cursor)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.SetMouseCursor((int)cursor);
     }
 
@@ -149,7 +152,7 @@ public static partial class ImGui
         Vector2 maximum,
         bool clip = true
     ) {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.IsMouseHoveringRect(minimum, maximum, clip);
     }
 
@@ -164,7 +167,7 @@ public static partial class ImGui
     /// </returns>
     public static bool IsWindowHovered(ImGuiHoveredFlags flags = ImGuiHoveredFlags.None)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.IsWindowHovered((int)flags);
     }
 
@@ -179,7 +182,7 @@ public static partial class ImGui
     /// </returns>
     public static bool IsWindowFocused(ImGuiFocusedFlags flags = ImGuiFocusedFlags.None)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.IsWindowFocused((int)flags);
     }
 
@@ -191,7 +194,7 @@ public static partial class ImGui
     /// </returns>
     public static bool IsAnyItemHovered()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.IsAnyItemHovered();
     }
 
@@ -203,7 +206,7 @@ public static partial class ImGui
     /// </returns>
     public static bool IsAnyItemActive()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.IsAnyItemActive();
     }
 
@@ -215,7 +218,7 @@ public static partial class ImGui
     /// </returns>
     public static bool IsItemActivated()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.IsItemActivated();
     }
 
@@ -227,7 +230,7 @@ public static partial class ImGui
     /// </returns>
     public static bool IsItemDeactivatedAfterEdit()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.IsItemDeactivatedAfterEdit();
     }
 
@@ -239,7 +242,7 @@ public static partial class ImGui
     /// </param>
     public static void SetKeyboardFocusHere(int offset = 0)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.SetKeyboardFocusHere(offset);
     }
 
@@ -248,7 +251,7 @@ public static partial class ImGui
     /// </summary>
     public static void SetItemDefaultFocus()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.SetItemDefaultFocus();
     }
 
@@ -260,7 +263,7 @@ public static partial class ImGui
     /// </param>
     public static void SetClipboardText(string text)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.SetClipboardText(text);
     }
 
@@ -272,7 +275,7 @@ public static partial class ImGui
     /// </returns>
     public static int GetFrameCount()
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.GetFrameCount();
     }
 }

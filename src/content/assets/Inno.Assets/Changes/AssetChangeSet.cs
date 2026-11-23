@@ -22,7 +22,7 @@ public sealed class AssetChangeSet
         IReadOnlyList<AssetChange>? changes
     ) {
         this.revision = revision;
-        this.changes = changes ?? Array.Empty<AssetChange>();
+        this.changes = changes ?? [];
     }
 
     /// <summary>

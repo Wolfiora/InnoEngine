@@ -1,22 +1,21 @@
-using Inno.Extensibility.Reload;
 using System;
-using Inno.References;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Extensibility.Modules;
 using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
+using Inno.Extensibility.Types;
+using Inno.References;
 using Inno.Runtime;
 using Inno.Scene;
 using Inno.Scene.Components;
@@ -26,37 +25,35 @@ namespace Inno.Editor.Scene;
 internal sealed partial class EditorSceneWorkspace
 
 {
-
     IGenerationChange IEditorReloadParticipant.Capture(AssemblyReloadContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
         if (m_playModeSession is not null)
         {
-            return new WorkspaceReloadTransaction(
-                this,
-                Array.Empty<ReloadDocumentState>(),
-                preserveDocumentBaselines: true);
+            return new WorkspaceReloadTransaction(this, [], preserveDocumentBaselines: true);
         }
         ApplyPendingSourceChanges();
         var documents = new List<ReloadDocumentState>(m_documents.Count);
-        foreach ((Guid sceneId, SceneDocument document) in m_documents)
+        foreach ((Guid sceneID, SceneDocument document) in m_documents)
         {
             GameScene scene = document.scene;
             if (scene.isDestroyed)
+            {
                 continue;
+            }
             bool sourceAvailable = SynchronizeSource(scene, document);
-            bool wasDirty = !sourceAvailable || string.IsNullOrEmpty(document.sourcePath) ||
-                            !string.Equals(
-                                scene.name,
-                                GetAssetName(document.sourcePath),
-                                StringComparison.Ordinal) ||
-                            HasSerializedChanges(scene, document);
-            documents.Add(new ReloadDocumentState(
-                sceneId,
-                document.savedHash.ToArray(),
-                document.isDirty,
-                document.nextRefreshTimestamp,
-                wasDirty));
+            bool wasDirty = !sourceAvailable || string.IsNullOrEmpty(document.sourcePath)
+                            || !string.Equals(scene.name, GetAssetName(document.sourcePath), StringComparison.Ordinal)
+                            || HasSerializedChanges(scene, document);
+            documents.Add(
+                new ReloadDocumentState(
+                    sceneID,
+                    document.savedHash.ToArray(),
+                    document.isDirty,
+                    document.nextRefreshTimestamp,
+                    wasDirty
+                )
+            );
         }
         return new WorkspaceReloadTransaction(this, documents, preserveDocumentBaselines: false);
     }
@@ -70,9 +67,7 @@ internal sealed partial class EditorSceneWorkspace
         /// <summary>
         /// Prepares candidate state without changing the active generation.
         /// </summary>
-        public void PrepareForActivation()
-        {
-        }
+        public void PrepareForActivation() {}
 
         /// <summary>
         /// Applies the prepared state at the caller-controlled commit point.
@@ -81,11 +76,15 @@ internal sealed partial class EditorSceneWorkspace
         {
             workspace.SynchronizeReplacedScenes();
             if (preserveDocumentBaselines)
+            {
                 return;
+            }
             foreach (ReloadDocumentState state in documents)
             {
-                if (!workspace.m_documents.TryGetValue(state.sceneId, out SceneDocument? document))
+                if (!workspace.m_documents.TryGetValue(state.sceneID, out SceneDocument? document))
+                {
                     continue;
+                }
                 if (state.wasDirty)
                 {
                     document.isDirty = true;
@@ -95,17 +94,15 @@ internal sealed partial class EditorSceneWorkspace
 
                 document.savedHash = workspace.ComputeSceneHash(document.scene);
                 document.isDirty = false;
-                document.nextRefreshTimestamp = Stopwatch.GetTimestamp() +
-                                                (long)(Stopwatch.Frequency * C_DIRTY_REFRESH_SECONDS);
+                document.nextRefreshTimestamp = Stopwatch.GetTimestamp()
+                                                + (long)(Stopwatch.Frequency * C_DIRTY_REFRESH_SECONDS);
             }
         }
 
         /// <summary>
         /// Completes the committed operation and releases temporary state.
         /// </summary>
-        public void Complete()
-        {
-        }
+        public void Complete() {}
 
         /// <summary>
         /// Restores the state that existed before candidate activation began.
@@ -122,8 +119,10 @@ internal sealed partial class EditorSceneWorkspace
             workspace.SynchronizeReplacedScenes();
             foreach (ReloadDocumentState state in documents)
             {
-                if (!workspace.m_documents.TryGetValue(state.sceneId, out SceneDocument? document))
+                if (!workspace.m_documents.TryGetValue(state.sceneID, out SceneDocument? document))
+                {
                     continue;
+                }
                 document.savedHash = state.savedHash.ToArray();
                 document.isDirty = state.isDirty;
                 document.nextRefreshTimestamp = state.nextRefreshTimestamp;
@@ -132,11 +131,10 @@ internal sealed partial class EditorSceneWorkspace
     }
 
     private readonly record struct ReloadDocumentState(
-        Guid sceneId,
+        Guid sceneID,
         byte[] savedHash,
         bool isDirty,
         long nextRefreshTimestamp,
         bool wasDirty
     );
-
 }

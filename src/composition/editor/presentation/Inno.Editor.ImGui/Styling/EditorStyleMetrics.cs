@@ -21,14 +21,14 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Defines the largest supported editor UI zoom.
     /// </summary>
-    public const float C_MAX_ZOOM = 1.50f;
+    public const float C_MAX_ZOOM = 1.5f;
 
     /// <summary>
     /// Defines one keyboard or menu zoom increment.
     /// </summary>
-    public const float C_ZOOM_STEP = 0.10f;
+    public const float C_ZOOM_STEP = 0.1f;
 
-    private readonly WeakReference<EditorUiSession>? m_owner;
+    private readonly WeakReference<EditorUISession>? m_owner;
     private float m_requestedZoom = 1f;
     private bool m_requestedCompactMode;
     private float m_zoom = 1f;
@@ -37,9 +37,9 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Creates independent metrics whose changes apply immediately without a native context.
     /// </summary>
-    public EditorStyleMetrics() { }
+    public EditorStyleMetrics() {}
 
-    internal EditorStyleMetrics(EditorUiSession owner)
+    internal EditorStyleMetrics(EditorUISession owner)
     {
         ArgumentNullException.ThrowIfNull(owner);
         m_owner = new(owner);
@@ -61,99 +61,19 @@ public sealed class EditorStyleMetrics
     public float trendHeight => Scale(64f);
 
     /// <summary>
-    /// Requests comfortable or compact density without changing an active session frame.
-    /// </summary>
-    /// <param name="value">
-    /// <see langword="true"/> for compact density.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested density changed; owned drawing applies it at the next frame preparation.
-    /// </returns>
-    /// <exception cref="ObjectDisposedException">
-    /// The owning session has retired or is no longer available.
-    /// </exception>
-    /// <exception cref="InvalidOperationException">
-    /// The caller is not the owning session's thread.
-    /// </exception>
-    public bool SetCompactMode(bool value)
-    {
-        bool defer = ShouldDeferChanges();
-        bool changed = m_requestedCompactMode != value;
-        m_requestedCompactMode = value;
-        if (!defer)
-            CommitPending();
-        return changed;
-    }
-
-    /// <summary>
-    /// Requests a bounded zoom without changing metrics partway through an owned native frame.
-    /// </summary>
-    /// <param name="value">
-    /// The requested UI zoom multiplier.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested zoom changed; owned drawing applies it at the next frame preparation.
-    /// </returns>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name="value"/> is not finite.
-    /// </exception>
-    /// <exception cref="ObjectDisposedException">
-    /// The owning session has retired or is no longer available.
-    /// </exception>
-    /// <exception cref="InvalidOperationException">
-    /// The caller is not the owning session's thread.
-    /// </exception>
-    public bool SetZoom(float value)
-    {
-        if (!float.IsFinite(value))
-            throw new ArgumentOutOfRangeException(nameof(value), value, "UI zoom must be finite.");
-        bool defer = ShouldDeferChanges();
-        float clamped = Math.Clamp(value, C_MIN_ZOOM, C_MAX_ZOOM);
-        bool changed = MathF.Abs(m_requestedZoom - clamped) >= 0.0001f;
-        m_requestedZoom = clamped;
-        if (!defer)
-            CommitPending();
-        return changed;
-    }
-
-    /// <summary>
-    /// Increases editor UI zoom by one bounded increment.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when the requested zoom changed.
-    /// </returns>
-    public bool ZoomIn() => SetZoom(m_requestedZoom + C_ZOOM_STEP);
-
-    /// <summary>
-    /// Decreases editor UI zoom by one bounded increment.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when the requested zoom changed.
-    /// </returns>
-    public bool ZoomOut() => SetZoom(m_requestedZoom - C_ZOOM_STEP);
-
-    /// <summary>
-    /// Restores the baseline editor UI zoom.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when the requested zoom changed.
-    /// </returns>
-    public bool ResetZoom() => SetZoom(1f);
-
-    /// <summary>
     /// Gets global content scale.
     /// </summary>
-    public float fontScale => Scale(m_compactMode ? 1.10f : 1.20f);
+    public float fontScale => Scale(m_compactMode ? 1.1f : 1.2f);
 
     /// <summary>
     /// Gets disabled content opacity.
     /// </summary>
-    public float disabledAlpha => EditorPalette.opacityMedium;
+    public float disabledAlpha => EditorPalette.C_OPACITY_MEDIUM;
 
     /// <summary>
     /// Gets standard window padding.
     /// </summary>
-    public Vector2 windowPadding => ScaleVector(m_compactMode ? new(5f, 4f) : new(8f, 7f));
+    public Vector2 windowPadding => ScaleVector(m_compactMode ? new Vector2(5f, 4f) : new Vector2(8f, 7f));
 
     /// <summary>
     /// Gets standard window rounding.
@@ -168,38 +88,38 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets minimum window size.
     /// </summary>
-    public Vector2 windowMinimumSize => ScaleVector(new(30f, 30f));
+    public Vector2 windowMinimumSize => ScaleVector(new Vector2(30f, 30f));
 
     /// <summary>
     /// Gets standard frame padding.
     /// </summary>
-    public Vector2 framePadding => ScaleVector(m_compactMode ? new(4f, 1f) : new(7f, 3f));
+    public Vector2 framePadding => ScaleVector(m_compactMode ? new Vector2(4f, 1f) : new Vector2(7f, 3f));
 
     /// <summary>
     /// Gets the frame padding used while docked panel tabs are laid out.
     /// </summary>
-    public Vector2 panelTabFramePadding => ScaleVector(m_compactMode ? new(4f, 3f) : new(7f, 4f));
+    public Vector2 panelTabFramePadding => ScaleVector(m_compactMode ? new Vector2(4f, 3f) : new Vector2(7f, 4f));
 
     /// <summary>
     /// Gets the uniform content padding of editor context menus.
     /// </summary>
-    public Vector2 menuWindowPadding => ScaleVector(new(8f, 6f));
+    public Vector2 menuWindowPadding => ScaleVector(new Vector2(8f, 6f));
 
     /// <summary>
     /// Gets the uniform item padding of editor context menus.
     /// </summary>
-    public Vector2 menuFramePadding => ScaleVector(new(8f, 3f));
+    public Vector2 menuFramePadding => ScaleVector(new Vector2(8f, 3f));
 
     /// <summary>
     /// Gets the compact padding used by the search field at the top of editor context menus.
     /// Its vertical padding matches the half-spacing that menu entries add above and below a line.
     /// </summary>
-    public Vector2 menuSearchFramePadding => ScaleVector(new(8f, 1f));
+    public Vector2 menuSearchFramePadding => ScaleVector(new Vector2(8f, 1f));
 
     /// <summary>
     /// Gets the uniform spacing between editor context-menu items.
     /// </summary>
-    public Vector2 menuItemSpacing => ScaleVector(new(4f, 2f));
+    public Vector2 menuItemSpacing => ScaleVector(new Vector2(4f, 2f));
 
     /// <summary>
     /// Gets editor context-menu corner rounding.
@@ -214,22 +134,22 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets compact frame padding.
     /// </summary>
-    public Vector2 compactFramePadding => ScaleVector(new(4f, 1f));
+    public Vector2 compactFramePadding => ScaleVector(new Vector2(4f, 1f));
 
     /// <summary>
     /// Gets the compact inner padding of inline rename fields.
     /// </summary>
-    public Vector2 inlineRenameFramePadding => ScaleVector(new(4f, 0f));
+    public Vector2 inlineRenameFramePadding => ScaleVector(new Vector2(4f, 0f));
 
     /// <summary>
     /// Gets toolbar frame padding.
     /// </summary>
-    public Vector2 toolbarFramePadding => ScaleVector(new(5f, 1f));
+    public Vector2 toolbarFramePadding => ScaleVector(new Vector2(5f, 1f));
 
     /// <summary>
     /// Gets breadcrumb frame padding.
     /// </summary>
-    public Vector2 breadcrumbFramePadding => ScaleVector(new(6f, 1f));
+    public Vector2 breadcrumbFramePadding => ScaleVector(new Vector2(6f, 1f));
 
     /// <summary>
     /// Gets standard frame rounding.
@@ -239,22 +159,22 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets standard item spacing.
     /// </summary>
-    public Vector2 itemSpacing => ScaleVector(m_compactMode ? new(4f, 2f) : new(6f, 4f));
+    public Vector2 itemSpacing => ScaleVector(m_compactMode ? new Vector2(4f, 2f) : new Vector2(6f, 4f));
 
     /// <summary>
     /// Gets compact vertical item spacing.
     /// </summary>
-    public Vector2 compactItemSpacing => ScaleVector(new(4f, 2f));
+    public Vector2 compactItemSpacing => ScaleVector(new Vector2(4f, 2f));
 
     /// <summary>
     /// Gets standard inner item spacing.
     /// </summary>
-    public Vector2 itemInnerSpacing => ScaleVector(m_compactMode ? new(3f, 3f) : new(5f, 4f));
+    public Vector2 itemInnerSpacing => ScaleVector(m_compactMode ? new Vector2(3f, 3f) : new Vector2(5f, 4f));
 
     /// <summary>
     /// Gets standard table cell padding.
     /// </summary>
-    public Vector2 cellPadding => ScaleVector(m_compactMode ? new(3f, 1f) : new(5f, 3f));
+    public Vector2 cellPadding => ScaleVector(m_compactMode ? new Vector2(3f, 1f) : new Vector2(5f, 3f));
 
     /// <summary>
     /// Gets tree indentation.
@@ -299,7 +219,7 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets the inner padding of the persistent target header.
     /// </summary>
-    public Vector2 targetHeaderPadding => ScaleVector(new(6f, 4f));
+    public Vector2 targetHeaderPadding => ScaleVector(new Vector2(6f, 4f));
 
     /// <summary>
     /// Gets spacing between the two rows of the persistent target header.
@@ -314,22 +234,22 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets card body padding.
     /// </summary>
-    public Vector2 cardBodyPadding => ScaleVector(new(7f, 5f));
+    public Vector2 cardBodyPadding => ScaleVector(new Vector2(7f, 5f));
 
     /// <summary>
     /// Gets card header padding.
     /// </summary>
-    public Vector2 cardHeaderPadding => ScaleVector(new(4f, 1f));
+    public Vector2 cardHeaderPadding => ScaleVector(new Vector2(4f, 1f));
 
     /// <summary>
     /// Gets the shared padding around separator-style section titles.
     /// </summary>
-    public Vector2 sectionHeaderPadding => ScaleVector(new(20f, 3f));
+    public Vector2 sectionHeaderPadding => ScaleVector(new Vector2(20f, 3f));
 
     /// <summary>
     /// Gets the inner padding of a framed Inspector section.
     /// </summary>
-    public Vector2 sectionPadding => ScaleVector(new(7f, 5f));
+    public Vector2 sectionPadding => ScaleVector(new Vector2(7f, 5f));
 
     /// <summary>
     /// Gets the gap between an Inspector section legend and its interrupted top border.
@@ -364,7 +284,7 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets property label width ratio.
     /// </summary>
-    public float propertyLabelRatio => 0.40f;
+    public float propertyLabelRatio => 0.4f;
 
     /// <summary>
     /// Gets the default width of searchable editor popups.
@@ -389,7 +309,7 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets the inner padding of compact colored label chips.
     /// </summary>
-    public Vector2 labelChipPadding => ScaleVector(new(6f, 1f));
+    public Vector2 labelChipPadding => ScaleVector(new Vector2(6f, 1f));
 
     /// <summary>
     /// Gets the corner rounding of compact colored label chips.
@@ -399,7 +319,7 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets the compact inner padding of outlined type badges.
     /// </summary>
-    public Vector2 typeBadgePadding => ScaleVector(new(5f, 1f));
+    public Vector2 typeBadgePadding => ScaleVector(new Vector2(5f, 1f));
 
     /// <summary>
     /// Gets the corner rounding of outlined type badges.
@@ -496,6 +416,92 @@ public sealed class EditorStyleMetrics
     /// </summary>
     public float textDecorationOffset => Scale(2f);
 
+    /// <summary>
+    /// Requests comfortable or compact density without changing an active session frame.
+    /// </summary>
+    /// <param name="value">
+    /// <see langword="true"/> for compact density.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested density changed; owned drawing applies it at the next frame preparation.
+    /// </returns>
+    /// <exception cref="ObjectDisposedException">
+    /// The owning session has retired or is no longer available.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The caller is not the owning session's thread.
+    /// </exception>
+    public bool SetCompactMode(bool value)
+    {
+        bool defer = ShouldDeferChanges();
+        bool changed = m_requestedCompactMode != value;
+        m_requestedCompactMode = value;
+        if (!defer)
+        {
+            CommitPending();
+        }
+        return changed;
+    }
+
+    /// <summary>
+    /// Requests a bounded zoom without changing metrics partway through an owned native frame.
+    /// </summary>
+    /// <param name="value">
+    /// The requested UI zoom multiplier.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested zoom changed; owned drawing applies it at the next frame preparation.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="value"/> is not finite.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// The owning session has retired or is no longer available.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The caller is not the owning session's thread.
+    /// </exception>
+    public bool SetZoom(float value)
+    {
+        if (!float.IsFinite(value))
+        {
+            throw new ArgumentOutOfRangeException(nameof(value), value, "UI zoom must be finite.");
+        }
+        bool defer = ShouldDeferChanges();
+        float clamped = Math.Clamp(value, C_MIN_ZOOM, C_MAX_ZOOM);
+        bool changed = MathF.Abs(m_requestedZoom - clamped) >= 0.0001f;
+        m_requestedZoom = clamped;
+        if (!defer)
+        {
+            CommitPending();
+        }
+        return changed;
+    }
+
+    /// <summary>
+    /// Increases editor UI zoom by one bounded increment.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> when the requested zoom changed.
+    /// </returns>
+    public bool ZoomIn() => SetZoom(m_requestedZoom + C_ZOOM_STEP);
+
+    /// <summary>
+    /// Decreases editor UI zoom by one bounded increment.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> when the requested zoom changed.
+    /// </returns>
+    public bool ZoomOut() => SetZoom(m_requestedZoom - C_ZOOM_STEP);
+
+    /// <summary>
+    /// Restores the baseline editor UI zoom.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> when the requested zoom changed.
+    /// </returns>
+    public bool ResetZoom() => SetZoom(1f);
+
     internal void CommitPending()
     {
         m_zoom = m_requestedZoom;
@@ -505,9 +511,13 @@ public sealed class EditorStyleMetrics
     private bool ShouldDeferChanges()
     {
         if (m_owner is null)
+        {
             return false;
-        if (!m_owner.TryGetTarget(out EditorUiSession? owner))
-            throw new ObjectDisposedException(nameof(EditorUiSession));
+        }
+        if (!m_owner.TryGetTarget(out EditorUISession? owner))
+        {
+            throw new ObjectDisposedException(nameof(EditorUISession));
+        }
         return owner.shouldDeferStyleChanges;
     }
 

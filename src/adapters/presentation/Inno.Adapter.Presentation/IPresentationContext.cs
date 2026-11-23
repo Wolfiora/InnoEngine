@@ -12,18 +12,18 @@ public interface IPresentationContext : IRenderFrameGraphContributor, IDisposabl
     /// <summary>
     /// Resolves the platform window that owns a presentation viewport.
     /// </summary>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// The presentation viewport identity.
     /// </param>
-    /// <param name="windowId">
+    /// <param name="windowID">
     /// The owning platform window identity when available.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when the viewport has a live platform window.
     /// </returns>
-    bool TryGetWindowId(
-        uint viewportId,
-        out uint windowId
+    bool TryGetWindowID(
+        uint viewportID,
+        out uint windowID
     );
 
     /// <summary>
@@ -115,5 +115,4 @@ public interface IPresentationContext : IRenderFrameGraphContributor, IDisposabl
         PresentationTextureHandle texture,
         Vector2 size
     );
-
 }

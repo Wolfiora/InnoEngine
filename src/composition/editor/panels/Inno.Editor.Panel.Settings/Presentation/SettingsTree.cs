@@ -1,14 +1,17 @@
-using Inno.Editor.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
+using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
-using Ui = Inno.Editor.ImGui.ImGui;
+
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Settings;
+
 internal sealed class SettingsTree
 {
     private string? m_revealPath;
+
     internal void Reveal(string path)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
@@ -27,7 +30,9 @@ internal sealed class SettingsTree
             for (int i = 0; i < pages.Count; i++)
             {
                 if (Matches(pages[i], query))
+                {
                     DrawPage(pages[i], query, selectedPath, revealPath, select);
+                }
             }
         }
         finally
@@ -46,10 +51,14 @@ internal sealed class SettingsTree
         {
             SettingsPage page = pages[i];
             if (string.Equals(page.path, path, StringComparison.Ordinal))
+            {
                 return page;
+            }
             SettingsPage? nested = FindPage(page.children, path);
             if (nested is not null)
+            {
                 return nested;
+            }
         }
 
         return null;
@@ -60,17 +69,25 @@ internal sealed class SettingsTree
         string query
     ) {
         if (string.IsNullOrWhiteSpace(query))
+        {
             return pages.Count > 0 ? pages[0] : null;
+        }
         SettingsPage? fieldMatch = FindFirstFieldMatch(pages, query);
         if (fieldMatch is not null)
+        {
             return fieldMatch;
+        }
         for (int i = 0; i < pages.Count; i++)
         {
             if (MatchesSelf(pages[i], query))
+            {
                 return pages[i];
+            }
             SettingsPage? nested = FindFirstMatch(pages[i].children, query);
             if (nested is not null)
+            {
                 return nested;
+            }
         }
 
         return null;
@@ -85,43 +102,67 @@ internal sealed class SettingsTree
     ) {
         bool hasVisibleChildren = false;
         for (int i = 0; i < page.children.Count; i++)
+        {
             hasVisibleChildren |= Matches(page.children[i], query);
+        }
         if ((!string.IsNullOrWhiteSpace(query) && hasVisibleChildren) || (hasVisibleChildren && IsRevealed(page.path, revealPath)))
+        {
             EditorUI.current.widgets.SetNextTreeNodeOpen(true);
+        }
         TreeNodeResult result = EditorUI.current.widgets.TreeNode(
             $"settings_tree_{page.path}",
-            _ => Ui.Text(page.label),
-            new TreeNodeOptions { selected = string.Equals(page.path, selectedPath, StringComparison.Ordinal), isLeaf = !hasVisibleChildren, hideGuideLines = false }
+            _ => Gui.Text(page.label),
+            new TreeNodeOptions
+            {
+                selected = string.Equals(page.path, selectedPath, StringComparison.Ordinal),
+                isLeaf = !hasVisibleChildren,
+                hideGuideLines = false
+            }
         );
         if (result.isClicked)
+        {
             select(page);
+        }
         if (!result.isOpen)
+        {
             return;
+        }
         for (int i = 0; i < page.children.Count; i++)
         {
             if (Matches(page.children[i], query))
+            {
                 DrawPage(page.children[i], query, selectedPath, revealPath, select);
+            }
         }
 
-        Ui.TreePop();
+        Gui.TreePop();
     }
 
     private static bool IsRevealed(
         string pagePath,
         string? revealPath
-    ) => revealPath is not null && (string.Equals(pagePath, revealPath, StringComparison.Ordinal) || revealPath.StartsWith(pagePath + "/", StringComparison.Ordinal));
+    ) => revealPath is not null
+         && (string.Equals(pagePath, revealPath, StringComparison.Ordinal)
+             || revealPath.StartsWith(pagePath + "/", StringComparison.Ordinal));
+
     private static bool Matches(
         SettingsPage page,
         string query
     ) {
         if (string.IsNullOrWhiteSpace(query))
+        {
             return true;
+        }
         if (MatchesSelf(page, query))
+        {
             return true;
+        }
         for (int i = 0; i < page.children.Count; i++)
         {
             if (Matches(page.children[i], query))
+            {
                 return true;
+            }
         }
 
         return false;
@@ -131,38 +172,20 @@ internal sealed class SettingsTree
         SettingsPage page,
         string query
     ) {
-        if (page.label.Contains(
-            query,
-            StringComparison.OrdinalIgnoreCase
-        )
-            || page.path.Contains(
-            query,
-            StringComparison.OrdinalIgnoreCase
-        )
-            || page.description.Contains(
-            query,
-            StringComparison.OrdinalIgnoreCase
-        ))
-        {
+        if (page.label.Contains(query, StringComparison.OrdinalIgnoreCase)
+            || page.path.Contains(query, StringComparison.OrdinalIgnoreCase)
+            || page.description.Contains(query, StringComparison.OrdinalIgnoreCase)
+        ) {
             return true;
         }
 
         for (int i = 0; i < page.settings.Count; i++)
         {
             SettingsField setting = page.settings[i];
-            if (setting.label.Contains(
-                query,
-                StringComparison.OrdinalIgnoreCase
-            )
-                || (setting.section?.Contains(
-                query,
-                StringComparison.OrdinalIgnoreCase
-            ) ?? false)
-                || setting.description.Contains(
-                query,
-                StringComparison.OrdinalIgnoreCase
-            ))
-            {
+            if (setting.label.Contains(query, StringComparison.OrdinalIgnoreCase)
+                || (setting.section?.Contains(query, StringComparison.OrdinalIgnoreCase) ?? false)
+                || setting.description.Contains(query, StringComparison.OrdinalIgnoreCase)
+            ) {
                 return true;
             }
         }
@@ -180,26 +203,19 @@ internal sealed class SettingsTree
             for (int settingIndex = 0; settingIndex < page.settings.Count; settingIndex++)
             {
                 SettingsField setting = page.settings[settingIndex];
-                if (setting.label.Contains(
-                    query,
-                    StringComparison.OrdinalIgnoreCase
-                )
-                    || (setting.section?.Contains(
-                    query,
-                    StringComparison.OrdinalIgnoreCase
-                ) ?? false)
-                    || setting.description.Contains(
-                    query,
-                    StringComparison.OrdinalIgnoreCase
-                ))
-                {
+                if (setting.label.Contains(query, StringComparison.OrdinalIgnoreCase)
+                    || (setting.section?.Contains(query, StringComparison.OrdinalIgnoreCase) ?? false)
+                    || setting.description.Contains(query, StringComparison.OrdinalIgnoreCase)
+                ) {
                     return page;
                 }
             }
 
             SettingsPage? nested = FindFirstFieldMatch(page.children, query);
             if (nested is not null)
+            {
                 return nested;
+            }
         }
 
         return null;

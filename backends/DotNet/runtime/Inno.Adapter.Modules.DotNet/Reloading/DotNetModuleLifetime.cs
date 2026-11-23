@@ -7,9 +7,9 @@ namespace Inno.Adapter.Modules.DotNet;
 
 internal sealed class DotNetModuleLifetime : IModuleLifetime
 {
-    private AssemblyLoadContext? m_loadContext;
     private readonly string m_shadowDirectory;
     private readonly string m_description;
+    private AssemblyLoadContext? m_loadContext;
     private IAssemblyUnloadProbe? m_retirement;
 
     internal DotNetModuleLifetime(
@@ -22,11 +22,13 @@ internal sealed class DotNetModuleLifetime : IModuleLifetime
         m_description = description;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IAssemblyUnloadProbe BeginRetirement()
     {
         if (m_retirement is not null)
+        {
             return m_retirement;
+        }
         var reference = new WeakReference(m_loadContext!, trackResurrection: false);
         m_loadContext!.Unload();
         m_loadContext = null;

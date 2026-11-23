@@ -1,15 +1,16 @@
-using Inno.Core.Mathematics;
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Inno.Core.Mathematics;
+using Inno.Extensibility.Types;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
 /// <summary>
 /// Identifies a contiguous triangle-index range.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("5da29d2a-b38b-5d50-b8ee-10e00503c0c5")]
+[StableTypeID("5da29d2a-b38b-5d50-b8ee-10e00503c0c5")]
 public readonly record struct GeometrySection
 {
     /// <summary>
@@ -41,4 +42,3 @@ public readonly record struct GeometrySection
     /// </summary>
     public int indexCount { get; }
 }
-

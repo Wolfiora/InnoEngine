@@ -12,22 +12,6 @@ using YamlDotNet.RepresentationModel;
 
 namespace Inno.Tooling.Documentation.Indexing;
 
-internal sealed record DocumentationApiOrigin(
-    string page,
-    string id,
-    string path,
-    string source,
-    string editorialStatus,
-    string? scope,
-    string revision,
-    string[] surfaces
-);
-internal sealed record DocumentationComposedContent(
-    IReadOnlyDictionary<string, string> pages,
-    IReadOnlyDictionary<string, string> inputs,
-    IReadOnlyList<DocumentationApiOrigin> origins
-);
-
 internal static class DocumentationApiComposition
 {
     internal static DocumentationComposedContent Prepare(
@@ -35,54 +19,81 @@ internal static class DocumentationApiComposition
         DocumentationBinding binding,
         IReadOnlyDictionary<string, string> raw
     ) {
-        var pages = new SortedDictionary<string, string>(raw.ToDictionary(pair => pair.Key, pair => pair.Value), StringComparer.Ordinal);
-        var inputs = new SortedDictionary<string, string>(raw.ToDictionary(pair => pair.Key, pair => DocumentationMarkdown.Hash(pair.Value)), StringComparer.Ordinal);
-        var origins = new List<DocumentationApiOrigin>();
+        var pages = new SortedDictionary<string, string>(
+            raw.ToDictionary(pair => pair.Key, pair => pair.Value),
+            StringComparer.Ordinal
+        );
+        var inputs = new SortedDictionary<string, string>(
+            raw.ToDictionary(pair => pair.Key, pair => DocumentationMarkdown.Hash(pair.Value)),
+            StringComparer.Ordinal
+        );
+        List<DocumentationApiOrigin> origins = [];
         string registryPath = DocumentationApiFacts.Resolve(root, DocumentationApiContent.C_REGISTRY);
         if (!File.Exists(registryPath)) return new(pages, inputs, origins);
         string registryText = File.ReadAllText(registryPath);
         inputs.Add(DocumentationApiContent.C_REGISTRY, DocumentationMarkdown.Hash(registryText));
         DocumentationApiContentRegistry registry = JsonSerializer.Deserialize<DocumentationApiContentRegistry>(registryText)
-            ?? throw new InvalidDataException("Missing API content registry.");
-        if (registry.schema != "inno-api-content/1") throw new InvalidDataException("Unsupported API content registry.");
+                                                   ?? throw new InvalidDataException("Missing API content registry.");
+        if (registry.schema != "inno-api-content/1")
+        {
+            throw new InvalidDataException("Unsupported API content registry.");
+        }
         IReadOnlyDictionary<string, DocumentationApiFact[]> facts = DocumentationApiFacts.Read(root, binding);
-        var entries = registry.entries.ToDictionary(entry => entry.symbol, StringComparer.Ordinal);
+        Dictionary<string, DocumentationApiContentEntry> entries = registry.entries.ToDictionary(
+            entry => entry.symbol,
+            StringComparer.Ordinal
+        );
         var fragments = new Dictionary<string, DocumentationApiFragment>(StringComparer.Ordinal);
         foreach (DocumentationApiContentEntry entry in registry.entries)
         {
             DocumentationApiContent.RequireApiPath(root, entry.path);
-            if (!raw.TryGetValue(entry.path, out string? text)) throw new InvalidDataException("Registered API fragment is missing: " + entry.path);
+            if (!raw.TryGetValue(entry.path, out string? text))
+            {
+                throw new InvalidDataException("Registered API fragment is missing: " + entry.path);
+            }
             DocumentationApiFragment fragment = DocumentationApiFragment.Read(entry.path, text)
-                ?? throw new InvalidDataException("Registered API fragment has no symbol: " + entry.path);
-            if (fragment.symbol != entry.symbol) throw new InvalidDataException("API fragment identity does not match its registry: " + entry.path);
+                                                ?? throw new InvalidDataException("Registered API fragment has no symbol: " + entry.path);
+            if (fragment.symbol != entry.symbol)
+            {
+                throw new InvalidDataException("API fragment identity does not match its registry: " + entry.path);
+            }
             fragments.Add(entry.symbol, fragment);
             pages.Remove(entry.path);
         }
         foreach (string key in facts.Keys)
-            if (!entries.ContainsKey(key)) throw new InvalidDataException("API capture has no registered content: " + key);
+        {
+            if (!entries.ContainsKey(key))
+            {
+                throw new InvalidDataException("API capture has no registered content: " + key);
+            }
+        }
         var contractPages = new Dictionary<string, (string path, string title)>(StringComparer.Ordinal);
-        foreach (var page in pages)
+        foreach (KeyValuePair<string, string> page in pages)
         {
             YamlMappingNode metadata = DocumentationApiFragment.ReadMetadata(page.Key, page.Value);
             string uid = ((YamlScalarNode)metadata.Children[new YamlScalarNode("uid")]).Value!;
             string title = metadata.Children.TryGetValue(new YamlScalarNode("title"), out YamlNode? value)
-                ? ((YamlScalarNode)value).Value ?? uid : uid;
+                           ? ((YamlScalarNode)value).Value ?? uid
+                           : uid;
             contractPages.Add(uid, (page.Key, title));
         }
         foreach (DocumentationApiContentEntry typeEntry in entries.Values.Where(value => facts.ContainsKey(value.symbol)))
+        {
             contractPages.Add(fragments[typeEntry.symbol].uid, (typeEntry.path, typeEntry.title));
-        var byType = entries.Values.Where(entry => facts.ContainsKey(entry.symbol))
+        }
+        Dictionary<string, DocumentationApiContentEntry[]> byType = entries.Values.Where(entry => facts.ContainsKey(entry.symbol))
             .Where(entry => DocumentationApiPresentation.Parent(facts[entry.symbol][0]) is not null)
             .GroupBy(entry => DocumentationApiPresentation.Parent(facts[entry.symbol][0])!, StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.OrderBy(member => member.title, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(member => member.symbol, StringComparer.Ordinal).ToArray(), StringComparer.Ordinal);
-        foreach (var type in facts.Values)
+                .ThenBy(member => member.symbol, StringComparer.Ordinal)
+                .ToArray(), StringComparer.Ordinal);
+        foreach (DocumentationApiFact[] type in facts.Values)
         {
             DocumentationApiFact fact = type[0];
             DocumentationApiContentEntry entry = entries[fact.key];
             DocumentationApiFragment fragment = fragments[fact.key];
             string? parent = DocumentationApiPresentation.Parent(fact);
-            var ancestors = new List<DocumentationApiFragment>();
+            List<DocumentationApiFragment> ancestors = [];
             var visited = new HashSet<string>(StringComparer.Ordinal) { fact.key };
             for (string? ancestor = parent; ancestor is not null; ancestor = DocumentationApiPresentation.Parent(facts[ancestor][0]))
             {
@@ -90,32 +101,50 @@ internal static class DocumentationApiComposition
                 ancestors.Add(fragments[ancestor]);
             }
             string header = Header(fragment, type, entry.title, ancestors, out YamlMappingNode headerMetadata);
-            var text = new StringBuilder(header).Append("\n\n");
+            StringBuilder text = new StringBuilder(header).Append("\n\n");
             string body = fragment.body.Trim();
             string status = Status(fragment, type);
-            text.Append("> [!").Append(status.ToUpperInvariant()).Append("]\n> ").Append(status switch
-            {
-                "Synced" => "This explanation is synchronized from the source XML documentation.",
-                "Outdated" => "This authored explanation may be out of date.",
-                _ => "This explanation is maintained by its named author."
-            }).Append("\n\n");
+            text.Append("> [!").Append(status.ToUpperInvariant()).Append("]\n> ").Append(
+                status switch
+                {
+                    "Synced" => "This explanation is synchronized from the source XML documentation.",
+                    "Outdated" => "This authored explanation may be out of date.",
+                    _ => "This explanation is maintained by its named author."
+                }
+            ).Append("\n\n");
             text.Append("# ").Append(WebUtility.HtmlEncode(entry.title)).Append("\n\n");
             // Preserve XML element boundaries: multiple paragraphs in one summary are still one item.
             DocumentationXmlContent xml = DocumentationXml.Read(fact.documentation);
-            string summary = string.Join("\n\n", fragment.Summaries(fact.documentation).Select(part => "- " + part.Replace("\n", "\n  ", StringComparison.Ordinal)));
+            string summary = string.Join(
+                "\n\n",
+                fragment.Summaries(fact.documentation).Select(part => "- " + part.Replace("\n", "\n  ", StringComparison.Ordinal))
+            );
             if (summary.Length != 0)
+            {
                 text.Append("> ").Append(summary.Replace("\n", "\n> ", StringComparison.Ordinal)).Append("\n\n");
+            }
             if (headerMetadata.Children[new YamlScalarNode("contracts")] is YamlSequenceNode contracts && contracts.Children.Count != 0)
             {
                 text.Append("## Required contracts\n\n");
                 foreach (YamlScalarNode contract in contracts.Children)
                 {
-                    string[] target = (contract.Value ?? "").Split('#', 2);
-                    if (!contractPages.TryGetValue(target[0], out var destination))
+                    string[] target = (contract.Value ?? string.Empty).Split('#', 2);
+                    if (!contractPages.TryGetValue(target[0], out (string path, string title) destination))
+                    {
                         throw new InvalidDataException("Missing associated API contract: " + contract.Value);
+                    }
                     string relative = Path.GetRelativePath(Path.GetDirectoryName(entry.path)!, destination.path).Replace('\\', '/');
-                    text.Append("- [").Append(WebUtility.HtmlEncode(destination.title).Replace("[", "\\[", StringComparison.Ordinal).Replace("]", "\\]", StringComparison.Ordinal))
-                        .Append("](").Append(relative).Append(target.Length == 2 ? "#" + target[1] : "").Append(")\n");
+                    text
+                        .Append("- [")
+                        .Append(
+                            WebUtility.HtmlEncode(destination.title)
+                                .Replace("[", "\\[", StringComparison.Ordinal)
+                                .Replace("]", "\\]", StringComparison.Ordinal)
+                        )
+                        .Append("](")
+                        .Append(relative)
+                        .Append(target.Length == 2 ? "#" + target[1] : string.Empty)
+                        .Append(")\n");
                 }
                 text.Append('\n');
             }
@@ -125,7 +154,10 @@ internal static class DocumentationApiComposition
                 ["Project"] = "`" + fact.project + "`"
             };
             if (fact.baseType is not null) metadata.Add("Inherits", "`" + fact.baseType + "`");
-            if (fact.interfaces.Count != 0) metadata.Add("Implements", string.Join(", ", fact.interfaces.Select(value => "`" + value + "`")));
+            if (fact.interfaces.Count != 0)
+            {
+                metadata.Add("Implements", string.Join(", ", fact.interfaces.Select(value => "`" + value + "`")));
+            }
             if (fact.scope is not null) metadata.Add("Scope", fact.scope);
             text.AppendJoin("  \n", metadata.Select(item => "**" + item.Key + ":** " + item.Value)).Append("\n\n");
             AppendSymbol(text, type, fragment, entry.path, 2, "Declaration");
@@ -134,27 +166,50 @@ internal static class DocumentationApiComposition
             if (members.Length != 0)
             {
                 text.Append("\n## Members\n\n| Kind | Element | Description |\n| --- | --- | --- |\n");
-                foreach (var group in members.GroupBy(member => Category(facts[member.symbol][0])).OrderBy(group => group.Key, StringComparer.Ordinal))
-                {
+                foreach (IGrouping<string, DocumentationApiContentEntry> group in members
+                    .GroupBy(member => Category(facts[member.symbol][0]))
+                    .OrderBy(group => group.Key, StringComparer.Ordinal)
+                ) {
                     foreach (DocumentationApiContentEntry member in group)
                     {
                         DocumentationApiFact child = facts[member.symbol][0];
                         string label = member.title;
                         if (group.Count(other => other.title == member.title) > 1)
+                        {
                             label += child.id.Contains('(') ? child.id[child.id.IndexOf('(')..] : " (" + child.kind + ")";
-                        text.Append("| ").Append(group.Key).Append(" | [").Append(DocumentationApiPresentation.Cell(label)).Append("](")
+                        }
+                        text.Append("| ")
+                            .Append(group.Key)
+                            .Append(" | [")
+                            .Append(DocumentationApiPresentation.Cell(label))
+                            .Append("](")
                             .Append(Path.GetRelativePath(Path.GetDirectoryName(entry.path)!, member.path).Replace('\\', '/'))
-                            .Append(") | ").Append(fragments[member.symbol].TableDescription(child.documentation)).Append(" |\n");
+                            .Append(") | ")
+                            .Append(fragments[member.symbol].TableDescription(child.documentation))
+                            .Append(" |\n");
                     }
                 }
             }
-            text.Append("\n<!-- api-source -->\n[Source declaration](").Append(binding.repository).Append("/blob/").Append(fact.revision)
-                .Append('/').Append(fact.source).Append("#L").Append(fact.line).Append(")\n");
+            text.Append("\n<!-- api-source -->\n[Source declaration](")
+                .Append(binding.repository)
+                .Append("/blob/")
+                .Append(fact.revision)
+                .Append('/')
+                .Append(fact.source)
+                .Append("#L")
+                .Append(fact.line)
+                .Append(")\n");
             pages.Add(entry.path, text.ToString());
         }
         // Category tables and queries use the same effective summaries as type pages.
-        foreach (var category in DocumentationApiNavigation.Create(registry.entries, facts, DocumentationApiPresentation.ProjectDescriptions(root), fragments))
+        foreach (KeyValuePair<string, string> category in DocumentationApiNavigation.Create(
+            registry.entries,
+            facts,
+            DocumentationApiPresentation.ProjectDescriptions(root),
+            fragments
+        )) {
             pages[category.Key] = category.Value;
+        }
         DocumentationProjectGuides.Compose(root, binding, facts, fragments, entries, pages, inputs);
         return new(pages, inputs, origins);
 
@@ -167,29 +222,66 @@ internal static class DocumentationApiComposition
             string title
         ) {
             DocumentationApiFact fact = contexts[0];
-            text.Append('\n').Append('#', level).Append(' ').Append(title).Append("\n\n<a id=\"api-")
-                .Append(DocumentationMarkdown.Hash(fact.id)[..16]).Append("\"></a>\n<!-- api: ")
-                .Append(fact.id).Append(' ').Append(fact.signatureHash).Append(" -->\n\n");
-            foreach (var variants in contexts.GroupBy(value => value.signature, StringComparer.Ordinal))
+            text.Append('\n')
+                .Append('#', level)
+                .Append(' ')
+                .Append(title)
+                .Append("\n\n<a id=\"api-")
+                .Append(DocumentationMarkdown.Hash(fact.id)[..16])
+                .Append("\"></a>\n<!-- api: ")
+                .Append(fact.id)
+                .Append(' ')
+                .Append(fact.signatureHash)
+                .Append(" -->\n\n");
+            foreach (IGrouping<string, DocumentationApiFact> variants in contexts.GroupBy(value => value.signature, StringComparer.Ordinal))
             {
                 text.Append("<!-- api-declaration: ")
-                    .Append(fact.id).Append(' ').Append(DocumentationMarkdown.Hash(variants.Key)).Append(" -->\n\n```csharp\n")
-                    .Append(variants.Key).Append("\n```\n\n");
+                    .Append(fact.id)
+                    .Append(' ')
+                    .Append(DocumentationMarkdown.Hash(variants.Key))
+                    .Append(" -->\n\n```csharp\n")
+                    .Append(variants.Key)
+                    .Append("\n```\n\n");
             }
-            origins.Add(new(ownerPath, fact.id, fragment.path, fragment.source, Status(fragment, contexts), fact.scope, fact.revision,
-                contexts.Select(context => context.surface).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray()));
+            origins.Add(
+                new DocumentationApiOrigin(
+                    ownerPath,
+                    fact.id,
+                    fragment.path,
+                    fragment.source,
+                    Status(fragment, contexts),
+                    fact.scope,
+                    fact.revision,
+                    contexts.Select(context => context.surface).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray()
+                )
+            );
         }
     }
 
-    private static string Category(DocumentationApiFact fact) => fact.id.Contains(".#ctor", StringComparison.Ordinal) ? "Constructors"
-        : fact.kind switch { "NamedType" => "Nested types", "Method" => "Methods", "Property" => "Properties", "Event" => "Events", "Field" => "Fields", _ => "Members" };
+    private static string Category(DocumentationApiFact fact)
+        => fact.id.Contains(".#ctor", StringComparison.Ordinal)
+           ? "Constructors"
+           : fact.kind switch
+           {
+               "NamedType" => "Nested types",
+               "Method" => "Methods",
+               "Property" => "Properties",
+               "Event" => "Events",
+               "Field" => "Fields",
+               _ => "Members"
+           };
 
     private static string Status(
         DocumentationApiFragment fragment,
         DocumentationApiFact[] contexts
-    ) => fragment.source == "xml" ? "Synced"
-        : fragment.IsOutdated(fragment.StaleProse(DocumentationApiContent.Contract(contexts, normalizeXml: true),
-            DocumentationApiContent.Contract(contexts))) ? "Outdated" : "Authored";
+    ) => fragment.source == "xml"
+         ? "Synced"
+         : fragment.IsOutdated(
+             fragment.StaleProse(
+                 DocumentationApiContent.Contract(contexts, normalizeXml: true),
+                 DocumentationApiContent.Contract(contexts)
+             )
+         ) ? "Outdated" : "Authored";
 
     private static string Header(
         DocumentationApiFragment fragment,
@@ -206,25 +298,51 @@ internal static class DocumentationApiComposition
         metadata.Children[new YamlScalarNode("title")] = new YamlScalarNode(title);
         metadata.Children[new YamlScalarNode("owners")] = new YamlSequenceNode(new YamlScalarNode(contexts[0].project));
         metadata.Children[new YamlScalarNode("apiSurface")] = new YamlScalarNode(contexts[0].surface);
-        if (contexts[0].scope is string scope) metadata.Children[new YamlScalarNode("apiScope")] = new YamlScalarNode(scope);
-        else metadata.Children.Remove(new YamlScalarNode("apiScope"));
-        metadata.Children[new YamlScalarNode("apiSurfaces")] = new YamlSequenceNode(contexts.Select(context => context.surface)
-            .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).Select(value => new YamlScalarNode(value)));
+        if (contexts[0].scope is string scope)
+        {
+            metadata.Children[new YamlScalarNode("apiScope")] = new YamlScalarNode(scope);
+        }
+        else
+        {
+            metadata.Children.Remove(new YamlScalarNode("apiScope"));
+        }
+        metadata.Children[new YamlScalarNode("apiSurfaces")] = new YamlSequenceNode(
+            contexts.Select(context => context.surface)
+                .Distinct(StringComparer.Ordinal)
+                .Order(StringComparer.Ordinal)
+                .Select(value => new YamlScalarNode(value))
+        );
         var contracts = new SortedSet<string>(StringComparer.Ordinal);
         foreach (DocumentationApiFragment member in new[] { fragment }.Concat(ancestors))
+        {
             if (member.metadata.Children.TryGetValue(new YamlScalarNode("contracts"), out YamlNode? value))
             {
                 if (value is not YamlSequenceNode sequence || sequence.Children.Any(child => child is not YamlScalarNode))
+                {
                     throw new InvalidDataException("API contracts must be a sequence of stable references: " + member.path);
-                foreach (YamlScalarNode contract in sequence.Children) contracts.Add(contract.Value ?? "");
+                }
+                foreach (YamlScalarNode contract in sequence.Children)
+                {
+                    contracts.Add(contract.Value ?? string.Empty);
+                }
             }
-        foreach (DocumentationApiFragment ancestor in ancestors) contracts.Add(ancestor.uid);
+        }
+        foreach (DocumentationApiFragment ancestor in ancestors)
+        {
+            contracts.Add(ancestor.uid);
+        }
         if (!metadata.Children.ContainsKey(new YamlScalarNode("exampleMode")))
         {
-            DocumentationApiFragment? context = ancestors.FirstOrDefault(ancestor => ancestor.metadata.Children.ContainsKey(new YamlScalarNode("exampleMode")));
+            DocumentationApiFragment? context = ancestors.FirstOrDefault(
+                ancestor => ancestor.metadata.Children.ContainsKey(new YamlScalarNode("exampleMode"))
+            );
             if (context is not null)
+            {
                 foreach (string key in new[] { "exampleMode", "exampleProjects" })
+                {
                     metadata.Children[new YamlScalarNode(key)] = context.metadata.Children[new YamlScalarNode(key)];
+                }
+            }
         }
         metadata.Children[new YamlScalarNode("contracts")] = new YamlSequenceNode(contracts.Select(value => new YamlScalarNode(value)));
         using var writer = new StringWriter();
@@ -241,35 +359,69 @@ internal static class DocumentationApiComposition
         string pagePath,
         int level
     ) {
-        MarkdownDocument document = Markdown.Parse(body, new MarkdownPipelineBuilder().UsePreciseSourceLocation().EnableTrackTrivia().Build());
-        var changes = new List<(int start, int length, string value)>();
+        MarkdownDocument document = Markdown.Parse(
+            body,
+            new MarkdownPipelineBuilder().UsePreciseSourceLocation().EnableTrackTrivia().Build()
+        );
+        List<(int start, int length, string value)> changes = [];
         foreach (HeadingBlock heading in document.Descendants<HeadingBlock>())
         {
-            string prefix = new('#', Math.Min(6, heading.Level + level));
+            var prefix = new string('#', Math.Min(6, heading.Level + level));
             if (heading.IsSetext)
             {
                 string source = body.Substring(heading.Span.Start, heading.Span.Length).TrimEnd();
                 int underline = source.LastIndexOf('\n');
                 if (underline < 0) throw new InvalidDataException("Invalid setext source span: " + fragmentPath);
                 changes.Add((heading.Span.Start, 0, prefix + " "));
-                changes.Add((heading.Span.Start + underline, heading.Span.Length - underline, ""));
+                changes.Add((heading.Span.Start + underline, heading.Span.Length - underline, string.Empty));
             }
-            else changes.Add((heading.Span.Start, heading.Level, prefix));
+            else
+            {
+                changes.Add((heading.Span.Start, heading.Level, prefix));
+            }
         }
-        var links = document.Descendants<LinkInline>().Where(link => link.Url is not null && link.Reference is null)
+        IEnumerable<(string url, SourceSpan span)> links = document.Descendants<LinkInline>()
+            .Where(link => link.Url is not null && link.Reference is null)
             .Select(link => (url: link.Url!, span: link.UrlSpan))
-            .Concat(document.Descendants<LinkReferenceDefinition>().Where(link => link.Url is not null).Select(link => (url: link.Url!, span: link.UrlSpan)));
-        foreach (var link in links)
+            .Concat(
+                document
+                    .Descendants<LinkReferenceDefinition>()
+                    .Where(link => link.Url is not null)
+                    .Select(link => (url: link.Url!, span: link.UrlSpan))
+            );
+        foreach ((string url, SourceSpan span) link in links)
         {
             if (link.url.StartsWith('#') || Uri.TryCreate(link.url, UriKind.Absolute, out _)) continue;
-            if (link.span.Start < 0 || link.span.End < link.span.Start) throw new InvalidDataException("API link lacks a source span.");
+            if (link.span.Start < 0 || link.span.End < link.span.Start)
+            {
+                throw new InvalidDataException("API link lacks a source span.");
+            }
             string[] parts = link.url.Split('#', 2);
             string target = Path.GetFullPath(parts[0], Path.GetDirectoryName(Path.Combine(root, fragmentPath))!);
             string relative = Path.GetRelativePath(Path.GetDirectoryName(Path.Combine(root, pagePath))!, target).Replace('\\', '/');
-            changes.Add((link.span.Start, link.span.Length, relative + (parts.Length == 2 ? "#" + parts[1] : "")));
+            changes.Add((link.span.Start, link.span.Length, relative + (parts.Length == 2 ? "#" + parts[1] : string.Empty)));
         }
-        foreach (var change in changes.OrderByDescending(change => change.start))
+        foreach ((int start, int length, string value) change in changes.OrderByDescending(change => change.start))
+        {
             body = body.Remove(change.start, change.length).Insert(change.start, change.value);
+        }
         return body;
     }
 }
+
+internal sealed record DocumentationApiOrigin(
+    string page,
+    string id,
+    string path,
+    string source,
+    string editorialStatus,
+    string? scope,
+    string revision,
+    string[] surfaces
+);
+
+internal sealed record DocumentationComposedContent(
+    IReadOnlyDictionary<string, string> pages,
+    IReadOnlyDictionary<string, string> inputs,
+    IReadOnlyList<DocumentationApiOrigin> origins
+);

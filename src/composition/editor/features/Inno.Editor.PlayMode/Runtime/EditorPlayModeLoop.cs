@@ -7,7 +7,7 @@ namespace Inno.Editor.PlayMode;
 /// </summary>
 public sealed class EditorPlayModeLoop
 {
-    private static readonly IDisposable S_EMPTY_SCOPE = new EmptyScope();
+    private static readonly IDisposable EMPTY_SCOPE = new EmptyScope();
 
     private EditorPlayModeController? m_owner;
 
@@ -26,7 +26,7 @@ public sealed class EditorPlayModeLoop
     /// <returns>
     /// A scope that must be disposed after the current editor presentation phase completes.
     /// </returns>
-    public IDisposable EnterPresentationScope() => m_owner?.EnterPresentationScope() ?? S_EMPTY_SCOPE;
+    public IDisposable EnterPresentationScope() => m_owner?.EnterPresentationScope() ?? EMPTY_SCOPE;
 
     /// <summary>
     /// Drains the active Play session before the product tears down editor modules, history or presentation.
@@ -39,14 +39,18 @@ public sealed class EditorPlayModeLoop
     internal void Attach(EditorPlayModeController owner)
     {
         if (m_owner is not null && !ReferenceEquals(m_owner, owner))
+        {
             throw new InvalidOperationException("The editor host already owns an active Play Mode module.");
+        }
         m_owner = owner;
     }
 
     internal void Detach(EditorPlayModeController owner)
     {
         if (ReferenceEquals(m_owner, owner))
+        {
             m_owner = null;
+        }
     }
 
     private sealed class EmptyScope : IDisposable
@@ -54,8 +58,6 @@ public sealed class EditorPlayModeLoop
         /// <summary>
         /// Completes the inert presentation scope.
         /// </summary>
-        public void Dispose()
-        {
-        }
+        public void Dispose() {}
     }
 }

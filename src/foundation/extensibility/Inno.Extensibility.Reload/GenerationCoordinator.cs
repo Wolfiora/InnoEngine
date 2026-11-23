@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
-
 using Inno.Core.Execution;
+
 namespace Inno.Extensibility.Reload;
 
 /// <summary>
@@ -32,7 +32,9 @@ public sealed class GenerationCoordinator
         get
         {
             lock (m_sync)
+            {
                 return m_state;
+            }
         }
     }
 
@@ -44,7 +46,9 @@ public sealed class GenerationCoordinator
         get
         {
             lock (m_sync)
+            {
                 return m_failure;
+            }
         }
     }
 
@@ -63,11 +67,13 @@ public sealed class GenerationCoordinator
         _ = new AssemblyUnloadBarrier([], options);
         EnsureReady("configure unload verification");
         lock (m_sync)
+        {
             m_options = new AssemblyUnloadBarrierOptions
             {
                 collectionInterval = options.collectionInterval,
                 retentionTimeout = options.retentionTimeout
             };
+        }
     }
 
     /// <summary>
@@ -83,15 +89,23 @@ public sealed class GenerationCoordinator
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(operation);
         if (state == GenerationState.AwaitingCollection)
+        {
             _ = Advance();
+        }
         lock (m_sync)
         {
             if (m_failure is not null)
+            {
                 throw new InvalidOperationException($"Cannot {operation}: the generation owner is Faulted and must restart.", m_failure);
+            }
             if (m_state != GenerationState.Ready)
+            {
                 throw new InvalidOperationException($"Cannot {operation}: generation state is {m_state}.");
+            }
             if (m_readers > 0)
+            {
                 throw new InvalidOperationException($"Cannot {operation}: an owner operation holds a generation read lease.");
+            }
         }
     }
 
@@ -111,11 +125,15 @@ public sealed class GenerationCoordinator
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(operation);
         if (state == GenerationState.AwaitingCollection)
+        {
             _ = Advance();
+        }
         lock (m_sync)
         {
             if (m_state != GenerationState.Ready || m_failure is not null)
+            {
                 throw new InvalidOperationException($"Cannot {operation}: generation state is {m_state}.", m_failure);
+            }
             m_readers++;
             return new ReadLease(this);
         }
@@ -130,16 +148,16 @@ public sealed class GenerationCoordinator
     /// <returns>
     /// A scope for the entire operation, or a borrowed scope inside publication on its own control thread.
     /// </returns>
-    /// <remarks>
-    /// Published data remains readable while old contexts await collection. This scope does not authorize Play,
-    /// Build, Export or a new generation transaction; those owners must still use their strict admission boundary.
-    /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// Another thread is publishing or the owner is Faulted.
     /// </exception>
     /// <exception cref="RetirementPendingException">
     /// Retirement has failed without releasing its dependent owners.
     /// </exception>
+    /// <remarks>
+    /// Published data remains readable while old contexts await collection. This scope does not authorize Play,
+    /// Build, Export or a new generation transaction; those owners must still use their strict admission boundary.
+    /// </remarks>
     public IDisposable AcquireOperation(string operation)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(operation);
@@ -147,11 +165,15 @@ public sealed class GenerationCoordinator
         lock (m_sync)
         {
             if (m_failure is not null)
+            {
                 throw new InvalidOperationException($"Cannot {operation}: the generation owner is Faulted.", m_failure);
+            }
             if (m_state == GenerationState.Transitioning)
             {
                 if (m_publicationThread != Environment.CurrentManagedThreadId)
+                {
                     throw new InvalidOperationException($"Cannot {operation}: another thread is publishing a generation.");
+                }
                 return new ReadLease(null);
             }
             m_readers++;
@@ -182,10 +204,14 @@ public sealed class GenerationCoordinator
         lock (m_sync)
         {
             if (m_failure is not null)
+            {
                 throw new InvalidOperationException($"Cannot {operation}: restart the Faulted generation owner.", m_failure);
+            }
             reservation = null;
             if (m_state != GenerationState.Ready || m_readers != 0)
+            {
                 return false;
+            }
             m_state = GenerationState.Transitioning;
             m_publicationThread = Environment.CurrentManagedThreadId;
             reservation = new ChangeReservation(this);
@@ -205,10 +231,14 @@ public sealed class GenerationCoordinator
         lock (m_sync)
         {
             if (probe.isCompleted || m_pending.Contains(probe))
+            {
                 return;
+            }
             m_pending.Add(probe);
             if (m_state == GenerationState.Ready)
+            {
                 m_state = GenerationState.AwaitingCollection;
+            }
         }
     }
 
@@ -246,12 +276,16 @@ public sealed class GenerationCoordinator
         ArgumentNullException.ThrowIfNull(changes);
         IGenerationChange[] snapshot = changes.ToArray();
         if (snapshot.Any(static change => change is null))
+        {
             throw new ArgumentException("Generation changes cannot contain null entries.", nameof(changes));
+        }
         EnsureReady(operation);
         lock (m_sync)
         {
             if (m_state != GenerationState.Ready || m_readers != 0 || m_failure is not null)
+            {
                 throw new InvalidOperationException($"Cannot {operation}: generation admission changed while preparing the transaction.");
+            }
             m_state = GenerationState.Transitioning;
             m_publicationThread = Environment.CurrentManagedThreadId;
         }
@@ -261,18 +295,26 @@ public sealed class GenerationCoordinator
         try
         {
             while (preparedCount < snapshot.Length)
+            {
                 snapshot[preparedCount++].PrepareForActivation();
+            }
             publication.Activate();
             foreach (IGenerationChange change in snapshot)
+            {
                 change.Apply();
+            }
             committed = true;
             TProbe probe = publication.Complete();
             TrackRetirement(probe);
             List<Exception> cleanup = [];
             foreach (IGenerationChange change in snapshot)
+            {
                 Attempt(change.Complete, cleanup);
+            }
             if (cleanup.Count > 0)
+            {
                 throw new AggregateException($"Generation '{operation}' committed but retirement cleanup failed.", cleanup);
+            }
             return probe;
         }
         catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
@@ -292,21 +334,32 @@ public sealed class GenerationCoordinator
             try
             {
                 for (int index = preparedCount - 1; index >= 0; index--)
+                {
                     Attempt(snapshot[index].RollbackStructure, rollback);
+                }
                 Attempt(publication.Rollback, rollback);
                 for (int index = preparedCount - 1; index >= 0; index--)
+                {
                     Attempt(snapshot[index].RestorePreviousState, rollback);
+                }
             }
             catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
             {
                 retirementBlocked = true;
-                var combined = new AggregateException($"Generation '{operation}' failed and rollback remains pending.", error, failure);
+                var combined = new AggregateException(
+                    $"Generation '{operation}' failed and rollback remains pending.",
+                    error,
+                    failure
+                );
                 RetainFailedRetirement(combined, (publication, snapshot));
                 throw combined;
             }
             if (rollback.Count > 0)
             {
-                var failure = new AggregateException($"Generation '{operation}' failed and rollback was incomplete.", [error, .. rollback]);
+                var failure = new AggregateException(
+                    $"Generation '{operation}' failed and rollback was incomplete.",
+                    [error, .. rollback]
+                );
                 Fault(failure);
                 throw failure;
             }
@@ -316,12 +369,16 @@ public sealed class GenerationCoordinator
         finally
         {
             if (!retirementBlocked)
+            {
                 Array.Clear(snapshot);
+            }
             lock (m_sync)
             {
                 m_publicationThread = 0;
                 if (m_state != GenerationState.Faulted)
+                {
                     m_state = m_pending.Count == 0 ? GenerationState.Ready : GenerationState.AwaitingCollection;
+                }
             }
         }
     }
@@ -344,9 +401,13 @@ public sealed class GenerationCoordinator
         lock (m_sync)
         {
             if (m_failure is not null)
+            {
                 throw new InvalidOperationException("Generation retirement failed; restart the host.", m_failure);
+            }
             if (m_state == GenerationState.Transitioning || m_advancing)
+            {
                 return false;
+            }
             if (m_pending.Count == 0)
             {
                 m_state = GenerationState.Ready;
@@ -367,7 +428,9 @@ public sealed class GenerationCoordinator
                     m_barrier = null;
                 }
                 if (m_pending.Count == 0)
+                {
                     m_state = GenerationState.Ready;
+                }
                 return m_pending.Count == 0;
             }
         }
@@ -379,7 +442,9 @@ public sealed class GenerationCoordinator
         finally
         {
             lock (m_sync)
+            {
                 m_advancing = false;
+            }
         }
     }
 
@@ -421,20 +486,34 @@ public sealed class GenerationCoordinator
     /// <summary>
     /// Rejects dependency destruction after a generation owner reported unfinished retirement.
     /// </summary>
+    /// <exception cref="RetirementPendingException">
+    /// A failed generation still owns live work; its dependencies must remain owned until host restart.
+    /// </exception>
     /// <remarks>
     /// Ordinary terminal cleanup failures do not prevent remaining cleanup. Unfinished retirement remains
     /// blocking even if an earlier ordinary error is the primary diagnostic failure.
     /// </remarks>
-    /// <exception cref="RetirementPendingException">
-    /// A failed generation still owns live work; its dependencies must remain owned until host restart.
-    /// </exception>
     public void EnsureRetirementSafe()
     {
         lock (m_sync)
         {
             if (m_retirementFailure is not null)
+            {
                 throw m_retirementFailure;
+            }
         }
+    }
+
+    private void RetainFailedRetirement(
+        Exception failure,
+        object transaction
+    ) {
+        lock (m_sync)
+        {
+            m_retainedTransaction = transaction;
+        }
+        Fault(failure);
+        GC.KeepAlive(m_retainedTransaction);
     }
 
     private static void Attempt(
@@ -448,23 +527,18 @@ public sealed class GenerationCoordinator
         catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
         {
             if (failures.Count > 0)
-                throw new AggregateException("Generation retirement remains pending after earlier cleanup failures.", [.. failures, pendingRetirement]);
+            {
+                throw new AggregateException(
+                    "Generation retirement remains pending after earlier cleanup failures.",
+                    [.. failures, pendingRetirement]
+                );
+            }
             throw;
         }
         catch (Exception exception)
         {
             failures.Add(exception);
         }
-    }
-
-    private void RetainFailedRetirement(
-        Exception failure,
-        object transaction
-    ) {
-        lock (m_sync)
-            m_retainedTransaction = transaction;
-        Fault(failure);
-        GC.KeepAlive(m_retainedTransaction);
     }
 
     private sealed class ChangeReservation(GenerationCoordinator owner) : IDisposable
@@ -478,12 +552,16 @@ public sealed class GenerationCoordinator
         {
             GenerationCoordinator? current = Interlocked.Exchange(ref m_owner, null);
             if (current is null)
+            {
                 return;
+            }
             lock (current.m_sync)
             {
                 current.m_publicationThread = 0;
                 if (current.m_state != GenerationState.Faulted)
+                {
                     current.m_state = current.m_pending.Count == 0 ? GenerationState.Ready : GenerationState.AwaitingCollection;
+                }
             }
         }
     }
@@ -491,6 +569,7 @@ public sealed class GenerationCoordinator
     private sealed class ReadLease(GenerationCoordinator? owner) : IDisposable
     {
         private GenerationCoordinator? m_owner = owner;
+
         /// <summary>
         /// Releases this owner's registrations and resources exactly once.
         /// </summary>
@@ -498,9 +577,13 @@ public sealed class GenerationCoordinator
         {
             GenerationCoordinator? current = Interlocked.Exchange(ref m_owner, null);
             if (current is null)
+            {
                 return;
+            }
             lock (current.m_sync)
+            {
                 current.m_readers--;
+            }
         }
     }
 }

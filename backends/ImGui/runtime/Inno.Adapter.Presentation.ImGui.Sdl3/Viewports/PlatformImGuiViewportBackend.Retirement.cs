@@ -15,16 +15,25 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend
             ViewportWindowData data = m_retiringViewports[index];
             Task retirement = data.retirement!;
             if (!retirement.IsCompleted)
+            {
                 continue;
+            }
             if (!retirement.IsCompletedSuccessfully)
+            {
                 throw new RetirementPendingException("Rendering failed to release a detached SDL window.", retirement.Exception);
+            }
             DestroyRetiredWindow(data);
             m_retiringViewports.RemoveAt(index);
         }
         if (m_callbackFailure is Exception callbackFailure)
         {
             if (m_retiringViewports.Count != 0)
-                throw new RetirementPendingException("An ImGui callback failed; its renderer still borrows a detached window.", callbackFailure);
+            {
+                throw new RetirementPendingException(
+                    "An ImGui callback failed; its renderer still borrows a detached window.",
+                    callbackFailure
+                );
+            }
             m_callbackFailure = null;
             throw new InvalidOperationException("An ImGui window callback failed and its resources have retired.", callbackFailure);
         }
@@ -33,7 +42,9 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend
     private static void DestroyViewportWindow(ViewportWindowData data)
     {
         if (data.detached)
+        {
             return;
+        }
         data.detached = true;
         data.drawable = false;
         data.owner.m_retiringViewports.Add(data);
@@ -41,8 +52,8 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend
         {
             data.owner.m_application.ReleaseWindow(data.registeredWindow);
             data.retirement = data.externalRenderer is not null && data.externalTarget is not null
-                ? data.externalRenderer.RetireViewport(data.externalTarget)
-                : Task.CompletedTask;
+                              ? data.externalRenderer.RetireViewportAsync(data.externalTarget)
+                              : Task.CompletedTask;
         }
         catch (Exception failure)
         {
@@ -52,23 +63,25 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend
         {
             data.viewport = default;
             if (data.gcHandle.IsAllocated)
+            {
                 data.gcHandle.Free();
+            }
         }
     }
 
     private static void DestroyRetiredWindow(ViewportWindowData data)
     {
-        if (data.fontTexture != null)
+        if (data.fontTexture is not null)
         {
             SDL.Raw.DestroyTexture(data.fontTexture);
             data.fontTexture = null;
         }
-        if (data.renderer != null)
+        if (data.renderer is not null)
         {
             SDL.Raw.DestroyRenderer(data.renderer);
             data.renderer = null;
         }
-        if (data.window != null)
+        if (data.window is not null)
         {
             SDL.Raw.DestroyWindow(data.window);
             data.window = null;

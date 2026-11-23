@@ -9,12 +9,10 @@ public enum ProcessOwnerState
     /// The matching process lifetime is still running.
     /// </summary>
     Active,
-
     /// <summary>
     /// The process exited or its identifier now belongs to another lifetime.
     /// </summary>
     Exited,
-
     /// <summary>
     /// Ownership cannot be verified; dependent files must remain protected.
     /// </summary>

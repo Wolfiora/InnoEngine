@@ -9,13 +9,12 @@ namespace Inno.Assets.Pipeline;
 internal sealed class AssetSourceMountRecovery(
     AssetPipeline owner,
     AssetSourceMountTransaction transaction
-)
-    : IReferenceRecoveryParticipant
+) : IReferenceRecoveryParticipant
 {
     /// <summary>
     /// Keeps the previous loader and its canonical instances intact until provisional publication.
     /// </summary>
-    public void PrepareForActivation() { }
+    public void PrepareForActivation() {}
 
     /// <summary>
     /// Publishes the candidate identity domain before shared reference slots are resolved.
@@ -34,13 +33,18 @@ internal sealed class AssetSourceMountRecovery(
         {
             ReferenceResolution result = change.resolution;
             if (result.state is ReferenceResolutionState.Invalid or ReferenceResolutionState.TypeMismatch)
+            {
                 throw new InvalidDataException(result.diagnostic ?? "Asset recovery has an invalid identity.");
-            if (result.state == ReferenceResolutionState.Missing &&
-                transaction.candidateLoader.TryGetInfo(result.descriptor.targetPersistentId, out AssetInfo? info) &&
-                info!.status == AssetImportStatus.Imported &&
-                !transaction.candidateLoader.IsSourceBackedTypeUnavailable(
-                    result.descriptor.targetPersistentId))
-                throw new InvalidDataException($"Imported asset '{info.assetPath}' could not recover its canonical state: {result.diagnostic}");
+            }
+            if (result.state == ReferenceResolutionState.Missing
+                && transaction.candidateLoader.TryGetInfo(result.descriptor.targetPersistentID, out AssetInfo? info)
+                && info!.status == AssetImportStatus.Imported
+                && !transaction.candidateLoader.IsSourceBackedTypeUnavailable(result.descriptor.targetPersistentID)
+            ) {
+                throw new InvalidDataException(
+                    $"Imported asset '{info.assetPath}' could not recover its canonical state: {result.diagnostic}"
+                );
+            }
         }
     }
 
@@ -61,5 +65,5 @@ internal sealed class AssetSourceMountRecovery(
     /// <summary>
     /// Finishes compensation without decoding old objects through candidate serializers.
     /// </summary>
-    public void RestorePreviousState() { }
+    public void RestorePreviousState() {}
 }

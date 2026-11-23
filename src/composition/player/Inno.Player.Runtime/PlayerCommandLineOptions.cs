@@ -8,7 +8,7 @@ namespace Inno.Player.Runtime;
 /// </summary>
 public sealed class PlayerCommandLineOptions
 {
-    private PlayerCommandLineOptions() { }
+    private PlayerCommandLineOptions() {}
 
     /// <summary>
     /// Gets an optional positive bounded run length.
@@ -48,6 +48,7 @@ public sealed class PlayerCommandLineOptions
             windowVisible = visible
         };
     }
+
     private static void ParseValues(
         string[] arguments,
         out int? smokeFrameLimit,
@@ -61,13 +62,15 @@ public sealed class PlayerCommandLineOptions
         for (int index = 0; index < arguments.Length; index += 2)
         {
             if (index + 1 >= arguments.Length)
+            {
                 throw Usage();
+            }
             if (string.Equals(arguments[index], "--smoke-frames", StringComparison.Ordinal))
             {
                 if (smokeFrameLimit is not null
                     || !int.TryParse(arguments[index + 1], out int frameCount)
-                    || frameCount <= 0)
-                {
+                    || frameCount <= 0
+                ) {
                     throw Usage();
                 }
                 smokeFrameLimit = frameCount;
@@ -76,14 +79,18 @@ public sealed class PlayerCommandLineOptions
             if (string.Equals(arguments[index], "--graphics-api", StringComparison.Ordinal))
             {
                 if (graphicsApi is not null || !TryParseGraphicsApi(arguments[index + 1], out GraphicsApi api))
+                {
                     throw Usage();
+                }
                 graphicsApi = api;
                 continue;
             }
             if (string.Equals(arguments[index], "--window-visible", StringComparison.Ordinal))
             {
                 if (visibilitySpecified || !bool.TryParse(arguments[index + 1], out windowVisible))
+                {
                     throw Usage();
+                }
                 visibilitySpecified = true;
                 continue;
             }
@@ -102,16 +109,18 @@ public sealed class PlayerCommandLineOptions
         }
         api = value.ToLowerInvariant() switch
         {
-            "d3d11" => GraphicsApi.Direct3D11,
-            "d3d12" => GraphicsApi.Direct3D12,
-            "metal" => GraphicsApi.Metal,
-            "vulkan" => GraphicsApi.Vulkan,
-            "opengl" => GraphicsApi.OpenGL,
+            "d3d11" => GraphicsApi.direct3D11,
+            "d3d12" => GraphicsApi.direct3D12,
+            "metal" => GraphicsApi.metal,
+            "vulkan" => GraphicsApi.vulkan,
+            "opengl" => GraphicsApi.openGL,
             _ => GraphicsApi.TryParse(value, out GraphicsApi parsed) ? parsed : default
         };
-        return api.isValid && api != GraphicsApi.Noop;
+        return api.isValid && api != GraphicsApi.noop;
     }
 
-    private static ArgumentException Usage() => new(
-        "Usage: Player [--graphics-api <renderer-id>] [--window-visible <true|false>] [--smoke-frames <positive-count>].");
+    private static ArgumentException Usage()
+        => new(
+            "Usage: Player [--graphics-api <renderer-id>] [--window-visible <true|false>] [--smoke-frames <positive-count>]."
+        );
 }

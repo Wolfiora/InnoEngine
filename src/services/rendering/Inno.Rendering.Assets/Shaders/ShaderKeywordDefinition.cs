@@ -1,19 +1,19 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Scripting.Api;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
 /// <summary>
 /// Declares one static shader keyword that may produce compiled variants.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("551868bd-dbca-5da5-9dd8-d7e6e2ca7983")]
+[StableTypeID("551868bd-dbca-5da5-9dd8-d7e6e2ca7983")]
 public struct ShaderKeywordDefinition
 {
     /// <summary>
@@ -45,4 +45,3 @@ public struct ShaderKeywordDefinition
     /// </summary>
     public string[] options { get; set; }
 }
-

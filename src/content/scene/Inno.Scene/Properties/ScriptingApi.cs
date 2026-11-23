@@ -1,20 +1,11 @@
-using Inno.Scripting.Api;
 using Inno.Scene;
 using Inno.Scene.Components;
 using Inno.Scene.Layers;
+using Inno.Scripting.Api;
 
-[assembly: ScriptingApiNamespace(
-    "InnoEngine.Scene",
-    "Inno.Scene",
-    ScriptingApiScope.Runtime)]
-[assembly: ScriptingApiNamespace(
-    "InnoEngine.Scene",
-    "Inno.Scene.Components",
-    ScriptingApiScope.Runtime)]
-[assembly: ScriptingApiNamespace(
-    "InnoEngine.Scene",
-    "Inno.Scene.Layers",
-    ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiNamespace("InnoEngine.Scene", "Inno.Scene", ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiNamespace("InnoEngine.Scene", "Inno.Scene.Components", ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiNamespace("InnoEngine.Scene", "Inno.Scene.Layers", ScriptingApiScope.Runtime)]
 
 [assembly: ScriptingApiExport(typeof(AllowMultipleComponentAttribute), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AllowMultipleSystemAttribute), ScriptingApiScope.Runtime)]
@@ -31,7 +22,7 @@ using Inno.Scene.Layers;
 [assembly: ScriptingApiExport(typeof(Transform), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(GameLayer), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(GameLayerDefinition), ScriptingApiScope.Runtime)]
-[assembly: ScriptingApiExport(typeof(GameLayerId), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(GameLayerID), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(GameLayerMask), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(GameLayerCatalog), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(GameTagCatalog), ScriptingApiScope.Runtime)]

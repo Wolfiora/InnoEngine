@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Logging;
 using Inno.Editor.Audio;
 using Inno.Editor.Core;
@@ -29,8 +28,10 @@ internal sealed class EditorPlayModeModule : EditorModule, IEditorPlayMode
         EditorReloadCoordinator reloads,
         IEditorAudioHost audio
     ) {
-        m_loop = loop ?? throw new ArgumentNullException(nameof(loop));
-        m_reloads = reloads ?? throw new ArgumentNullException(nameof(reloads));
+        ArgumentNullException.ThrowIfNull(loop);
+        ArgumentNullException.ThrowIfNull(reloads);
+        m_loop = loop;
+        m_reloads = reloads;
         m_controller = new EditorPlayModeController(
             engineHost,
             runtimeOptions,
@@ -38,7 +39,8 @@ internal sealed class EditorPlayModeModule : EditorModule, IEditorPlayMode
             scripting,
             interactions,
             engineHost.logs,
-            audio);
+            audio
+        );
     }
 
     /// <summary>
@@ -65,9 +67,9 @@ internal sealed class EditorPlayModeModule : EditorModule, IEditorPlayMode
     /// <summary>
     /// Gets the isolated log session that owns the current Play Mode request.
     /// </summary>
-    public LogSessionId activeSessionId => m_controller.activeSessionId;
+    public LogSessionID activeSessionID => m_controller.activeSessionID;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener) => m_controller.ListenStateChanges(listener);
 
     /// <summary>

@@ -27,24 +27,34 @@ internal sealed class FrameStatisticsSampler
         float frameDeltaTime
     ) {
         if (!float.IsFinite(totalTime) || !float.IsFinite(frameDeltaTime) || frameDeltaTime <= 0f)
+        {
             return false;
+        }
         if (float.IsFinite(m_lastFrameTime)
             && (totalTime < m_lastFrameTime || totalTime - m_lastFrameTime > C_SAMPLE_RESET_SECONDS
-                || totalTime - m_lastFrameTime > frameDeltaTime * 1.5f + 0.0001f))
+                || totalTime - m_lastFrameTime > frameDeltaTime * 1.5f + 0.0001f)
+        ) {
             Reset();
+        }
         m_lastFrameTime = totalTime;
         int expired = 0;
         while (expired < m_count && m_sampleTimes[expired] < totalTime - C_SAMPLE_WINDOW_SECONDS)
+        {
             expired++;
+        }
         RemoveOldest(expired);
         m_duration += frameDeltaTime;
         m_frames++;
         if (m_count > 0 && totalTime < m_nextSampleTime)
+        {
             return false;
+        }
         deltaTime = (float)(m_duration / m_frames);
         framesPerSecond = (float)(m_frames / m_duration);
         if (m_count == C_SAMPLE_CAPACITY)
+        {
             RemoveOldest(1);
+        }
         m_frameTimes[m_count] = deltaTime * 1000f;
         m_frameRates[m_count] = framesPerSecond;
         m_sampleTimes[m_count++] = totalTime;
@@ -67,7 +77,9 @@ internal sealed class FrameStatisticsSampler
     private void RemoveOldest(int count)
     {
         if (count == 0)
+        {
             return;
+        }
         m_count -= count;
         Array.Copy(m_frameTimes, count, m_frameTimes, 0, m_count);
         Array.Copy(m_frameRates, count, m_frameRates, 0, m_count);

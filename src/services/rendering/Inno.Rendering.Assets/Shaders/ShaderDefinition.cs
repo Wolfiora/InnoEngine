@@ -1,27 +1,25 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Scripting.Api;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
 /// <summary>
 /// Contains the source-of-truth definition shared by shader import and material tooling.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("5bce7c89-203f-5921-8efc-1bca0f364943")]
+[StableTypeID("5bce7c89-203f-5921-8efc-1bca0f364943")]
 public sealed class ShaderDefinition : ISerializable
 {
     /// <summary>
     /// Creates an empty shader definition for native deserialization.
     /// </summary>
-    public ShaderDefinition()
-    {
-    }
+    public ShaderDefinition() {}
 
     /// <summary>
     /// Creates a shader definition.
@@ -89,4 +87,3 @@ public sealed class ShaderDefinition : ISerializable
     [SerializableProperty]
     public ShaderTechniqueDefinition[] techniques { get; set; } = [];
 }
-

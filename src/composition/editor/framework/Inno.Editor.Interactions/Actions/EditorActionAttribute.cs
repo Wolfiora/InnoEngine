@@ -23,10 +23,7 @@ public sealed class EditorActionAttribute : Attribute
     public EditorActionAttribute(
         string action,
         int priority = 0
-    )
-        : this(action, string.Empty, priority)
-    {
-    }
+    ) : this(action, string.Empty, priority) {}
 
     /// <summary>
     /// Creates an action registration restricted to one exact area.
@@ -49,7 +46,9 @@ public sealed class EditorActionAttribute : Attribute
         int priority = 0
     ) {
         if (string.IsNullOrWhiteSpace(action))
+        {
             throw new ArgumentException("An editor action name is required.", nameof(action));
+        }
         this.action = action;
         this.area = area ?? string.Empty;
         this.priority = priority;

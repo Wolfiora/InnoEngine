@@ -29,13 +29,18 @@ public static class StandardSupportPackRequirements
     /// </returns>
     public static PlayerSupportPackRequirements CreateDynamic(
         ProductNativeBuildPlan plan,
-        BuildTargetId target,
+        BuildTargetID target,
         string extension
     ) {
-        string[] groups = plan.steps.Select(step => step.deploymentPath("selected" + extension, target.value)
-            ?? throw new InvalidOperationException("A Player component has no runtime deployment policy."))
-            .Select(path => Path.GetDirectoryName(path)?.Replace('\\', '/')
-                ?? throw new InvalidOperationException("A Player component must declare an owned deployment group."))
+        string[] groups = plan.steps
+            .Select(step => (
+                step.deploymentPath("selected" + extension, target.value)
+                ?? throw new InvalidOperationException("A Player component has no runtime deployment policy.")
+            ))
+            .Select(path => (
+                Path.GetDirectoryName(path)?.Replace('\\', '/')
+                ?? throw new InvalidOperationException("A Player component must declare an owned deployment group.")
+            ))
             .ToArray();
         return new(target, ManagedFiles(plan), "native", groups, extension);
     }
@@ -49,23 +54,30 @@ public static class StandardSupportPackRequirements
     /// <param name="target">
     /// The exact platform target.
     /// </param>
-    /// <returns>
-    /// Requirements matching the plan's actual component closure.
-    /// </returns>
     /// <param name="linkPlan">
     /// The explicit platform archive naming plan.
     /// </param>
+    /// <returns>
+    /// Requirements matching the plan's actual component closure.
+    /// </returns>
     public static PlayerSupportPackRequirements CreateStatic(
         ProductNativeBuildPlan plan,
-        BuildTargetId target,
+        BuildTargetID target,
         NativeLinkPlan linkPlan
     ) {
-        string[] archives = plan.steps.SelectMany(step => step.component.staticBuild?.logicalOutputs
-            .Select(name => "PlayerLink/Native/" + step.id + "/" + target.value + "/" + linkPlan.GetStaticFileName(name))
-            ?? throw new InvalidOperationException("A static Player component has no declared archive closure.")).ToArray();
-        return new(target, [.. ManagedFiles(plan), .. archives], "PlayerLink/Native",
-            plan.steps.Select(step => step.id + "/" + target.value).ToArray(), linkPlan.staticLibraryExtension!,
-            archives.Select(path => path["PlayerLink/Native/".Length..]).ToArray());
+        string[] archives = plan.steps.SelectMany(step => (
+            step.component.staticBuild?.logicalOutputs
+                .Select(name => "PlayerLink/Native/" + step.id + "/" + target.value + "/" + linkPlan.GetStaticFileName(name))
+            ?? throw new InvalidOperationException("A static Player component has no declared archive closure.")
+        )).ToArray();
+        return new(
+            target,
+            [.. ManagedFiles(plan), .. archives],
+            "PlayerLink/Native",
+            plan.steps.Select(step => step.id + "/" + target.value).ToArray(),
+            linkPlan.staticLibraryExtension!,
+            archives.Select(path => path["PlayerLink/Native/".Length..]).ToArray()
+        );
     }
 
     private static string[] ManagedFiles(ProductNativeBuildPlan plan)
@@ -74,5 +86,7 @@ public static class StandardSupportPackRequirements
             {
                 "References/" + Path.GetFileNameWithoutExtension(step.component.nativeProject) + ".dll",
                 "PlayerLink/References/" + Path.GetFileNameWithoutExtension(step.component.nativeProject) + ".dll"
-            }).Append("PlayerLink/References/BGCS.Runtime.dll").ToArray();
+            })
+            .Append("PlayerLink/References/BGCS.Runtime.dll")
+            .ToArray();
 }

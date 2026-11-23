@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-
 using Inno.Core.Execution;
 using Inno.Extensibility.Reload;
 
@@ -22,11 +21,12 @@ public sealed class AssemblyReloadSession : IDisposable, IGenerationPublication<
     ) {
         m_owner = owner;
         m_state = state;
-        context = new AssemblyReloadContext(
+        this.context = new AssemblyReloadContext(
             state.previousCatalog,
             state.candidateCatalog,
             state.candidateModules.Select(static module => module.handle).ToArray(),
-            state.refresh.contexts);
+            state.refresh.contexts
+        );
     }
 
     /// <summary>
@@ -95,7 +95,9 @@ public sealed class AssemblyReloadSession : IDisposable, IGenerationPublication<
     {
         EnsureRetirementSafe();
         if (m_disposed)
+        {
             return;
+        }
         try
         {
             m_owner.Rollback(m_state!);
@@ -131,18 +133,8 @@ public sealed class AssemblyReloadSession : IDisposable, IGenerationPublication<
     private void EnsureRetirementSafe()
     {
         if (m_retirementFailure is not null)
+        {
             throw m_retirementFailure;
+        }
     }
-}
-
-internal sealed class ReloadState
-{
-    internal required AssemblyModuleEntry?[] previousModules { get; init; }
-    internal required AssemblyModuleEntry[] removedModules { get; init; }
-    internal required AssemblyModuleEntry[] candidateModules { get; init; }
-    internal required AssemblyCatalogSnapshot previousCatalog { get; init; }
-    internal required AssemblyCatalogSnapshot candidateCatalog { get; init; }
-    internal required AssemblyCatalogRefreshSet refresh { get; init; }
-    internal bool activated { get; set; }
-    internal bool finished { get; set; }
 }

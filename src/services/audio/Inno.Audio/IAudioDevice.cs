@@ -3,56 +3,10 @@ using System;
 namespace Inno.Audio;
 
 /// <summary>
-/// Reports one backend-detected terminal voice transition.
-/// </summary>
-public readonly record struct AudioDeviceCompletion
-{
-    /// <summary>
-    /// Creates a backend voice completion record.
-    /// </summary>
-    /// <param name="voice">
-    /// Voice that reached a terminal state.
-    /// </param>
-    /// <param name="reason">
-    /// Reason playback ended.
-    /// </param>
-    public AudioDeviceCompletion(
-        AudioDeviceVoiceHandle voice,
-        AudioCompletionReason reason
-    ) {
-        if (!voice.isValid)
-            throw new ArgumentException("A valid voice handle is required.", nameof(voice));
-        this.voice = voice;
-        this.reason = reason;
-    }
-
-    /// <summary>
-    /// Gets the completed voice handle.
-    /// </summary>
-    public AudioDeviceVoiceHandle voice { get; }
-
-    /// <summary>
-    /// Gets the terminal playback reason.
-    /// </summary>
-    public AudioCompletionReason reason { get; }
-}
-
-/// <summary>
 /// Owns one replaceable audio backend generation and all device-side audio objects.
 /// </summary>
 public interface IAudioDevice : IDisposable
 {
-    /// <summary>
-    /// Queries asynchronous clip preparation without blocking the owner thread.
-    /// </summary>
-    /// <param name="clip">
-    /// A handle created by this device generation.
-    /// </param>
-    /// <returns>
-    /// The preparation state, or Failed for a retired or invalid handle.
-    /// </returns>
-    AudioClipState GetClipState(AudioClipHandle clip);
-
     /// <summary>
     /// Gets immutable capabilities for the active device generation.
     /// </summary>
@@ -77,6 +31,17 @@ public interface IAudioDevice : IDisposable
     /// Gets current backend resource statistics.
     /// </summary>
     AudioStatistics statistics { get; }
+
+    /// <summary>
+    /// Queries asynchronous clip preparation without blocking the owner thread.
+    /// </summary>
+    /// <param name="clip">
+    /// A handle created by this device generation.
+    /// </param>
+    /// <returns>
+    /// The preparation state, or Failed for a retired or invalid handle.
+    /// </returns>
+    AudioClipState GetClipState(AudioClipHandle clip);
 
     /// <summary>
     /// Starts preparation of one decoded or streamed clip from immutable encoded content.
@@ -229,7 +194,7 @@ public interface IAudioDevice : IDisposable
     /// A bus handle owned by the current device generation.
     /// </returns>
     AudioBusHandle CreateBus(
-        AudioBusId id,
+        AudioBusID id,
         AudioBusHandle parent = default
     );
 

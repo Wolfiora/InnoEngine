@@ -1,20 +1,24 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using Inno.Core.Settings;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Settings;
+
 using EditorImGui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 
 namespace Inno.Editor.Panel.Settings;
+
 [ProjectSettingPath("Project/Identity/Project ID")]
 internal sealed class ProjectIdentitySettingsEditor : ProjectSettingEditor<ProjectIdentitySettings>
 {
     private string m_error = string.Empty;
+
     /// <summary>
     /// Gets the presentation section that groups this setting.
     /// </summary>
     public override string section => "Identity";
+
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
@@ -43,6 +47,8 @@ internal sealed class ProjectIdentitySettingsEditor : ProjectSettingEditor<Proje
         }
 
         if (!string.IsNullOrEmpty(m_error))
+        {
             EditorUI.current.widgets.ColoredText(EditorPalette.error, m_error);
+        }
     }
 }

@@ -24,9 +24,13 @@ public readonly struct DiagnosticSource : IEquatable<DiagnosticSource>
         string displayName
     ) {
         if (string.IsNullOrWhiteSpace(id))
+        {
             throw new ArgumentException("A diagnostic source identifier is required.", nameof(id));
+        }
         if (string.IsNullOrWhiteSpace(displayName))
+        {
             throw new ArgumentException("A diagnostic source display name is required.", nameof(displayName));
+        }
         this.id = id;
         this.displayName = displayName;
     }
@@ -44,23 +48,23 @@ public readonly struct DiagnosticSource : IEquatable<DiagnosticSource>
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
-    /// </returns>
     /// <param name="other">
     /// The value to compare with this instance.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
+    /// </returns>
     public bool Equals(DiagnosticSource other) => string.Equals(id, other.id, StringComparison.Ordinal);
 
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
-    /// </returns>
     /// <param name="obj">
     /// The object to compare with this instance.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
+    /// </returns>
     public override bool Equals(object? obj) => obj is DiagnosticSource other && Equals(other);
 
     /// <summary>

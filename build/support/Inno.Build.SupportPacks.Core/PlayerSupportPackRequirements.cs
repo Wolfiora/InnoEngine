@@ -37,7 +37,7 @@ public sealed class PlayerSupportPackRequirements
     /// A required collection is null.
     /// </exception>
     public PlayerSupportPackRequirements(
-        BuildTargetId target,
+        BuildTargetID target,
         IReadOnlyList<string> requiredFiles,
         string nativeRoot,
         IReadOnlyList<string> nativeDirectories,
@@ -49,19 +49,33 @@ public sealed class PlayerSupportPackRequirements
         ArgumentNullException.ThrowIfNull(nativeDirectories);
         ArgumentException.ThrowIfNullOrWhiteSpace(nativeExtension);
         if (!nativeExtension.StartsWith(".", StringComparison.Ordinal) || nativeExtension.Contains('/') || nativeExtension.Contains('\\'))
+        {
             throw new ArgumentException("A selected native suffix must be one file extension.", nameof(nativeExtension));
+        }
         ValidatePath(nativeRoot);
         foreach (string path in requiredFiles.Concat(nativeDirectories))
+        {
             ValidatePath(path);
+        }
         foreach (string path in nativeFiles ?? [])
+        {
             ValidatePath(path);
+        }
         if (requiredFiles.Distinct(StringComparer.Ordinal).Count() != requiredFiles.Count
             || nativeDirectories.Distinct(StringComparer.Ordinal).Count() != nativeDirectories.Count
-            || nativeFiles is not null && nativeFiles.Distinct(StringComparer.Ordinal).Count() != nativeFiles.Count)
+            || nativeFiles is not null && nativeFiles.Distinct(StringComparer.Ordinal).Count() != nativeFiles.Count
+        ) {
             throw new ArgumentException("Selected publication inputs cannot repeat ownership paths.");
-        if (nativeFiles is not null && nativeFiles.Any(path => !path.EndsWith(nativeExtension, StringComparison.Ordinal)
-            || !nativeDirectories.Any(group => path.StartsWith(group + "/", StringComparison.Ordinal))))
-            throw new ArgumentException("Exact selected libraries must belong to their declared native groups and suffix.", nameof(nativeFiles));
+        }
+        if (nativeFiles is not null && nativeFiles.Any(path => (
+            !path.EndsWith(nativeExtension, StringComparison.Ordinal)
+            || !nativeDirectories.Any(group => path.StartsWith(group + "/", StringComparison.Ordinal))
+        ))) {
+            throw new ArgumentException(
+                "Exact selected libraries must belong to their declared native groups and suffix.",
+                nameof(nativeFiles)
+            );
+        }
         this.target = target;
         this.requiredFiles = Array.AsReadOnly(requiredFiles.ToArray());
         this.nativeRoot = nativeRoot;
@@ -73,7 +87,7 @@ public sealed class PlayerSupportPackRequirements
     /// <summary>
     /// Gets the explicitly selected target.
     /// </summary>
-    public BuildTargetId target { get; }
+    public BuildTargetID target { get; }
 
     /// <summary>
     /// Gets the immutable required Pack-relative input paths.
@@ -104,7 +118,9 @@ public sealed class PlayerSupportPackRequirements
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         if (path.Contains('\\') || path.Contains(':') || path.StartsWith('/')
-            || path.Split('/').Any(static segment => segment is "" or "." or ".."))
+            || path.Split('/').Any(static segment => segment is "" or "." or "..")
+        ) {
             throw new ArgumentException("Publication requirements must use portable owned relative paths.", nameof(path));
+        }
     }
 }

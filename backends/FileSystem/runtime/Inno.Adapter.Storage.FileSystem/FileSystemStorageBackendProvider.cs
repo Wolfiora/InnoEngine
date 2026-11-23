@@ -20,20 +20,24 @@ public sealed class FileSystemStorageBackendProvider : StorageBackendProvider
     /// <exception cref="ArgumentException">
     /// The root is absent or not fully qualified.
     /// </exception>
-    public FileSystemStorageBackendProvider(string rootDirectory) : base(StorageBackendId.fileSystem)
+    public FileSystemStorageBackendProvider(string rootDirectory)
+        : base(StorageBackendID.fileSystem)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootDirectory);
         if (!Path.IsPathFullyQualified(rootDirectory))
+        {
             throw new ArgumentException("A filesystem storage provider requires an absolute host root.", nameof(rootDirectory));
+        }
         m_rootDirectory = Path.GetFullPath(rootDirectory);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override IApplicationStorage CreateStorage(StorageScope scope)
     {
         if (!scope.isValid)
+        {
             throw new ArgumentException("Storage requires an assigned application namespace.", nameof(scope));
+        }
         return new FileSystemApplicationStorage(Path.Combine(m_rootDirectory, scope.value!, "Storage"));
     }
 }
-

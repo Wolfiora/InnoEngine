@@ -1,4 +1,5 @@
 using Inno.Runtime.Contracts;
+
 namespace Inno.Assets;
 
 /// <summary>

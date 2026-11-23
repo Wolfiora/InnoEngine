@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using Inno.Core.Identity;
 using Inno.Core.Serialization.Converters;
 
+using CoreIdentity = Inno.Core.Identity.Identity;
+
 namespace Inno.Core.Serialization;
 
 /// <summary>
@@ -21,7 +23,7 @@ public sealed class SerializationCaptureKeyBuilder
     private const byte C_GUARD = 4;
     internal const byte C_GUID = 5;
 
-    private readonly int m_threadId = Environment.CurrentManagedThreadId;
+    private readonly int m_threadID = Environment.CurrentManagedThreadId;
     private SerializationCaptureIdentity[] m_identities = [];
     private int m_identityCount;
     private SerializationOperation? m_operation;
@@ -33,26 +35,27 @@ public sealed class SerializationCaptureKeyBuilder
 
     internal SerializationCaptureKeyBuilder(
         SerializationOperation operation,
-        Type rootType,
-        Inno.Core.Identity.Identity source,
         SerializationCaptureKey? previous
-    ) : this(operation, previous) {
+    ) {
+        m_operation = operation;
+        m_previous = previous;
+        Add(new SerializationCaptureKeyPart(C_GUARD, default, 0, operation.converters.captureIdentity, null));
+    }
+
+    internal SerializationCaptureKeyBuilder(
+        SerializationOperation operation,
+        Type rootType,
+        CoreIdentity source,
+        SerializationCaptureKey? previous
+    ) : this(operation, previous)
+    {
         if (source.runtimeIdentity is not { } identity)
         {
             m_unavailable = true;
             return;
         }
-        Add(new(C_GUARD, identity, 0, operation.GetMetadata(rootType).captureIdentity, null));
-        AddIdentity(new(source, identity));
-    }
-
-    internal SerializationCaptureKeyBuilder(
-        SerializationOperation operation,
-        SerializationCaptureKey? previous
-    ) {
-        m_operation = operation;
-        m_previous = previous;
-        Add(new(C_GUARD, default, 0, operation.converters.captureIdentity, null));
+        Add(new SerializationCaptureKeyPart(C_GUARD, identity, 0, operation.GetMetadata(rootType).captureIdentity, null));
+        AddIdentity(new SerializationCaptureIdentity(source, identity));
     }
 
     /// <summary>
@@ -108,11 +111,13 @@ public sealed class SerializationCaptureKeyBuilder
     ) {
         RequireOperation();
         ArgumentNullException.ThrowIfNull(source);
-        Inno.Core.Identity.Identity snapshot = source.identity;
+        CoreIdentity snapshot = source.identity;
         if (!revision.HasValue || snapshot.runtimeIdentity is not { } identity)
+        {
             return Decline();
-        Add(new(C_OWNER, identity, revision.Value, default, null));
-        AddIdentity(new(snapshot, identity));
+        }
+        Add(new SerializationCaptureKeyPart(C_OWNER, identity, revision.Value, default, null));
+        AddIdentity(new SerializationCaptureIdentity(snapshot, identity));
         return true;
     }
 
@@ -136,25 +141,37 @@ public sealed class SerializationCaptureKeyBuilder
         SerializationOperation operation = RequireOperation();
         ArgumentNullException.ThrowIfNull(source);
         if (source is not IdentityObject identified)
+        {
             return Decline();
-        Inno.Core.Identity.Identity snapshot = identified.identity;
+        }
+        CoreIdentity snapshot = identified.identity;
         if (snapshot.runtimeIdentity is not { } identity)
+        {
             return Decline();
+        }
         ISerializationMetadataSource provider = operation.context.GetRequired<ISerializationMetadataSource>();
         SerializationTypeMetadata metadata = provider.GetMetadata(source.GetType());
         if (metadata.captureRevision is null)
         {
             foreach (SerializationMemberMetadata member in metadata.members)
+            {
                 if ((member.visibility & PropertyVisibility.Serialize) != 0)
+                {
                     return Decline();
+                }
+            }
         }
         if (!operation.converters.CanReuseRevision(metadata, provider))
+        {
             return Decline();
+        }
         ulong? revision = metadata.captureRevision is { } readRevision ? readRevision(source) : 0;
         if (!revision.HasValue)
+        {
             return Decline();
-        Add(new(C_OWNER, identity, revision.Value, metadata.captureIdentity, null));
-        AddIdentity(new(snapshot, identity));
+        }
+        Add(new SerializationCaptureKeyPart(C_OWNER, identity, revision.Value, metadata.captureIdentity, null));
+        AddIdentity(new SerializationCaptureIdentity(snapshot, identity));
         return true;
     }
 
@@ -167,7 +184,7 @@ public sealed class SerializationCaptureKeyBuilder
     /// <exception cref="InvalidOperationException">
     /// The callback has retired or is accessed from another thread.
     /// </exception>
-    public void AddValue(ulong value) => Add(new(C_VALUE, default, value, default, null));
+    public void AddValue(ulong value) => Add(new SerializationCaptureKeyPart(C_VALUE, default, value, default, null));
 
     /// <summary>
     /// Adds an exact neutral identifier without hashing or allocating text.
@@ -178,7 +195,7 @@ public sealed class SerializationCaptureKeyBuilder
     /// <exception cref="InvalidOperationException">
     /// The callback has retired or is accessed from another thread.
     /// </exception>
-    public void AddValue(Guid value) => Add(new(C_GUID, default, 0, value, null));
+    public void AddValue(Guid value) => Add(new SerializationCaptureKeyPart(C_GUID, default, 0, value, null));
 
     /// <summary>
     /// Adds exact ordinal text, preserving the distinction between null and empty.
@@ -189,19 +206,25 @@ public sealed class SerializationCaptureKeyBuilder
     /// <exception cref="InvalidOperationException">
     /// The callback has retired or is accessed from another thread.
     /// </exception>
-    public void AddText(string? value) => Add(new(C_TEXT, default, 0, default, value));
+    public void AddText(string? value) => Add(new SerializationCaptureKeyPart(C_TEXT, default, 0, default, value));
 
     internal SerializationCaptureAttempt Complete()
     {
         RequireOperation();
         if (m_unavailable || m_identityCount == 0)
-            return SerializationCaptureAttempt.empty;
+        {
+            return SerializationCaptureAttempt.EMPTY;
+        }
         SerializationCaptureKey key = m_parts is null && m_previous is not null && m_previous.parts.Length == m_count
-            ? m_previous
-            : new(m_parts is not null ? m_parts.ToArray() : m_previous!.parts.AsSpan(0, m_count).ToArray());
+                                      ? m_previous
+                                      : new SerializationCaptureKey(
+                                          m_parts is not null ? m_parts.ToArray() : m_previous!.parts.AsSpan(0, m_count).ToArray()
+                                      );
         ReadOnlySpan<SerializationCaptureIdentity> identities = m_identities.AsSpan(0, m_identityCount);
         foreach (SerializationCaptureIdentity identity in identities)
+        {
             identity.Validate();
+        }
         return new(key, ReferenceEquals(key, m_previous) ? [] : identities.ToArray());
     }
 
@@ -215,14 +238,19 @@ public sealed class SerializationCaptureKeyBuilder
         m_identities = [];
         m_identityCount = 0;
         if (identities.Length > 0)
+        {
             ArrayPool<SerializationCaptureIdentity>.Shared.Return(identities, clearArray: true);
+        }
     }
 
     private SerializationOperation RequireOperation()
     {
-        SerializationOperation operation = m_operation ?? throw new InvalidOperationException("The serialization key callback has retired.");
-        if (Environment.CurrentManagedThreadId != m_threadId)
+        SerializationOperation operation = m_operation
+                                           ?? throw new InvalidOperationException("The serialization key callback has retired.");
+        if (Environment.CurrentManagedThreadId != m_threadID)
+        {
             throw new InvalidOperationException("The serialization key callback belongs to another thread.");
+        }
         operation.EnsureActive();
         return operation;
     }
@@ -242,13 +270,17 @@ public sealed class SerializationCaptureKeyBuilder
     private void EnsureIdentityCapacity(int capacity)
     {
         if (capacity <= m_identities.Length)
+        {
             return;
+        }
         SerializationCaptureIdentity[] identities = ArrayPool<SerializationCaptureIdentity>.Shared.Rent(capacity);
         m_identities.AsSpan(0, m_identityCount).CopyTo(identities);
         SerializationCaptureIdentity[] previous = m_identities;
         m_identities = identities;
         if (previous.Length > 0)
+        {
             ArrayPool<SerializationCaptureIdentity>.Shared.Return(previous, clearArray: true);
+        }
     }
 
     private void Add(SerializationCaptureKeyPart part)
@@ -263,8 +295,12 @@ public sealed class SerializationCaptureKeyBuilder
         {
             m_parts = new(Math.Max(m_capacity, m_count + 1));
             if (m_previous is not null)
+            {
                 for (int index = 0; index < m_count; index++)
+                {
                     m_parts.Add(m_previous.parts[index]);
+                }
+            }
         }
         m_parts.Add(part);
         m_count++;
@@ -276,15 +312,19 @@ internal sealed record SerializationCaptureKey(SerializationCaptureKeyPart[] par
     internal bool HasSameInputs(SerializationCaptureKey other)
     {
         if (parts.Length != other.parts.Length)
+        {
             return false;
+        }
         for (int index = 0; index < parts.Length; index++)
         {
             SerializationCaptureKeyPart before = parts[index];
             SerializationCaptureKeyPart after = other.parts[index];
-            if (before.kind != after.kind || before.identity != after.identity ||
-                before.revision != after.revision || !string.Equals(before.text, after.text, StringComparison.Ordinal) ||
-                before.kind == SerializationCaptureKeyBuilder.C_GUID && before.metadata != after.metadata)
+            if (before.kind != after.kind || before.identity != after.identity
+                || before.revision != after.revision || !string.Equals(before.text, after.text, StringComparison.Ordinal)
+                || before.kind == SerializationCaptureKeyBuilder.C_GUID && before.metadata != after.metadata
+            ) {
                 return false;
+            }
         }
         return true;
     }
@@ -294,7 +334,29 @@ internal readonly record struct SerializationCaptureAttempt(
     SerializationCaptureKey? key,
     SerializationCaptureIdentity[] identities
 ) {
-    internal static readonly SerializationCaptureAttempt empty = new(null, []);
+    internal static readonly SerializationCaptureAttempt EMPTY = new(null, []);
+
+    internal SerializationCaptureKey? Verify(SerializationCaptureAttempt after)
+    {
+        if (key is null || after.key is null || !key.HasSameInputs(after.key))
+        {
+            throw new InvalidOperationException("The declared serialization capture inputs changed during the write.");
+        }
+        // Fresh equivalent metadata preserves ordinary capture without publishing a reusable hint.
+        return ReferenceEquals(after.key, key) ? key : null;
+    }
+
+    internal void ValidateIdentities()
+    {
+        if (identities is null)
+        {
+            return;
+        }
+        foreach (SerializationCaptureIdentity identity in identities)
+        {
+            identity.Validate();
+        }
+    }
 
     internal static SerializationCaptureAttempt Capture<T>(
         SerializationOperation operation,
@@ -305,50 +367,44 @@ internal readonly record struct SerializationCaptureAttempt(
         Func<T, SerializationCaptureKeyBuilder, bool>? captureKey = null
     ) {
         if (!operation.isSnapshotCapture)
-            return empty;
+        {
+            return EMPTY;
+        }
         SerializationCaptureKeyBuilder builder;
         if (captureKey is not null)
+        {
             builder = new(operation, previous);
+        }
         else if (value is IdentityObject identified && identified.identity.runtimeIdentity is not null)
+        {
             builder = new(operation, valueType, identified.identity, previous);
+        }
         else
-            return empty;
+        {
+            return EMPTY;
+        }
         try
         {
             bool complete = captureKey is not null ? captureKey(value, builder) : converter!.CaptureKey(value, builder);
-            return complete ? builder.Complete() : empty;
+            return complete ? builder.Complete() : EMPTY;
         }
         finally
         {
             builder.Retire();
         }
     }
-
-    internal SerializationCaptureKey? Verify(SerializationCaptureAttempt after)
-    {
-        if (key is null || after.key is null || !key.HasSameInputs(after.key))
-            throw new InvalidOperationException("The declared serialization capture inputs changed during the write.");
-        // Fresh equivalent metadata preserves ordinary capture without publishing a reusable hint.
-        return ReferenceEquals(after.key, key) ? key : null;
-    }
-
-    internal void ValidateIdentities()
-    {
-        if (identities is null)
-            return;
-        foreach (SerializationCaptureIdentity identity in identities)
-            identity.Validate();
-    }
 }
 
 internal readonly record struct SerializationCaptureIdentity(
-    Inno.Core.Identity.Identity identity,
+    CoreIdentity identity,
     RuntimeIdentity expected
 ) {
     internal void Validate()
     {
         if (identity.runtimeIdentity != expected)
+        {
             throw new InvalidOperationException($"Core identity '{expected}' changed during serialization capture.");
+        }
     }
 }
 

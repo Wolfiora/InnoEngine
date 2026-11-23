@@ -29,17 +29,19 @@ public sealed class ContentPackIndex
     public ContentPackIndex(IEnumerable<ContentEntry> entries)
     {
         ArgumentNullException.ThrowIfNull(entries);
-        m_byKey = new();
-        HashSet<string> folded = new(StringComparer.OrdinalIgnoreCase) { C_INDEX_KEY };
+        m_byKey = [];
+        var folded = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { C_INDEX_KEY };
         List<ContentEntry> ordered = [];
         foreach (ContentEntry entry in entries)
         {
             ArgumentNullException.ThrowIfNull(entry);
             if (!folded.Add(entry.key.value!))
+            {
                 throw new ArgumentException($"Content repeats a reserved or ambiguous key '{entry.key}'.", nameof(entries));
+            }
             m_byKey.Add(entry.key, entry);
             ordered.Add(entry);
-            totalLength = checked(totalLength + entry.length);
+            this.totalLength = checked(totalLength + entry.length);
         }
         ordered.Sort(static (
             left,
@@ -86,7 +88,9 @@ public sealed class ContentPackIndex
             for (int separator = key.IndexOf('/'); separator >= 0; separator = key.IndexOf('/', separator + 1))
             {
                 if (files.Contains(key[..separator]))
+                {
                     throw new ArgumentException($"Content uses '{key[..separator]}' as both a file and directory.", nameof(entries));
+                }
             }
         }
     }

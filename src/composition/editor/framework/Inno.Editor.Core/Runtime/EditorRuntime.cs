@@ -18,7 +18,8 @@ public abstract class EditorRuntime : IDisposable
     /// </exception>
     protected EditorRuntime(EditorContext context)
     {
-        this.context = context ?? throw new ArgumentNullException(nameof(context));
+        ArgumentNullException.ThrowIfNull(context);
+        this.context = context;
     }
 
     /// <summary>
@@ -40,6 +41,11 @@ public abstract class EditorRuntime : IDisposable
     public abstract void Update(EditorFrame frame);
 
     /// <summary>
+    /// Stops the runtime and releases active extensions.
+    /// </summary>
+    public abstract void Dispose();
+
+    /// <summary>
     /// Advances frame-scoped data and publishes the latest immutable frame.
     /// </summary>
     /// <param name="frame">
@@ -50,9 +56,4 @@ public abstract class EditorRuntime : IDisposable
         context.statistics.AdvanceFrame();
         context.frame = frame;
     }
-
-    /// <summary>
-    /// Stops the runtime and releases active extensions.
-    /// </summary>
-    public abstract void Dispose();
 }

@@ -7,21 +7,40 @@ using Inno.Editor.PlayMode;
 using Inno.Editor.Settings;
 
 namespace Inno.Editor.Panel.Logging;
+
 [EditorModule("diagnostics-logging", order: int.MinValue)]
 internal sealed class LoggingModule : EditorModule, IEditorConsole
 {
-    private IDisposable? m_settingsSubscription;
     private readonly EditorConsole m_console;
     private readonly EditorSettings m_settings;
+    private IDisposable? m_settingsSubscription;
+
     internal LoggingModule(
         LogRouter logRouter,
         DiagnosticHub diagnosticHub,
         IEditorPlayMode playMode,
         EditorSettings settings
     ) {
-        m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        ArgumentNullException.ThrowIfNull(settings);
+        m_settings = settings;
         m_console = new EditorConsole(logRouter, diagnosticHub, playMode);
     }
+
+    int IEditorConsole.capacity
+    {
+        get => m_console.capacity;
+        set => m_console.capacity = value;
+    }
+
+    bool IEditorConsole.clearOnPlay
+    {
+        get => m_console.clearOnPlay;
+        set => m_console.clearOnPlay = value;
+    }
+
+    EditorConsoleSnapshot IEditorConsole.Capture() => m_console.Capture();
+
+    void IEditorConsole.Clear() => m_console.Clear();
 
     /// <summary>
     /// Initializes this feature after its owning runtime has activated all required services.
@@ -58,10 +77,4 @@ internal sealed class LoggingModule : EditorModule, IEditorConsole
     }
 
     private void ApplySettings(EditorSettings settings) => m_console.clearOnPlay = ClearConsoleOnPlaySetting.Read(settings);
-    int IEditorConsole.capacity { get => m_console.capacity; set => m_console.capacity = value; }
-
-    bool IEditorConsole.clearOnPlay { get => m_console.clearOnPlay; set => m_console.clearOnPlay = value; }
-
-    EditorConsoleSnapshot IEditorConsole.Capture() => m_console.Capture();
-    void IEditorConsole.Clear() => m_console.Clear();
 }

@@ -22,7 +22,9 @@ public sealed class AudioVoiceCompletedEvent : Event
         AudioCompletionReason reason
     ) {
         if (!voice.isValid)
+        {
             throw new ArgumentException("A valid voice handle is required.", nameof(voice));
+        }
         this.voice = voice;
         this.reason = reason;
     }

@@ -1,15 +1,15 @@
-using Inno.References;
-using Inno.Runtime.Contracts;
-using Inno.Core.Diagnostics;
-using Inno.Core.Execution;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Assets;
+using Inno.Core.Diagnostics;
 using Inno.Core.Events;
+using Inno.Core.Execution;
 using Inno.Extensibility.Types;
+using Inno.References;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Audio.Runtime;
 
@@ -24,11 +24,11 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     private readonly IDiagnosticReporter m_diagnostics;
     private readonly EventDispatcher m_events;
     private readonly AudioExtensionRegistry m_extensions;
+    private readonly AudioRuntimeOptions m_options;
+    private readonly List<Exception> m_retirementFailures = [];
     private AudioClipCache m_clipCache;
     private AudioVoiceOwner m_voices;
     private AudioContentOwner m_content;
-    private readonly AudioRuntimeOptions m_options;
-
     private IAudioDevice m_device;
     private AudioMixerOwner m_mixer;
     private string? m_mixerDiagnosticSource;
@@ -39,7 +39,6 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     private bool m_stopping;
     private bool m_extensionsRetired;
     private int m_retirementStage;
-    private readonly List<Exception> m_retirementFailures = [];
     private AudioDeviceCandidate? m_candidateRetirement;
 
     /// <summary>
@@ -86,10 +85,14 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
         Func<IAudioDevice>? deviceRecoveryFactory = null
     ) {
         ArgumentNullException.ThrowIfNull(types);
-        m_device = device ?? throw new ArgumentNullException(nameof(device));
-        m_artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
-        m_events = events ?? throw new ArgumentNullException(nameof(events));
-        m_diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
+        ArgumentNullException.ThrowIfNull(device);
+        ArgumentNullException.ThrowIfNull(artifacts);
+        ArgumentNullException.ThrowIfNull(events);
+        ArgumentNullException.ThrowIfNull(diagnostics);
+        m_device = device;
+        m_artifacts = artifacts;
+        m_events = events;
+        m_diagnostics = diagnostics;
         m_options = (options ?? new AudioRuntimeOptions()).Validate();
         m_contentScopeProvider = contentScopeProvider;
         m_deviceRecoveryFactory = deviceRecoveryFactory;
@@ -108,7 +111,16 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
             m_extensions.Dispose();
             throw;
         }
-        m_voices = new AudioVoiceOwner(m_device, m_artifacts, m_clipCache, m_mixer, m_events, m_diagnostics, m_options, m_extensions.RetireBackend);
+        m_voices = new AudioVoiceOwner(
+            m_device,
+            m_artifacts,
+            m_clipCache,
+            m_mixer,
+            m_events,
+            m_diagnostics,
+            m_options,
+            m_extensions.RetireBackend
+        );
         m_content = new AudioContentOwner(m_device, m_voices, m_diagnostics, m_contentScopeProvider, m_options.maxContentSnapshots);
         if (m_device.state == AudioDeviceState.Muted)
         {
@@ -116,7 +128,8 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
                 "AUDIO_NO_DEVICE",
                 "Audio is running in explicit muted mode because no output device is active.",
                 DiagnosticSeverity.Warning,
-                m_device.GetType().FullName);
+                m_device.GetType().FullName
+            );
         }
     }
 
@@ -135,35 +148,11 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     /// </summary>
     public double dspTime => m_device.dspTime;
 
-    /// <inheritdoc />
-    protected override void OnStart()
-    {
-        m_events.dispatched += OnEventDispatched;
-    }
-    /// <summary>
-    /// Captures snapshots and binds service façades.
-    /// </summary>
-    /// <param name="frame">
-    /// The variable frame timing.
-    /// </param>
-    protected override void OnBeginFrame(RuntimeFrame frame) => OwnFrameScope(EnterExecutionScope());
-    /// <summary>
-    /// Advances domain state on the variable clock.
-    /// </summary>
-    /// <param name="frame">
-    /// The variable frame timing.
-    /// </param>
-    protected override void OnUpdate(RuntimeFrame frame) => Update(frame.unscaledDeltaTime);
-
     /// <summary>
     /// Gets current runtime resource statistics.
     /// </summary>
     public AudioStatistics statistics
-        => new(
-            m_voices.count,
-            m_clipCache.count,
-            m_clipCache.decodedBytes,
-            m_stolenVoiceCount + m_voices.stolenCount);
+        => new(m_voices.count, m_clipCache.count, m_clipCache.decodedBytes, m_stolenVoiceCount + m_voices.stolenCount);
 
     /// <summary>
     /// Gets bounded provider admission counts from the most recent content collection on this device generation.
@@ -240,7 +229,9 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
         AudioPlayOptions options
     ) {
         if (double.IsNaN(scheduledDspTime) || double.IsInfinity(scheduledDspTime) || scheduledDspTime < 0d)
+        {
             throw new ArgumentOutOfRangeException(nameof(scheduledDspTime));
+        }
         EnsureActive();
         return m_voices.Play(clip, options, scheduledDspTime);
     }
@@ -363,7 +354,7 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     /// <see langword="true"/> when the active mixer contains the bus.
     /// </returns>
     public bool SetBusVolume(
-        AudioBusId bus,
+        AudioBusID bus,
         float volume
     ) {
         EnsureActive();
@@ -383,7 +374,7 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     /// <see langword="true"/> when the active mixer contains the bus.
     /// </returns>
     public bool SetBusMuted(
-        AudioBusId bus,
+        AudioBusID bus,
         bool muted
     ) {
         EnsureActive();
@@ -403,7 +394,7 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     /// <see langword="true"/> when the active mixer contains the bus.
     /// </returns>
     public bool SetBusPaused(
-        AudioBusId bus,
+        AudioBusID bus,
         bool paused
     ) {
         EnsureActive();
@@ -473,7 +464,8 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
                     "AUDIO_MIXER_EXTENSION_MISSING",
                     "The candidate audio mixer references an unavailable extension; the last-good mixer remains active.",
                     DiagnosticSeverity.Error,
-                    asset.mixerTypeId);
+                    asset.mixerTypeId
+                );
                 return false;
             }
             m_mixer.Install(mixer, m_voices.usedBuses);
@@ -486,7 +478,8 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
                 "AUDIO_MIXER_CANDIDATE_FAILED",
                 $"The candidate audio mixer failed validation; the last-good mixer remains active: {exception.Message}",
                 DiagnosticSeverity.Error,
-                asset.mixerTypeId);
+                asset.mixerTypeId
+            );
             return false;
         }
     }
@@ -508,7 +501,9 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
         EnsureActive();
         ArgumentNullException.ThrowIfNull(replacement);
         if (ReferenceEquals(replacement, m_device))
+        {
             throw new ArgumentException("The replacement must be a different device instance.", nameof(replacement));
+        }
         AudioMixerOwner replacementMixer;
         m_candidateRetirement = new AudioDeviceCandidate(replacement);
         try
@@ -554,7 +549,10 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
                 failures.Add(error);
             }
             m_candidateRetirement = null;
-            var failure = new AggregateException("Audio device retirement failed; the previous generation cannot resume.", failures);
+            var failure = new AggregateException(
+                "Audio device retirement failed; the previous generation cannot resume.",
+                failures
+            );
             m_extensions.Fault(failure);
             throw failure;
         }
@@ -566,7 +564,17 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
         m_device = replacement;
         m_clipCache = new AudioClipCache(m_device, m_artifacts, m_options, m_extensions.RetireBackend);
         m_mixer = replacementMixer;
-        m_voices = new AudioVoiceOwner(m_device, m_artifacts, m_clipCache, m_mixer, m_events, m_diagnostics, m_options, m_extensions.RetireBackend, m_voices);
+        m_voices = new AudioVoiceOwner(
+            m_device,
+            m_artifacts,
+            m_clipCache,
+            m_mixer,
+            m_events,
+            m_diagnostics,
+            m_options,
+            m_extensions.RetireBackend,
+            m_voices
+        );
         m_content = new AudioContentOwner(m_device, m_voices, m_diagnostics, m_contentScopeProvider, m_options.maxContentSnapshots);
         m_deviceRecoveryElapsed = 0f;
         m_deviceLossReported = false;
@@ -590,13 +598,15 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
         EnsureActive();
         ArgumentNullException.ThrowIfNull(deviceFactory);
         if (m_device.state == AudioDeviceState.Ready)
+        {
             return true;
+        }
 
         IAudioDevice? candidate = null;
         try
         {
             candidate = deviceFactory()
-                ?? throw new InvalidOperationException("The audio recovery factory returned null.");
+                        ?? throw new InvalidOperationException("The audio recovery factory returned null.");
             if (candidate.state != AudioDeviceState.Ready)
             {
                 IAudioDevice rejected = candidate;
@@ -614,7 +624,8 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
                     "AUDIO_DEVICE_RECOVERY_FAILED",
                     "The replacement audio device did not reach the ready state; muted playback remains active.",
                     DiagnosticSeverity.Warning,
-                    "AudioRuntime");
+                    "AudioRuntime"
+                );
                 return false;
             }
             string? recoveredSource = candidate.GetType().FullName;
@@ -625,7 +636,8 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
                 "AUDIO_DEVICE_RECOVERED",
                 "The audio output device recovered with a new generation.",
                 DiagnosticSeverity.Info,
-                recoveredSource);
+                recoveredSource
+            );
             return true;
         }
         catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
@@ -637,7 +649,9 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
             try
             {
                 if (candidate is not null)
+                {
                     m_extensions.RetireBackend(candidate.Dispose);
+                }
             }
             catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
             {
@@ -653,7 +667,8 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
                 "AUDIO_DEVICE_RECOVERY_FAILED",
                 $"The audio output recovery candidate failed; muted playback remains active: {exception.Message}",
                 DiagnosticSeverity.Warning,
-                "AudioRuntime");
+                "AudioRuntime"
+            );
             return false;
         }
     }
@@ -671,7 +686,9 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     {
         EnsureActive();
         if (!float.IsFinite(deltaTime) || deltaTime < 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(deltaTime));
+        }
         m_content.Update(m_extensions.extensions.providers, deltaTime);
         m_voices.PrepareVoices();
         m_device.Update(deltaTime);
@@ -689,7 +706,8 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
                     "AUDIO_DEVICE_LOST",
                     "The audio output device was lost; active voices are completing and recovery will retry at safe points.",
                     DiagnosticSeverity.Warning,
-                    m_device.GetType().FullName);
+                    m_device.GetType().FullName
+                );
             }
             m_voices.CompleteAll(AudioCompletionReason.DeviceLost);
             m_content.ClearEmitters();
@@ -697,13 +715,34 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
         AdvanceDeviceRecovery(deltaTime);
     }
 
+    /// <inheritdoc/>
+    protected override void OnStart() => m_events.dispatched += OnEventDispatched;
+
+    /// <summary>
+    /// Captures snapshots and binds service façades.
+    /// </summary>
+    /// <param name="frame">
+    /// The variable frame timing.
+    /// </param>
+    protected override void OnBeginFrame(RuntimeFrame frame) => OwnFrameScope(EnterExecutionScope());
+
+    /// <summary>
+    /// Advances domain state on the variable clock.
+    /// </summary>
+    /// <param name="frame">
+    /// The variable frame timing.
+    /// </param>
+    protected override void OnUpdate(RuntimeFrame frame) => Update(frame.unscaledDeltaTime);
+
     /// <summary>
     /// Stops voices and releases providers, cache entries, mixer generations, and the owned backend device.
     /// </summary>
     protected override void OnStop()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_stopping = true;
         m_events.dispatched -= OnEventDispatched;
         if (!m_extensionsRetired)
@@ -738,13 +777,17 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
         m_candidateRetirement = null;
         m_disposed = true;
         if (failures.Count > 0)
+        {
             throw new AggregateException("Audio retirement failed after all resource owners were attempted.", failures);
+        }
     }
 
     private void OnEventDispatched(Event e)
     {
         if (e is ApplicationSuspensionChangedEvent suspension)
+        {
             m_mixer.SetSuspended(suspension.isSuspended);
+        }
     }
 
     private List<Exception> RetireBackend(AudioCompletionReason reason)
@@ -755,11 +798,21 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
             {
                 switch (m_retirementStage)
                 {
-                    case 0: m_voices.CompleteAll(reason); break;
-                    case 1: m_content.Dispose(); break;
-                    case 2: m_clipCache.Dispose(); break;
-                    case 3: m_mixer.Dispose(); break;
-                    case 4: m_device.Dispose(); break;
+                    case 0:
+                        m_voices.CompleteAll(reason);
+                        break;
+                    case 1:
+                        m_content.Dispose();
+                        break;
+                    case 2:
+                        m_clipCache.Dispose();
+                        break;
+                    case 3:
+                        m_mixer.Dispose();
+                        break;
+                    case 4:
+                        m_device.Dispose();
+                        break;
                 }
             }
             catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
@@ -786,10 +839,14 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
             return;
         }
         if (m_deviceRecoveryFactory is null)
+        {
             return;
+        }
         m_deviceRecoveryElapsed += deltaTime;
         if (m_deviceRecoveryElapsed < m_options.deviceRecoveryIntervalSeconds)
+        {
             return;
+        }
         m_deviceRecoveryElapsed = 0f;
         _ = TryRecoverDevice(m_deviceRecoveryFactory);
     }
@@ -799,14 +856,15 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
         string message,
         DiagnosticSeverity severity,
         string? source
-    )
-        => m_diagnostics.Publish(new Diagnostic(code, message, severity, source));
+    ) => m_diagnostics.Publish(new Diagnostic(code, message, severity, source));
 
     private void EnsureActive()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_stopping || m_retirementStage != 0)
+        {
             throw new InvalidOperationException("Audio retirement has started; no new work can be accepted.");
+        }
         m_extensions.EnsureHealthy();
     }
 }

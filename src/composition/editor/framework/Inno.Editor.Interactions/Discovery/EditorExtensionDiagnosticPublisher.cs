@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Core.Diagnostics;
 
 namespace Inno.Editor.Interactions;
@@ -13,29 +12,44 @@ internal sealed class EditorExtensionDiagnosticPublisher : IDisposable
     private readonly Dictionary<string, string> m_panelFailures = new(StringComparer.Ordinal);
     private string m_publishedState = string.Empty;
 
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose()
+    {
+        m_panelFailures.Clear();
+        if (!string.IsNullOrEmpty(m_publishedState))
+        {
+            Diagnostics.Clear(C_PANEL_ACTIVATION_GROUP);
+        }
+        m_publishedState = string.Empty;
+    }
+
     internal void ReportPanelFailure(
-        string panelId,
+        string panelID,
         Exception exception
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(panelID);
         ArgumentNullException.ThrowIfNull(exception);
-        m_panelFailures[panelId] = exception.Message;
+        m_panelFailures[panelID] = exception.Message;
     }
 
-    internal void ResolvePanel(string panelId)
+    internal void ResolvePanel(string panelID)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
-        m_panelFailures.Remove(panelId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(panelID);
+        m_panelFailures.Remove(panelID);
     }
 
-    internal void RetainPanels(IReadOnlySet<string> panelIds)
+    internal void RetainPanels(IReadOnlySet<string> panelIDs)
     {
-        ArgumentNullException.ThrowIfNull(panelIds);
+        ArgumentNullException.ThrowIfNull(panelIDs);
         string[] removed = m_panelFailures.Keys
-            .Where(id => !panelIds.Contains(id))
+            .Where(id => !panelIDs.Contains(id))
             .ToArray();
         for (int i = 0; i < removed.Length; i++)
+        {
             m_panelFailures.Remove(removed[i]);
+        }
     }
 
     internal void Commit()
@@ -43,7 +57,9 @@ internal sealed class EditorExtensionDiagnosticPublisher : IDisposable
         if (m_panelFailures.Count == 0)
         {
             if (!string.IsNullOrEmpty(m_publishedState))
+            {
                 Diagnostics.Clear(C_PANEL_ACTIVATION_GROUP);
+            }
             m_publishedState = string.Empty;
             return;
         }
@@ -53,23 +69,16 @@ internal sealed class EditorExtensionDiagnosticPublisher : IDisposable
             .ToArray();
         string state = string.Join('\n', failures.Select(static pair => $"{pair.Key}:{pair.Value}"));
         if (string.Equals(m_publishedState, state, StringComparison.Ordinal))
+        {
             return;
+        }
         Diagnostics.Set(
             C_PANEL_ACTIVATION_GROUP,
             failures.Select(static pair => Diagnostic.Error(
                 "EDITOR-PANEL",
-                $"Panel '{pair.Key}' failed to attach: {pair.Value}")));
+                $"Panel '{pair.Key}' failed to attach: {pair.Value}"
+            ))
+        );
         m_publishedState = state;
-    }
-
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose()
-    {
-        m_panelFailures.Clear();
-        if (!string.IsNullOrEmpty(m_publishedState))
-            Diagnostics.Clear(C_PANEL_ACTIVATION_GROUP);
-        m_publishedState = string.Empty;
     }
 }

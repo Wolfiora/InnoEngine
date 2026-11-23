@@ -1,12 +1,14 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Inno.Editor.Shaders;
 using System;
 using Inno.Core.Mathematics;
 using Inno.Editor.Inspection;
+using Inno.Editor.Shaders;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+
 namespace Inno.Editor.Shaders.ImGui;
+
 /// <summary>
 /// Uses the shared Inspector drawers for both Shader defaults and Material overrides.
 /// </summary>
@@ -69,15 +71,30 @@ public static class ShaderPropertyInspector
             maximum: property.type == ShaderPropertyType.Float && presentation?.hasRange == true ? presentation.maximum : null
         );
         if (property.type == ShaderPropertyType.Color)
+        {
             EditorUI.current.widgets.Hint("Linear RGBA · HDR values are preserved");
+        }
         if (property.bindingKind == ShaderPropertyBindingKind.SampledTexture)
-            context.properties.DrawValue(context.editorContext, owner, path + ".sampler", "Sampler", typeof(RenderSamplerState), () => value.sampler, next =>
+        {
+            context.properties.DrawValue(
+                context.editorContext,
+                owner,
+                path
+                + ".sampler",
+                "Sampler",
+                typeof(RenderSamplerState),
+                () => value.sampler,
+                next =>
             {
-                var candidate = value;
+                MaterialValue candidate = value;
                 candidate.kind = MaterialValueKind.Texture;
                 candidate.sampler = (RenderSamplerState)next!;
                 setter(candidate);
-            }, edits, readOnly);
+            },
+                edits,
+                readOnly
+            );
+        }
     }
 
     /// <summary>
@@ -101,9 +118,13 @@ public static class ShaderPropertyInspector
         ShaderPropertyType.Vector2 or ShaderPropertyType.Vector3 or ShaderPropertyType.Vector4 => kind == MaterialValueKind.Vector,
         ShaderPropertyType.Color => kind == MaterialValueKind.Color,
         ShaderPropertyType.Matrix4x4 => kind == MaterialValueKind.Matrix,
-        ShaderPropertyType.Texture2D or ShaderPropertyType.Texture2DArray or ShaderPropertyType.Texture3D or ShaderPropertyType.TextureCube => kind == MaterialValueKind.Texture,
+        ShaderPropertyType.Texture2D
+        or ShaderPropertyType.Texture2DArray
+        or ShaderPropertyType.Texture3D
+        or ShaderPropertyType.TextureCube => kind == MaterialValueKind.Texture,
         _ => false
     };
+
     /// <summary>
     /// Applies the edited components of a representative value without replacing unrelated mixed components.
     /// </summary>
@@ -129,13 +150,19 @@ public static class ShaderPropertyInspector
         MaterialValue target
     ) {
         if (!Compatible(type, before.kind) || !Compatible(type, edited.kind) || !Compatible(type, target.kind))
+        {
             throw new ArgumentException("A multi-Material edit requires exactly matching value kinds.");
+        }
         if (type == ShaderPropertyType.Float)
+        {
             return edited;
+        }
         if (edited.kind == MaterialValueKind.Texture)
         {
             if (!ReferenceEquals(before.texture, edited.texture))
+            {
                 target.texture = edited.texture;
+            }
             target.sampler = new(
                 before.sampler.filter == edited.sampler.filter ? target.sampler.filter : edited.sampler.filter,
                 before.sampler.addressU == edited.sampler.addressU ? target.sampler.addressU : edited.sampler.addressU,
@@ -145,7 +172,9 @@ public static class ShaderPropertyInspector
         }
         else if (edited.kind == MaterialValueKind.Matrix)
         {
-            Matrix b = before.matrix, e = edited.matrix, t = target.matrix;
+            Matrix b = before.matrix;
+            Matrix e = edited.matrix;
+            Matrix t = target.matrix;
             target.matrix = new(
                 Merge(b.m11, e.m11, t.m11),
                 Merge(b.m12, e.m12, t.m12),
@@ -167,7 +196,9 @@ public static class ShaderPropertyInspector
         }
         else
         {
-            Vector4 b = before.vector, e = edited.vector, t = target.vector;
+            Vector4 b = before.vector;
+            Vector4 e = edited.vector;
+            Vector4 t = target.vector;
             target.vector = new(Merge(b.x, e.x, t.x), Merge(b.y, e.y, t.y), Merge(b.z, e.z, t.z), Merge(b.w, e.w, t.w));
         }
 
@@ -179,7 +210,8 @@ public static class ShaderPropertyInspector
         ) => BitConverter.SingleToUInt32Bits(previous) == BitConverter.SingleToUInt32Bits(next) ? current : next;
     }
 
-    private static Type ValueType(ShaderPropertyType type) => type switch
+    private static Type ValueType(ShaderPropertyType type)
+        => type switch
     {
         ShaderPropertyType.Float => typeof(float),
         ShaderPropertyType.Vector2 => typeof(Vector2),
@@ -187,8 +219,13 @@ public static class ShaderPropertyInspector
         ShaderPropertyType.Vector4 => typeof(Vector4),
         ShaderPropertyType.Color => typeof(Color),
         ShaderPropertyType.Matrix4x4 => typeof(Matrix),
-        ShaderPropertyType.Texture2D or ShaderPropertyType.Texture2DArray or ShaderPropertyType.Texture3D or ShaderPropertyType.TextureCube => typeof(TextureAsset),
-        _ => throw new InvalidOperationException("No material editor exists for " + type)};
+        ShaderPropertyType.Texture2D
+        or ShaderPropertyType.Texture2DArray
+        or ShaderPropertyType.Texture3D
+        or ShaderPropertyType.TextureCube => typeof(TextureAsset),
+        _ => throw new InvalidOperationException("No material editor exists for " + type)
+    };
+
     private static object? Unbox(
         ShaderPropertyType type,
         MaterialValue value
@@ -202,6 +239,7 @@ public static class ShaderPropertyInspector
         ShaderPropertyType.Matrix4x4 => value.matrix,
         _ => value.texture
     };
+
     private static MaterialValue Box(
         ShaderPropertyType type,
         object? value,
@@ -210,7 +248,9 @@ public static class ShaderPropertyInspector
     {
         ShaderPropertyType.Float => MaterialValue.FromFloat((float)value!),
         ShaderPropertyType.Vector2 => MaterialValue.FromVector(new Vector4(((Vector2)value!).x, ((Vector2)value!).y, 0, 0)),
-        ShaderPropertyType.Vector3 => MaterialValue.FromVector(new Vector4(((Vector3)value!).x, ((Vector3)value!).y, ((Vector3)value!).z, 0)),
+        ShaderPropertyType.Vector3 => MaterialValue.FromVector(
+            new Vector4(((Vector3)value!).x, ((Vector3)value!).y, ((Vector3)value!).z, 0)
+        ),
         ShaderPropertyType.Vector4 => MaterialValue.FromVector((Vector4)value!),
         ShaderPropertyType.Color => MaterialValue.FromColor((Color)value!),
         ShaderPropertyType.Matrix4x4 => MaterialValue.FromMatrix((Matrix)value!),

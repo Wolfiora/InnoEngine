@@ -1,7 +1,6 @@
-using Inno.Runtime.Contracts;
 using System;
-
 using Inno.Runtime;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Input.Runtime;
 
@@ -20,7 +19,8 @@ public sealed class InputRuntime : RuntimeSubsystem, IInputService
     /// </param>
     public InputRuntime(IInputBackend backend)
     {
-        m_backend = backend ?? throw new ArgumentNullException(nameof(backend));
+        ArgumentNullException.ThrowIfNull(backend);
+        m_backend = backend;
     }
 
     /// <summary>
@@ -39,6 +39,7 @@ public sealed class InputRuntime : RuntimeSubsystem, IInputService
         snapshot = m_backend.Capture(frame.frameIndex);
         OwnFrameScope(InputExecutionContext.EnterScope(this));
     }
+
     /// <summary>
     /// Releases the input backend after its frame scope and owned work have quiesced.
     /// </summary>

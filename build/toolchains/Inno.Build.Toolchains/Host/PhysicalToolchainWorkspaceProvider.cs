@@ -10,17 +10,19 @@ namespace Inno.Build.Toolchains;
 /// </summary>
 public sealed class PhysicalToolchainWorkspaceProvider : IToolchainWorkspaceProvider
 {
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string identity => "physical";
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ValueTask<ToolchainWorkingDirectory> OpenAsync(
         string physicalPath,
         CancellationToken cancellationToken = default
     ) {
         cancellationToken.ThrowIfCancellationRequested();
         if (!Path.IsPathFullyQualified(physicalPath))
+        {
             throw new ArgumentException("Tool execution requires an absolute physical owner path.", nameof(physicalPath));
+        }
         string physical = Path.GetFullPath(physicalPath);
         Directory.CreateDirectory(physical);
         return ValueTask.FromResult(new ToolchainWorkingDirectory(physical));

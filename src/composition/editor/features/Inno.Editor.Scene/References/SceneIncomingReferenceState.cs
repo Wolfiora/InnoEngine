@@ -3,7 +3,7 @@ using System;
 namespace Inno.Editor.Scene;
 
 internal sealed record SceneIncomingReferenceState(
-    Guid ownerId,
+    Guid ownerID,
     string propertyName,
     byte[] data
 );

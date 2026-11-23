@@ -11,7 +11,7 @@ public sealed class BuildResult
     private BuildResult(
         bool succeeded,
         string? outputPath,
-        BuildTargetId? target,
+        BuildTargetID? target,
         string? contentHash,
         int assetCount,
         int artifactBundleCount,
@@ -43,7 +43,7 @@ public sealed class BuildResult
     /// <summary>
     /// Gets the game target, or <see langword="null"/> for a Plugin package.
     /// </summary>
-    public BuildTargetId? target { get; }
+    public BuildTargetID? target { get; }
 
     /// <summary>
     /// Gets the deterministic content identity, or <see langword="null"/> when the build failed.
@@ -77,7 +77,7 @@ public sealed class BuildResult
 
     internal static BuildResult Success(
         string outputPath,
-        BuildTargetId? target,
+        BuildTargetID? target,
         string contentHash,
         int assetCount,
         int artifactBundleCount,
@@ -96,16 +96,19 @@ public sealed class BuildResult
             artifactBundleCount,
             runtimeAssemblyCount,
             embeddedPluginCount,
-            diagnostics);
+            diagnostics
+        );
     }
 
     internal static BuildResult Failure(
-        BuildTargetId? target,
+        BuildTargetID? target,
         IReadOnlyList<BuildDiagnostic> diagnostics
     ) {
         ArgumentNullException.ThrowIfNull(diagnostics);
         if (diagnostics.Count == 0)
+        {
             throw new ArgumentException("A failed build requires at least one diagnostic.", nameof(diagnostics));
+        }
         return new BuildResult(
             false,
             outputPath: null,
@@ -115,6 +118,7 @@ public sealed class BuildResult
             artifactBundleCount: 0,
             runtimeAssemblyCount: 0,
             embeddedPluginCount: 0,
-            diagnostics);
+            diagnostics
+        );
     }
 }

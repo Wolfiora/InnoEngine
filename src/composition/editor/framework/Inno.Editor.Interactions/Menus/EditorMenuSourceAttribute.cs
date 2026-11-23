@@ -25,7 +25,9 @@ public sealed class EditorMenuSourceAttribute : Attribute
         int priority = 0
     ) {
         if (string.IsNullOrWhiteSpace(area))
+        {
             throw new ArgumentException("An editor menu area is required.", nameof(area));
+        }
         this.area = area;
         this.priority = priority;
     }

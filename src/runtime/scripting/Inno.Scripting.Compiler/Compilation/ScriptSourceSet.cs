@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Plugins.Authoring;
-using Inno.Extensibility.Modules;
 using Inno.Core.Collections;
+using Inno.Extensibility.Modules;
+using Inno.Plugins.Authoring;
 
 namespace Inno.Scripting.Compiler;
 
@@ -31,19 +31,23 @@ internal sealed record ScriptSourceSet(
         ArgumentNullException.ThrowIfNull(assets);
         ArgumentNullException.ThrowIfNull(plugins);
         if (!assets.isInitialized)
+        {
             throw new InvalidOperationException("Script discovery requires the Asset Database.");
+        }
 
         IAssetSourceSnapshot? candidateAssets = sourceSnapshot ?? plugins.compilationAssets;
         AssetFileEntry[] entries = (candidateAssets?.GetFileSystemEntries(includeDirectories: false)
-                ?? assets.GetFileSystemEntries(includeDirectories: false))
+                                    ?? assets.GetFileSystemEntries(includeDirectories: false))
             .Where(entry => includeEditor || !entry.isSampleContent)
             .Where(entry => includeEditor || !AssetSample.IsRuntimeExcluded(entry.assetPath, isDirectory: false))
             .OrderBy(static entry => entry.assetPath.source.value, StringComparer.Ordinal)
             .ThenBy(static entry => entry.assetPath.localPath, StringComparer.Ordinal)
             .ToArray();
         ScriptAssemblyDefinition[] explicitDefinitions = entries
-            .Where(static entry => !entry.isSampleContent &&
-                string.Equals(entry.extension, ".iasmdef", StringComparison.OrdinalIgnoreCase))
+            .Where(static entry => (
+                !entry.isSampleContent
+                && string.Equals(entry.extension, ".iasmdef", StringComparison.OrdinalIgnoreCase)
+            ))
             .Select(entry => ParseDefinition(entry, candidateAssets, assets))
             .OrderBy(static definition => definition.source.value, StringComparer.Ordinal)
             .ThenBy(static definition => definition.directory, StringComparer.Ordinal)
@@ -51,17 +55,21 @@ internal sealed record ScriptSourceSet(
 
         var builders = new Dictionary<string, AssemblyBuilder>(StringComparer.OrdinalIgnoreCase);
         foreach (ScriptAssemblyDefinition definition in explicitDefinitions)
+        {
             AddBuilder(builders, definition);
+        }
         if (builders.ContainsKey(C_GAME_ASSEMBLY_NAME) || builders.ContainsKey(C_EDITOR_ASSEMBLY_NAME))
         {
             throw new InvalidDataException(
-                $"Assembly definitions cannot use the reserved {C_GAME_ASSEMBLY_NAME} or {C_EDITOR_ASSEMBLY_NAME} names.");
+                $"Assembly definitions cannot use the reserved {C_GAME_ASSEMBLY_NAME} or {C_EDITOR_ASSEMBLY_NAME} names."
+            );
         }
 
         PluginCandidate[] codePlugins = plugins.compilationPlugins
-            .Where(candidate => entries.Any(entry =>
+            .Where(candidate => entries.Any(entry => (
                 entry.assetPath.source == candidate.sourceMount.id
-                && string.Equals(entry.extension, ".cs", StringComparison.OrdinalIgnoreCase)))
+                && string.Equals(entry.extension, ".cs", StringComparison.OrdinalIgnoreCase)
+            )))
             .ToArray();
         ValidateManifestDefinitions(entries, explicitDefinitions, codePlugins);
 
@@ -71,89 +79,118 @@ internal sealed record ScriptSourceSet(
             string runtimeName = CreatePluginAssemblyName(plugin.manifest.pluginId);
             string editorName = runtimeName + ".Editor";
             string samplesName = runtimeName + ".Samples";
-            pluginDefaultNames.Add(plugin.manifest.pluginId,
-                new PluginDefaultNames(runtimeName, editorName, samplesName));
-            AddBuilder(builders, CreateDefaultDefinition(
-                runtimeName,
-                plugin.sourceMount.id,
-                ScriptAssemblyScope.Runtime,
-                AssemblyDomain.InnoPlugin,
+            pluginDefaultNames.Add(
                 plugin.manifest.pluginId,
-                "plugin-default-runtime"));
-            AddBuilder(builders, CreateDefaultDefinition(
-                editorName,
-                plugin.sourceMount.id,
-                ScriptAssemblyScope.Editor,
-                AssemblyDomain.InnoPlugin,
-                plugin.manifest.pluginId,
-                "plugin-default-editor"));
-            if (includeEditor)
-                AddBuilder(builders, CreateDefaultDefinition(
-                    samplesName,
+                new PluginDefaultNames(runtimeName, editorName, samplesName)
+            );
+            AddBuilder(
+                builders,
+                CreateDefaultDefinition(
+                    runtimeName,
+                    plugin.sourceMount.id,
+                    ScriptAssemblyScope.Runtime,
+                    AssemblyDomain.InnoPlugin,
+                    plugin.manifest.pluginId,
+                    "plugin-default-runtime"
+                )
+            );
+            AddBuilder(
+                builders,
+                CreateDefaultDefinition(
+                    editorName,
                     plugin.sourceMount.id,
                     ScriptAssemblyScope.Editor,
                     AssemblyDomain.InnoPlugin,
                     plugin.manifest.pluginId,
-                    "plugin-authoring-samples"));
+                    "plugin-default-editor"
+                )
+            );
+            if (includeEditor)
+            {
+                AddBuilder(
+                    builders,
+                    CreateDefaultDefinition(
+                        samplesName,
+                        plugin.sourceMount.id,
+                        ScriptAssemblyScope.Editor,
+                        AssemblyDomain.InnoPlugin,
+                        plugin.manifest.pluginId,
+                        "plugin-authoring-samples"
+                    )
+                );
+            }
         }
 
-        AddBuilder(builders, CreateDefaultDefinition(
-            C_GAME_ASSEMBLY_NAME,
-            AssetSourceId.project,
-            ScriptAssemblyScope.Runtime,
-            AssemblyDomain.InnoScripting,
-            string.Empty,
-            "project-default-runtime"));
-        AddBuilder(builders, CreateDefaultDefinition(
-            C_EDITOR_ASSEMBLY_NAME,
-            AssetSourceId.project,
-            ScriptAssemblyScope.Editor,
-            AssemblyDomain.InnoScripting,
-            string.Empty,
-            "project-default-editor"));
+        AddBuilder(
+            builders,
+            CreateDefaultDefinition(
+                C_GAME_ASSEMBLY_NAME,
+                AssetSourceID.project,
+                ScriptAssemblyScope.Runtime,
+                AssemblyDomain.InnoScripting,
+                string.Empty,
+                "project-default-runtime"
+            )
+        );
+        AddBuilder(
+            builders,
+            CreateDefaultDefinition(
+                C_EDITOR_ASSEMBLY_NAME,
+                AssetSourceID.project,
+                ScriptAssemblyScope.Editor,
+                AssemblyDomain.InnoScripting,
+                string.Empty,
+                "project-default-editor"
+            )
+        );
 
         ConfigureDefaultReferences(builders, explicitDefinitions, codePlugins, pluginDefaultNames);
         foreach (AssetFileEntry entry in entries.Where(static entry =>
-                     string.Equals(entry.extension, ".cs", StringComparison.OrdinalIgnoreCase)))
-        {
+                     string.Equals(entry.extension, ".cs", StringComparison.OrdinalIgnoreCase))
+        ) {
             if (entry.isSampleContent)
             {
-                if (entry.assetPath.source == AssetSourceId.project)
+                if (entry.assetPath.source == AssetSourceID.project)
+                {
                     continue;
+                }
                 if (!plugins.TryGetCompilationPlugin(entry.assetPath.source, out PluginCandidate? samplePlugin)
                     || samplePlugin is null
-                    || !pluginDefaultNames.TryGetValue(samplePlugin.manifest.pluginId,
-                        out PluginDefaultNames sampleNames))
+                    || !pluginDefaultNames.TryGetValue(
+                        samplePlugin.manifest.pluginId,
+                        out PluginDefaultNames sampleNames
+                    )
+                ) {
                     throw new InvalidDataException($"Sample script '{entry.assetPath}' has no active Plugin.");
+                }
                 builders[sampleNames.samples].sources.Add(CreateSourceInput(entry, candidateAssets, assets));
                 continue;
             }
             ScriptAssemblyDefinition? definition = FindNearestDefinition(entry.assetPath, explicitDefinitions);
             ScriptAssemblyScope scope = definition?.scope
-                ?? (entry.assetPath.localPath.EndsWith(".editor.cs", StringComparison.OrdinalIgnoreCase)
-                    ? ScriptAssemblyScope.Editor
-                    : ScriptAssemblyScope.Runtime);
+                                        ?? (entry.assetPath.localPath.EndsWith(".editor.cs", StringComparison.OrdinalIgnoreCase)
+                                            ? ScriptAssemblyScope.Editor
+                                            : ScriptAssemblyScope.Runtime);
             AssemblyBuilder builder;
             if (definition is not null)
             {
                 builder = builders[definition.name];
             }
-            else if (entry.assetPath.source == AssetSourceId.project)
+            else if (entry.assetPath.source == AssetSourceID.project)
             {
                 builder = builders[scope == ScriptAssemblyScope.Editor
-                    ? C_EDITOR_ASSEMBLY_NAME
-                    : C_GAME_ASSEMBLY_NAME];
+                                   ? C_EDITOR_ASSEMBLY_NAME
+                                   : C_GAME_ASSEMBLY_NAME];
             }
             else
             {
-                if (!plugins.TryGetCompilationPlugin(
-                        entry.assetPath.source,
-                        out PluginCandidate? plugin)
+                if (!plugins.TryGetCompilationPlugin(entry.assetPath.source, out PluginCandidate? plugin)
                     || plugin is null
-                    || !pluginDefaultNames.TryGetValue(plugin.manifest.pluginId, out PluginDefaultNames names))
-                {
+                    || !pluginDefaultNames.TryGetValue(plugin.manifest.pluginId, out PluginDefaultNames names)
+                ) {
                     throw new InvalidDataException(
-                        $"Script '{entry.assetPath}' does not belong to an active Plugin source.");
+                        $"Script '{entry.assetPath}' does not belong to an active Plugin source."
+                    );
                 }
                 builder = builders[scope == ScriptAssemblyScope.Editor ? names.editor : names.runtime];
             }
@@ -164,22 +201,21 @@ internal sealed record ScriptSourceSet(
             ? builders
             : builders
                 .Where(static pair => pair.Value.definition.scope == ScriptAssemblyScope.Runtime)
-                .ToDictionary(
-                    static pair => pair.Key,
-                    static pair => pair.Value,
-                    StringComparer.OrdinalIgnoreCase);
+                .ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.OrdinalIgnoreCase);
         ScriptAssemblyInput[] assemblies = ValidateAndOrderAssemblies(compilationBuilders, plugins);
         return new ScriptSourceSet(
             builders[C_GAME_ASSEMBLY_NAME].sources.Select(static source => source.sourcePath).ToArray(),
             includeEditor
-                ? builders[C_EDITOR_ASSEMBLY_NAME].sources.Select(static source => source.sourcePath).ToArray()
-                : [],
+            ? builders[C_EDITOR_ASSEMBLY_NAME].sources.Select(static source => source.sourcePath).ToArray()
+            : [],
             includeEditor
-                ? explicitDefinitions
-                : explicitDefinitions.Where(static definition =>
-                    definition.scope == ScriptAssemblyScope.Runtime).ToArray(),
+            ? explicitDefinitions
+            : explicitDefinitions.Where(static definition => (
+                definition.scope == ScriptAssemblyScope.Runtime
+            )).ToArray(),
             assemblies,
-            includeEditor);
+            includeEditor
+        );
     }
 
     private static ScriptAssemblyDefinition ParseDefinition(
@@ -188,14 +224,16 @@ internal sealed record ScriptSourceSet(
         AssetPipeline assets
     ) {
         ScriptAssemblyDefinitionAsset asset = candidateAssets is null
-            ? assets.Load<ScriptAssemblyDefinitionAsset>(entry.assetPath)
-            : candidateAssets.Load<ScriptAssemblyDefinitionAsset>(entry.assetPath);
+                                              ? assets.Load<ScriptAssemblyDefinitionAsset>(entry.assetPath)
+                                              : candidateAssets.Load<ScriptAssemblyDefinitionAsset>(entry.assetPath);
         bool hasInfo = candidateAssets is null
-            ? assets.TryGetInfo(entry.assetPath, out AssetInfo? info)
-            : candidateAssets.TryGetInfo(entry.assetPath, out info);
+                       ? assets.TryGetInfo(entry.assetPath, out AssetInfo? info)
+                       : candidateAssets.TryGetInfo(entry.assetPath, out info);
         if (!hasInfo || info is null)
+        {
             throw new InvalidDataException($"Script assembly definition '{entry.assetPath}' has no metadata.");
-        bool isPlugin = entry.assetPath.source != AssetSourceId.project;
+        }
+        bool isPlugin = entry.assetPath.source != AssetSourceID.project;
         return new ScriptAssemblyDefinition(
             asset.assemblyName,
             entry.assetPath.source,
@@ -207,7 +245,8 @@ internal sealed record ScriptSourceSet(
             asset.defines,
             asset.nullable,
             asset.allowUnsafe,
-            ComputeDefinitionHash(asset));
+            ComputeDefinitionHash(asset)
+        );
     }
 
     private static ScriptSourceInput CreateSourceInput(
@@ -216,30 +255,31 @@ internal sealed record ScriptSourceSet(
         AssetPipeline assets
     ) {
         bool hasInfo = candidateAssets is null
-            ? assets.TryGetInfo(entry.assetPath, out AssetInfo? info)
-            : candidateAssets.TryGetInfo(entry.assetPath, out info);
+                       ? assets.TryGetInfo(entry.assetPath, out AssetInfo? info)
+                       : candidateAssets.TryGetInfo(entry.assetPath, out info);
         if (!hasInfo
             || info is null
-            || info.persistentId == Guid.Empty
+            || info.persistentID == Guid.Empty
             || !(candidateAssets is null
-                ? assets.TryGetArtifact(info.persistentId, "source", out AssetArtifactInfo? source)
-                : candidateAssets.TryGetArtifact(info.persistentId, "source", out source))
-            || source is null)
-        {
+                 ? assets.TryGetArtifact(info.persistentID, "source", out AssetArtifactInfo? source)
+                 : candidateAssets.TryGetArtifact(info.persistentID, "source", out source))
+            || source is null
+        ) {
             throw new InvalidDataException($"Script source '{entry.assetPath}' has no committed source artifact.");
         }
         IReadOnlyList<AssetSourceMount> mounts = candidateAssets?.sourceMounts ?? assets.sourceMounts;
         AssetSourceMount mount = mounts.Single(candidate => candidate.id == entry.assetPath.source);
         using ArtifactLease lease = candidateAssets is null
-            ? assets.AcquireArtifact(info.persistentId, "source")
-            : candidateAssets.AcquireArtifact(info.persistentId, "source");
-        using StreamReader reader = new(lease.OpenRead(), Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+                                    ? assets.AcquireArtifact(info.persistentID, "source")
+                                    : candidateAssets.AcquireArtifact(info.persistentID, "source");
+        using var reader = new StreamReader(lease.OpenRead(), Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
         return new ScriptSourceInput(
             entry.assetPath,
             mount.Resolve(entry.assetPath.localPath),
             reader.ReadToEnd(),
-            info.persistentId,
-            source.contentHash);
+            info.persistentID,
+            source.contentHash
+        );
     }
 
     private static string ComputeDefinitionHash(ScriptAssemblyDefinitionAsset asset)
@@ -253,10 +293,10 @@ internal sealed record ScriptSourceSet(
                 asset.nullable.ToString(),
                 asset.allowUnsafe.ToString()
             }
-            .Concat(asset.references.OrderBy(static value => value, StringComparer.Ordinal))
-            .Concat(asset.defines.OrderBy(static value => value, StringComparer.Ordinal)));
-        return Convert.ToHexString(
-            System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(normalized)));
+                .Concat(asset.references.OrderBy(static value => value, StringComparer.Ordinal))
+                .Concat(asset.defines.OrderBy(static value => value, StringComparer.Ordinal))
+        );
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(normalized)));
     }
 
     private static void ValidateManifestDefinitions(
@@ -268,22 +308,27 @@ internal sealed record ScriptSourceSet(
         foreach (PluginCandidate plugin in plugins)
         {
             string[] declared = plugin.manifest.assemblyDefinitions
-                .Select(static path => path.StartsWith("Assets/", StringComparison.Ordinal)
+                .Select(static path => (
+                    path.StartsWith("Assets/", StringComparison.Ordinal)
                     ? path["Assets/".Length..]
-                    : path)
+                    : path
+                ))
                 .OrderBy(static path => path, StringComparer.Ordinal)
                 .ToArray();
             string[] discovered = entries
-                .Where(entry => entry.assetPath.source == plugin.sourceMount.id
+                .Where(entry => (
+                    entry.assetPath.source == plugin.sourceMount.id
                     && !entry.isSampleContent
-                    && string.Equals(entry.extension, ".iasmdef", StringComparison.OrdinalIgnoreCase))
+                    && string.Equals(entry.extension, ".iasmdef", StringComparison.OrdinalIgnoreCase)
+                ))
                 .Select(static entry => entry.assetPath.localPath)
                 .OrderBy(static path => path, StringComparer.Ordinal)
                 .ToArray();
             if (!declared.SequenceEqual(discovered, StringComparer.Ordinal))
             {
                 throw new InvalidDataException(
-                    $"Plugin '{plugin.manifest.pluginId}' assemblyDefinitions do not match its imported .iasmdef sources.");
+                    $"Plugin '{plugin.manifest.pluginId}' assemblyDefinitions do not match its imported .iasmdef sources."
+                );
             }
         }
     }
@@ -308,17 +353,20 @@ internal sealed record ScriptSourceSet(
                 samples.references.Add(names.runtime);
                 samples.references.Add(names.editor);
             }
-            foreach (string dependencyId in plugin.manifest.dependencies)
+            foreach (string dependencyID in plugin.manifest.dependencies)
             {
-                foreach (ScriptAssemblyDefinition dependency in explicitDefinitions.Where(definition =>
-                             definition.ownerPluginId == dependencyId))
-                {
+                foreach (ScriptAssemblyDefinition dependency in explicitDefinitions.Where(definition => (
+                    definition.ownerPluginID == dependencyID
+                ))
+                ) {
                     if (dependency.scope == ScriptAssemblyScope.Runtime)
+                    {
                         runtime.references.Add(dependency.name);
+                    }
                     pluginEditor.references.Add(dependency.name);
                     samples?.references.Add(dependency.name);
                 }
-                if (defaultNames.TryGetValue(dependencyId, out PluginDefaultNames dependencyDefaults))
+                if (defaultNames.TryGetValue(dependencyID, out PluginDefaultNames dependencyDefaults))
                 {
                     runtime.references.Add(dependencyDefaults.runtime);
                     pluginEditor.references.Add(dependencyDefaults.runtime);
@@ -330,11 +378,14 @@ internal sealed record ScriptSourceSet(
             game.references.Add(names.runtime);
             editor.references.Add(names.runtime);
             editor.references.Add(names.editor);
-            foreach (ScriptAssemblyDefinition definition in explicitDefinitions.Where(candidate =>
-                         candidate.ownerPluginId == plugin.manifest.pluginId))
-            {
+            foreach (ScriptAssemblyDefinition definition in explicitDefinitions.Where(candidate => (
+                candidate.ownerPluginID == plugin.manifest.pluginId
+            ))
+            ) {
                 if (definition.scope == ScriptAssemblyScope.Runtime)
+                {
                     game.references.Add(definition.name);
+                }
                 editor.references.Add(definition.name);
             }
         }
@@ -369,27 +420,31 @@ internal sealed record ScriptSourceSet(
                 if (!builders.TryGetValue(reference, out AssemblyBuilder? dependency))
                 {
                     throw new InvalidDataException(
-                        $"Script assembly '{builder.definition.name}' references unknown assembly '{reference}'.");
+                        $"Script assembly '{builder.definition.name}' references unknown assembly '{reference}'."
+                    );
                 }
                 if (builder.definition.scope == ScriptAssemblyScope.Runtime
-                    && dependency.definition.scope == ScriptAssemblyScope.Editor)
-                {
+                    && dependency.definition.scope == ScriptAssemblyScope.Editor
+                ) {
                     throw new InvalidDataException(
-                        $"Runtime script assembly '{builder.definition.name}' cannot reference editor assembly '{reference}'.");
+                        $"Runtime script assembly '{builder.definition.name}' cannot reference editor assembly '{reference}'."
+                    );
                 }
                 ValidateDomainDependency(builder.definition, dependency.definition, plugins);
             }
         }
 
-        var graph = new DependencyGraph<string>(
-            StringComparer.OrdinalIgnoreCase,
-            StringComparer.Ordinal);
+        var graph = new DependencyGraph<string>(StringComparer.OrdinalIgnoreCase, StringComparer.Ordinal);
         foreach (string name in builders.Keys)
+        {
             graph.AddNode(name);
+        }
         foreach ((string name, string[] references) in referencesByAssembly)
         {
             foreach (string reference in references)
+            {
                 graph.AddDependency(name, reference);
+            }
         }
         IReadOnlyList<string> order;
         try
@@ -407,13 +462,14 @@ internal sealed record ScriptSourceSet(
                 builder.definition.name,
                 builder.definition.scope,
                 builder.definition.domain,
-                builder.definition.ownerPluginId,
+                builder.definition.ownerPluginID,
                 builder.sources.OrderBy(static value => value.assetPath.ToString(), StringComparer.Ordinal).ToArray(),
                 referencesByAssembly[name],
                 builder.definition.defines,
                 builder.definition.nullable,
                 builder.definition.allowUnsafe,
-                builder.definition.configurationHash);
+                builder.definition.configurationHash
+            );
         }).ToArray();
     }
 
@@ -423,63 +479,71 @@ internal sealed record ScriptSourceSet(
         PluginEnvironment plugins
     ) {
         if (assembly.domain != AssemblyDomain.InnoPlugin)
+        {
             return;
+        }
         if (dependency.domain != AssemblyDomain.InnoPlugin)
         {
             throw new InvalidDataException(
-                $"Plugin assembly '{assembly.name}' cannot reference project assembly '{dependency.name}'.");
+                $"Plugin assembly '{assembly.name}' cannot reference project assembly '{dependency.name}'."
+            );
         }
-        if (string.Equals(assembly.ownerPluginId, dependency.ownerPluginId, StringComparison.Ordinal))
-            return;
-        if (!plugins.TryGetCompilationPlugin(
-                new AssetSourceId(assembly.ownerPluginId),
-                out PluginCandidate? owner)
-            || owner is null
-            || !owner.manifest.dependencies.Contains(dependency.ownerPluginId, StringComparer.Ordinal))
+        if (string.Equals(assembly.ownerPluginID, dependency.ownerPluginID, StringComparison.Ordinal))
         {
+            return;
+        }
+        if (!plugins.TryGetCompilationPlugin(new AssetSourceID(assembly.ownerPluginID), out PluginCandidate? owner)
+            || owner is null
+            || !owner.manifest.dependencies.Contains(dependency.ownerPluginID, StringComparer.Ordinal)
+        ) {
             throw new InvalidDataException(
-                $"Plugin '{assembly.ownerPluginId}' must declare dependency '{dependency.ownerPluginId}' " +
-                $"before assembly '{assembly.name}' can reference '{dependency.name}'.");
+                $"Plugin '{assembly.ownerPluginID}' must declare dependency '{dependency.ownerPluginID}' "
+                + $"before assembly '{assembly.name}' can reference '{dependency.name}'."
+            );
         }
     }
 
     private static ScriptAssemblyDefinition CreateDefaultDefinition(
         string name,
-        AssetSourceId source,
+        AssetSourceID source,
         ScriptAssemblyScope scope,
         AssemblyDomain domain,
-        string ownerPluginId,
+        string ownerPluginID,
         string configurationHash
-    )
-        => new(
-            name,
-            source,
-            string.Empty,
-            scope,
-            domain,
-            ownerPluginId,
-            [],
-            ["DEBUG", "TRACE"],
-            nullable: true,
-            allowUnsafe: false,
-            configurationHash);
+    ) => new(
+        name,
+        source,
+        string.Empty,
+        scope,
+        domain,
+        ownerPluginID,
+        [],
+        ["DEBUG", "TRACE"],
+        nullable: true,
+        allowUnsafe: false,
+        configurationHash
+    );
 
     private static void AddBuilder(
         IDictionary<string, AssemblyBuilder> builders,
         ScriptAssemblyDefinition definition
     ) {
         if (!builders.TryAdd(definition.name, new AssemblyBuilder(definition)))
+        {
             throw new InvalidDataException($"Script assembly name '{definition.name}' is declared more than once.");
+        }
     }
 
-    private static string CreatePluginAssemblyName(string pluginId)
+    private static string CreatePluginAssemblyName(string pluginID)
     {
         var builder = new StringBuilder("Inno.Plugin.");
-        foreach (string segment in pluginId.Split(['.', '-', '_'], StringSplitOptions.RemoveEmptyEntries))
+        foreach (string segment in pluginID.Split(['.', '-', '_'], StringSplitOptions.RemoveEmptyEntries))
         {
             builder.Append(char.ToUpperInvariant(segment[0]));
             for (int i = 1; i < segment.Length; i++)
+            {
                 builder.Append(char.IsLetterOrDigit(segment[i]) ? segment[i] : '_');
+            }
         }
         return builder.ToString();
     }
@@ -487,10 +551,9 @@ internal sealed record ScriptSourceSet(
     private static bool IsWithin(
         string directory,
         string ancestor
-    )
-        => string.IsNullOrEmpty(ancestor)
-           || string.Equals(directory, ancestor, StringComparison.OrdinalIgnoreCase)
-           || directory.StartsWith(ancestor + "/", StringComparison.OrdinalIgnoreCase);
+    ) => string.IsNullOrEmpty(ancestor)
+         || string.Equals(directory, ancestor, StringComparison.OrdinalIgnoreCase)
+         || directory.StartsWith(ancestor + "/", StringComparison.OrdinalIgnoreCase);
 
     private sealed class AssemblyBuilder
     {
@@ -514,11 +577,11 @@ internal sealed record ScriptSourceSet(
 
 internal sealed record ScriptAssemblyDefinition(
     string name,
-    AssetSourceId source,
+    AssetSourceID source,
     string directory,
     ScriptAssemblyScope scope,
     AssemblyDomain domain,
-    string ownerPluginId,
+    string ownerPluginID,
     IReadOnlyList<string> references,
     IReadOnlyList<string> defines,
     bool nullable,
@@ -530,7 +593,7 @@ internal sealed record ScriptAssemblyInput(
     string name,
     ScriptAssemblyScope scope,
     AssemblyDomain domain,
-    string ownerPluginId,
+    string ownerPluginID,
     IReadOnlyList<ScriptSourceInput> sources,
     IReadOnlyList<string> references,
     IReadOnlyList<string> defines,
@@ -543,7 +606,7 @@ internal sealed record ScriptSourceInput(
     AssetPath assetPath,
     string sourcePath,
     string snapshotSource,
-    Guid persistentId,
+    Guid persistentID,
     string contentHash
 ) {
     internal string relativePath => assetPath.ToString();

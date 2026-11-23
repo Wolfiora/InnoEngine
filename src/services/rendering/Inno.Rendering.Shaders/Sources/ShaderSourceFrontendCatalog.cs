@@ -26,22 +26,25 @@ public sealed class ShaderSourceFrontendCatalog
     {
         ArgumentNullException.ThrowIfNull(frontends);
         foreach (IShaderSourceFrontend frontend in frontends)
-            if (frontend is null || string.IsNullOrWhiteSpace(frontend.languageId) ||
-                !m_frontends.TryAdd(frontend.languageId, frontend))
+        {
+            if (frontend is null || string.IsNullOrWhiteSpace(frontend.languageID)
+                || !m_frontends.TryAdd(frontend.languageID, frontend)
+            ) {
                 throw new ArgumentException("Source frontends require unique, assigned language IDs.", nameof(frontends));
-        languageIds = new ReadOnlyCollection<string>(new List<string>(m_frontends.Keys));
+            }
+        }
+        this.languageIDs = new ReadOnlyCollection<string>([.. m_frontends.Keys]);
     }
+
     /// <summary>
     /// Gets registered language identities for source import settings.
     /// </summary>
-    public IReadOnlyList<string> languageIds { get; }
-
-    internal IEnumerable<IShaderSourceFrontend> providers => m_frontends.Values;
+    public IReadOnlyList<string> languageIDs { get; }
 
     /// <summary>
     /// Analyzes source using an explicitly selected language.
     /// </summary>
-    /// <param name="languageId">
+    /// <param name="languageID">
     /// Registered language identity, never inferred from the active graphics API.
     /// </param>
     /// <param name="request">
@@ -54,14 +57,14 @@ public sealed class ShaderSourceFrontendCatalog
     /// The requested language provider is unavailable.
     /// </exception>
     public ShaderSourceAnalysis Analyze(
-        string languageId,
+        string languageID,
         ShaderSourceRequest request
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(languageId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(languageID);
         ArgumentNullException.ThrowIfNull(request);
-        return m_frontends.TryGetValue(languageId, out IShaderSourceFrontend? frontend)
-            ? frontend.Analyze(request)
-            : throw new NotSupportedException($"Shader source language '{languageId}' is unavailable.");
+        return m_frontends.TryGetValue(languageID, out IShaderSourceFrontend? frontend)
+               ? frontend.Analyze(request)
+               : throw new NotSupportedException($"Shader source language '{languageID}' is unavailable.");
     }
 
     /// <summary>
@@ -80,50 +83,85 @@ public sealed class ShaderSourceFrontendCatalog
     {
         ArgumentNullException.ThrowIfNull(implementations);
         ShaderSourceImplementationRequest[] requests = implementations.ToArray();
-        if (requests.Length == 0 || requests.Any(static value => value is null) ||
-            requests.Select(static value => value.implementationId).Distinct(StringComparer.Ordinal).Count() != requests.Length)
+        if (requests.Length == 0 || requests.Any(static value => value is null)
+            || requests.Select(static value => value.implementationID).Distinct(StringComparer.Ordinal).Count() != requests.Length
+        ) {
             throw new ArgumentException("A module requires unique, assigned implementation/configuration IDs.", nameof(implementations));
+        }
 
-        var results = new List<ShaderSourceImplementationAnalysis>();
-        var diagnostics = new List<ShaderSourceDiagnostic>();
+        List<ShaderSourceImplementationAnalysis> results = [];
+        List<ShaderSourceDiagnostic> diagnostics = [];
         ShaderSourceFunction? common = null;
-        string? commonId = null;
-        foreach (ShaderSourceImplementationRequest request in requests.OrderBy(static value => value.implementationId, StringComparer.Ordinal))
-        {
+        string? commonID = null;
+        foreach (ShaderSourceImplementationRequest request in requests.OrderBy(
+            static value => value.implementationID,
+            StringComparer.Ordinal
+        )) {
             var resolver = new ShaderSourceSnapshotResolver(request.source);
             ShaderSourceAnalysis analysis;
-            if (!m_frontends.TryGetValue(request.languageId, out IShaderSourceFrontend? frontend))
-                analysis = new(null, [], [new("SHADER_SOURCE_LANGUAGE_MISSING", DiagnosticSeverity.Error,
-                    $"Implementation '{request.implementationId}' requires unavailable language '{request.languageId}'.",
-                    new(request.source.source.assetPath, 1, 1))]);
+            if (!m_frontends.TryGetValue(request.languageID, out IShaderSourceFrontend? frontend))
+            {
+                analysis = new(null, [], [new ShaderSourceDiagnostic(
+                    "SHADER_SOURCE_LANGUAGE_MISSING",
+                    DiagnosticSeverity.Error,
+                    $"Implementation '{request.implementationID}' requires unavailable language '{request.languageID}'.",
+                    new ShaderSourcePosition(request.source.source.assetPath, 1, 1)
+                )]);
+            }
             else
             {
-                analysis = frontend.Analyze(new(request.source.source, request.source.entryPoint, resolver, request.source.defines))
-                    ?? throw new InvalidOperationException($"Language '{request.languageId}' returned no source analysis.");
+                analysis = frontend.Analyze(
+                    new ShaderSourceRequest(request.source.source, request.source.entryPoint, resolver, request.source.defines)
+                )
+                           ?? throw new InvalidOperationException($"Language '{request.languageID}' returned no source analysis.");
                 var paths = new HashSet<string>(resolver.files.Select(static file => file.assetPath), StringComparer.Ordinal);
                 string[] uncaptured = analysis.dependencies.Where(path => !paths.Contains(path)).ToArray();
                 if (analysis.succeeded && uncaptured.Length != 0)
-                    analysis = new(analysis.function, analysis.dependencies, analysis.diagnostics.Concat(
-                        uncaptured.Select(path => new ShaderSourceDiagnostic("SHADER_SOURCE_DEPENDENCY_UNCAPTURED", DiagnosticSeverity.Error,
-                            $"Language '{request.languageId}' reported dependency '{path}' without reading it through the source resolver.",
-                            new(request.source.source.assetPath, 1, 1)))));
-                analysis = new(analysis.function,
-                    analysis.dependencies.Concat(paths.Where(path => path != request.source.source.assetPath)), analysis.diagnostics);
+                {
+                    analysis = new(
+                        analysis.function,
+                        analysis.dependencies,
+                        analysis.diagnostics.Concat(
+                            uncaptured.Select(path => new ShaderSourceDiagnostic(
+                                "SHADER_SOURCE_DEPENDENCY_UNCAPTURED",
+                                DiagnosticSeverity.Error,
+                                $"Language '{request.languageID}' reported dependency '{path}' without reading it through the source resolver.",
+                                new ShaderSourcePosition(request.source.source.assetPath, 1, 1)
+                            ))
+                        )
+                    );
+                }
+                analysis = new(
+                    analysis.function,
+                    analysis.dependencies.Concat(paths.Where(path => path != request.source.source.assetPath)),
+                    analysis.diagnostics
+                );
             }
-            results.Add(new(request, analysis, resolver.files, resolver.includes));
+            results.Add(new ShaderSourceImplementationAnalysis(request, analysis, resolver.files, resolver.includes));
             diagnostics.AddRange(analysis.diagnostics);
             if (!analysis.succeeded)
+            {
                 continue;
+            }
             if (common is null)
             {
                 common = analysis.function;
-                commonId = request.implementationId;
+                commonID = request.implementationID;
             }
             else if (!common.HasSameInterface(analysis.function))
-                diagnostics.Add(new("SHADER_SOURCE_IMPLEMENTATION_INTERFACE", DiagnosticSeverity.Error,
-                    $"Implementation '{request.implementationId}' does not match '{commonId}': public parameter names, directions, order and complete value types must agree.",
-                    analysis.function!.location));
+            {
+                diagnostics.Add(
+                    new ShaderSourceDiagnostic(
+                        "SHADER_SOURCE_IMPLEMENTATION_INTERFACE",
+                        DiagnosticSeverity.Error,
+                        $"Implementation '{request.implementationID}' does not match '{commonID}': public parameter names, directions, order and complete value types must agree.",
+                        analysis.function!.location
+                    )
+                );
+            }
         }
         return new(results, diagnostics);
     }
+
+    internal IEnumerable<IShaderSourceFrontend> providers => m_frontends.Values;
 }

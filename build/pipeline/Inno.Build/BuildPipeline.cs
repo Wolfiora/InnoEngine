@@ -1,6 +1,4 @@
 using System;
-using Inno.Build.Managed;
-using Inno.Extensibility.Reload;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,9 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Plugins.Authoring;
+using Inno.Build.Managed;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
+using Inno.Extensibility.Reload;
+using Inno.Plugins.Authoring;
 using Inno.Scripting.Compiler;
 
 namespace Inno.Build;
@@ -20,8 +20,8 @@ namespace Inno.Build;
 /// </summary>
 public sealed class BuildPipeline
 {
-    private readonly IReadOnlyList<BuildTargetId> m_availableGameTargets;
-    private readonly IReadOnlyDictionary<BuildTargetId, GameBuildTargetBinding> m_gameTargets;
+    private readonly IReadOnlyList<BuildTargetID> m_availableGameTargets;
+    private readonly IReadOnlyDictionary<BuildTargetID, GameBuildTargetBinding> m_gameTargets;
     private readonly GameBuildPipeline m_game;
     private readonly PluginPackageBuilder m_plugins;
     private readonly PlayerSupportPackCatalog m_supportPacks;
@@ -32,14 +32,8 @@ public sealed class BuildPipeline
     /// <summary>
     /// Creates a build pipeline from installed Player Support Packs and platform packagers.
     /// </summary>
-    /// <param name="supportPackRoot">
-    /// The directory containing one child directory per <see cref="BuildTargetId"/>.
-    /// </param>
     /// <param name="assets">
     /// The active authoring asset pipeline captured by builds.
-    /// </param>
-    /// <param name="generations">
-    /// The host-wide admission gate that remains pinned until the build snapshot is released.
     /// </param>
     /// <param name="plugins">
     /// The active Plugin environment captured by builds.
@@ -50,8 +44,14 @@ public sealed class BuildPipeline
     /// <param name="serialization">
     /// The serialization registry used to pin and encode the build snapshot.
     /// </param>
+    /// <param name="generations">
+    /// The host-wide admission gate that remains pinned until the build snapshot is released.
+    /// </param>
     /// <param name="compiler">
     /// The project compiler used to produce a fresh runtime-only assembly generation for each game build.
+    /// </param>
+    /// <param name="supportPackRoot">
+    /// The directory containing one child directory per <see cref="BuildTargetID"/>.
     /// </param>
     /// <param name="gameTargets">
     /// The complete set of replaceable platform package implementations available to this host.
@@ -81,7 +81,8 @@ public sealed class BuildPipeline
         ArgumentNullException.ThrowIfNull(plugins);
         ArgumentNullException.ThrowIfNull(settings);
         ArgumentNullException.ThrowIfNull(serialization);
-        m_generations = generations ?? throw new ArgumentNullException(nameof(generations));
+        ArgumentNullException.ThrowIfNull(generations);
+        m_generations = generations;
         ArgumentNullException.ThrowIfNull(compiler);
         ArgumentException.ThrowIfNullOrWhiteSpace(supportPackRoot);
         ArgumentNullException.ThrowIfNull(gameTargets);
@@ -89,22 +90,34 @@ public sealed class BuildPipeline
         m_managedDeployments = managedDeployments;
         GameBuildTargetBinding[] targets = gameTargets.ToArray();
         if (targets.Any(static value => value is null))
+        {
             throw new ArgumentException("Game target collection cannot contain null values.", nameof(gameTargets));
+        }
         if (targets.Length == 0)
+        {
             throw new ArgumentException("At least one game build target is required.", nameof(gameTargets));
+        }
         if (targets.Any(static value => string.IsNullOrWhiteSpace(value.packager.id.value)))
+        {
             throw new ArgumentException("Every game build target requires a valid identity.", nameof(gameTargets));
+        }
         if (targets.Any(static value => string.IsNullOrWhiteSpace(value.packager.displayName)))
+        {
             throw new ArgumentException("Every game build target requires a display name.", nameof(gameTargets));
-        IGrouping<BuildTargetId, GameBuildTargetBinding>? duplicate = targets
+        }
+        IGrouping<BuildTargetID, GameBuildTargetBinding>? duplicate = targets
             .GroupBy(static value => value.packager.id)
             .FirstOrDefault(static group => group.Count() > 1);
         if (duplicate is not null)
+        {
             throw new ArgumentException($"Game target '{duplicate.Key}' is registered more than once.", nameof(gameTargets));
-        m_availableGameTargets = Array.AsReadOnly(targets
-            .Select(static target => target.packager.id)
-            .OrderBy(static id => id.value, StringComparer.Ordinal)
-            .ToArray());
+        }
+        m_availableGameTargets = Array.AsReadOnly(
+            targets
+                .Select(static target => target.packager.id)
+                .OrderBy(static id => id.value, StringComparer.Ordinal)
+                .ToArray()
+        );
         m_gameTargets = targets.ToDictionary(static value => value.packager.id);
         m_supportPacks = new PlayerSupportPackCatalog(supportPackRoot);
         m_supportPackProvisioner = supportPackProvisioner;
@@ -116,18 +129,15 @@ public sealed class BuildPipeline
             compiler,
             m_gameTargets,
             m_supportPacks,
-            managedDeployments);
-        m_plugins = new PluginPackageBuilder(
-            assets,
-            plugins,
-            settings,
-            serialization);
+            managedDeployments
+        );
+        m_plugins = new PluginPackageBuilder(assets, plugins, settings, serialization);
     }
 
     /// <summary>
     /// Gets an immutable view of every registered build target in stable identity order.
     /// </summary>
-    public IReadOnlyList<BuildTargetId> availableGameTargets => m_availableGameTargets;
+    public IReadOnlyList<BuildTargetID> availableGameTargets => m_availableGameTargets;
 
     /// <summary>
     /// Gets the managed deployment choices supported by a registered publication platform.
@@ -141,10 +151,10 @@ public sealed class BuildPipeline
     /// <exception cref="ArgumentException">
     /// The publication target is not registered in this build composition.
     /// </exception>
-    public IReadOnlyList<ManagedDeploymentId> GetManagedDeployments(BuildTargetId target)
+    public IReadOnlyList<ManagedDeploymentID> GetManagedDeployments(BuildTargetID target)
         => m_gameTargets.TryGetValue(target, out GameBuildTargetBinding? gameTarget)
-            ? m_managedDeployments.GetSupportedDeployments(gameTarget.packager.runtimeIdentifier)
-            : throw new ArgumentException($"Game target '{target}' is not registered.", nameof(target));
+           ? m_managedDeployments.GetSupportedDeployments(gameTarget.packager.runtimeIdentifier)
+           : throw new ArgumentException($"Game target '{target}' is not registered.", nameof(target));
 
     /// <summary>
     /// Tries to get the adapter-owned display name for a registered game target.
@@ -159,7 +169,7 @@ public sealed class BuildPipeline
     /// <see langword="true"/> when the target is registered; otherwise, <see langword="false"/>.
     /// </returns>
     public bool TryGetGameTargetDisplayName(
-        BuildTargetId target,
+        BuildTargetID target,
         out string displayName
     ) {
         if (m_gameTargets.TryGetValue(target, out GameBuildTargetBinding? gameTarget))
@@ -201,28 +211,28 @@ public sealed class BuildPipeline
     /// An installed or newly published Pack fails deployment validation.
     /// </exception>
     public async ValueTask<PlayerSupportPackLease> EnsurePlayerSupportPackAsync(
-        BuildTargetId target,
-        ManagedDeploymentId? deployment,
+        BuildTargetID target,
+        ManagedDeploymentID? deployment,
         CancellationToken cancellationToken = default
     ) {
         if (!m_gameTargets.TryGetValue(target, out GameBuildTargetBinding? binding))
+        {
             throw new NotSupportedException($"Game target '{target}' is not registered.");
+        }
         IGameBuildTarget packager = binding.packager;
         _ = m_managedDeployments.Resolve(deployment ?? packager.defaultManagedDeployment, packager.runtimeIdentifier);
         cancellationToken.ThrowIfCancellationRequested();
         return await m_supportPacks.ResolveOrProvisionAsync(
-            target, packager, m_supportPackProvisioner, cancellationToken).ConfigureAwait(false);
+            target,
+            packager,
+            m_supportPackProvisioner,
+            cancellationToken
+        ).ConfigureAwait(false);
     }
 
     /// <summary>
     /// Builds and installs one complete source-free game deployment with rollback protection.
     /// </summary>
-    /// <remarks>
-    /// Prepare current packs with EnsurePlayerSupportPackAsync before invoking this method on the
-    /// authoring owner's thread. The synchronous snapshot phase never waits for asynchronous provisioning.
-    /// Coordinate readers and writers of the output directory during its two installation moves.
-    /// Post-commit backup, staging and progress observer failures are warnings on the successful result.
-    /// </remarks>
     /// <param name="request">
     /// The exact profile, destination, and activated runtime compilation generation.
     /// </param>
@@ -250,6 +260,12 @@ public sealed class BuildPipeline
     /// <exception cref="AggregateException">
     /// Output installation and restoration both fail; the previous tree remains at the reported backup path.
     /// </exception>
+    /// <remarks>
+    /// Prepare current packs with EnsurePlayerSupportPackAsync before invoking this method on the
+    /// authoring owner's thread. The synchronous snapshot phase never waits for asynchronous provisioning.
+    /// Coordinate readers and writers of the output directory during its two installation moves.
+    /// Post-commit backup, staging and progress observer failures are warnings on the successful result.
+    /// </remarks>
     public async ValueTask<BuildResult> BuildGameAsync(
         GameBuildRequest request,
         IProgress<BuildProgress>? progress = null,

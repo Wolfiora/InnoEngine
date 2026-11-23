@@ -8,11 +8,6 @@ using System.Text;
 
 namespace Inno.Scripting.Compiler;
 
-internal sealed record ScriptDeploymentReferenceSet(
-    IReadOnlyList<string> paths,
-    string fingerprint
-);
-
 internal static class ScriptDeploymentReferenceResolver
 {
     internal static ScriptDeploymentReferenceSet Resolve(string runtimeDirectory)
@@ -22,7 +17,8 @@ internal static class ScriptDeploymentReferenceResolver
         if (!Directory.Exists(normalizedDirectory))
         {
             throw new DirectoryNotFoundException(
-                $"The target Player runtime directory '{normalizedDirectory}' does not exist.");
+                $"The target Player runtime directory '{normalizedDirectory}' does not exist."
+            );
         }
 
         string[] paths = Directory
@@ -32,11 +28,12 @@ internal static class ScriptDeploymentReferenceResolver
         if (paths.Length == 0)
         {
             throw new InvalidDataException(
-                $"The target Player runtime directory '{normalizedDirectory}' contains no Inno runtime assemblies.");
+                $"The target Player runtime directory '{normalizedDirectory}' contains no Inno runtime assemblies."
+            );
         }
 
         var identities = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        using var fingerprint = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        using IncrementalHash fingerprint = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         Append(fingerprint, "Inno.ScriptDeploymentReferences");
         foreach (string path in paths)
         {
@@ -49,16 +46,19 @@ internal static class ScriptDeploymentReferenceResolver
             {
                 throw new InvalidDataException(
                     $"Target Player runtime assembly '{Path.GetFileName(path)}' is not valid managed metadata.",
-                    exception);
+                    exception
+                );
             }
 
             string simpleName = identity.Name
-                ?? throw new InvalidDataException(
-                    $"Target Player runtime assembly '{Path.GetFileName(path)}' has no assembly identity.");
+                                ?? throw new InvalidDataException(
+                                    $"Target Player runtime assembly '{Path.GetFileName(path)}' has no assembly identity."
+                                );
             if (!identities.Add(simpleName))
             {
                 throw new InvalidDataException(
-                    $"The target Player runtime contains more than one '{simpleName}' assembly identity.");
+                    $"The target Player runtime contains more than one '{simpleName}' assembly identity."
+                );
             }
 
             Append(fingerprint, Path.GetFileName(path));
@@ -66,9 +66,7 @@ internal static class ScriptDeploymentReferenceResolver
             fingerprint.AppendData(SHA256.HashData(stream));
         }
 
-        return new ScriptDeploymentReferenceSet(
-            paths,
-            Convert.ToHexString(fingerprint.GetHashAndReset()));
+        return new ScriptDeploymentReferenceSet(paths, Convert.ToHexString(fingerprint.GetHashAndReset()));
     }
 
     private static void Append(
@@ -80,3 +78,8 @@ internal static class ScriptDeploymentReferenceResolver
         hash.AppendData(bytes);
     }
 }
+
+internal sealed record ScriptDeploymentReferenceSet(
+    IReadOnlyList<string> paths,
+    string fingerprint
+);

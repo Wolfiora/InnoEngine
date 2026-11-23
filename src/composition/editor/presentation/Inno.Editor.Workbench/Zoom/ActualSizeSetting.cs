@@ -1,23 +1,36 @@
-using Inno.Editor.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
+using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Settings;
-using Ui = Inno.Editor.ImGui.ImGui;
+
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Workbench;
+
 [EditorSettingPath("Editor/Appearance/Accessibility/Actual Size")]
 internal sealed class ActualSizeSetting : EditorSetting
 {
-    private static readonly (float Value, string Label)[] C_CHOICES = [(0.75f, "75%"), (0.9f, "90%"), (1f, "100%"), (1.1f, "110%"), (1.25f, "125%"), (1.5f, "150%")];
+    private static readonly (float value, string label)[] CHOICES =
+    [
+        (0.75f, "75%"),
+        (0.9f, "90%"),
+        (1f, "100%"),
+        (1.1f, "110%"),
+        (1.25f, "125%"),
+        (1.5f, "150%")
+    ];
+
     /// <summary>
     /// Gets a new value initialized to this setting's canonical default state.
     /// </summary>
     public override EditorSettingObject defaultValue => CreateDefault();
+
     /// <summary>
     /// Gets the presentation section that groups this setting.
     /// </summary>
     public override string section => "Font";
+
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
@@ -33,16 +46,20 @@ internal sealed class ActualSizeSetting : EditorSetting
     {
         float value = setting.GetAsSingle("value", 1f);
         string preview = GetLabel(value);
-        Ui.SetNextItemWidth(-1f);
+        Gui.SetNextItemWidth(-1f);
         if (!EditorUI.current.widgets.BeginBoundedCombo("##actual_size", preview))
+        {
             return;
+        }
         try
         {
-            for (int i = 0; i < C_CHOICES.Length; i++)
+            for (int i = 0; i < CHOICES.Length; i++)
             {
-                (float candidate, string label) = C_CHOICES[i];
-                if (Ui.Selectable(label, MathF.Abs(candidate - value) < 0.0001f))
+                (float candidate, string label) = CHOICES[i];
+                if (Gui.Selectable(label, MathF.Abs(candidate - value) < 0.0001f))
+                {
                     setting.SetAsSingle("value", candidate);
+                }
             }
         }
         finally
@@ -60,10 +77,12 @@ internal sealed class ActualSizeSetting : EditorSetting
 
     private static string GetLabel(float value)
     {
-        for (int i = 0; i < C_CHOICES.Length; i++)
+        for (int i = 0; i < CHOICES.Length; i++)
         {
-            if (MathF.Abs(C_CHOICES[i].Value - value) < 0.0001f)
-                return C_CHOICES[i].Label;
+            if (MathF.Abs(CHOICES[i].value - value) < 0.0001f)
+            {
+                return CHOICES[i].label;
+            }
         }
 
         return $"{value * 100f:0}%";

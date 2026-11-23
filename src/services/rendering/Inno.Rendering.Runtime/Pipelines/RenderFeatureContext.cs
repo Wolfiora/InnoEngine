@@ -1,17 +1,18 @@
+using System;
+using System.Collections.Generic;
 using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
-using System;
-using System.Collections.Generic;
 
 namespace Inno.Rendering.Runtime;
 
 /// <summary>
 /// Supplies one configured feature with frame-scoped graph services.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("00810cb8-162a-5a95-9a30-1a01992ac501")]
+[StableTypeID("00810cb8-162a-5a95-9a30-1a01992ac501")]
 public sealed class RenderFeatureContext
 {
     /// <summary>
@@ -27,7 +28,8 @@ public sealed class RenderFeatureContext
         RenderPipelineContext pipeline,
         RenderFeatureConfiguration configuration
     ) {
-        this.pipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
+        ArgumentNullException.ThrowIfNull(pipeline);
+        this.pipeline = pipeline;
         this.configuration = configuration;
     }
 
@@ -66,4 +68,3 @@ public sealed class RenderFeatureContext
     /// </summary>
     public IRenderFrameUploadService uploads => pipeline.uploads;
 }
-

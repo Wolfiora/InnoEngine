@@ -1,10 +1,7 @@
 using Inno.Audio;
 using Inno.Scripting.Api;
 
-[assembly: ScriptingApiNamespace(
-    "InnoEngine.Audio",
-    "Inno.Audio",
-    ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiNamespace("InnoEngine.Audio", "Inno.Audio", ScriptingApiScope.Runtime)]
 
 [assembly: ScriptingApiExport(typeof(Audio), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AudioClipAsset), ScriptingApiScope.Runtime)]
@@ -24,10 +21,10 @@ using Inno.Scripting.Api;
 [assembly: ScriptingApiExport(typeof(AudioVoiceHandle), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AudioBusHandle), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AudioListenerHandle), ScriptingApiScope.Runtime)]
-[assembly: ScriptingApiExport(typeof(AudioBusId), ScriptingApiScope.Runtime)]
-[assembly: ScriptingApiExport(typeof(AudioProcessorId), ScriptingApiScope.Runtime)]
-[assembly: ScriptingApiExport(typeof(AudioParameterId), ScriptingApiScope.Runtime)]
-[assembly: ScriptingApiExport(typeof(AudioCodecId), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(AudioBusID), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(AudioProcessorID), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(AudioParameterID), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(AudioCodecID), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AudioVoiceCompletedEvent), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AudioProcessorParameter), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AudioProcessorConfiguration), ScriptingApiScope.Runtime)]

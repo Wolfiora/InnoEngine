@@ -1,7 +1,6 @@
 using System;
-
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization.Converters;
+using Inno.Extensibility.Types;
 
 namespace Inno.Core.Serialization;
 
@@ -21,7 +20,7 @@ internal sealed class TypeRefConverter : SerializationConverter<TypeRef>
         TypeRef value
     ) {
         ArgumentNullException.ThrowIfNull(writer);
-        writer.Write("stableId", value.stableId);
+        writer.Write("stableId", value.stableID);
     }
 
     /// <summary>

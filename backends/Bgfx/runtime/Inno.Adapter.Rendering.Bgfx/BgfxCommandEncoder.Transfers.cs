@@ -7,7 +7,6 @@ namespace Inno.Adapter.Rendering.Bgfx;
 internal sealed unsafe partial class BgfxCommandEncoder
 
 {
-
     /// <summary>
     /// Copies texture without transferring ownership of the source state.
     /// </summary>
@@ -36,7 +35,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
             {
                 BgfxNativeCalls.EncoderBlit(
                     m_encoder,
-                    m_viewId,
+                    m_viewID,
                     destinationTexture,
                     checked((byte)mipLevel),
                     0,
@@ -49,7 +48,8 @@ internal sealed unsafe partial class BgfxCommandEncoder
                     checked((ushort)layer),
                     width,
                     height,
-                    1);
+                    1
+                );
             }
         }
     }
@@ -83,13 +83,13 @@ internal sealed unsafe partial class BgfxCommandEncoder
         ValidateTextureCopyFormats(sourceDescriptor, destinationDescriptor);
         if (sourceRegion.width != destinationRegion.width
             || sourceRegion.height != destinationRegion.height
-            || sourceRegion.depth != destinationRegion.depth)
-        {
+            || sourceRegion.depth != destinationRegion.depth
+        ) {
             throw new ArgumentException("BGFX blit source and destination extents must match.");
         }
         BgfxNativeCalls.EncoderBlit(
             m_encoder,
-            m_viewId,
+            m_viewID,
             m_device.ResolveTexture(destination),
             checked((byte)destinationRegion.mip),
             checked((ushort)destinationRegion.x),
@@ -102,7 +102,8 @@ internal sealed unsafe partial class BgfxCommandEncoder
             checked((ushort)sourceRegion.layer),
             checked((ushort)sourceRegion.width),
             checked((ushort)sourceRegion.height),
-            checked((ushort)sourceRegion.depth));
+            checked((ushort)sourceRegion.depth)
+        );
     }
 
     /// <summary>
@@ -121,7 +122,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         _ = source;
         _ = destination;
         throw new NotSupportedException(
-            "BGFX has no general buffer-copy command; use a Plugin compute pass on supported devices.");
+            "BGFX has no general buffer-copy command; use a Plugin compute pass on supported devices."
+        );
     }
-
 }

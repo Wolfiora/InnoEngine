@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Core.Input;
 using Inno.Core.Mathematics;
 
@@ -73,8 +72,7 @@ public sealed class InputSnapshot
         KeyModifier modifiers = KeyModifier.None,
         IEnumerable<string>? textInput = null
     ) {
-        if (frameIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(frameIndex));
+        ArgumentOutOfRangeException.ThrowIfNegative(frameIndex);
         this.frameIndex = frameIndex;
         m_keysDown = Copy(keysDown);
         m_keysPressed = Copy(keysPressed);
@@ -212,5 +210,5 @@ public sealed class InputSnapshot
 
     private static HashSet<TValue> Copy<TValue>(IEnumerable<TValue>? values)
         where TValue : struct, Enum
-        => values is null ? [] : values.ToHashSet();
+            => values is null ? [] : values.ToHashSet();
 }

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ExceptionServices;
-
 using Inno.Core.Identity;
 using Inno.Scene;
 
@@ -29,7 +28,9 @@ internal static class SceneRestoreCompensation
         {
             GameObject gameObject = created[i];
             if (!gameObject.isRuntimeValid)
+            {
                 continue;
+            }
             try
             {
                 _ = scene.DestroyObject(gameObject);
@@ -43,36 +44,45 @@ internal static class SceneRestoreCompensation
 
         var survivorSet = new HashSet<GameObject>(
             created.Where(static gameObject => gameObject.isRuntimeValid),
-            ReferenceEqualityComparer.Instance);
+            ReferenceEqualityComparer.Instance
+        );
         survivorSet.UnionWith(scene.GetObjects().Where(gameObject => !existing.Contains(gameObject)));
         GameObject[] survivors = [.. survivorSet];
         for (int i = 0; i < created.Length; i++)
         {
             GameObject gameObject = created[i];
             if (!ReferenceEquals(
-                    IdentityAllocator.current.Get<GameObject>(gameObject.identity.persistentId),
-                    gameObject))
-            {
+                IdentityAllocator.current.Get<GameObject>(gameObject.identity.persistentID),
+                gameObject
+            )) {
                 continue;
             }
             if (!survivors.Contains(gameObject, ReferenceEqualityComparer.Instance))
+            {
                 survivors = [.. survivors, gameObject];
+            }
         }
 
         if (survivors.Length != 0)
         {
             cleanupFailures ??= [];
-            cleanupFailures.Add(new InvalidOperationException(
-                $"{description} left {survivors.Length} created GameObject(s) live or identity-registered."));
+            cleanupFailures.Add(
+                new InvalidOperationException(
+                    $"{description} left {survivors.Length} created GameObject(s) live or identity-registered."
+                )
+            );
         }
 
         if (cleanupFailures is null)
+        {
             ExceptionDispatchInfo.Capture(restoreFailure).Throw();
+        }
 
         throw new InvalidOperationException(
             survivors.Length == 0
-                ? $"{description} failed; created objects were removed, but one or more destruction callbacks also failed."
-                : $"{description} failed and could not restore the exact prior scene state.",
-            new AggregateException([restoreFailure, .. cleanupFailures]));
+            ? $"{description} failed; created objects were removed, but one or more destruction callbacks also failed."
+            : $"{description} failed and could not restore the exact prior scene state.",
+            new AggregateException([restoreFailure, .. cleanupFailures])
+        );
     }
 }

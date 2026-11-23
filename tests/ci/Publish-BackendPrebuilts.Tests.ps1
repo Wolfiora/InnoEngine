@@ -97,7 +97,7 @@ try {
           results=@(@{id='consumer';status='Passed';seconds=1.0;inputIdentity='d'*64;outputs=@{}})} |
             ConvertTo-Json -Depth 8 | Set-Content (Join-Path $directory 'results.json')
     }
-    function Publish { & "$PSScriptRoot/Publish-BackendPrebuilts.ps1" -Directory $root -Repository 'fixture/engine' -Revision $revision -ApiUrl 'https://fixture.invalid' }
+    function Publish { & "$PSScriptRoot/../../tools/ci/Publish-BackendPrebuilts.ps1" -Directory $root -Repository 'fixture/engine' -Revision $revision -ApiUrl 'https://fixture.invalid' }
     $proofPath = Join-Path (Join-Path $root $platforms[0].target) 'consumption.json'
     $completeProof = [IO.File]::ReadAllBytes($proofPath)
     $incomplete = Get-Content $proofPath -Raw | ConvertFrom-Json

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -20,7 +21,7 @@ internal static class BuildSnapshotFingerprint
         CancellationToken cancellationToken
     ) {
         using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        Append(hash, assetRevision.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        Append(hash, assetRevision.ToString(CultureInfo.InvariantCulture));
         hash.AppendData(projectSettings.Span);
         foreach (PluginCandidate plugin in plugins)
         {
@@ -31,13 +32,14 @@ internal static class BuildSnapshotFingerprint
         {
             cancellationToken.ThrowIfCancellationRequested();
             Append(hash, Path.GetFileName(assembly));
-            await using FileStream stream = new(
+            await using var stream = new FileStream(
                 assembly,
                 FileMode.Open,
                 FileAccess.Read,
                 FileShare.Read,
                 128 * 1024,
-                FileOptions.Asynchronous | FileOptions.SequentialScan);
+                FileOptions.Asynchronous | FileOptions.SequentialScan
+            );
             byte[] fileHash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
             hash.AppendData(fileHash);
         }
@@ -49,12 +51,14 @@ internal static class BuildSnapshotFingerprint
         IReadOnlyList<PluginCandidate> actual
     ) {
         if (expected.Count != actual.Count)
+        {
             return false;
+        }
         for (int index = 0; index < expected.Count; index++)
         {
             if (!string.Equals(expected[index].manifest.pluginId, actual[index].manifest.pluginId, StringComparison.Ordinal)
-                || !string.Equals(expected[index].contentHash, actual[index].contentHash, StringComparison.Ordinal))
-            {
+                || !string.Equals(expected[index].contentHash, actual[index].contentHash, StringComparison.Ordinal)
+            ) {
                 return false;
             }
         }

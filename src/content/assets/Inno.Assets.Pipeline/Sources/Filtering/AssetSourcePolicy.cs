@@ -10,7 +10,7 @@ namespace Inno.Assets.Pipeline;
 /// </summary>
 public sealed class AssetSourcePolicy
 {
-    private static readonly string[] S_DEFAULT_FILE_NAMES =
+    private static readonly string[] DEFAULT_FILE_NAMES =
     [
         ".DS_Store",
         ".directory",
@@ -20,7 +20,7 @@ public sealed class AssetSourcePolicy
         "Thumbs.db"
     ];
 
-    private static readonly string[] S_DEFAULT_DIRECTORY_NAMES =
+    private static readonly string[] DEFAULT_DIRECTORY_NAMES =
     [
         ".git",
         ".hg",
@@ -33,8 +33,9 @@ public sealed class AssetSourcePolicy
         "obj"
     ];
 
-    private static readonly string[] S_DEFAULT_PREFIXES = [".#", "._", "~$"];
-    private static readonly string[] S_DEFAULT_SUFFIXES =
+    private static readonly string[] DEFAULT_PREFIXES = [".#", "._", "~$"];
+
+    private static readonly string[] DEFAULT_SUFFIXES =
         [".bak", ".deps.json", ".orig", ".pdb", ".swo", ".swp", ".temp", ".tmp", "~"];
 
     private readonly HashSet<string> m_fileNames;
@@ -46,9 +47,7 @@ public sealed class AssetSourcePolicy
     /// Creates a source policy using the engine's default noise filters.
     /// </summary>
     public AssetSourcePolicy()
-        : this(null, null, null, null)
-    {
-    }
+        : this(null, null, null, null) {}
 
     /// <summary>
     /// Creates a source policy with additional ignored names and affixes.
@@ -71,12 +70,12 @@ public sealed class AssetSourcePolicy
         IEnumerable<string>? ignoredPrefixes,
         IEnumerable<string>? ignoredSuffixes
     ) {
-        m_fileNames = new HashSet<string>(S_DEFAULT_FILE_NAMES, StringComparer.OrdinalIgnoreCase);
-        m_directoryNames = new HashSet<string>(S_DEFAULT_DIRECTORY_NAMES, StringComparer.OrdinalIgnoreCase);
+        m_fileNames = new HashSet<string>(DEFAULT_FILE_NAMES, StringComparer.OrdinalIgnoreCase);
+        m_directoryNames = new HashSet<string>(DEFAULT_DIRECTORY_NAMES, StringComparer.OrdinalIgnoreCase);
         AddNonEmpty(m_fileNames, ignoredFileNames);
         AddNonEmpty(m_directoryNames, ignoredDirectoryNames);
-        m_prefixes = Combine(S_DEFAULT_PREFIXES, ignoredPrefixes);
-        m_suffixes = Combine(S_DEFAULT_SUFFIXES, ignoredSuffixes);
+        m_prefixes = Combine(DEFAULT_PREFIXES, ignoredPrefixes);
+        m_suffixes = Combine(DEFAULT_SUFFIXES, ignoredSuffixes);
     }
 
     /// <summary>
@@ -102,20 +101,30 @@ public sealed class AssetSourcePolicy
     ) {
         string name = Path.GetFileName(relativePath);
         if (string.IsNullOrEmpty(name))
+        {
             return false;
+        }
         if (isDirectory && m_directoryNames.Contains(name))
+        {
             return true;
+        }
         if (!isDirectory && (m_fileNames.Contains(name) || IsGeneratedPath(name) || AtomicFile.IsCandidatePath(name)))
+        {
             return true;
+        }
         for (int i = 0; i < m_prefixes.Length; i++)
         {
             if (name.StartsWith(m_prefixes[i], StringComparison.OrdinalIgnoreCase))
+            {
                 return true;
+            }
         }
         for (int i = 0; i < m_suffixes.Length; i++)
         {
             if (name.EndsWith(m_suffixes[i], StringComparison.OrdinalIgnoreCase))
+            {
                 return true;
+            }
         }
         return false;
     }
@@ -130,19 +139,23 @@ public sealed class AssetSourcePolicy
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public static bool IsGeneratedPath(string relativePath)
-        => relativePath.EndsWith(".imeta", StringComparison.OrdinalIgnoreCase) ||
-           relativePath.EndsWith(".abin", StringComparison.OrdinalIgnoreCase);
+        => relativePath.EndsWith(".imeta", StringComparison.OrdinalIgnoreCase)
+           || relativePath.EndsWith(".abin", StringComparison.OrdinalIgnoreCase);
 
     private static void AddNonEmpty(
         HashSet<string> target,
         IEnumerable<string>? values
     ) {
         if (values is null)
+        {
             return;
+        }
         foreach (string value in values)
         {
             if (!string.IsNullOrWhiteSpace(value))
+            {
                 target.Add(value.Trim());
+            }
         }
     }
 
@@ -156,7 +169,9 @@ public sealed class AssetSourcePolicy
             foreach (string value in additional)
             {
                 if (!string.IsNullOrWhiteSpace(value))
+                {
                     values.Add(value.Trim());
+                }
             }
         }
         return values.ToArray();

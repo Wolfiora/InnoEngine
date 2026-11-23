@@ -20,23 +20,28 @@ internal static class GenerationCleanupValidator
             if (type is "RetirementPendingException" or "RetirementTimeoutException")
             {
                 int line = clause.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
-                failures.Add($"{relative}:{line}: retirement catches must classify the full exception tree with RetirementPendingException.Find; direct typed catches bypass wrapped pending ownership.");
+                failures.Add(
+                    $"{relative}:{line}: retirement catches must classify the full exception tree with RetirementPendingException.Find; direct typed catches bypass wrapped pending ownership."
+                );
             }
         }
         foreach (InvocationExpressionSyntax invocation in root
-                     .DescendantNodes().OfType<InvocationExpressionSyntax>())
-        {
+            .DescendantNodes()
+            .OfType<InvocationExpressionSyntax>()
+        ) {
             string? name = invocation.Expression switch
             {
                 IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
                 MemberAccessExpressionSyntax member => member.Name.Identifier.ValueText,
                 _ => null
             };
-            if (name == "OnCleanupFailed" &&
-                !relative.EndsWith("/Inno.Extensibility.Types/TypeRegistry.cs", StringComparison.Ordinal))
-            {
+            if (name == "OnCleanupFailed"
+                && !relative.EndsWith("/Inno.Extensibility.Types/TypeRegistry.cs", StringComparison.Ordinal)
+            ) {
                 int line = invocation.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
-                failures.Add($"{relative}:{line}: cleanup failures must propagate through registry retirement; a diagnostic-only OnCleanupFailed call bypasses the generation fault barrier.");
+                failures.Add(
+                    $"{relative}:{line}: cleanup failures must propagate through registry retirement; a diagnostic-only OnCleanupFailed call bypasses the generation fault barrier."
+                );
             }
         }
     }

@@ -6,20 +6,6 @@ namespace Inno.Audio;
 public abstract class AudioDevice
 {
     /// <summary>
-    /// Stores one decoded device-owned identity.
-    /// </summary>
-    /// <param name="value">
-    /// Non-zero backend resource identity.
-    /// </param>
-    /// <param name="generation">
-    /// Device generation that owns the resource.
-    /// </param>
-    protected readonly record struct DeviceHandleIdentity(
-        ulong value,
-        uint generation
-    );
-
-    /// <summary>
     /// Encodes a clip identity into a backend-neutral handle.
     /// </summary>
     /// <param name="value">
@@ -130,4 +116,18 @@ public abstract class AudioDevice
     /// Backend identity and owning generation.
     /// </returns>
     protected static DeviceHandleIdentity GetHandleIdentity(AudioListenerHandle handle) => new(handle.value, handle.deviceGeneration);
+
+    /// <summary>
+    /// Stores one decoded device-owned identity.
+    /// </summary>
+    /// <param name="value">
+    /// Non-zero backend resource identity.
+    /// </param>
+    /// <param name="generation">
+    /// Device generation that owns the resource.
+    /// </param>
+    protected readonly record struct DeviceHandleIdentity(
+        ulong value,
+        uint generation
+    );
 }

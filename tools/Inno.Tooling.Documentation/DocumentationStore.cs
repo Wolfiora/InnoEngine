@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,15 +20,6 @@ namespace Inno.Tooling.Documentation;
 /// </summary>
 public static class DocumentationStore
 {
-    internal static JsonSerializerOptions json { get; } = new() { WriteIndented = false };
-    // Snapshot format compatibility is a parser/index protocol, not a compilation artifact identity.
-    // MVID includes build provenance and can differ between adapters compiling identical parser sources.
-    internal static string schema { get; } = CreateSchemaIdentity();
-    private static string parserSchema { get; } = CreateSchemaIdentity(
-        "DocumentationMarkdown.cs", "DocumentationPage.cs", "DocumentationCodeBlockInfo.cs",
-        "DocumentationExampleContext.cs", "DocumentationApiComposition.cs", "DocumentationApiFragment.cs",
-        "DocumentationApiPresentation.cs", "DocumentationXml.cs", "Inno.Tooling.Documentation.csproj");
-
     /// <summary>
     /// Explicitly scans a Docs checkout and publishes a consistent generation using reusable parsed pages.
     /// </summary>
@@ -47,11 +39,6 @@ public static class DocumentationStore
     /// The published snapshot identity and the number of parsed and reused pages; source API remains unverified.
     /// Query-only changes rebuild the index while reusing pages whose parser, source and payload identities match.
     /// </returns>
-    /// <remarks>
-    /// Independent page preparation uses at most four workers and retains each page's exclusive lease.
-    /// Catalog validation and generation publication occur only after all workers finish. Worker parsing
-    /// and registration timing totals can overlap; PagePreparation reports their enclosing wall time.
-    /// </remarks>
     /// <exception cref="IOException">
     /// Inputs change during preparation, paths escape ownership, or a reference, contract or inclusion is invalid.
     /// </exception>
@@ -61,14 +48,19 @@ public static class DocumentationStore
     /// <exception cref="OperationCanceledException">
     /// Preparation is canceled. Completed immutable payloads remain registered for safe maintenance.
     /// </exception>
+    /// <remarks>
+    /// Independent page preparation uses at most four workers and retains each page's exclusive lease.
+    /// Catalog validation and generation publication occur only after all workers finish. Worker parsing
+    /// and registration timing totals can overlap; PagePreparation reports their enclosing wall time.
+    /// </remarks>
     public static async Task<DocumentationResult> IndexAsync(
         string workspaceRoot,
         string documentationRoot,
         string cacheRoot,
         CancellationToken cancellationToken = default
     ) {
-        var total = Stopwatch.StartNew();
-        var phase = Stopwatch.StartNew();
+        Stopwatch total = Stopwatch.StartNew();
+        Stopwatch phase = Stopwatch.StartNew();
         var timings = new Dictionary<string, double>(StringComparer.Ordinal);
         long parsingTicks = 0;
         long registrationTicks = 0;
@@ -76,11 +68,17 @@ public static class DocumentationStore
         string content = PathBoundary.RequireUnlinkedPath(root, Path.Combine(root, "content", "en"));
         string output = PathBoundary.RequireUnlinkedPath(Path.GetFullPath(workspaceRoot), Path.GetFullPath(cacheRoot));
         if (output == root || output.StartsWith(content + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+        {
             throw new ArgumentException("Documentation cache must be outside authored content.", nameof(cacheRoot));
+        }
         var publisher = new BuildCachePublisher(output, BuildCacheArtifactRole.ImmutableArtifact);
         BuildCacheOwnerCatalog.Register(workspaceRoot, output, "documentation-snapshots", publisher.role, cancellationToken);
         using FileLease activity = await publisher.AcquireUseAsync(cancellationToken).ConfigureAwait(false);
-        using FileLease writing = await FileLease.AcquireAsync(Path.Combine(output, "writer.lock"), Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+        using FileLease writing = await FileLease.AcquireAsync(
+            Path.Combine(output, "writer.lock"),
+            Timeout.InfiniteTimeSpan,
+            cancellationToken
+        ).ConfigureAwait(false);
         string bindingPath = PathBoundary.RequireUnlinkedPath(root, Path.Combine(root, "reference", "engine.lock.json"));
         byte[] bindingBytes = File.ReadAllBytes(bindingPath);
         DocumentationBinding binding = Deserialize<DocumentationBinding>(bindingBytes);
@@ -89,15 +87,28 @@ public static class DocumentationStore
         string projectPath = PathBoundary.RequireUnlinkedPath(root, PathBoundary.Resolve(root, binding.projectManifest));
         byte[] projectBytes = File.ReadAllBytes(projectPath);
         if (DocumentationMarkdown.Hash(projectBytes) != binding.projectManifestIdentity)
+        {
             throw new InvalidDataException("Project manifest does not match the engine binding.");
+        }
         DocumentationProject[] projects = Deserialize<DocumentationProject[]>(projectBytes);
-        DocumentationReferenceStore.Prepared references = await DocumentationReferenceStore.PrepareAsync(root, output,
-            binding, projects, projectBytes, publisher, cancellationToken).ConfigureAwait(false);
+        DocumentationReferenceStore.Prepared references = await DocumentationReferenceStore.PrepareAsync(
+            root,
+            output,
+            binding,
+            projects,
+            projectBytes,
+            publisher,
+            cancellationToken
+        ).ConfigureAwait(false);
         DocumentationManifest? previous = TryReadCurrent(output);
-        var reusable = previous?.parserSchema == parserSchema
+        Dictionary<string, DocumentationPageReference> reusable = previous?.parserSchema == parserSchema
             ? previous.pages.Values.ToDictionary(static page => page.key, StringComparer.Ordinal)
             : new Dictionary<string, DocumentationPageReference>(StringComparer.Ordinal);
-        var raw = EnumerateContent(content).ToDictionary(path => Path.GetRelativePath(root, path).Replace('\\', '/'), File.ReadAllText, StringComparer.Ordinal);
+        Dictionary<string, string> raw = EnumerateContent(content).ToDictionary(
+            path => Path.GetRelativePath(root, path).Replace('\\', '/'),
+            File.ReadAllText,
+            StringComparer.Ordinal
+        );
         DocumentationComposedContent composed = DocumentationApiComposition.Prepare(root, binding, raw);
         string[] sources = composed.pages.Keys.ToArray();
         var prepared = new (DocumentationPage page, DocumentationPageReference reference)[sources.Length];
@@ -106,57 +117,76 @@ public static class DocumentationStore
         RecordPhase("SetupAndLockWait");
         // Each content-addressed page has its own output and lease. Keep publication serialized,
         // bound filesystem pressure, and drain all preparation before validating the complete catalog.
-        await Parallel.ForEachAsync(Enumerable.Range(0, sources.Length), new ParallelOptions
-        {
-            MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4),
-            CancellationToken = cancellationToken
-        }, async (
-            int index,
-            CancellationToken cancellation
-        ) =>
-        {
-            cancellation.ThrowIfCancellationRequested();
-            string path = sources[index];
-            string relative = path;
-            string text = composed.pages[path];
-            string key = DocumentationMarkdown.Hash(parserSchema + "\n" + relative + "\n" + text);
-            string directory = Path.Combine(output, "pages", key);
-            string payload = PathBoundary.RequireUnlinkedPath(output, Path.Combine(directory, "page.json"));
-            string lease = Path.Combine(output, "leases", key + ".lock");
-            using FileLease pageWriting = await FileLease.AcquireAsync(lease, Timeout.InfiniteTimeSpan, cancellation).ConfigureAwait(false);
-            DocumentationPage? page = null;
-            byte[]? bytes = null;
-            if (reusable.TryGetValue(key, out DocumentationPageReference? known) && File.Exists(payload))
+        await Parallel.ForEachAsync(
+            Enumerable.Range(0, sources.Length),
+            new ParallelOptions
             {
-                bytes = File.ReadAllBytes(payload);
-                if (DocumentationMarkdown.Hash(bytes) == known.payloadIdentity)
-                    page = Deserialize<DocumentationPage>(bytes);
-                if (page?.text != text || page.path != relative || page.identity != DocumentationMarkdown.Hash(text))
-                    page = null;
-            }
-            if (page is null)
+                MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4),
+                CancellationToken = cancellationToken
+            },
+            async (
+                int index,
+                CancellationToken cancellation
+            ) =>
             {
-                long started = Stopwatch.GetTimestamp();
-                page = DocumentationMarkdown.Parse(relative, text);
-                Interlocked.Add(ref parsingTicks, Stopwatch.GetTimestamp() - started);
-                bytes = JsonSerializer.SerializeToUtf8Bytes(page, json);
                 cancellation.ThrowIfCancellationRequested();
-                AtomicFile.WriteAllBytes(payload, bytes);
-                Interlocked.Increment(ref parsed);
+                string path = sources[index];
+                string relative = path;
+                string text = composed.pages[path];
+                string key = DocumentationMarkdown.Hash(parserSchema + "\n" + relative + "\n" + text);
+                string directory = Path.Combine(output, "pages", key);
+                string payload = PathBoundary.RequireUnlinkedPath(output, Path.Combine(directory, "page.json"));
+                string lease = Path.Combine(output, "leases", key + ".lock");
+                using FileLease pageWriting = await FileLease.AcquireAsync(
+                    lease,
+                    Timeout.InfiniteTimeSpan,
+                    cancellation
+                ).ConfigureAwait(false);
+                DocumentationPage? page = null;
+                byte[]? bytes = null;
+                if (reusable.TryGetValue(key, out DocumentationPageReference? known) && File.Exists(payload))
+                {
+                    bytes = File.ReadAllBytes(payload);
+                    if (DocumentationMarkdown.Hash(bytes) == known.payloadIdentity)
+                    {
+                        page = Deserialize<DocumentationPage>(bytes);
+                    }
+                    if (page?.text != text || page.path != relative || page.identity != DocumentationMarkdown.Hash(text))
+                    {
+                        page = null;
+                    }
+                }
+                if (page is null)
+                {
+                    long started = Stopwatch.GetTimestamp();
+                    page = DocumentationMarkdown.Parse(relative, text);
+                    Interlocked.Add(ref parsingTicks, Stopwatch.GetTimestamp() - started);
+                    bytes = JsonSerializer.SerializeToUtf8Bytes(page, json);
+                    cancellation.ThrowIfCancellationRequested();
+                    AtomicFile.WriteAllBytes(payload, bytes);
+                    Interlocked.Increment(ref parsed);
+                }
+                long registrationStarted = Stopwatch.GetTimestamp();
+                publisher.EnsureImmutableRegistration(directory, lease, [], null, cancellation);
+                Interlocked.Add(ref registrationTicks, Stopwatch.GetTimestamp() - registrationStarted);
+                prepared[index] = (page, new DocumentationPageReference(
+                    page.metadata.uid,
+                    key,
+                    DocumentationMarkdown.Hash(bytes!),
+                    page.metadata
+                ));
             }
-            long registrationStarted = Stopwatch.GetTimestamp();
-            publisher.EnsureImmutableRegistration(directory, lease, [], null, cancellation);
-            Interlocked.Add(ref registrationTicks, Stopwatch.GetTimestamp() - registrationStarted);
-            prepared[index] = (page, new(page.metadata.uid, key, DocumentationMarkdown.Hash(bytes!), page.metadata));
-        }).ConfigureAwait(false);
+        ).ConfigureAwait(false);
         var pages = new List<DocumentationPage>(prepared.Length);
-        foreach (var item in prepared)
+        foreach ((DocumentationPage page, DocumentationPageReference reference) item in prepared)
         {
             pages.Add(item.page);
             entries.Add(item.page.path, item.reference);
         }
         if (pages.Count == 0)
+        {
             throw new InvalidDataException("The selected Docs checkout has no content. Prepare a documentation source before querying.");
+        }
         RecordPhase("PagePreparation");
         // Worker totals overlap; PagePreparation is the elapsed wall time, not their sum.
         timings.Add("MarkdownParsing", parsingTicks * 1000d / Stopwatch.Frequency);
@@ -164,27 +194,56 @@ public static class DocumentationStore
         // The source manifest supplies project facts; authored page metadata supplies each canonical entry.
         // The complete graph remains reference provenance. Platform implementation projects
         // do not acquire reader entries, API pages or query ownership in cross-platform docs.
-        projects = projects.Where(project => !project.path.StartsWith("platforms/", StringComparison.Ordinal)).Select(project => project with
-        {
-            entry = pages.Where(page => page.metadata.kind == "project" && page.metadata.owners.Contains(project.name, StringComparer.Ordinal))
-                .Select(static page => page.metadata.uid).SingleOrDefault()
-        }).ToArray();
+        projects = projects
+            .Where(project => !project.path.StartsWith("platforms/", StringComparison.Ordinal))
+            .Select(project => project with
+            {
+                entry = pages
+                    .Where(page => page.metadata.kind == "project" && page.metadata.owners.Contains(project.name, StringComparer.Ordinal))
+                    .Select(static page => page.metadata.uid)
+                    .SingleOrDefault()
+            })
+            .ToArray();
         DocumentationCatalog.Validate(root, pages, projects);
         RecordPhase("CatalogValidation");
-        var search = pages.SelectMany(page => page.sections.Select(section =>
+        DocumentationSearchEntry[] search = pages.SelectMany(page => page.sections.Select(section =>
         {
             string body = DocumentationMarkdown.OwnText(page, section);
             string terms = section.title + " " + body + " " + string.Join(' ', page.metadata.aliases)
-                + " " + string.Join(' ', page.metadata.owners);
-            return new DocumentationSearchEntry(page.metadata.uid, section.anchor, section.title,
-                body[..Math.Min(body.Length, 320)], DocumentationMarkdown.Tokens(terms));
+                           + " " + string.Join(' ', page.metadata.owners);
+            return new DocumentationSearchEntry(
+                page.metadata.uid,
+                section.anchor,
+                section.title,
+                body[..Math.Min(body.Length, 320)],
+                DocumentationMarkdown.Tokens(terms)
+            );
         })).ToArray();
-        var origins = composed.origins.ToDictionary(origin => origin.page + "\0" + origin.id, StringComparer.Ordinal);
-        var symbols = pages.SelectMany(page => page.symbols.Select(symbol => new DocumentationSymbolReference(
-            page.metadata.owners.Single(), page.metadata.apiSurface!, symbol.id, page.metadata.uid, symbol.anchor,
-            origins.GetValueOrDefault(page.path + "\0" + symbol.id)?.surfaces))).ToArray();
-        var manifest = new DocumentationManifest("", schema, parserSchema, binding, entries, projects, search, symbols, references.references,
-            composed.inputs, composed.origins);
+        Dictionary<string, DocumentationApiOrigin> origins = composed.origins.ToDictionary(
+            origin => origin.page + "\0" + origin.id,
+            StringComparer.Ordinal
+        );
+        DocumentationSymbolReference[] symbols = pages.SelectMany(page => page.symbols.Select(symbol => new DocumentationSymbolReference(
+            page.metadata.owners.Single(),
+            page.metadata.apiSurface!,
+            symbol.id,
+            page.metadata.uid,
+            symbol.anchor,
+            origins.GetValueOrDefault(page.path + "\0" + symbol.id)?.surfaces
+        ))).ToArray();
+        var manifest = new DocumentationManifest(
+            string.Empty,
+            schema,
+            parserSchema,
+            binding,
+            entries,
+            projects,
+            search,
+            symbols,
+            references.references,
+            composed.inputs,
+            composed.origins
+        );
         string identity = DocumentationMarkdown.Hash(JsonSerializer.SerializeToUtf8Bytes(manifest, json));
         manifest = manifest with { identity = identity };
         string generation = Path.Combine(output, "generations", identity);
@@ -193,11 +252,17 @@ public static class DocumentationStore
         // Recheck actual contents, including additions and same-length timestamp-preserving edits.
         string[] current = EnumerateContent(content).Select(path => Path.GetRelativePath(root, path).Replace('\\', '/')).ToArray();
         if (!current.SequenceEqual(raw.Keys.Order(StringComparer.Ordinal), StringComparer.Ordinal)
-            || composed.inputs.Any(input => !File.Exists(Path.Combine(root, input.Key))
-                || DocumentationMarkdown.Hash(File.ReadAllText(Path.Combine(root, input.Key))) != input.Value)
+            || composed.inputs.Any(input => (
+                !File.Exists(Path.Combine(root, input.Key))
+                || DocumentationMarkdown.Hash(File.ReadAllText(Path.Combine(root, input.Key))) != input.Value
+            ))
             || !File.ReadAllBytes(bindingPath).SequenceEqual(bindingBytes)
-            || !File.ReadAllBytes(projectPath).SequenceEqual(projectBytes))
-            throw new IOException("Documentation inputs changed during preparation. The previous snapshot remains selected; refresh a stable source.");
+            || !File.ReadAllBytes(projectPath).SequenceEqual(projectBytes)
+        ) {
+            throw new IOException(
+                "Documentation inputs changed during preparation. The previous snapshot remains selected; refresh a stable source."
+            );
+        }
         cancellationToken.ThrowIfCancellationRequested();
         DocumentationReferenceStore.Verify(references);
         RecordPhase("FreshnessValidation");
@@ -206,22 +271,45 @@ public static class DocumentationStore
             // Immutable CI payloads deliberately omit process-local ownership and leases.
             // Adopt an unchanged restored generation without rewriting it or waiting on
             // existing readers of a generation that is already registered locally.
-            using FileLease? restored = File.Exists(generationLease) ? null
+            using FileLease? restored = File.Exists(generationLease)
+                ? null
                 : await FileLease.AcquireAsync(generationLease, Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
-            publisher.EnsureImmutableRegistration(generation, generationLease,
+            publisher.EnsureImmutableRegistration(
+                generation,
+                generationLease,
                 entries.Values.Select(page => Path.Combine(output, "pages", page.key))
                     .Concat(references.references.Select(reference => Path.Combine(output, "references", reference.identity)))
-                    .Distinct(StringComparer.Ordinal).ToArray(), null, cancellationToken);
-            return Finish($"Confirmed {pages.Count} pages; parsed {parsed}, reused {pages.Count - parsed}. Existing generation retained without rewriting its manifest.");
+                    .Distinct(StringComparer.Ordinal)
+                    .ToArray(),
+                null,
+                cancellationToken
+            );
+            return Finish(
+                $"Confirmed {pages.Count} pages; parsed {parsed}, reused {pages.Count - parsed}. Existing generation retained without rewriting its manifest."
+            );
         }
-        using FileLease publishing = await FileLease.AcquireAsync(generationLease, Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+        using FileLease publishing = await FileLease.AcquireAsync(
+            generationLease,
+            Timeout.InfiniteTimeSpan,
+            cancellationToken
+        ).ConfigureAwait(false);
         AtomicFile.WriteAllBytes(Path.Combine(generation, "manifest.json"), JsonSerializer.SerializeToUtf8Bytes(manifest, json));
-        publisher.Record(generation, generationLease, entries.Values.Select(page => Path.Combine(output, "pages", page.key))
-                .Concat(references.references.Select(reference => Path.Combine(output, "references", reference.identity))).Distinct(StringComparer.Ordinal).ToArray(),
-            "documentation", null, cancellationToken);
+        publisher.Record(
+            generation,
+            generationLease,
+            entries.Values.Select(page => Path.Combine(output, "pages", page.key))
+                .Concat(references.references.Select(reference => Path.Combine(output, "references", reference.identity)))
+                .Distinct(StringComparer.Ordinal)
+                .ToArray(),
+            "documentation",
+            null,
+            cancellationToken
+        );
         // Cancellation is observed before this commit point; selection cannot expose a partial generation.
         AtomicFile.WriteAllBytes(Path.Combine(output, "current.json"), JsonSerializer.SerializeToUtf8Bytes(identity));
-        return Finish($"Published {pages.Count} pages; parsed {parsed}, reused {pages.Count - parsed}. No source API verification was performed.");
+        return Finish(
+            $"Published {pages.Count} pages; parsed {parsed}, reused {pages.Count - parsed}. No source API verification was performed."
+        );
 
         void RecordPhase(string name)
         {
@@ -252,12 +340,12 @@ public static class DocumentationStore
     /// <param name="expectedSourceTree">
     /// Expected engine input tree, or null when the caller only needs the explicitly bound documentation snapshot.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels reading lease acquisition and manifest loading.
-    /// </param>
     /// <param name="sourceEvidence">
     /// Explicit certificate authenticated during preparation, or null for an unverified session.
     /// A certificate must cover the exact source tree and every protected API reference.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels reading lease acquisition and manifest loading.
     /// </param>
     /// <returns>
     /// A caller-owned query session. Dispose it after the final query to release its generation reading lease.
@@ -272,19 +360,32 @@ public static class DocumentationStore
         string cacheRoot,
         string? snapshot = null,
         string? expectedSourceTree = null,
-        CancellationToken cancellationToken = default,
-        DocumentationEvidence? sourceEvidence = null
+        DocumentationEvidence? sourceEvidence = null,
+        CancellationToken cancellationToken = default
     ) {
         string output = Path.GetFullPath(cacheRoot);
         PathBoundary.RequireUnlinkedPath(output, output);
         string activityPath = PathBoundary.RequireUnlinkedPath(output, Path.Combine(output, "owner.lock"));
         if (!File.Exists(activityPath))
-            throw new FileNotFoundException("No prepared documentation snapshot. Run docs index with an explicit documentation source.", activityPath);
-        using FileLease activity = await FileLease.AcquireSharedAsync(activityPath, Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
-        string identity = snapshot ?? Deserialize<string>(File.ReadAllBytes(PathBoundary.RequireUnlinkedPath(output, Path.Combine(output, "current.json"))));
+        {
+            throw new FileNotFoundException(
+                "No prepared documentation snapshot. Run docs index with an explicit documentation source.",
+                activityPath
+            );
+        }
+        using FileLease activity = await FileLease.AcquireSharedAsync(
+            activityPath,
+            Timeout.InfiniteTimeSpan,
+            cancellationToken
+        ).ConfigureAwait(false);
+        string identity = snapshot
+            ?? Deserialize<string>(File.ReadAllBytes(PathBoundary.RequireUnlinkedPath(output, Path.Combine(output, "current.json"))));
         RequireHash(identity, "snapshot");
-        FileLease reading = await FileLease.AcquireSharedAsync(PathBoundary.RequireUnlinkedPath(output,
-            Path.Combine(output, "leases", identity + ".lock")), Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+        FileLease reading = await FileLease.AcquireSharedAsync(
+            PathBoundary.RequireUnlinkedPath(output, Path.Combine(output, "leases", identity + ".lock")),
+            Timeout.InfiniteTimeSpan,
+            cancellationToken
+        ).ConfigureAwait(false);
         try
         {
             DocumentationManifest manifest = ReadManifest(output, identity);
@@ -299,6 +400,11 @@ public static class DocumentationStore
         }
     }
 
+    internal static JsonSerializerOptions json { get; } = new() { WriteIndented = false };
+    // Snapshot format compatibility is a parser/index protocol, not a compilation artifact identity.
+    // MVID includes build provenance and can differ between adapters compiling identical parser sources.
+    internal static string schema { get; } = CreateSchemaIdentity();
+
     internal static T Deserialize<T>(byte[] bytes)
         => JsonSerializer.Deserialize<T>(bytes, json) ?? throw new InvalidDataException("Documentation payload is null.");
 
@@ -308,27 +414,50 @@ public static class DocumentationStore
         bool allowGitTree = false
     ) {
         if (value is null || (value.Length != 64 && (!allowGitTree || value.Length != 40))
-            || value.Any(static character => !char.IsAsciiHexDigitLower(character)))
+            || value.Any(static character => !char.IsAsciiHexDigitLower(character))
+        ) {
             throw new InvalidDataException("Invalid " + label + " identity.");
+        }
     }
 
+    private static string parserSchema { get; } = CreateSchemaIdentity(
+        "DocumentationMarkdown.cs",
+        "DocumentationPage.cs",
+        "DocumentationCodeBlockInfo.cs",
+        "DocumentationExampleContext.cs",
+        "DocumentationApiComposition.cs",
+        "DocumentationApiFragment.cs",
+        "DocumentationApiPresentation.cs",
+        "DocumentationXml.cs",
+        "Inno.Tooling.Documentation.csproj"
+    );
+
     private static string[] EnumerateContent(string content)
-        => PathBoundary.EnumerateFiles(content).Where(static path => path.EndsWith(".md", StringComparison.Ordinal))
-            .OrderBy(path => Path.GetRelativePath(content, path).Replace('\\', '/'), StringComparer.Ordinal).ToArray();
+        => PathBoundary.EnumerateFiles(content)
+            .Where(static path => path.EndsWith(".md", StringComparison.Ordinal))
+            .OrderBy(path => Path.GetRelativePath(content, path).Replace('\\', '/'), StringComparer.Ordinal)
+            .ToArray();
 
     private static string CreateSchemaIdentity(params string[] selectedInputs)
     {
-        var assembly = typeof(DocumentationStore).Assembly;
-        string[] sources = assembly.GetManifestResourceNames().Where(static name => name.StartsWith("DocumentationSource/", StringComparison.Ordinal))
-            .Where(name => selectedInputs.Length == 0 || selectedInputs.Contains(name["DocumentationSource/".Length..], StringComparer.Ordinal))
-            .Order(StringComparer.Ordinal).ToArray();
+        Assembly assembly = typeof(DocumentationStore).Assembly;
+        string[] sources = assembly
+            .GetManifestResourceNames()
+            .Where(static name => name.StartsWith("DocumentationSource/", StringComparison.Ordinal))
+            .Where(
+                name => selectedInputs.Length == 0 || selectedInputs.Contains(name["DocumentationSource/".Length..], StringComparer.Ordinal)
+            )
+            .Order(StringComparer.Ordinal)
+            .ToArray();
         if (sources.Length == 0 || (selectedInputs.Length != 0 && sources.Length != selectedInputs.Length))
+        {
             throw new InvalidDataException("Documentation tooling lacks its authored query protocol inputs.");
-        var inputs = new List<string>();
+        }
+        List<string> inputs = [];
         foreach (string source in sources)
         {
             using Stream stream = assembly.GetManifestResourceStream(source)
-                ?? throw new InvalidDataException("Missing query protocol input: " + source);
+                                  ?? throw new InvalidDataException("Missing query protocol input: " + source);
             using var reader = new StreamReader(stream);
             inputs.Add(source + "\0" + DocumentationMarkdown.Hash(reader.ReadToEnd().Replace("\r\n", "\n", StringComparison.Ordinal)));
         }
@@ -344,8 +473,10 @@ public static class DocumentationStore
         DocumentationManifest manifest = Deserialize<DocumentationManifest>(File.ReadAllBytes(path));
         if (manifest.identity != identity
             || (requireCurrentSchema && (manifest.schema != schema || manifest.parserSchema != parserSchema || manifest.references is null))
-            || DocumentationMarkdown.Hash(JsonSerializer.SerializeToUtf8Bytes(manifest with { identity = "" }, json)) != identity)
+            || DocumentationMarkdown.Hash(JsonSerializer.SerializeToUtf8Bytes(manifest with { identity = string.Empty }, json)) != identity
+        ) {
             throw new InvalidDataException("Documentation snapshot integrity or schema mismatch; explicitly rebuild its index.");
+        }
         return manifest;
     }
 
@@ -355,15 +486,26 @@ public static class DocumentationStore
         {
             string pointer = PathBoundary.RequireUnlinkedPath(output, Path.Combine(output, "current.json"));
             if (!File.Exists(pointer))
+            {
                 return null;
+            }
             string identity = Deserialize<string>(File.ReadAllBytes(pointer));
             RequireHash(identity, "snapshot");
             // A verified older query generation can still supply matching immutable parsed-page payloads.
             // It is never exposed through OpenAsync until the current catalog and index have been rebuilt.
             return ReadManifest(output, identity, requireCurrentSchema: false);
         }
-        catch (JsonException) { return null; }
-        catch (InvalidDataException) { return null; }
-        catch (FileNotFoundException) { return null; }
+        catch (JsonException)
+        {
+            return null;
+        }
+        catch (InvalidDataException)
+        {
+            return null;
+        }
+        catch (FileNotFoundException)
+        {
+            return null;
+        }
     }
 }

@@ -1,6 +1,4 @@
-
 using System;
-
 using Inno.Scene;
 
 namespace Inno.Editor.Panel.Inspector;
@@ -34,8 +32,9 @@ public sealed class EngineObjectReferenceDropTarget
         Action<EngineObject> assign
     ) {
         ArgumentNullException.ThrowIfNull(expectedType);
+        ArgumentNullException.ThrowIfNull(assign);
         m_expectedType = expectedType;
-        m_assign = assign ?? throw new ArgumentNullException(nameof(assign));
+        m_assign = assign;
     }
 
     /// <summary>

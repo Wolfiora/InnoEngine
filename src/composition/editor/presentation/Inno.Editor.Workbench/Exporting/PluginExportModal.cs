@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Inno.Editor.Core;
+using Inno.Editor.Exporting;
 using Inno.Editor.ImGui;
-using Ui = Inno.Editor.ImGui.ImGui;
+
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Workbench;
 
@@ -22,29 +24,33 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
     private bool m_dependencies;
     private long m_operation;
     private float m_wrapWidth;
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public override bool isVisible => window.isPluginVisible;
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public override bool canMove => true;
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public override Vector2 initialSize => new(680f, 0f);
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     protected override Vector2? OnPrepare(
         EditorContext context,
         Vector2 availableContentSize
     ) {
-        var progress = window.progress;
-        m_operation = progress.operationId;
-        m_identity = $"{window.pluginId} (from Project ID)";
+        EditorExportProgress progress = window.progress;
+        m_operation = progress.operationID;
+        m_identity = $"{window.pluginID} (from Project ID)";
         m_name = window.pluginDisplayName;
         m_destination = window.pluginOutputPath;
         m_dependencies = window.includePluginDependencies;
         m_busy = window.isPluginBusy;
         m_outcome = string.IsNullOrEmpty(progress.error) ? progress.status : progress.error;
         float width = availableContentSize.X;
-        float scrollbar = Ui.GetLayout().scrollbarSize;
-        float checkboxWidth = Ui.GetFrameHeight() + Ui.GetLayout().itemInnerSpacing.X +
-            Ui.MeasureText("Include dependency Plugin packages").X;
+        float scrollbar = Gui.GetLayout().scrollbarSize;
+        float checkboxWidth = Gui.GetFrameHeight() + Gui.GetLayout().itemInnerSpacing.X
+                              + Gui.MeasureText("Include dependency Plugin packages").X;
         float height = Present(false, width);
         float availableHeight = availableContentSize.Y - (checkboxWidth > width ? scrollbar : 0f);
         if (height > availableHeight)
@@ -55,7 +61,8 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
         m_wrapWidth = width;
         return new Vector2(MathF.Max(width, checkboxWidth), height);
     }
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     protected override void OnDraw(EditorContext context) => Present(true, m_wrapWidth);
 
     private float Present(
@@ -64,12 +71,14 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
     ) {
         float height = 0f;
         int row = 0;
-        Vector2 origin = draw ? Ui.GetCursorPosition() : Vector2.Zero;
+        Vector2 origin = draw ? Gui.GetCursorPosition() : Vector2.Zero;
         if (!draw)
+        {
             m_rows.Clear();
-        var layout = Ui.GetLayout();
+        }
+        EditorUILayout layout = Gui.GetLayout();
         float gap = layout.itemSpacing.Y;
-        float frame = Ui.MeasureText("M").Y + layout.framePadding.Y * 2f;
+        float frame = Gui.MeasureText("M").Y + layout.framePadding.Y * 2f;
         Text(C_DESCRIPTION, true);
         Text("Plugin ID");
         Text(m_identity, true);
@@ -78,43 +87,53 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
         Row(frame);
         if (draw)
         {
-            Ui.BeginDisabled(m_busy);
+            Gui.BeginDisabled(m_busy);
             try
             {
-                if (Ui.Checkbox("Include dependency Plugin packages", ref m_dependencies))
+                if (Gui.Checkbox("Include dependency Plugin packages", ref m_dependencies))
+                {
                     window.includePluginDependencies = m_dependencies;
+                }
             }
             finally
             {
-                Ui.EndDisabled();
+                Gui.EndDisabled();
             }
         }
         Text(C_HINT, true);
         if (m_outcome.Length != 0)
+        {
             Text(m_outcome, true);
+        }
         Row(frame);
         if (draw)
         {
-            float closeWidth = Ui.MeasureText("Close").X + layout.framePadding.X * 2f;
-            float actionWidth = Ui.MeasureText(m_busy ? "Cancel" : "Export").X + layout.framePadding.X * 2f;
-            Ui.SetCursorPosX(Ui.GetCursorPosX() + MathF.Max(0f, width - closeWidth - actionWidth - layout.itemSpacing.X));
-            Ui.BeginDisabled(m_busy);
+            float closeWidth = Gui.MeasureText("Close").X + layout.framePadding.X * 2f;
+            float actionWidth = Gui.MeasureText(m_busy ? "Cancel" : "Export").X + layout.framePadding.X * 2f;
+            Gui.SetCursorPosX(Gui.GetCursorPosX() + MathF.Max(0f, width - closeWidth - actionWidth - layout.itemSpacing.X));
+            Gui.BeginDisabled(m_busy);
             try
             {
-                if (Ui.Button("Close"))
+                if (Gui.Button("Close"))
+                {
                     window.ClosePlugin();
+                }
             }
             finally
             {
-                Ui.EndDisabled();
+                Gui.EndDisabled();
             }
-            Ui.SameLine(0f, -1f);
-            if (Ui.Button(m_busy ? "Cancel" : "Export"))
+            Gui.SameLine(0f, -1f);
+            if (Gui.Button(m_busy ? "Cancel" : "Export"))
             {
                 if (m_busy)
+                {
                     window.CancelPluginExport(m_operation);
+                }
                 else
+                {
                     window.BeginPluginExport();
+                }
             }
         }
         return MathF.Ceiling(height);
@@ -122,11 +141,15 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
         void Row(float extent)
         {
             if (draw)
-                Ui.SetCursorPosition(origin + new Vector2(0f, m_rows[row++]));
+            {
+                Gui.SetCursorPosition(origin + new Vector2(0f, m_rows[row++]));
+            }
             else
             {
                 if (m_rows.Count != 0)
+                {
                     height += gap;
+                }
                 m_rows.Add(height);
                 height += extent;
             }
@@ -135,13 +158,19 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
             string text,
             bool wrapped = true
         ) {
-            Row(draw ? 0f : (wrapped ? Ui.MeasureWrappedText(text, width) : Ui.MeasureText(text)).Y);
+            Row(draw ? 0f : (wrapped ? Gui.MeasureWrappedText(text, width) : Gui.MeasureText(text)).Y);
             if (!draw)
+            {
                 return;
+            }
             if (wrapped)
-                EditorUiSession.current.widgets.WrappedText(text, width);
+            {
+                EditorUISession.current.widgets.WrappedText(text, width);
+            }
             else
-                Ui.Text(text);
+            {
+                Gui.Text(text);
+            }
         }
         void Field(
             string label,
@@ -151,22 +180,28 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
             Text(label);
             Row(frame);
             if (!draw)
+            {
                 return;
-            Ui.BeginDisabled(m_busy);
+            }
+            Gui.BeginDisabled(m_busy);
             try
             {
-                Ui.SetNextItemWidth(width);
-                if (Ui.InputText(id, ref value, C_TEXT_CAPACITY))
+                Gui.SetNextItemWidth(width);
+                if (Gui.InputText(id, ref value, C_TEXT_CAPACITY))
                 {
                     if (id == "##plugin_name")
+                    {
                         window.pluginDisplayName = value;
+                    }
                     else
+                    {
                         window.pluginOutputPath = value;
+                    }
                 }
             }
             finally
             {
-                Ui.EndDisabled();
+                Gui.EndDisabled();
             }
         }
     }

@@ -1,17 +1,17 @@
-using Inno.Adapter.Platform;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using Inno.Adapter.Platform;
 using Inno.Native.Bgfx;
 using Inno.Platform;
 using Inno.Rendering;
 
 namespace Inno.Adapter.Rendering.Bgfx;
 
-sealed unsafe partial class BgfxDevice
+public sealed unsafe partial class BgfxDevice
 {
     /// <summary>
     /// Begins a frame-scoped operation and makes queued work visible.
@@ -46,13 +46,14 @@ sealed unsafe partial class BgfxDevice
         if (m_resetPending)
         {
             m_resetPending = false;
-            if (capabilities.backend != GraphicsApi.Noop)
+            if (capabilities.backend != GraphicsApi.noop)
             {
                 bgfx.reset(
                     checked((uint)m_backbufferWidth),
                     checked((uint)m_backbufferHeight),
                     m_resetFlags,
-                    bgfx.TextureFormat.Count);
+                    bgfx.TextureFormat.Count
+                );
             }
         }
 
@@ -92,12 +93,12 @@ sealed unsafe partial class BgfxDevice
             throw new InvalidOperationException("No BGFX frame is open.");
         }
 
-        if (m_activeGraph is not null || m_activeEncoder != null)
+        if (m_activeGraph is not null || m_activeEncoder is not null)
         {
             throw new InvalidOperationException("All render graphs and encoders must end before BGFX frame submission.");
         }
 
-        if (m_nextViewId == 0)
+        if (m_nextViewID == 0)
         {
             bgfx.touch(0);
         }
@@ -124,9 +125,13 @@ sealed unsafe partial class BgfxDevice
         EnsureApiThread();
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (size is RenderPresentationSize assigned && !assigned.isValid)
+        {
             throw new ArgumentException("A primary presentation extent must have positive pixel dimensions.", nameof(size));
+        }
         if (size.HasValue && !m_hasPrimarySurface)
+        {
             throw new NotSupportedException("A windowless BGFX device has no primary presentation surface.");
+        }
         m_pendingPresentationSize = size;
         m_presentationUpdatePending = true;
     }
@@ -143,22 +148,23 @@ sealed unsafe partial class BgfxDevice
         EnsureApiThread();
         ObjectDisposedException.ThrowIf(m_disposed, this);
         uint next = enabled
-            ? m_resetFlags | (uint)bgfx.ResetFlags.Vsync
-            : m_resetFlags & ~(uint)bgfx.ResetFlags.Vsync;
+                    ? m_resetFlags | (uint)bgfx.ResetFlags.Vsync
+                    : m_resetFlags & ~(uint)bgfx.ResetFlags.Vsync;
         if (next == m_resetFlags)
+        {
             return;
+        }
         m_resetFlags = next;
         m_resetPending = true;
     }
 
     private void ResetPreviousViews()
     {
-        for (int viewIndex = 0; viewIndex < m_nextViewId; viewIndex++)
+        for (int viewIndex = 0; viewIndex < m_nextViewID; viewIndex++)
         {
             bgfx.reset_view(checked((ushort)viewIndex));
         }
 
-        m_nextViewId = 0;
+        m_nextViewID = 0;
     }
-
 }

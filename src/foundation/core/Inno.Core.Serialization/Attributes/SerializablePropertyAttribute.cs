@@ -12,6 +12,17 @@ namespace Inno.Core.Serialization;
 public sealed class SerializablePropertyAttribute : Attribute
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="SerializablePropertyAttribute"/> class.
+    /// </summary>
+    /// <param name="visibility">
+    /// The member visibility in the serialization graph.
+    /// </param>
+    public SerializablePropertyAttribute(PropertyVisibility visibility = PropertyVisibility.Show)
+    {
+        this.propertyVisibility = visibility;
+    }
+
+    /// <summary>
     /// Gets or sets the member order within its declaring type.
     /// </summary>
     /// <remarks>
@@ -23,15 +34,4 @@ public sealed class SerializablePropertyAttribute : Attribute
     /// Gets the visibility of the annotated member.
     /// </summary>
     public PropertyVisibility propertyVisibility { get; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SerializablePropertyAttribute"/> class.
-    /// </summary>
-    /// <param name="visibility">
-    /// The member visibility in the serialization graph.
-    /// </param>
-    public SerializablePropertyAttribute(PropertyVisibility visibility = PropertyVisibility.Show)
-    {
-        propertyVisibility = visibility;
-    }
 }

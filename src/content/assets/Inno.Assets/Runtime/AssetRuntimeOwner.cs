@@ -21,7 +21,10 @@ public sealed class AssetRuntimeOwner
     /// <param name="properties">
     /// Owner resolver, weakly referenced so stale assets cannot retain a retired database.
     /// </param>
-    public AssetRuntimeOwner(IAssetPropertyStateResolver? properties = null) => m_properties = properties is null ? null : new(properties);
+    public AssetRuntimeOwner(IAssetPropertyStateResolver? properties = null)
+    {
+        m_properties = properties is null ? null : new WeakReference<IAssetPropertyStateResolver>(properties);
+    }
 
     /// <summary>
     /// Reads the source fingerprint of an asset claimed by this owner.

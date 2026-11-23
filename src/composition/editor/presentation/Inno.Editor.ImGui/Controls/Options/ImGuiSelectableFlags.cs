@@ -1,6 +1,9 @@
 using System;
 
+using NativeSelectableFlags = Inno.Native.ImGui.ImGuiSelectableFlags;
+
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported selectable flags choices at the Editor presentation boundary.
 /// </summary>
@@ -10,33 +13,33 @@ public enum ImGuiSelectableFlags : int
     /// <summary>
     /// Uses the ordinary behavior without additional options.
     /// </summary>
-    None = (int)Inno.Native.ImGui.ImGuiSelectableFlags.None,
+    None = (int)NativeSelectableFlags.None,
     /// <summary>
     /// Clicking this doesn't close parent popup window (overrides ImGuiItemFlags_AutoClosePopups)
     /// </summary>
-    NoAutoClosePopups = (int)Inno.Native.ImGui.ImGuiSelectableFlags.NoAutoClosePopups,
+    NoAutoClosePopups = (int)NativeSelectableFlags.NoAutoClosePopups,
     /// <summary>
     /// Frame will span all columns of its container table (text will still fit in current column)
     /// </summary>
-    SpanAllColumns = (int)Inno.Native.ImGui.ImGuiSelectableFlags.SpanAllColumns,
+    SpanAllColumns = (int)NativeSelectableFlags.SpanAllColumns,
     /// <summary>
     /// Generate press events on double clicks too
     /// </summary>
-    AllowDoubleClick = (int)Inno.Native.ImGui.ImGuiSelectableFlags.AllowDoubleClick,
+    AllowDoubleClick = (int)NativeSelectableFlags.AllowDoubleClick,
     /// <summary>
     /// Cannot be selected, display grayed out text
     /// </summary>
-    Disabled = (int)Inno.Native.ImGui.ImGuiSelectableFlags.Disabled,
+    Disabled = (int)NativeSelectableFlags.Disabled,
     /// <summary>
     /// (WIP) Hit testing to allow subsequent widgets to overlap this one
     /// </summary>
-    AllowOverlap = (int)Inno.Native.ImGui.ImGuiSelectableFlags.AllowOverlap,
+    AllowOverlap = (int)NativeSelectableFlags.AllowOverlap,
     /// <summary>
     /// Make the item be displayed as if it is hovered
     /// </summary>
-    Highlight = (int)Inno.Native.ImGui.ImGuiSelectableFlags.Highlight,
+    Highlight = (int)NativeSelectableFlags.Highlight,
     /// <summary>
     /// Auto-select when moved into, unless Ctrl is held. Automatic when in a BeginMultiSelect() block.
     /// </summary>
-    SelectOnNav = (int)Inno.Native.ImGui.ImGuiSelectableFlags.SelectOnNav,
+    SelectOnNav = (int)NativeSelectableFlags.SelectOnNav
 }

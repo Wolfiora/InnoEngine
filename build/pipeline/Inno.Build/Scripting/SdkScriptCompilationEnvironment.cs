@@ -1,6 +1,6 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -41,13 +41,17 @@ public sealed class SdkScriptCompilationEnvironment : IScriptCompilationEnvironm
         m_projectRoot = Path.GetFullPath(projectRoot);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ScriptCompilationInputs Capture(CancellationToken cancellationToken = default)
         => CaptureAsync(cancellationToken).GetAwaiter().GetResult();
 
     private async Task<ScriptCompilationInputs> CaptureAsync(CancellationToken cancellationToken)
     {
-        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveDirectoryAsync(m_dotnetHost, m_projectRoot, cancellationToken).ConfigureAwait(false);
+        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveDirectoryAsync(
+            m_dotnetHost,
+            m_projectRoot,
+            cancellationToken
+        ).ConfigureAwait(false);
         string requests = Path.Combine(m_projectRoot, "Library", "Scripting", "SdkInputs");
         using ProcessOwnedDirectory owner = await ProcessOwnedDirectory.CreateAsync(requests, cancellationToken).ConfigureAwait(false);
         string project = Path.Combine(owner.directory, "Framework.csproj");
@@ -71,23 +75,44 @@ public sealed class SdkScriptCompilationEnvironment : IScriptCompilationEnvironm
               <Target Name="CaptureScriptFramework" DependsOnTargets="ResolveReferences;InitializeScriptDefines;AddImplicitDefineConstants" />
             </Project>
             """, cancellationToken).ConfigureAwait(false);
-        _ = await RunSdkAsync(sdk,
+        _ = await RunSdkAsync(
+            sdk,
             [sdk.cliPath, "restore", project, "--disable-build-servers", "-m:1", "-nr:false", "-v:quiet"],
-            owner.directory, cancellationToken).ConfigureAwait(false);
-        string output = await RunSdkAsync(sdk,
-            [sdk.cliPath, "msbuild", project, "-nologo", "-m:1", "-nr:false", "-t:CaptureScriptFramework",
-                "-getItem:ReferencePath", "-getProperty:TargetFramework,LangVersion,DefineConstants,NETCoreSdkVersion"],
-            owner.directory, cancellationToken).ConfigureAwait(false);
+            owner.directory,
+            cancellationToken
+        ).ConfigureAwait(false);
+        string output = await RunSdkAsync(
+            sdk,
+            [
+                sdk.cliPath,
+                "msbuild",
+                project,
+                "-nologo",
+                "-m:1",
+                "-nr:false",
+                "-t:CaptureScriptFramework",
+                "-getItem:ReferencePath",
+                "-getProperty:TargetFramework,LangVersion,DefineConstants,NETCoreSdkVersion"
+            ],
+            owner.directory,
+            cancellationToken
+        ).ConfigureAwait(false);
         using JsonDocument document = JsonDocument.Parse(output);
         JsonElement properties = document.RootElement.GetProperty("Properties");
         if (properties.GetProperty("TargetFramework").GetString() != "net10.0"
             || properties.GetProperty("LangVersion").GetString() != "14.0"
-            || properties.GetProperty("NETCoreSdkVersion").GetString() != sdk.sdkIdentity)
+            || properties.GetProperty("NETCoreSdkVersion").GetString() != sdk.sdkIdentity
+        ) {
             throw new InvalidDataException("SDK scripting evaluation returned an inconsistent framework, language or SDK identity.");
-        return new ScriptCompilationInputs(sdk.sdkIdentity,
-            document.RootElement.GetProperty("Items").GetProperty("ReferencePath").EnumerateArray()
+        }
+        return new ScriptCompilationInputs(
+            sdk.sdkIdentity,
+            document.RootElement.GetProperty("Items")
+                .GetProperty("ReferencePath")
+                .EnumerateArray()
                 .Select(static item => item.GetProperty("FullPath").GetString()!),
-            properties.GetProperty("DefineConstants").GetString()!.Split(';', StringSplitOptions.RemoveEmptyEntries));
+            properties.GetProperty("DefineConstants").GetString()!.Split(';', StringSplitOptions.RemoveEmptyEntries)
+        );
     }
 
     private static async Task<string> RunSdkAsync(
@@ -100,13 +125,23 @@ public sealed class SdkScriptCompilationEnvironment : IScriptCompilationEnvironm
         using var errors = new StringWriter();
         try
         {
-            await ToolchainEnvironment.RunAsync(sdk.hostPath, arguments, directory, cancellationToken,
-                DotNetSdkEnvironment.Create(sdk.hostPath), output, errors).ConfigureAwait(false);
+            await ToolchainEnvironment.RunAsync(
+                sdk.hostPath,
+                arguments,
+                directory,
+                DotNetSdkEnvironment.Create(sdk.hostPath),
+                output,
+                errors,
+                cancellationToken
+            ).ConfigureAwait(false);
             return output.ToString();
         }
         catch (InvalidOperationException failure)
         {
-            throw new InvalidOperationException($"Script framework evaluation with SDK '{sdk.sdkIdentity}' failed.\n{output}{errors}", failure);
+            throw new InvalidOperationException(
+                $"Script framework evaluation with SDK '{sdk.sdkIdentity}' failed.\n{output}{errors}",
+                failure
+            );
         }
     }
 }

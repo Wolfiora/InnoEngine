@@ -1,36 +1,4 @@
-using System;
-
-using Inno.Core.Execution;
-
 namespace Inno.Text;
-
-/// <summary>
-/// Binds one text service to the current asynchronous execution context.
-/// </summary>
-public static class TextExecutionContext
-{
-    private static readonly ExecutionSlot<ITextService> S_CURRENT_SCOPE = new("text");
-
-    /// <summary>
-    /// Gets the text service bound to the current execution context.
-    /// </summary>
-    public static ITextService current => S_CURRENT_SCOPE.current;
-
-    /// <summary>
-    /// Binds a text service until the returned strict last-in-first-out scope is disposed.
-    /// </summary>
-    /// <param name="text">
-    /// The host-owned text service.
-    /// </param>
-    /// <returns>
-    /// The caller-owned binding scope.
-    /// </returns>
-    public static IDisposable EnterScope(ITextService text)
-    {
-        ArgumentNullException.ThrowIfNull(text);
-        return S_CURRENT_SCOPE.Enter(text);
-    }
-}
 
 /// <summary>
 /// Provides script-friendly access to Unicode shaping and glyph rasterization.
@@ -56,8 +24,7 @@ public static class Text
         FontAsset font,
         string text,
         TextStyle style
-    )
-        => TextExecutionContext.current.Shape(font, text, style, TextShapingOptions.automatic);
+    ) => TextExecutionContext.current.Shape(font, text, style, TextShapingOptions.automatic);
 
     /// <summary>
     /// Shapes text with explicit language, script, and direction hints.
@@ -82,8 +49,7 @@ public static class Text
         string text,
         TextStyle style,
         TextShapingOptions options
-    )
-        => TextExecutionContext.current.Shape(font, text, style, options);
+    ) => TextExecutionContext.current.Shape(font, text, style, options);
 
     /// <summary>
     /// Rasterizes one shaped glyph into immutable 8-bit coverage.
@@ -94,7 +60,7 @@ public static class Text
     /// <param name="faceIndex">
     /// The zero-based collection face index.
     /// </param>
-    /// <param name="glyphId">
+    /// <param name="glyphID">
     /// The font-specific glyph identifier.
     /// </param>
     /// <param name="fontSize">
@@ -106,8 +72,7 @@ public static class Text
     public static GlyphBitmap Rasterize(
         FontAsset font,
         int faceIndex,
-        uint glyphId,
+        uint glyphID,
         float fontSize
-    )
-        => TextExecutionContext.current.Rasterize(font, faceIndex, glyphId, fontSize);
+    ) => TextExecutionContext.current.Rasterize(font, faceIndex, glyphID, fontSize);
 }

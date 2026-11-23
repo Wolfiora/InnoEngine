@@ -6,48 +6,26 @@ using System.Threading;
 namespace Inno.Core.Collections;
 
 /// <summary>
-/// Internal store validation surface for IndexedObjectKey.
-/// </summary>
-internal interface IIndexedObjectStore
-{
-    /// <summary>
-    /// Determines whether the key belongs to a live slot in the current storage generation.
-    /// </summary>
-    /// <param name="id">
-    /// The stable identity used to locate the requested value.
-    /// </param>
-    /// <param name="keyType">
-    /// The key type consumed by is valid key; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    bool IsValidKey(
-        int id,
-        Type keyType
-    );
-}
-
-/// <summary>
 /// Thread-safe object store with optional query keys over stored items.
 /// </summary>
 /// <typeparam name="T">
 /// The stored reference type.
 /// </typeparam>
-public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore where T : class
+public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore
+    where T : class
 {
     private readonly WeakReference<IIndexedObjectStore> m_storeRef;
-    private readonly List<T> m_activeList = new();
+    private readonly List<T> m_activeList = [];
     private readonly Dictionary<T, int> m_activeIndex = new(ReferenceEqualityComparer<T>.INSTANCE);
     private readonly Dictionary<T, IndexedObjectRuntimeHandle> m_handleByItem = new(ReferenceEqualityComparer<T>.INSTANCE);
-    private readonly List<int> m_sparseToDense = new();
-    private readonly List<uint> m_generations = new();
-    private readonly List<int> m_denseToSlot = new();
-    private Stack<int> m_freeSlots = new();
-    private readonly Dictionary<int, IIndexedObjectIndex<T>> m_indexes = new();
+    private readonly List<int> m_sparseToDense = [];
+    private readonly List<uint> m_generations = [];
+    private readonly List<int> m_denseToSlot = [];
+    private readonly Dictionary<int, IIndexedObjectIndex<T>> m_indexes = [];
     private readonly Dictionary<string, int> m_indexByName = new(StringComparer.Ordinal);
     private readonly ReaderWriterLockSlim m_lock = new(LockRecursionPolicy.NoRecursion);
-    private int m_nextIndexId = 1;
+    private Stack<int> m_freeSlots = new();
+    private int m_nextIndexID = 1;
     private int m_version;
 
     /// <summary>
@@ -97,7 +75,7 @@ public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore where T 
             m_freeSlots = new Stack<int>();
             m_indexes.Clear();
             m_indexByName.Clear();
-            m_nextIndexId = 1;
+            m_nextIndexID = 1;
             BumpVersion();
         }
         finally
@@ -129,8 +107,10 @@ public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore where T 
             m_activeIndex.Clear();
             m_handleByItem.Clear();
             m_denseToSlot.Clear();
-            foreach (var index in m_indexes.Values)
+            foreach (IIndexedObjectIndex<T> index in m_indexes.Values)
+            {
                 index.Clear();
+            }
             BumpVersion();
         }
         finally
@@ -150,8 +130,7 @@ public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore where T 
     /// </returns>
     public IndexedObjectEntry<T> Add(T item)
     {
-        if (item == null)
-            throw new ArgumentNullException(nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
 
         m_lock.EnterWriteLock();
         try
@@ -187,22 +166,25 @@ public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore where T 
     /// </returns>
     public bool Remove(T item)
     {
-        if (item == null)
-            throw new ArgumentNullException(nameof(item));
+        ArgumentNullException.ThrowIfNull(item);
 
         m_lock.EnterWriteLock();
         try
         {
-            if (!m_activeIndex.TryGetValue(item, out var index))
+            if (!m_activeIndex.TryGetValue(item, out int index))
+            {
                 return false;
+            }
 
-            foreach (var objectIndex in m_indexes.Values)
+            foreach (IIndexedObjectIndex<T> objectIndex in m_indexes.Values)
+            {
                 objectIndex.Remove(item);
+            }
 
-            var lastIndex = m_activeList.Count - 1;
-            var lastItem = m_activeList[lastIndex];
-            var removedSlot = m_denseToSlot[index];
-            var lastSlot = m_denseToSlot[lastIndex];
+            int lastIndex = m_activeList.Count - 1;
+            T lastItem = m_activeList[lastIndex];
+            int removedSlot = m_denseToSlot[index];
+            int lastSlot = m_denseToSlot[lastIndex];
             m_activeList.RemoveAt(lastIndex);
             m_denseToSlot.RemoveAt(lastIndex);
             m_activeIndex.Remove(item);
@@ -233,10 +215,13 @@ public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore where T 
     private void EnsureVersion(int expected)
     {
         if (Volatile.Read(ref m_version) != expected)
+        {
             throw new InvalidOperationException("Collection was modified during enumeration.");
+        }
     }
 
-    internal sealed class ReferenceEqualityComparer<TItem> : IEqualityComparer<TItem> where TItem : class
+    internal sealed class ReferenceEqualityComparer<TItem> : IEqualityComparer<TItem>
+        where TItem : class
     {
         /// <summary>
         /// The instance value used as part of this type's public representation.

@@ -9,12 +9,10 @@ public enum AssemblyUnloadBarrierState
     /// At least one retired collectible generation remains reachable.
     /// </summary>
     AwaitingCollection,
-
     /// <summary>
     /// Every retired generation is unreachable and cleaned up.
     /// </summary>
     Completed,
-
     /// <summary>
     /// The retention threshold was reached and the owning reload subsystem must stop accepting work.
     /// </summary>

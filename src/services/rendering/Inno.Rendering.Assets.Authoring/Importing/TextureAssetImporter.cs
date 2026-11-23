@@ -1,6 +1,3 @@
-using Inno.Assets.Pipeline;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -8,11 +5,15 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Assets.Pipeline;
+using Inno.Extensibility.Types;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Assets.Authoring;
 
 [AssetImporter("inno.rendering.texture")]
-[Inno.Extensibility.Types.StableTypeId("30731d81-b1e7-54f9-8637-9410a8724647")]
+[StableTypeID("30731d81-b1e7-54f9-8637-9410a8724647")]
 internal sealed partial class TextureAssetImporter : AssetImporter<TextureAsset>
 {
     /// <summary>
@@ -53,10 +54,11 @@ internal sealed partial class TextureAssetImporter : AssetImporter<TextureAsset>
             width,
             height,
             context.extension == ".hdr" ? TextureColorSpace.Linear : TextureColorSpace.Srgb,
-            context.extension.TrimStart('.').ToLowerInvariant());
+            context.extension.TrimStart('.').ToLowerInvariant()
+        );
         output.SetAsset(asset);
-        await output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken).ConfigureAwait(false);
-        await output.WriteArtifactAsync("source", context.sourceBytes, cancellationToken).ConfigureAwait(false);
+        await output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await output.WriteArtifactAsync("source", context.sourceBytes, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     internal static (int width, int height) ReadPngSize(ReadOnlySpan<byte> bytes)
@@ -74,7 +76,7 @@ internal sealed partial class TextureAssetImporter : AssetImporter<TextureAsset>
 
     internal static (int width, int height) ReadJpegSize(ReadOnlySpan<byte> bytes)
     {
-        if (bytes.Length < 4 || bytes[0] != 0xff || bytes[1] != 0xd8)
+        if (bytes.Length < 4 || bytes[0] != 0xFF || bytes[1] != 0xD8)
         {
             throw new RenderingAssetFormatException("texture.jpg", "Invalid JPEG start marker.");
         }
@@ -82,7 +84,7 @@ internal sealed partial class TextureAssetImporter : AssetImporter<TextureAsset>
         int offset = 2;
         while (offset + 4 <= bytes.Length)
         {
-            while (offset < bytes.Length && bytes[offset] == 0xff)
+            while (offset < bytes.Length && bytes[offset] == 0xFF)
             {
                 offset++;
             }
@@ -93,7 +95,7 @@ internal sealed partial class TextureAssetImporter : AssetImporter<TextureAsset>
             }
 
             byte marker = bytes[offset++];
-            if (marker is 0xd8 or 0xd9)
+            if (marker is 0xD8 or 0xD9)
             {
                 continue;
             }
@@ -139,26 +141,24 @@ internal sealed partial class TextureAssetImporter : AssetImporter<TextureAsset>
         Match match = HdrResolutionPattern().Match(text);
         if (!match.Success
             || !int.TryParse(match.Groups[1].Value, out int height)
-            || !int.TryParse(match.Groups[2].Value, out int width))
-        {
+            || !int.TryParse(match.Groups[2].Value, out int width)
+        ) {
             throw new RenderingAssetFormatException("texture.hdr", "Radiance HDR resolution line is missing.");
         }
 
         return RequirePositiveSize(width, height, "texture.hdr");
     }
 
-    private static bool IsStartOfFrame(byte marker) => marker is >= 0xc0 and <= 0xcf and not (0xc4 or 0xc8 or 0xcc);
+    private static bool IsStartOfFrame(byte marker) => marker is >= 0xC0 and <= 0xCF and not (0xC4 or 0xC8 or 0xCC);
 
     private static (int width, int height) RequirePositiveSize(
         int width,
         int height,
         string path
-    )
-        => width > 0 && height > 0
-            ? (width, height)
-            : throw new RenderingAssetFormatException(path, "Texture dimensions must be positive.");
+    ) => width > 0 && height > 0
+         ? (width, height)
+         : throw new RenderingAssetFormatException(path, "Texture dimensions must be positive.");
 
     [GeneratedRegex(@"(?m)^[+-]Y\s+(\d+)\s+[+-]X\s+(\d+)\s*$")]
     private static partial Regex HdrResolutionPattern();
 }
-

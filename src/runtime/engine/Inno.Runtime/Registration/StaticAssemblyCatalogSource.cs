@@ -33,8 +33,10 @@ public sealed class StaticAssemblyCatalogSource : IAssemblyCatalogSource
         ArgumentNullException.ThrowIfNull(assemblies);
         ArgumentNullException.ThrowIfNull(frameworkAssemblies);
         if (assemblies.Any(static assembly => assembly is null || assembly.IsCollectible)
-            || frameworkAssemblies.Any(static assembly => assembly is null || assembly.IsCollectible))
+            || frameworkAssemblies.Any(static assembly => assembly is null || assembly.IsCollectible)
+        ) {
             throw new ArgumentException("A static catalog requires noncollectible linked assemblies.", nameof(assemblies));
+        }
         m_assemblies = Array.AsReadOnly(assemblies.Distinct().ToArray());
         m_framework = frameworkAssemblies.ToHashSet();
         m_frameworkNames = frameworkAssemblies.Select(static assembly => assembly.GetName().Name!)
@@ -42,41 +44,43 @@ public sealed class StaticAssemblyCatalogSource : IAssemblyCatalogSource
         m_sharedAssemblies = Array.AsReadOnly(m_assemblies.Concat(frameworkAssemblies).Distinct().ToArray());
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public event Action? changed
     {
-        add { ObjectDisposedException.ThrowIf(m_disposed, this); }
-        remove { }
+        add => ObjectDisposedException.ThrowIf(m_disposed, this);
+        remove {}
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IReadOnlyList<Assembly> GetAssemblies()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         return m_assemblies;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IReadOnlyList<Assembly> GetSharedAssemblies()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         return m_sharedAssemblies;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool IsFrameworkReference(string assemblyName)
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         ArgumentException.ThrowIfNullOrWhiteSpace(assemblyName);
         return m_frameworkNames.Contains(assemblyName);
     }
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public bool IsFrameworkAssembly(Assembly assembly)
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         ArgumentNullException.ThrowIfNull(assembly);
         return m_framework.Contains(assembly);
     }
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public void Dispose() => m_disposed = true;
 }

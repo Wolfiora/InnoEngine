@@ -4,18 +4,17 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Extensibility.Modules;
-using Inno.Core.Identity;
 using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
+using Inno.Core.Identity;
 using Inno.Core.Logging;
+using Inno.Core.Serialization;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
 using Inno.Extensibility.Types;
 using Inno.Scripting.Api;
-using Inno.Core.Serialization;
-using Inno.Core.Execution;
-using Inno.Extensibility.Reload;
 
 namespace Inno.Assets.Pipeline;
 
@@ -44,7 +43,7 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
     private AssetLoader? m_loader;
     private AssetFileSystem? m_fileSystem;
     private IDisposable? m_catalogParticipantRegistration;
-    private int m_ownerThreadId;
+    private int m_ownerThreadID;
     private long m_revision;
     private AssetCacheOptions m_cacheOptions;
     private long m_lastArtifactCollectionTimestamp;
@@ -53,6 +52,138 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
     private LifetimeScope? m_failedPreparation;
     private LifetimeScope? m_shutdown;
     private RetirementBarrier? m_shutdownBarrier;
+
+    /// <summary>
+    /// Creates one isolated authoring or deployed-runtime asset pipeline.
+    /// </summary>
+    /// <param name="modules">
+    /// The module host whose candidate generations coordinate importer refreshes.
+    /// </param>
+    /// <param name="types">
+    /// The type catalog used to discover and resolve asset extensions.
+    /// </param>
+    /// <param name="serialization">
+    /// The serialization registry used for metadata and canonical asset state.
+    /// </param>
+    /// <param name="identities">
+    /// The identity allocator that owns every canonical asset in this pipeline.
+    /// </param>
+    /// <param name="diagnostics">
+    /// The diagnostic hub that owns source database and asset processing reports.
+    /// </param>
+    /// <param name="logs">
+    /// The explicitly owned router receiving asset pipeline diagnostics.
+    /// </param>
+    /// <param name="options">
+    /// The asset source, artifact and watcher configuration.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when a required service is null.
+    /// </exception>
+    [ScriptingApiIgnore]
+    public AssetPipeline(
+        ModuleHost modules,
+        TypeCatalog types,
+        SerializationRegistry serialization,
+        IdentityAllocator identities,
+        DiagnosticHub diagnostics,
+        LogRouter logs,
+        AssetPipelineOptions options
+    ) {
+        ArgumentNullException.ThrowIfNull(modules);
+        ArgumentNullException.ThrowIfNull(types);
+        ArgumentNullException.ThrowIfNull(serialization);
+        ArgumentNullException.ThrowIfNull(identities);
+        ArgumentNullException.ThrowIfNull(diagnostics);
+        ArgumentNullException.ThrowIfNull(logs);
+        if (string.IsNullOrWhiteSpace(options.assetRoot))
+        {
+            throw new ArgumentException("Asset root is required.", nameof(options));
+        }
+        if (string.IsNullOrWhiteSpace(options.libraryRoot))
+        {
+            throw new ArgumentException("Library root is required.", nameof(options));
+        }
+
+        m_types = types;
+        m_generations = modules.generations;
+        m_identities = identities;
+        m_serialization = serialization;
+        m_diagnostics = new AssetPipelineDiagnosticPublisher(diagnostics);
+        m_log = logs.CreateLogger<AssetPipeline>();
+        m_catalogParticipant = new AssetCatalogParticipant(this);
+
+        lock (m_lifecycleLock)
+        {
+            AssetSourceMount[] mounts = options.sourceMounts?.ToArray()
+                                        ?? [new AssetSourceMount(AssetSourceID.project, options.assetRoot, isReadOnly: false)];
+            AssetSourceMount projectMount = mounts.SingleOrDefault(static mount => mount.id == AssetSourceID.project)
+                                            ?? throw new ArgumentException("A project asset source mount is required.", nameof(options));
+            if (projectMount.isReadOnly && options.mode != AssetPipelineMode.RuntimeArtifacts)
+            {
+                throw new ArgumentException("The project asset source mount must be writable.", nameof(options));
+            }
+            this.assetRoot = projectMount.rootPath;
+            this.libraryRoot = Path.GetFullPath(options.libraryRoot);
+            DeleteCandidateCatalogRoots(libraryRoot);
+            this.artifactRoot = Path.Combine(libraryRoot, "Artifacts");
+            this.sourceMounts = Array.AsReadOnly(mounts.ToArray());
+            var loader = new AssetLoader(
+                types,
+                serialization,
+                identities,
+                diagnostics,
+                logs,
+                mounts,
+                libraryRoot,
+                options.sourcePolicy,
+                runtimeArtifactsOnly: options.mode == AssetPipelineMode.RuntimeArtifacts
+            );
+            if (options.deferUnavailableExtensions)
+            {
+                loader.DeferUnavailableExtensions();
+            }
+            var fileSystem = new AssetFileSystem(
+                mounts,
+                autoStart: false,
+                options.fileWatcherFlushDelayMs,
+                options.sourcePolicy,
+                requireWritableProject: options.mode == AssetPipelineMode.Authoring,
+                identities,
+                persistentIdentityResolver: path => (
+                    loader.TryGetPersistentID(path, out Guid persistentID)
+                    ? persistentID
+                    : null
+                ),
+                activateIdentities: true
+            );
+            loader.assetReloaded += OnAssetReloaded;
+            m_loader = loader;
+            m_fileSystem = fileSystem;
+            m_ownerThreadID = Environment.CurrentManagedThreadId;
+            m_revision = 0;
+            m_cacheOptions = options.cacheOptions;
+            m_options = options with { sourceMounts = mounts };
+            m_lastArtifactCollectionTimestamp = 0;
+            this.isInitialized = true;
+            try
+            {
+                loader.Rescan();
+                CollectArtifactsIfDue(loader, force: true);
+                fileSystem.Refresh();
+                if (options.enableFileSystemWatcher && options.mode == AssetPipelineMode.Authoring)
+                {
+                    fileSystem.Start();
+                }
+                m_catalogParticipantRegistration = modules.RegisterCatalogParticipant(m_catalogParticipant);
+            }
+            catch
+            {
+                ShutdownLocked();
+                throw;
+            }
+        }
+    }
 
     /// <summary>
     /// Gets whether asset services are initialized.
@@ -93,6 +224,22 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
     public IdentityAllocator identities => m_identities;
 
     /// <summary>
+    /// Occurs after an asset database transaction has committed.
+    /// </summary>
+    public event Action<AssetChangeSet>? changed;
+
+    /// <summary>
+    /// Occurs after a canonical loaded asset has been updated in place.
+    /// </summary>
+    public event Action<AssetObject>? assetReloaded;
+
+    /// <summary>
+    /// Occurs after a complete isolated source-mount generation is atomically replaced.
+    /// </summary>
+    [ScriptingApiIgnore]
+    public event Action? sourceMountsChanged;
+
+    /// <summary>
     /// Creates a detached source editor sharing this owner's mounts, native converters and references.
     /// </summary>
     /// <returns>
@@ -113,7 +260,8 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
     /// <returns>
     /// Complete stable properties and dependencies without writing or importing an asset.
     /// </returns>
-    public AssetPropertySnapshot CaptureProperties<TValue>(TValue value) where TValue : class, ISerializable
+    public AssetPropertySnapshot CaptureProperties<TValue>(TValue value)
+        where TValue : class, ISerializable
     {
         EnsureOwnerThread();
         using IDisposable operationScope = AcquireOperation();
@@ -123,7 +271,10 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
     /// <summary>
     /// Restores serialized properties to the existing asset object.
     /// </summary>
-    /// <param name="stableTypeId">
+    /// <typeparam name="TValue">
+    /// Serialized asset object type receiving restored properties.
+    /// </typeparam>
+    /// <param name="stableTypeID">
     /// The stable type id consumed by restore properties; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     /// <param name="propertyData">
@@ -132,160 +283,23 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-    /// <typeparam name="TValue">
-    /// Serialized asset object type receiving restored properties.
-    /// </typeparam>
     public void RestoreProperties<TValue>(
-        Guid stableTypeId,
+        Guid stableTypeID,
         byte[] propertyData,
         TValue target
     ) where TValue : class, ISerializable
     {
         ArgumentNullException.ThrowIfNull(target);
         using IDisposable operationScope = AcquireOperation();
-        if (m_types.GetTypeRef(target.GetType()).stableId != stableTypeId)
+        if (m_types.GetTypeRef(target.GetType()).stableID != stableTypeID)
+        {
             throw new InvalidOperationException("The asset property payload has an incompatible stable type identity.");
+        }
         m_serialization.Decode(propertyData, reader =>
         {
             reader.RestoreProperties(target);
             return true;
         }, AssetSerializationContext.Create(this));
-    }
-
-    /// <summary>
-    /// Occurs after an asset database transaction has committed.
-    /// </summary>
-    public event Action<AssetChangeSet>? Changed;
-
-    /// <summary>
-    /// Occurs after a canonical loaded asset has been updated in place.
-    /// </summary>
-    public event Action<AssetObject>? AssetReloaded;
-
-    /// <summary>
-    /// Occurs after a complete isolated source-mount generation is atomically replaced.
-    /// </summary>
-    [ScriptingApiIgnore]
-    public event Action? SourceMountsChanged;
-
-    /// <summary>
-    /// Creates one isolated authoring or deployed-runtime asset pipeline.
-    /// </summary>
-    /// <param name="modules">
-    /// The module host whose candidate generations coordinate importer refreshes.
-    /// </param>
-    /// <param name="types">
-    /// The type catalog used to discover and resolve asset extensions.
-    /// </param>
-    /// <param name="serialization">
-    /// The serialization registry used for metadata and canonical asset state.
-    /// </param>
-    /// <param name="identities">
-    /// The identity allocator that owns every canonical asset in this pipeline.
-    /// </param>
-    /// <param name="logs">
-    /// The explicitly owned router receiving asset pipeline diagnostics.
-    /// </param>
-    /// <param name="diagnostics">
-    /// The diagnostic hub that owns source database and asset processing reports.
-    /// </param>
-    /// <param name="options">
-    /// The asset source, artifact and watcher configuration.
-    /// </param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when a required service is null.
-    /// </exception>
-    [ScriptingApiIgnore]
-    public AssetPipeline(
-        ModuleHost modules,
-        TypeCatalog types,
-        SerializationRegistry serialization,
-        IdentityAllocator identities,
-        DiagnosticHub diagnostics,
-        LogRouter logs,
-        AssetPipelineOptions options
-    ) {
-        ArgumentNullException.ThrowIfNull(modules);
-        ArgumentNullException.ThrowIfNull(types);
-        ArgumentNullException.ThrowIfNull(serialization);
-        ArgumentNullException.ThrowIfNull(identities);
-        ArgumentNullException.ThrowIfNull(diagnostics);
-        ArgumentNullException.ThrowIfNull(logs);
-        if (string.IsNullOrWhiteSpace(options.assetRoot))
-            throw new ArgumentException("Asset root is required.", nameof(options));
-        if (string.IsNullOrWhiteSpace(options.libraryRoot))
-            throw new ArgumentException("Library root is required.", nameof(options));
-
-        m_types = types;
-        m_generations = modules.generations;
-        m_identities = identities;
-        m_serialization = serialization;
-        m_diagnostics = new AssetPipelineDiagnosticPublisher(diagnostics);
-        m_log = logs.CreateLogger<AssetPipeline>();
-        m_catalogParticipant = new AssetCatalogParticipant(this);
-
-        lock (m_lifecycleLock)
-        {
-            AssetSourceMount[] mounts = options.sourceMounts?.ToArray()
-                ?? [new AssetSourceMount(AssetSourceId.project, options.assetRoot, isReadOnly: false)];
-            AssetSourceMount projectMount = mounts.SingleOrDefault(static mount => mount.id == AssetSourceId.project)
-                ?? throw new ArgumentException("A project asset source mount is required.", nameof(options));
-            if (projectMount.isReadOnly && options.mode != AssetPipelineMode.RuntimeArtifacts)
-                throw new ArgumentException("The project asset source mount must be writable.", nameof(options));
-            assetRoot = projectMount.rootPath;
-            libraryRoot = Path.GetFullPath(options.libraryRoot);
-            DeleteCandidateCatalogRoots(libraryRoot);
-            artifactRoot = Path.Combine(libraryRoot, "Artifacts");
-            sourceMounts = Array.AsReadOnly(mounts.ToArray());
-            AssetLoader loader = new(
-                types,
-                serialization,
-                identities,
-                diagnostics,
-                logs,
-                mounts,
-                libraryRoot,
-                options.sourcePolicy,
-                runtimeArtifactsOnly: options.mode == AssetPipelineMode.RuntimeArtifacts);
-            if (options.deferUnavailableExtensions)
-                loader.DeferUnavailableExtensions();
-            AssetFileSystem fileSystem = new(
-                mounts,
-                autoStart: false,
-                options.fileWatcherFlushDelayMs,
-                options.sourcePolicy,
-                requireWritableProject: options.mode == AssetPipelineMode.Authoring,
-                identities,
-                persistentIdentityResolver: path =>
-                    loader.TryGetPersistentId(path, out Guid persistentId)
-                        ? persistentId
-                        : null,
-                activateIdentities: true);
-            loader.AssetReloaded += OnAssetReloaded;
-            m_loader = loader;
-            m_fileSystem = fileSystem;
-            m_ownerThreadId = Environment.CurrentManagedThreadId;
-            m_revision = 0;
-            m_cacheOptions = options.cacheOptions;
-            m_options = options with { sourceMounts = mounts };
-            m_lastArtifactCollectionTimestamp = 0;
-            isInitialized = true;
-            try
-            {
-                loader.Rescan();
-                CollectArtifactsIfDue(loader, force: true);
-                fileSystem.Refresh();
-                if (options.enableFileSystemWatcher && options.mode == AssetPipelineMode.Authoring)
-                    fileSystem.Start();
-                m_catalogParticipantRegistration = modules.RegisterCatalogParticipant(
-                    m_catalogParticipant);
-            }
-            catch
-            {
-                ShutdownLocked();
-                throw;
-            }
-        }
     }
 
     /// <summary>
@@ -298,7 +312,9 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
         AssetFileSystem fileSystem = GetFileSystem();
         IReadOnlyList<AssetChangedEvent> changes = fileSystem.WaitForIdle(out bool requiresFullRescan);
         if (changes.Count > 0 || requiresFullRescan)
+        {
             ApplySourceChanges(changes, requiresFullRescan);
+        }
         GetLoader().WaitForIdle();
         CollectArtifactsIfDue(GetLoader(), force: true);
     }
@@ -314,26 +330,35 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
     {
         m_generations.EnsureRetirementSafe();
         if (m_generations.state == GenerationState.Faulted)
+        {
             m_generations.EnsureReady("access Asset Pipeline");
+        }
         if (m_shutdown is not null || m_failedPreparation is not null)
+        {
             throw new InvalidOperationException("The Asset Pipeline is retiring and cannot accept operations.");
+        }
     }
 
     private void EnsureOwnerThread()
     {
         EnsureInitializationThread();
         if (m_sampleImport is not null)
+        {
             throw new InvalidOperationException("Asset mutations are deferred until the pending sample import finishes.");
+        }
     }
 
     private void EnsureInitializationThread()
     {
         if (!isInitialized)
+        {
             throw new InvalidOperationException("AssetPipeline is not initialized.");
-        if (Environment.CurrentManagedThreadId != m_ownerThreadId)
+        }
+        if (Environment.CurrentManagedThreadId != m_ownerThreadID)
         {
             throw new InvalidOperationException(
-                "Asset database mutations must run on the thread that initialized AssetPipeline.");
+                "Asset database mutations must run on the thread that initialized AssetPipeline."
+            );
         }
     }
 }

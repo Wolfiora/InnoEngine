@@ -30,7 +30,7 @@ try {
     Write-Text (Join-Path $root 'entry/Entry.cs') 'public sealed class Entry { }'
     Write-Text (Join-Path $root 'dependency/Dependency.cs') 'public sealed class Dependency { }'
     $solution = Join-Path $root 'preparation.slnx'
-    $writer = Join-Path $PSScriptRoot 'Invoke-ManagedApiPreparation.ps1'
+    $writer = Join-Path $PSScriptRoot '../../tools/ci/Invoke-ManagedApiPreparation.ps1'
     foreach ($configuration in @('Release', 'SourceDebug')) {
         $selected = $project.Replace('EXPECTED_CONFIGURATION', $configuration)
         Write-Text (Join-Path $root 'dependency/Dependency.csproj') $selected.Replace('REFERENCE', '')

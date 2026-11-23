@@ -49,7 +49,7 @@ public sealed class PlayerLaunchOptions
     /// <summary>
     /// Gets the optional host factory transferring a session log sink to the game session.
     /// </summary>
-    public Func<GameRuntimeManifest, LogSessionId, ILogSink>? createLogSink { get; init; }
+    public Func<GameRuntimeManifest, LogSessionID, ILogSink>? createLogSink { get; init; }
 
     /// <summary>
     /// Gets the strategy that activates the frozen deployment's managed modules.

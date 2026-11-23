@@ -9,9 +9,13 @@ internal static partial class BinarySerializationFormat
     private static byte[]? TryGetEncodedCapture(ObjectSerializationNode node)
     {
         if (node.encodedCapture is { } encoded)
+        {
             return encoded;
+        }
         if (node.captureKey is null || node.encodingTooLarge)
+        {
             return null;
+        }
         int length;
         try
         {

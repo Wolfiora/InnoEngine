@@ -22,11 +22,11 @@ public sealed class WindowsX64PlayerSupportPackSource : IPlayerSupportPackSource
     /// <param name="host">
     /// The declared machine executing platform tools.
     /// </param>
-    /// <param name="bindingGenerator">
-    /// The borrowed shared binding implementation selected by distribution.
-    /// </param>
     /// <param name="dotnetHost">
     /// The explicit SDK executable for binding generation.
+    /// </param>
+    /// <param name="bindingGenerator">
+    /// The borrowed shared binding implementation selected by distribution.
     /// </param>
     /// <param name="supportPackValidator">
     /// The borrowed validator selected by the distribution.
@@ -39,24 +39,32 @@ public sealed class WindowsX64PlayerSupportPackSource : IPlayerSupportPackSource
         IPlayerSupportPackValidator supportPackValidator
     ) {
         m_preparation = new FilePlayerSupportPackPreparation(
-            Inno.Build.WindowsX64.WindowsX64BuildModule.target.id, "win-x64", Inno.Build.WindowsX64.WindowsX64BuildModule.target.id.value, ".dll",
+            WindowsX64BuildModule.target.id,
+            "win-x64",
+            WindowsX64BuildModule.target.id.value,
+            ".dll",
             supportPackValidator,
             "platforms/WindowsX64/player/Inno.Player.WindowsX64/Inno.Player.WindowsX64.csproj",
             "platforms/WindowsX64/build/Inno.Build.WindowsX64/Templates/WindowsX64Player.project.xml",
-            nativePlan.plan, nativePlan.executor, new WindowsX64NativeToolchainProvider(dotnetHost), host, bindingGenerator,
+            nativePlan.plan,
+            nativePlan.executor,
+            new WindowsX64NativeToolchainProvider(dotnetHost),
+            host,
+            bindingGenerator,
             ["platforms/WindowsX64/build/Inno.Build.WindowsX64/SupportPacks/WindowsX64PlayerSupportPackSource.cs",
-                "platforms/WindowsX64/build/Inno.Build.WindowsX64/SupportPacks/WindowsX64SupportPackValidator.cs"]);
+                "platforms/WindowsX64/build/Inno.Build.WindowsX64/SupportPacks/WindowsX64SupportPackValidator.cs"]
+        );
     }
 
-    /// <inheritdoc />
-    public BuildTargetId target => Inno.Build.WindowsX64.WindowsX64BuildModule.target.id;
+    /// <inheritdoc/>
+    public BuildTargetID target => WindowsX64BuildModule.target.id;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ValueTask<PlayerSupportPackPlan> CreatePlanAsync(
         PlayerSupportPackPlanningContext context,
         CancellationToken cancellationToken
     ) => m_preparation.CreatePlanAsync(context, cancellationToken);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Validate(string directory) => m_preparation.Validate(directory);
 }

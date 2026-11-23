@@ -72,7 +72,7 @@ $current = $args[[Array]::IndexOf($args, '--plan') + 1]
         }
         $failed = $false
         try {
-            & "$PSScriptRoot/Find-ValidationAcceptance.ps1" -PlanDirectory $planRoot -Platform $hosts[0].runner -Repository fixture/repo -Dotnet (Get-Command pwsh).Source
+            & "$PSScriptRoot/../../tools/ci/Find-ValidationAcceptance.ps1" -PlanDirectory $planRoot -Platform $hosts[0].runner -Repository fixture/repo -Dotnet (Get-Command pwsh).Source
         } catch { $failed = $true; $_ | Out-String | Set-Content (Join-Path $root 'failure.log') }
         if ($failed -ne ($case -cin @('corrupt-download', 'wrong-workflow', 'failed-result', 'changed-certificate'))) { throw "Unexpected acceptance discovery result: $case. See $root." }
         if (-not $failed) {

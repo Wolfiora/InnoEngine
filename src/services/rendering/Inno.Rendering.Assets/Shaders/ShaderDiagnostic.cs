@@ -1,15 +1,16 @@
-using Inno.Core.Diagnostics;
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Inno.Core.Diagnostics;
+using Inno.Extensibility.Types;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
 /// <summary>
 /// Reports one structured shader validation or compilation issue.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("31ce0701-357e-5b45-8364-171f59820d8f")]
+[StableTypeID("31ce0701-357e-5b45-8364-171f59820d8f")]
 public sealed class ShaderDiagnostic
 {
     /// <summary>
@@ -61,4 +62,3 @@ public sealed class ShaderDiagnostic
     /// </summary>
     public ShaderSourceLocation? location { get; }
 }
-

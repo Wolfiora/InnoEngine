@@ -1,15 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Editor.Assets;
 using Inno.Editor.Assets.ImGui;
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Panel.FileBrowser;
-[EditorAction(FileBrowserInteractionIds.C_CREATE_ASSET, FileBrowserInteractionIds.C_AREA)]
+
+[EditorAction(FileBrowserInteractionIDs.C_CREATE_ASSET, FileBrowserInteractionIDs.C_AREA)]
 internal sealed class CreateAssetCommand(AssetBrowserModule assets) : EditorAction<string, string>
 {
     /// <summary>
@@ -21,10 +16,12 @@ internal sealed class CreateAssetCommand(AssetBrowserModule assets) : EditorActi
     /// <returns>
     /// The validated editor action state that represents the completed operation.
     /// </returns>
-    protected override EditorActionState Query(EditorActionContext<string, string> context) => assets.edits.CanCreateAsset(
-        context.target,
-        context.argument
-    ) ? EditorActionState.enabled : EditorActionState.disabled;
+    protected override EditorActionState Query(EditorActionContext<string, string> context)
+        => assets.edits.CanCreateAsset(
+            context.target,
+            context.argument
+        ) ? EditorActionState.enabled : EditorActionState.disabled;
+
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.
     /// </summary>
@@ -34,50 +31,8 @@ internal sealed class CreateAssetCommand(AssetBrowserModule assets) : EditorActi
     protected override void Execute(EditorActionContext<string, string> context)
     {
         AssetFileEntry created = assets.edits.CreateAsset(context.target, context.argument);
-        _ = context.interactions.For(FileBrowserInteractionIds.C_AREA, created).Select();
-        _ = context.interactions.For(FileBrowserInteractionIds.C_AREA, created).Execute(FileBrowserInteractionIds.C_RENAME);
+        _ = context.interactions.For(FileBrowserInteractionIDs.C_AREA, created).Select();
+        _ = context.interactions.For(FileBrowserInteractionIDs.C_AREA, created).Execute(FileBrowserInteractionIDs.C_RENAME);
         context.interactions.OpenPanel("scene.inspector");
-    }
-}
-
-[EditorMenuSource(FileBrowserInteractionIds.C_AREA)]
-internal sealed class AssetCreationMenu(AssetBrowserModule assets) : EditorMenuSource
-{
-    /// <summary>
-    /// Builds a validated result from the current immutable input snapshot.
-    /// </summary>
-    /// <param name="context">
-    /// The operation scope that provides state, services, and ownership boundaries.
-    /// </param>
-    /// <param name="builder">
-    /// The builder consumed by build; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    public override void Build(
-        EditorMenuContext context,
-        EditorMenuBuilder builder
-    ) {
-        IReadOnlyList<AssetCreationMenuAttribute> templates = assets.edits.creationTemplates;
-        var declaredGroups = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (AssetCreationMenuAttribute declaration in templates)
-        {
-            string[] segments = declaration.menuPath.Split('/');
-            if (segments.Length > 1)
-            {
-                string topLevel = "Create/" + segments[0];
-                if (declaredGroups.Add(topLevel))
-                {
-                    builder.AddGroup(topLevel, declaration.groupOrder, declaration.separatorBeforeGroup);
-                }
-
-                for (int depth = 1; depth < segments.Length - 1; depth++)
-                {
-                    string group = "Create/" + string.Join('/', segments.Take(depth + 1));
-                    if (declaredGroups.Add(group))
-                        builder.AddGroup(group, declaration.itemOrder);
-                }
-            }
-
-            builder.Add("Create/" + declaration.menuPath, FileBrowserInteractionIds.C_CREATE_ASSET, declaration.itemOrder, argument: declaration.id);
-        }
     }
 }

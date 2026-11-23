@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-
 using Inno.Core.IO;
 using Inno.Core.Serialization;
 
@@ -47,7 +46,7 @@ public sealed class SettingsDocumentStore<TDocument>
         m_document = document;
         m_serialization = serialization;
         m_createDefault = createDefault;
-        m_validate = validate ?? (static _ => { });
+        m_validate = validate ?? (static _ => {});
     }
 
     /// <summary>
@@ -87,7 +86,8 @@ public sealed class SettingsDocumentStore<TDocument>
     public TDocument LoadRequired()
     {
         byte[] data = m_document.Read() ?? throw new InvalidDataException(
-            $"Required settings document '{documentName}' does not exist.");
+            $"Required settings document '{documentName}' does not exist."
+        );
         return Deserialize(data);
     }
 
@@ -138,13 +138,14 @@ public sealed class SettingsDocumentStore<TDocument>
             return document;
         }
         catch (Exception exception) when (exception is ArgumentException
-            or InvalidDataException
-            or InvalidOperationException
-            or NotSupportedException)
+                                          or InvalidDataException
+                                          or InvalidOperationException
+                                          or NotSupportedException)
         {
             throw new InvalidDataException(
                 $"Settings document '{documentName}' is not a valid current-format {typeof(TDocument).Name}.",
-                exception);
+                exception
+            );
         }
     }
 

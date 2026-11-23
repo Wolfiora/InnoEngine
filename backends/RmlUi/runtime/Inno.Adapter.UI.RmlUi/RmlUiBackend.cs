@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-
 using Inno.Core.Input;
 using Inno.Core.Mathematics;
 using Inno.Native.UI;
@@ -17,27 +16,21 @@ namespace Inno.Adapter.UI.RmlUi;
 /// <summary>
 /// Implements retained-mode UI document processing through the pinned RmlUi native bridge.
 /// </summary>
-public sealed unsafe class RmlUiBackend : IUiBackend
+public sealed unsafe class RmlUiBackend : IUIBackend
 {
-    private static readonly UiBackendCapabilities S_CAPABILITIES = new(
+    private static readonly UIBackendCapabilities CAPABILITIES = new(
         [RmlUiIdentifiers.documentLanguage],
-        supportsFontCollectionFaces: false);
-    private static readonly Regex S_FONT_FAMILY = new(
+        supportsFontCollectionFaces: false
+    );
+
+    private static readonly Regex FONT_FAMILY = new(
         @"(?im)(font-family\s*:\s*)([^;}]+)",
-        RegexOptions.Compiled | RegexOptions.CultureInvariant);
-    private InnoUIRmlUiAdapterRuntime* m_runtime;
+        RegexOptions.Compiled | RegexOptions.CultureInvariant
+    );
+
     private readonly Dictionary<string, string> m_fontAliases = new(StringComparer.OrdinalIgnoreCase);
+    private InnoUIRmlUiAdapterRuntime* m_runtime;
     private bool m_disposed;
-
-    /// <summary>
-    /// Gets the implementation id text used by the current instance.
-    /// </summary>
-    public string implementationId => RmlUiIdentifiers.backend.value;
-
-    /// <summary>
-    /// Gets the immutable feature and limit set reported by the active graphics backend.
-    /// </summary>
-    public UiBackendCapabilities capabilities => S_CAPABILITIES;
 
     /// <summary>
     /// Creates and validates one isolated native UI engine.
@@ -45,9 +38,21 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     public RmlUiBackend()
     {
         m_runtime = RmlUiNativeErrors.CreateSession();
-        if (m_runtime == null)
+        if (m_runtime is null)
+        {
             throw CreateNativeException("create UI runtime", Result.UnknownError);
+        }
     }
+
+    /// <summary>
+    /// Gets the implementation id text used by the current instance.
+    /// </summary>
+    public string implementationID => RmlUiIdentifiers.backend.value;
+
+    /// <summary>
+    /// Gets the immutable feature and limit set reported by the active graphics backend.
+    /// </summary>
+    public UIBackendCapabilities capabilities => CAPABILITIES;
 
     /// <summary>
     /// Creates a context using this implementation's validated inputs.
@@ -58,13 +63,22 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <returns>
     /// The validated ui context handle that represents the completed operation.
     /// </returns>
-    public UiContextHandle CreateContext(UiContextOptions options)
+    public UIContextHandle CreateContext(UIContextOptions options)
     {
         EnsureActive();
         ulong value = 0;
-        ThrowIfFailed(RmlUiNativeRuntime.CreateContext(
-            m_runtime, options.name, options.width, options.height, options.density, ref value), "create UI context");
-        return new UiContextHandle(value);
+        ThrowIfFailed(
+            RmlUiNativeRuntime.CreateContext(
+                m_runtime,
+                options.name,
+                options.width,
+                options.height,
+                options.density,
+                ref value
+            ),
+            "create UI context"
+        );
+        return new UIContextHandle(value);
     }
 
     /// <summary>
@@ -73,7 +87,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    public void DestroyContext(UiContextHandle context)
+    public void DestroyContext(UIContextHandle context)
     {
         EnsureActive();
         ThrowIfFailed(RmlUiNativeRuntime.DestroyContext(m_runtime, Require(context)), "destroy UI context");
@@ -95,7 +109,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// The density consumed by set viewport; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public void SetViewport(
-        UiContextHandle context,
+        UIContextHandle context,
         int width,
         int height,
         float density
@@ -104,7 +118,9 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
         if (!float.IsFinite(density) || density <= 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(density));
+        }
         ThrowIfFailed(RmlUiNativeRuntime.SetViewport(m_runtime, Require(context), width, height, density), "set UI viewport");
     }
 
@@ -120,17 +136,25 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <returns>
     /// The validated ui document handle that represents the completed operation.
     /// </returns>
-    public UiDocumentHandle LoadDocument(
-        UiContextHandle context,
-        UiDocumentSource source
+    public UIDocumentHandle LoadDocument(
+        UIContextHandle context,
+        UIDocumentSource source
     ) {
         EnsureActive();
         ArgumentNullException.ThrowIfNull(source);
         EnsureRml(source.language);
         ulong document = 0;
-        ThrowIfFailed(RmlUiNativeRuntime.LoadDocument(
-            m_runtime, Require(context), RewriteFontFamilies(source.text), source.sourceUri, ref document), "load UI document");
-        return new UiDocumentHandle(document);
+        ThrowIfFailed(
+            RmlUiNativeRuntime.LoadDocument(
+                m_runtime,
+                Require(context),
+                RewriteFontFamilies(source.text),
+                source.sourceUri,
+                ref document
+            ),
+            "load UI document"
+        );
+        return new UIDocumentHandle(document);
     }
 
     /// <summary>
@@ -143,8 +167,8 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// The document consumed by show document; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public void ShowDocument(
-        UiContextHandle context,
-        UiDocumentHandle document
+        UIContextHandle context,
+        UIDocumentHandle document
     ) {
         EnsureActive();
         ThrowIfFailed(RmlUiNativeRuntime.ShowDocument(m_runtime, Require(context), Require(document)), "show UI document");
@@ -160,8 +184,8 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// The document consumed by hide document; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public void HideDocument(
-        UiContextHandle context,
-        UiDocumentHandle document
+        UIContextHandle context,
+        UIDocumentHandle document
     ) {
         EnsureActive();
         ThrowIfFailed(RmlUiNativeRuntime.HideDocument(m_runtime, Require(context), Require(document)), "hide UI document");
@@ -177,8 +201,8 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// The document consumed by close document; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public void CloseDocument(
-        UiContextHandle context,
-        UiDocumentHandle document
+        UIContextHandle context,
+        UIDocumentHandle document
     ) {
         EnsureActive();
         ThrowIfFailed(RmlUiNativeRuntime.CloseDocument(m_runtime, Require(context), Require(document)), "close UI document");
@@ -193,7 +217,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <param name="document">
     /// The document consumed by set text; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <param name="elementId">
+    /// <param name="elementID">
     /// The element id text validated by the set text operation.
     /// </param>
     /// <param name="text">
@@ -203,17 +227,26 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool SetText(
-        UiContextHandle context,
-        UiDocumentHandle document,
-        string elementId,
+        UIContextHandle context,
+        UIDocumentHandle document,
+        string elementID,
         string text
     ) {
         EnsureActive();
-        ArgumentException.ThrowIfNullOrWhiteSpace(elementId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(elementID);
         ArgumentNullException.ThrowIfNull(text);
         byte changed = 0;
-        ThrowIfFailed(RmlUiNativeRuntime.SetInnerMarkup(
-            m_runtime, Require(context), Require(document), elementId, WebUtility.HtmlEncode(text), ref changed), "set UI text");
+        ThrowIfFailed(
+            RmlUiNativeRuntime.SetInnerMarkup(
+                m_runtime,
+                Require(context),
+                Require(document),
+                elementID,
+                WebUtility.HtmlEncode(text),
+                ref changed
+            ),
+            "set UI text"
+        );
         return changed != 0;
     }
 
@@ -226,7 +259,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <param name="document">
     /// The document consumed by set content; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <param name="elementId">
+    /// <param name="elementID">
     /// The element id text validated by the set content operation.
     /// </param>
     /// <param name="content">
@@ -236,22 +269,26 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool SetContent(
-        UiContextHandle context,
-        UiDocumentHandle document,
-        string elementId,
-        UiDocumentFragment content
+        UIContextHandle context,
+        UIDocumentHandle document,
+        string elementID,
+        UIDocumentFragment content
     ) {
         EnsureActive();
-        ArgumentException.ThrowIfNullOrWhiteSpace(elementId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(elementID);
         EnsureRml(content.language);
         byte changed = 0;
-        ThrowIfFailed(RmlUiNativeRuntime.SetInnerMarkup(
-            m_runtime,
-            Require(context),
-            Require(document),
-            elementId,
-            RewriteFontFamilies(content.text),
-            ref changed), "set UI content");
+        ThrowIfFailed(
+            RmlUiNativeRuntime.SetInnerMarkup(
+                m_runtime,
+                Require(context),
+                Require(document),
+                elementID,
+                RewriteFontFamilies(content.text),
+                ref changed
+            ),
+            "set UI content"
+        );
         return changed != 0;
     }
 
@@ -264,7 +301,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <param name="document">
     /// The document consumed by set attribute; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <param name="elementId">
+    /// <param name="elementID">
     /// The element id text validated by the set attribute operation.
     /// </param>
     /// <param name="name">
@@ -277,25 +314,29 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool SetAttribute(
-        UiContextHandle context,
-        UiDocumentHandle document,
-        string elementId,
+        UIContextHandle context,
+        UIDocumentHandle document,
+        string elementID,
         string name,
         string value
     ) {
         EnsureActive();
-        ArgumentException.ThrowIfNullOrWhiteSpace(elementId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(elementID);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(value);
         byte changed = 0;
-        ThrowIfFailed(RmlUiNativeRuntime.SetAttribute(
-            m_runtime,
-            Require(context),
-            Require(document),
-            elementId,
-            name,
-            value,
-            ref changed), "set UI attribute");
+        ThrowIfFailed(
+            RmlUiNativeRuntime.SetAttribute(
+                m_runtime,
+                Require(context),
+                Require(document),
+                elementID,
+                name,
+                value,
+                ref changed
+            ),
+            "set UI attribute"
+        );
         return changed != 0;
     }
 
@@ -308,7 +349,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <param name="document">
     /// The document consumed by set class; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <param name="elementId">
+    /// <param name="elementID">
     /// The element id text validated by the set class operation.
     /// </param>
     /// <param name="className">
@@ -321,24 +362,28 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool SetClass(
-        UiContextHandle context,
-        UiDocumentHandle document,
-        string elementId,
+        UIContextHandle context,
+        UIDocumentHandle document,
+        string elementID,
         string className,
         bool active
     ) {
         EnsureActive();
-        ArgumentException.ThrowIfNullOrWhiteSpace(elementId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(elementID);
         ArgumentException.ThrowIfNullOrWhiteSpace(className);
         byte changed = 0;
-        ThrowIfFailed(RmlUiNativeRuntime.SetClass(
-            m_runtime,
-            Require(context),
-            Require(document),
-            elementId,
-            className,
-            active ? (byte)1 : (byte)0,
-            ref changed), "set UI class");
+        ThrowIfFailed(
+            RmlUiNativeRuntime.SetClass(
+                m_runtime,
+                Require(context),
+                Require(document),
+                elementID,
+                className,
+                active ? (byte)1 : (byte)0,
+                ref changed
+            ),
+            "set UI class"
+        );
         return changed != 0;
     }
 
@@ -348,28 +393,35 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <param name="registration">
     /// The registration consumed by register font; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void RegisterFont(UiFontRegistration registration)
+    public void RegisterFont(UIFontRegistration registration)
     {
         EnsureActive();
         if (registration.faceIndex != 0)
-            throw new UiCapabilityUnavailableException(UiBackendCapability.FontCollectionFaceSelection);
+        {
+            throw new UICapabilityUnavailableException(UIBackendCapability.FontCollectionFaceSelection);
+        }
         // All weights and styles of one declared family must share one native family.
         // Document imports give each family a private name before it reaches this backend.
-        string familyHash = Convert.ToHexString(SHA256.HashData(
-            Encoding.UTF8.GetBytes(registration.family.ToLowerInvariant()))).ToLowerInvariant();
+        string familyHash = Convert.ToHexString(
+            SHA256.HashData(Encoding.UTF8.GetBytes(registration.family.ToLowerInvariant()))
+        ).ToLowerInvariant();
         string physicalFamily = $"__inno_{familyHash[..24]}";
         ReadOnlySpan<byte> data = registration.data.Span;
         using var family = new RmlUiUtf8String(physicalFamily);
         fixed (byte* bytes = data)
         {
-            ThrowIfFailed(RmlUiNativeRuntime.LoadFont(
-                m_runtime,
-                bytes,
-                checked((uint)data.Length),
-                family.pointer,
-                (int)registration.style,
-                registration.weight,
-                0), "register UI font");
+            ThrowIfFailed(
+                RmlUiNativeRuntime.LoadFont(
+                    m_runtime,
+                    bytes,
+                    checked((uint)data.Length),
+                    family.pointer,
+                    (int)registration.style,
+                    registration.weight,
+                    0
+                ),
+                "register UI font"
+            );
         }
         m_fontAliases[registration.family] = physicalFamily;
     }
@@ -387,9 +439,9 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// The texture consumed by register texture; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public void RegisterTexture(
-        UiContextHandle context,
+        UIContextHandle context,
         string source,
-        UiTextureData texture
+        UITextureData texture
     ) {
         EnsureActive();
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
@@ -398,14 +450,18 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         using var nativeSource = new RmlUiUtf8String(source);
         fixed (byte* pixelPointer = pixels)
         {
-            ThrowIfFailed(RmlUiNativeRuntime.RegisterTexture(
-                m_runtime,
-                Require(context),
-                nativeSource.pointer,
-                texture.width,
-                texture.height,
-                pixelPointer,
-                checked((uint)pixels.Length)), "register UI texture");
+            ThrowIfFailed(
+                RmlUiNativeRuntime.RegisterTexture(
+                    m_runtime,
+                    Require(context),
+                    nativeSource.pointer,
+                    texture.width,
+                    texture.height,
+                    pixelPointer,
+                    checked((uint)pixels.Length)
+                ),
+                "register UI texture"
+            );
         }
     }
 
@@ -422,13 +478,21 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool HasElementAtPoint(
-        UiContextHandle context,
+        UIContextHandle context,
         Vector2 position
     ) {
         EnsureActive();
         byte hit = 0;
-        ThrowIfFailed(RmlUiNativeRuntime.HasElementAtPoint(m_runtime, Require(context),
-            (int)position.x, (int)position.y, ref hit), "query UI element hit");
+        ThrowIfFailed(
+            RmlUiNativeRuntime.HasElementAtPoint(
+                m_runtime,
+                Require(context),
+                (int)position.x,
+                (int)position.y,
+                ref hit
+            ),
+            "query UI element hit"
+        );
         return hit != 0;
     }
 
@@ -442,28 +506,55 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// The input consumed by update; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public void Update(
-        UiContextHandle context,
-        UiInputSnapshot input
+        UIContextHandle context,
+        UIInputSnapshot input
     ) {
         EnsureActive();
         ArgumentNullException.ThrowIfNull(input);
         ulong handle = Require(context);
         int modifiers = (int)input.modifiers;
-        ThrowIfFailed(RmlUiNativeRuntime.ProcessMouseMove(
-            m_runtime, handle, (int)input.mousePosition.x, (int)input.mousePosition.y, modifiers), "process UI pointer position");
+        ThrowIfFailed(
+            RmlUiNativeRuntime.ProcessMouseMove(
+                m_runtime,
+                handle,
+                (int)input.mousePosition.x,
+                (int)input.mousePosition.y,
+                modifiers
+            ),
+            "process UI pointer position"
+        );
         if (input.scrollDelta.x != 0f || input.scrollDelta.y != 0f)
         {
-            ThrowIfFailed(RmlUiNativeRuntime.ProcessMouseWheel(
-                m_runtime, handle, input.scrollDelta.x, input.scrollDelta.y, modifiers), "process UI pointer wheel");
+            ThrowIfFailed(
+                RmlUiNativeRuntime.ProcessMouseWheel(
+                    m_runtime,
+                    handle,
+                    input.scrollDelta.x,
+                    input.scrollDelta.y,
+                    modifiers
+                ),
+                "process UI pointer wheel"
+            );
         }
         foreach (MouseButton button in input.buttonsPressed)
+        {
             ThrowIfFailed(RmlUiNativeRuntime.ProcessMouseButton(m_runtime, handle, (int)button, 1, modifiers), "process UI pointer press");
+        }
         foreach (MouseButton button in input.buttonsReleased)
-            ThrowIfFailed(RmlUiNativeRuntime.ProcessMouseButton(m_runtime, handle, (int)button, 0, modifiers), "process UI pointer release");
+        {
+            ThrowIfFailed(
+                RmlUiNativeRuntime.ProcessMouseButton(m_runtime, handle, (int)button, 0, modifiers),
+                "process UI pointer release"
+            );
+        }
         foreach (KeyCode key in input.keysPressed)
+        {
             ThrowIfFailed(RmlUiNativeRuntime.ProcessKey(m_runtime, handle, (int)key, 1, modifiers), "process UI key press");
+        }
         foreach (KeyCode key in input.keysReleased)
+        {
             ThrowIfFailed(RmlUiNativeRuntime.ProcessKey(m_runtime, handle, (int)key, 0, modifiers), "process UI key release");
+        }
         foreach (string text in input.textInput)
         {
             using var nativeText = new RmlUiUtf8String(text);
@@ -481,61 +572,71 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <returns>
     /// The validated ui render frame that represents the completed operation.
     /// </returns>
-    public UiRenderFrame Render(UiContextHandle context)
+    public UIRenderFrame Render(UIContextHandle context)
     {
         EnsureActive();
         ulong handle = Require(context);
         InnoUIRmlUiAdapterFrameInfo info = default;
         ThrowIfFailed(RmlUiNativeFrames.Render(m_runtime, handle, ref info), "render UI context");
 
-        var builder = new UiRenderFrameBuilder();
+        var builder = new UIRenderFrameBuilder();
         try
         {
             for (int meshIndex = 0; meshIndex < checked((int)info.MeshUpdateCount); ++meshIndex)
             {
                 InnoUIRmlUiAdapterMeshInfo mesh = default;
                 ThrowIfFailed(RmlUiNativeFrames.GetMeshInfo(m_runtime, handle, checked((ulong)meshIndex), ref mesh), "query UI mesh");
-                InnoUIRmlUiAdapterVertex[] nativeVertices = new InnoUIRmlUiAdapterVertex[checked((int)mesh.VertexCount)];
-                uint[] indices = new uint[checked((int)mesh.IndexCount)];
+                var nativeVertices = new InnoUIRmlUiAdapterVertex[checked((int)mesh.VertexCount)];
+                var indices = new uint[checked((int)mesh.IndexCount)];
                 CopyMeshVertices(handle, mesh.Id, nativeVertices);
                 CopyMeshIndices(handle, mesh.Id, indices);
-                UiVertex[] vertices = new UiVertex[nativeVertices.Length];
+                var vertices = new UIVertex[nativeVertices.Length];
                 for (int vertexIndex = 0; vertexIndex < vertices.Length; ++vertexIndex)
                 {
                     InnoUIRmlUiAdapterVertex value = nativeVertices[vertexIndex];
                     vertices[vertexIndex] = new(value.X, value.Y, value.U, value.V, value.Color);
                 }
-                builder.AddMeshUpdate(new(mesh.Id), mesh.Revision, vertices, indices);
+                builder.AddMeshUpdate(new UIMeshHandle(mesh.Id), mesh.Revision, vertices, indices);
             }
             foreach (ulong mesh in CopyReleasedMeshes(handle, info.ReleasedMeshCount))
-                builder.AddReleasedMesh(new(mesh));
+            {
+                builder.AddReleasedMesh(new UIMeshHandle(mesh));
+            }
 
-            InnoUIRmlUiAdapterDrawCommand[] nativeCommands = new InnoUIRmlUiAdapterDrawCommand[checked((int)info.CommandCount)];
+            var nativeCommands = new InnoUIRmlUiAdapterDrawCommand[checked((int)info.CommandCount)];
             CopyCommands(handle, nativeCommands);
             foreach (InnoUIRmlUiAdapterDrawCommand value in nativeCommands)
-                builder.AddCommand(new(
-                    new(value.MeshId),
-                    new(value.TextureId),
-                    value.ScissorEnabled != 0,
-                    new(value.ScissorX, value.ScissorY, value.ScissorWidth, value.ScissorHeight)));
+            {
+                builder.AddCommand(
+                    new UIDrawCommand(
+                        new UIMeshHandle(value.MeshId),
+                        new UITextureHandle(value.TextureId),
+                        value.ScissorEnabled != 0,
+                        new UIClipRectangle(value.ScissorX, value.ScissorY, value.ScissorWidth, value.ScissorHeight)
+                    )
+                );
+            }
 
             for (int index = 0; index < checked((int)info.TextureUpdateCount); index++)
             {
                 InnoUIRmlUiAdapterTextureInfo texture = default;
                 ThrowIfFailed(RmlUiNativeFrames.GetTextureInfo(m_runtime, handle, checked((ulong)index), ref texture), "query UI texture");
-                byte[] pixels = new byte[checked((int)texture.ByteLength)];
+                var pixels = new byte[checked((int)texture.ByteLength)];
                 if (pixels.Length > 0)
-                    ThrowIfFailed(RmlUiNativeFrames.CopyTexturePixels(
-                        m_runtime,
-                        handle,
-                        texture.Id,
-                        pixels.AsSpan()), "copy UI texture");
-                builder.AddTextureUpdate(new(texture.Id), texture.Revision, texture.Width, texture.Height, pixels);
+                {
+                    ThrowIfFailed(
+                        RmlUiNativeFrames.CopyTexturePixels(m_runtime, handle, texture.Id, pixels.AsSpan()),
+                        "copy UI texture"
+                    );
+                }
+                builder.AddTextureUpdate(new UITextureHandle(texture.Id), texture.Revision, texture.Width, texture.Height, pixels);
             }
             foreach (ulong texture in CopyReleasedTextures(handle, info.ReleasedTextureCount))
-                builder.AddReleasedTexture(new(texture));
+            {
+                builder.AddReleasedTexture(new UITextureHandle(texture));
+            }
 
-            UiRenderFrame frame = builder.Build();
+            UIRenderFrame frame = builder.Build();
             ThrowIfFailed(RmlUiNativeFrames.FinishFrame(m_runtime, handle), "finish UI frame transfer");
             return frame;
         }
@@ -555,29 +656,29 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <returns>
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
-    public IReadOnlyList<UiEvent> DrainEvents(UiContextHandle context)
+    public IReadOnlyList<UIEvent> DrainEvents(UIContextHandle context)
     {
         EnsureActive();
         ulong handle = Require(context);
         ulong eventCount = 0;
         ThrowIfFailed(RmlUiNativeFrames.GetEventCount(m_runtime, handle, ref eventCount), "query UI events");
-        UiEvent[] events = new UiEvent[checked((int)eventCount)];
+        var events = new UIEvent[checked((int)eventCount)];
         try
         {
             for (int index = 0; index < events.Length; index++)
             {
                 InnoUIRmlUiAdapterEventInfo info = default;
                 ThrowIfFailed(RmlUiNativeFrames.GetEventInfo(m_runtime, handle, checked((ulong)index), ref info), "query UI event");
-                byte[] targetBytes = new byte[checked((int)info.TargetIdLength + 1)];
-                ThrowIfFailed(RmlUiNativeFrames.CopyEventTargetId(
-                    m_runtime,
-                    handle,
-                    checked((ulong)index),
-                    targetBytes.AsSpan()), "copy UI event target");
-                events[index] = new UiEvent(
-                    (UiEventType)info.Type,
-                    new UiDocumentHandle(info.Document),
-                    Encoding.UTF8.GetString(targetBytes, 0, checked((int)info.TargetIdLength)));
+                var targetBytes = new byte[checked((int)info.TargetIdLength + 1)];
+                ThrowIfFailed(
+                    RmlUiNativeFrames.CopyEventTargetID(m_runtime, handle, checked((ulong)index), targetBytes.AsSpan()),
+                    "copy UI event target"
+                );
+                events[index] = new UIEvent(
+                    (UIEventType)info.Type,
+                    new UIDocumentHandle(info.Document),
+                    Encoding.UTF8.GetString(targetBytes, 0, checked((int)info.TargetIdLength))
+                );
             }
             return events;
         }
@@ -593,7 +694,9 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_disposed = true;
         RmlUiNativeErrors.DestroySession(m_runtime);
         m_runtime = null;
@@ -605,7 +708,9 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         InnoUIRmlUiAdapterVertex[] values
     ) {
         if (values.Length == 0)
+        {
             return;
+        }
         ThrowIfFailed(RmlUiNativeFrames.CopyMeshVertices(m_runtime, context, mesh, values), "copy UI mesh vertices");
     }
 
@@ -615,12 +720,13 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         uint[] values
     ) {
         if (values.Length == 0)
+        {
             return;
-        ThrowIfFailed(RmlUiNativeFrames.CopyMeshIndices(
-            m_runtime,
-            context,
-            mesh,
-            values.AsSpan()), "copy UI mesh indices");
+        }
+        ThrowIfFailed(
+            RmlUiNativeFrames.CopyMeshIndices(m_runtime, context, mesh, values.AsSpan()),
+            "copy UI mesh indices"
+        );
     }
 
     private void CopyCommands(
@@ -628,7 +734,9 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         InnoUIRmlUiAdapterDrawCommand[] values
     ) {
         if (values.Length == 0)
+        {
             return;
+        }
         ThrowIfFailed(RmlUiNativeFrames.CopyCommands(m_runtime, context, values), "copy UI commands");
     }
 
@@ -636,12 +744,14 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         ulong context,
         ulong count
     ) {
-        ulong[] values = new ulong[checked((int)count)];
+        var values = new ulong[checked((int)count)];
         if (values.Length > 0)
-            ThrowIfFailed(RmlUiNativeFrames.CopyReleasedMeshes(
-                m_runtime,
-                context,
-                values.AsSpan()), "copy released UI meshes");
+        {
+            ThrowIfFailed(
+                RmlUiNativeFrames.CopyReleasedMeshes(m_runtime, context, values.AsSpan()),
+                "copy released UI meshes"
+            );
+        }
         return values;
     }
 
@@ -649,23 +759,19 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         ulong context,
         ulong count
     ) {
-        ulong[] values = new ulong[checked((int)count)];
+        var values = new ulong[checked((int)count)];
         if (values.Length > 0)
-            ThrowIfFailed(RmlUiNativeFrames.CopyReleasedTextures(
-                m_runtime,
-                context,
-                values.AsSpan()), "copy released UI textures");
+        {
+            ThrowIfFailed(
+                RmlUiNativeFrames.CopyReleasedTextures(m_runtime, context, values.AsSpan()),
+                "copy released UI textures"
+            );
+        }
         return values;
     }
 
-    private static void EnsureRml(UiDocumentLanguageId language)
-    {
-        if (language != RmlUiIdentifiers.documentLanguage)
-            throw new NotSupportedException($"RmlUi adapter cannot decode UI language '{language}'.");
-    }
-
     private string RewriteFontFamilies(string source)
-        => S_FONT_FAMILY.Replace(source, match =>
+        => FONT_FAMILY.Replace(source, match =>
         {
             string[] requested = match.Groups[2].Value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             var resolved = new List<string>(requested.Length);
@@ -677,10 +783,20 @@ public sealed unsafe class RmlUiBackend : IUiBackend
             return match.Groups[1].Value + string.Join(", ", resolved);
         });
 
-    private static ulong Require(UiContextHandle context)
+    private void EnsureActive() => ObjectDisposedException.ThrowIf(m_disposed, this);
+
+    private static void EnsureRml(UIDocumentLanguageID language)
+    {
+        if (language != RmlUiIdentifiers.documentLanguage)
+        {
+            throw new NotSupportedException($"RmlUi adapter cannot decode UI language '{language}'.");
+        }
+    }
+
+    private static ulong Require(UIContextHandle context)
         => context.isValid ? context.value : throw new ArgumentException("A valid UI context handle is required.", nameof(context));
 
-    private static ulong Require(UiDocumentHandle document)
+    private static ulong Require(UIDocumentHandle document)
         => document.isValid ? document.value : throw new ArgumentException("A valid UI document handle is required.", nameof(document));
 
     private static void ThrowIfFailed(
@@ -688,14 +804,15 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         string operation
     ) {
         if (result != Result.Success)
+        {
             throw CreateNativeException(operation, result);
+        }
     }
 
     private static InvalidOperationException CreateNativeException(
         string operation,
         Result result
     ) {
-
         string message = result switch
             {
                 Result.InvalidArgument => "invalid argument",
@@ -708,6 +825,4 @@ public sealed unsafe class RmlUiBackend : IUiBackend
             };
         return new InvalidOperationException($"Failed to {operation}: {message}.");
     }
-
-    private void EnsureActive() => ObjectDisposedException.ThrowIf(m_disposed, this);
 }

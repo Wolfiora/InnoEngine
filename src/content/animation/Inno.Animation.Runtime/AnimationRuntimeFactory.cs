@@ -1,7 +1,6 @@
-using Inno.Runtime.Contracts;
 using System;
-
 using Inno.Runtime;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Animation.Runtime;
 
@@ -20,16 +19,18 @@ public sealed class AnimationRuntimeFactory : IRuntimeSubsystemFactory
     /// </param>
     public AnimationRuntimeFactory(Func<RuntimeSubsystemContext, AnimationRuntime> runtimeFactory)
     {
-        m_runtimeFactory = runtimeFactory ?? throw new ArgumentNullException(nameof(runtimeFactory));
+        ArgumentNullException.ThrowIfNull(runtimeFactory);
+        m_runtimeFactory = runtimeFactory;
     }
 
     /// <summary>
     /// Gets ordering metadata that evaluates animation after scene simulation.
     /// </summary>
     public RuntimeSubsystemDescriptor descriptor { get; } = new(
-        new RuntimeSubsystemId("inno.runtime.animation"),
+        new RuntimeSubsystemID("inno.runtime.animation"),
         order: 400,
-        dependencies: [new RuntimeSubsystemId("inno.runtime.scene")]);
+        dependencies: [new RuntimeSubsystemID("inno.runtime.scene")]
+    );
 
     /// <summary>
     /// Creates a feature over a newly allocated animation runtime.
@@ -44,7 +45,7 @@ public sealed class AnimationRuntimeFactory : IRuntimeSubsystemFactory
     {
         ArgumentNullException.ThrowIfNull(context);
         AnimationRuntime runtime = m_runtimeFactory(context)
-            ?? throw new InvalidOperationException("The animation runtime factory returned null.");
+                                   ?? throw new InvalidOperationException("The animation runtime factory returned null.");
         return runtime;
     }
 }

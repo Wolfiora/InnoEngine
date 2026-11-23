@@ -20,11 +20,11 @@ public static class NativeBindingPreparation
     /// <param name="components">
     /// The declared component closure; components without bindings are excluded.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels generation and drains active work before returning.
-    /// </param>
     /// <param name="componentOptions">
     /// Exact per-owner component choices, or null for component defaults.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels generation and drains active work before returning.
     /// </param>
     /// <returns>
     /// An owned generation closure, empty for a product without bindings. Retain it through final consumption.
@@ -35,18 +35,25 @@ public static class NativeBindingPreparation
     public static async Task<NativeBindingGenerationResult> PrepareAsync(
         NativeBuildContext context,
         IReadOnlyList<NativeComponentDescriptor> components,
-        CancellationToken cancellationToken,
-        IReadOnlyDictionary<string, NativeComponentBuildOptions>? componentOptions = null
+        IReadOnlyDictionary<string, NativeComponentBuildOptions>? componentOptions = null,
+        CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(components);
         cancellationToken.ThrowIfCancellationRequested();
         NativeComponentDescriptor[] owners = components.Where(static owner => owner.bindingDefinition is not null)
-            .DistinctBy(static owner => owner.nativeProject).ToArray();
+            .DistinctBy(static owner => owner.nativeProject)
+            .ToArray();
         if (owners.Length == 0)
+        {
             return new(new Dictionary<string, NativeBindingGenerationDescriptor>(), []);
-        var request = new NativeBindingGenerationRequest(owners, context.RequireToolchain().targetId,
-            NativeBindingOutputMode.TargetArtifacts, componentOptions: componentOptions);
+        }
+        var request = new NativeBindingGenerationRequest(
+            owners,
+            context.RequireToolchain().targetID,
+            NativeBindingOutputMode.TargetArtifacts,
+            componentOptions: componentOptions
+        );
         return await context.RequireBindingGenerator().GenerateAsync(context, request, cancellationToken).ConfigureAwait(false);
     }
 }

@@ -25,7 +25,7 @@ public static class BuildMaintenanceApplication
     /// <returns>
     /// Zero on success, two on cancellation, or one with a diagnostic on failure.
     /// </returns>
-    public static async Task<int> Run(
+    public static async Task<int> RunAsync(
         string[] arguments,
         CancellationToken cancellationToken
     ) {
@@ -34,7 +34,9 @@ public static class BuildMaintenanceApplication
             ArgumentNullException.ThrowIfNull(arguments);
             cancellationToken.ThrowIfCancellationRequested();
             if (arguments.Length == 0 || arguments[0] != "clean")
+            {
                 throw new ArgumentException("Maintenance requires the clean command.");
+            }
             var options = new Dictionary<string, string>(StringComparer.Ordinal);
             var allowed = new HashSet<string>(StringComparer.Ordinal)
             {
@@ -45,32 +47,56 @@ public static class BuildMaintenanceApplication
             {
                 string argument = arguments[index];
                 if (!argument.StartsWith("--", StringComparison.Ordinal) || !allowed.Contains(argument[2..]))
+                {
                     throw new ArgumentException($"Unknown maintenance option '{argument}'.");
+                }
                 string value = "true";
                 if (argument != "--dry-run")
                 {
                     if (++index >= arguments.Length || arguments[index].StartsWith("--", StringComparison.Ordinal))
+                    {
                         throw new ArgumentException($"Missing value for '{argument}'.");
+                    }
                     value = arguments[index];
                 }
                 if (!options.TryAdd(argument[2..], value))
+                {
                     throw new ArgumentException($"Duplicate maintenance option '{argument}'.");
+                }
             }
             if (options.GetValueOrDefault("scope") != "cache" || !options.TryGetValue("engine-root", out string? root))
+            {
                 throw new ArgumentException("Cache maintenance requires --scope cache and --engine-root.");
+            }
             long Bytes(
                 string name,
                 long fallback
             ) => options.TryGetValue(name, out string? value)
-                ? checked(long.Parse(value, NumberStyles.None, CultureInfo.InvariantCulture) * (1L << 30)) : fallback;
-            double seconds = double.Parse(options.GetValueOrDefault("cache-time-seconds", "600"),
-                NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
-            await CleanAsync(root, new BuildCachePolicy(Bytes("cache-budget-gib", 64L << 30),
-                Bytes("cache-min-free-gib", 20L << 30), TimeSpan.FromSeconds(seconds)),
-                true, options.ContainsKey("dry-run"), options.GetValueOrDefault("target"), cancellationToken).ConfigureAwait(false);
+                 ? checked(long.Parse(value, NumberStyles.None, CultureInfo.InvariantCulture) * (1L << 30))
+                 : fallback;
+            double seconds = double.Parse(
+                options.GetValueOrDefault("cache-time-seconds", "600"),
+                NumberStyles.AllowDecimalPoint,
+                CultureInfo.InvariantCulture
+            );
+            await CleanAsync(
+                root,
+                new BuildCachePolicy(
+                    Bytes("cache-budget-gib", 64L << 30),
+                    Bytes("cache-min-free-gib", 20L << 30),
+                    TimeSpan.FromSeconds(seconds)
+                ),
+                true,
+                options.ContainsKey("dry-run"),
+                options.GetValueOrDefault("target"),
+                cancellationToken
+            ).ConfigureAwait(false);
             return 0;
         }
-        catch (OperationCanceledException) { return 2; }
+        catch (OperationCanceledException)
+        {
+            return 2;
+        }
         catch (Exception failure)
         {
             Console.Error.WriteLine(failure);
@@ -93,7 +119,7 @@ public static class BuildMaintenanceApplication
     /// <param name="dryRun">
     /// Whether to report the plan without retiring it.
     /// </param>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// An optional exact producer target filter; shared dependencies remain protected.
     /// </param>
     /// <param name="cancellationToken">
@@ -119,18 +145,22 @@ public static class BuildMaintenanceApplication
         BuildCachePolicy policy,
         bool retireAll,
         bool dryRun,
-        string? targetId,
+        string? targetID,
         CancellationToken cancellationToken
     ) {
         ArgumentNullException.ThrowIfNull(policy);
         Stopwatch elapsed = Stopwatch.StartNew();
         IReadOnlyList<BuildCacheOwnerDescriptor> owners;
-        using (var inventoryBudget = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+        using (CancellationTokenSource inventoryBudget = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
         {
             inventoryBudget.CancelAfter(policy.timeBudget);
             try
             {
-                owners = BuildCacheOwnerCatalog.ReadOwners(engineRoot, new BuildCacheInventoryProgress(engineRoot, dryRun), inventoryBudget.Token);
+                owners = BuildCacheOwnerCatalog.ReadOwners(
+                    engineRoot,
+                    new BuildCacheInventoryProgress(engineRoot, dryRun),
+                    inventoryBudget.Token
+                );
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
             {
@@ -139,18 +169,36 @@ public static class BuildMaintenanceApplication
         }
         TimeSpan remaining = policy.timeBudget - elapsed.Elapsed;
         if (remaining <= TimeSpan.Zero)
+        {
             throw new TimeoutException("Cache owner discovery exhausted its operation budget; no artifact was retired.");
+        }
         var remainingPolicy = new BuildCachePolicy(policy.maximumBytes, policy.minimumFreeBytes, remaining);
-        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(engineRoot,
-            owners, remainingPolicy, retireAll, targetId, cancellationToken);
+        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(
+            engineRoot,
+            owners,
+            remainingPolicy,
+            retireAll,
+            targetID,
+            cancellationToken
+        );
         if (dryRun)
+        {
             foreach (BuildCacheArtifactDescriptor artifact in plan.candidates)
+            {
                 Console.WriteLine($"Would retire {artifact.directory} ({artifact.bytes} bytes)");
+            }
+        }
         BuildCacheCleanupResult result = await plan.ExecuteAsync(dryRun, cancellationToken).ConfigureAwait(false);
-        Console.WriteLine($"Cache: {plan.totalBytes} bytes; protected {plan.protectedBytes}; reclaimed {result.retiredBytes}; skipped {result.skipped.Count}.");
-        foreach (var failure in result.failures)
+        Console.WriteLine(
+            $"Cache: {plan.totalBytes} bytes; protected {plan.protectedBytes}; reclaimed {result.retiredBytes}; skipped {result.skipped.Count}."
+        );
+        foreach (KeyValuePair<string, string> failure in result.failures)
+        {
             Console.Error.WriteLine($"Cache retirement failed: {failure.Key}: {failure.Value}");
+        }
         if (retireAll && result.failures.Count != 0)
+        {
             throw new InvalidOperationException("Explicit cache cleanup completed with failures.");
+        }
     }
 }

@@ -353,6 +353,7 @@ public async Task SaveAsync(
 ## NM-13 Acronyms
 
 - A two-letter acronym is upper case wherever a PascalCase word would start: `ID`, `IO`, `UI`. This includes `ID`: write `AssetID`, `persistentID`, `GetID`, never `AssetId`.
+- A plural keeps the acronym upper case and adds a lower-case `s`: `sourceIDs`, `GetAssetIDs`.
 - An acronym of three or more letters is written as an ordinary word: `Json`, `Http`, `Ktx`, `Sdl`.
 - When an acronym starts a camelCase identifier, the whole acronym is lower case: `id`, `ioStatus`, `uiScale`.
 - In UPPER_SNAKE names every word is upper case: `C_MAX_ID`.

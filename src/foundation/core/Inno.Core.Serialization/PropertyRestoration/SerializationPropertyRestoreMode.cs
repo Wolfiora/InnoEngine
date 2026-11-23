@@ -9,7 +9,6 @@ public enum SerializationPropertyRestoreMode
     /// Stops at the first property that cannot be restored into the current object.
     /// </summary>
     Strict,
-
     /// <summary>
     /// Continues restoring independent properties and reports every rejected value.
     /// </summary>

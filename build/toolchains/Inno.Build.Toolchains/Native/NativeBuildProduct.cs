@@ -14,7 +14,7 @@ public sealed class NativeBuildProduct : IDisposable
 
     internal NativeBuildProduct(
         string component,
-        string targetId,
+        string targetID,
         string fingerprint,
         string directory,
         NativeBindingGenerationDescriptor? bindingGeneration,
@@ -22,7 +22,7 @@ public sealed class NativeBuildProduct : IDisposable
         BuildArtifactReadLease readLease
     ) {
         this.component = component;
-        this.targetId = targetId;
+        this.targetID = targetID;
         this.fingerprint = fingerprint;
         this.directory = directory;
         this.bindingGeneration = bindingGeneration;
@@ -30,8 +30,8 @@ public sealed class NativeBuildProduct : IDisposable
         m_readLease = readLease;
         try
         {
-            artifacts = NativeArtifact.Read(directory);
-            files = Array.AsReadOnly(artifacts.Select(static artifact => artifact.file).Order(StringComparer.Ordinal).ToArray());
+            this.artifacts = NativeArtifact.Read(directory);
+            this.files = Array.AsReadOnly(artifacts.Select(static artifact => artifact.file).Order(StringComparer.Ordinal).ToArray());
         }
         catch
         {
@@ -48,7 +48,7 @@ public sealed class NativeBuildProduct : IDisposable
     /// <summary>
     /// Gets the target ABI selected for this build.
     /// </summary>
-    public string targetId { get; }
+    public string targetID { get; }
 
     /// <summary>
     /// Gets the content fingerprint covering sources, tool executables and toolchain declarations.

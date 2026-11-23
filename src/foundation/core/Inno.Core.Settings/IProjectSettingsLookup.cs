@@ -11,7 +11,7 @@ public interface IProjectSettingsLookup
     /// <summary>
     /// Gets the unique lifetime identity of this settings owner; revisions from different owners are not interchangeable.
     /// </summary>
-    Guid ownerId { get; }
+    Guid ownerID { get; }
 
     /// <summary>
     /// Gets the revision of the active effective settings snapshot, paired with ownerId.
@@ -31,7 +31,7 @@ public interface IProjectSettingsLookup
     /// <returns>
     /// An independently owned effective setting snapshot.
     /// </returns>
-    TSetting Get<TSetting>(ProjectSettingId id)
+    TSetting Get<TSetting>(ProjectSettingID id)
         where TSetting : class, ISerializable;
 
     /// <summary>
@@ -51,8 +51,7 @@ public interface IProjectSettingsLookup
     /// <see langword="false"/>.
     /// </returns>
     bool TryGet<TSetting>(
-        ProjectSettingId id,
+        ProjectSettingID id,
         out TSetting? setting
-    )
-        where TSetting : class, ISerializable;
+    ) where TSetting : class, ISerializable;
 }

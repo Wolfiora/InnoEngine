@@ -29,7 +29,7 @@ try {
             }
             if ($fixtureCase -cne 'none') { $fixturePull }
         }
-        $selected = & "$PSScriptRoot/Get-ValidationCadence.ps1" -EventPath $eventPath -Event $event -Commit $commit `
+        $selected = & "$PSScriptRoot/../../tools/ci/Get-ValidationCadence.ps1" -EventPath $eventPath -Event $event -Commit $commit `
             -Repository fixture/engine -ApiUrl https://example.invalid | ConvertFrom-Json
         if ($selected.run -ne ($case -cne 'matching')) { throw "Event delegation accepted a foreign or stale PR: $case" }
         $expected = if ($case -ceq 'master') { 'master' } elseif ($event -ceq 'push') { 'fast' } else { 'pull-request' }

@@ -22,7 +22,8 @@ public sealed class ScheduledShellFrameDriver : IShellFrameDriver
     /// </exception>
     public ScheduledShellFrameDriver(Func<CancellationToken, ValueTask> nextFrame)
     {
-        m_nextFrame = nextFrame ?? throw new ArgumentNullException(nameof(nextFrame));
+        ArgumentNullException.ThrowIfNull(nextFrame);
+        m_nextFrame = nextFrame;
     }
 
     /// <summary>
@@ -59,7 +60,9 @@ public sealed class ScheduledShellFrameDriver : IShellFrameDriver
             await m_nextFrame(cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             if (!advanceFrame())
+            {
                 return;
+            }
         }
     }
 }

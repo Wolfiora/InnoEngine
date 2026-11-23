@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Inno.Core.Serialization;
 
@@ -11,7 +12,9 @@ internal static class PropertySnapshotPipeline
         ConverterRegistryLease converters,
         BinarySerializationNode? previous
     ) {
-        IReadOnlyList<SerializationMemberMetadata> members = context.GetRequired<ISerializationMetadataSource>().GetMetadata(value.GetType()).members;
+        IReadOnlyList<SerializationMemberMetadata> members = context
+            .GetRequired<ISerializationMetadataSource>()
+            .GetMetadata(value.GetType()).members;
         KeyValuePair<string, SerializationNode>[]? before = previous?.properties?.members;
         List<KeyValuePair<string, SerializationNode>>? captured = before is null ? [] : null;
         int count = 0;
@@ -22,20 +25,28 @@ internal static class PropertySnapshotPipeline
             {
                 SerializationMemberMetadata member = members[index];
                 if ((member.visibility & PropertyVisibility.Serialize) == 0)
+                {
                     continue;
-                SerializationNode? prior = before is not null && count < before.Length &&
-                                           string.Equals(before[count].Key, member.name, StringComparison.Ordinal)
-                    ? before[count].Value
-                    : null;
-                SerializationNode node = ValuePipeline.Write(member.GetValue(value), member.type, operation,
-                    prior?.capturePath ?? AppendPath(member.name), allowDefaultObject: false, prior);
+                }
+                SerializationNode? prior = before is not null && count < before.Length
+                                           && string.Equals(before[count].Key, member.name, StringComparison.Ordinal)
+                                           ? before[count].Value
+                                           : null;
+                SerializationNode node = ValuePipeline.Write(
+                    member.GetValue(value),
+                    member.type,
+                    operation,
+                    prior?.capturePath ?? AppendPath(member.name),
+                    allowDefaultObject: false,
+                    prior
+                );
                 operation.RetireCaptureMember();
                 if (captured is null && !ReferenceEquals(node, prior))
                 {
-                    captured = new(before!);
+                    captured = [.. before!];
                     captured.RemoveRange(count, captured.Count - count);
                 }
-                captured?.Add(new(member.name, node));
+                captured?.Add(new KeyValuePair<string, SerializationNode>(member.name, node));
                 count++;
             }
         }
@@ -44,14 +55,17 @@ internal static class PropertySnapshotPipeline
             operation.Fail();
         }
         if (captured is null && before is not null && count == before.Length)
-            return previous!.properties!.hasConverters == (operation.converterWrites != 0) ? previous
-                : new BinarySerializationNode(previous.value)
-                {
-                    properties = new(before) { hasConverters = operation.converterWrites != 0 }
-                };
+        {
+            return previous!.properties!.hasConverters == (operation.converterWrites != 0)
+                   ? previous
+                   : new BinarySerializationNode(previous.value)
+                   {
+                       properties = new(before) { hasConverters = operation.converterWrites != 0 }
+                   };
+        }
         if (captured is null)
         {
-            captured = new(before!);
+            captured = [.. before!];
             captured.RemoveRange(count, captured.Count - count);
         }
         var state = new PropertyDataCapture([.. captured]) { hasConverters = operation.converterWrites != 0 };
@@ -65,17 +79,22 @@ internal static class PropertySnapshotPipeline
         ConverterRegistryLease converters
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(propertyName);
-        IReadOnlyList<SerializationMemberMetadata> members = context.GetRequired<ISerializationMetadataSource>().GetMetadata(value.GetType()).members;
+        IReadOnlyList<SerializationMemberMetadata> members = context
+            .GetRequired<ISerializationMetadataSource>()
+            .GetMetadata(value.GetType()).members;
         for (int index = 0; index < members.Count; index++)
         {
             SerializationMemberMetadata member = members[index];
-            if ((member.visibility & PropertyVisibility.Serialize) != 0 &&
-                string.Equals(member.name, propertyName, StringComparison.Ordinal))
+            if ((member.visibility & PropertyVisibility.Serialize) != 0
+                && string.Equals(member.name, propertyName, StringComparison.Ordinal)
+            ) {
                 return CaptureMember(value, member, context, converters);
+            }
         }
         throw new ArgumentException(
             $"Serializable property '{propertyName}' was not found on '{value.GetType().FullName}'.",
-            nameof(propertyName));
+            nameof(propertyName)
+        );
     }
 
     internal static IReadOnlyList<SerializationPropertySnapshot> Capture(
@@ -83,13 +102,17 @@ internal static class PropertySnapshotPipeline
         SerializationContext context,
         ConverterRegistryLease converters
     ) {
-        IReadOnlyList<SerializationMemberMetadata> members = context.GetRequired<ISerializationMetadataSource>().GetMetadata(value.GetType()).members;
+        IReadOnlyList<SerializationMemberMetadata> members = context
+            .GetRequired<ISerializationMetadataSource>()
+            .GetMetadata(value.GetType()).members;
         var snapshots = new List<SerializationPropertySnapshot>(members.Count);
         for (int i = 0; i < members.Count; i++)
         {
             SerializationMemberMetadata member = members[i];
             if ((member.visibility & PropertyVisibility.Serialize) == 0)
+            {
                 continue;
+            }
 
             snapshots.Add(CaptureMember(value, member, context, converters));
         }
@@ -103,17 +126,21 @@ internal static class PropertySnapshotPipeline
         SerializationContext context,
         ConverterRegistryLease converters
     ) {
-        IReadOnlyList<SerializationMemberMetadata> members = context.GetRequired<ISerializationMetadataSource>().GetMetadata(target.GetType()).members;
+        IReadOnlyList<SerializationMemberMetadata> members = context
+            .GetRequired<ISerializationMetadataSource>()
+            .GetMetadata(target.GetType()).members;
         var membersByName = new Dictionary<string, SerializationMemberMetadata>(members.Count, StringComparer.Ordinal);
         for (int i = 0; i < members.Count; i++)
         {
             SerializationMemberMetadata member = members[i];
             if ((member.visibility & PropertyVisibility.Deserialize) != 0)
+            {
                 membersByName.Add(member.name, member);
+            }
         }
 
         ValidateSnapshots(snapshots);
-        var failures = new List<SerializationPropertyRestoreFailure>();
+        List<SerializationPropertyRestoreFailure> failures = [];
         int restoredCount = 0;
         int ignoredCount = 0;
         var operation = new SerializationOperation(context, converters);
@@ -137,20 +164,24 @@ internal static class PropertySnapshotPipeline
                         member.type,
                         operation,
                         AppendPath(member.name),
-                        allowDefaultObject: false);
+                        allowDefaultObject: false
+                    );
                     member.SetValue(target, value);
                     restoredCount++;
                 }
                 catch (Exception exception) when (
-                    mode == SerializationPropertyRestoreMode.CollectFailures &&
-                    IsRecoverable(exception))
+                    mode == SerializationPropertyRestoreMode.CollectFailures
+                    && IsRecoverable(exception))
                 {
                     operation.Rollback(checkpoint);
-                    failures.Add(new SerializationPropertyRestoreFailure(
-                        member.name,
-                        snapshot.propertyType,
-                        member.type,
-                        Unwrap(exception).Message));
+                    failures.Add(
+                        new SerializationPropertyRestoreFailure(
+                            member.name,
+                            snapshot.propertyType,
+                            member.type,
+                            Unwrap(exception).Message
+                        )
+                    );
                 }
             }
 
@@ -176,7 +207,8 @@ internal static class PropertySnapshotPipeline
             {
                 throw new ArgumentException(
                     $"Property snapshot key '{snapshot.name}' appears more than once.",
-                    nameof(snapshots));
+                    nameof(snapshots)
+                );
             }
         }
     }
@@ -195,11 +227,9 @@ internal static class PropertySnapshotPipeline
                 member.type,
                 operation,
                 AppendPath(member.name),
-                allowDefaultObject: false);
-            return new SerializationPropertySnapshot(
-                member.name,
-                member.type,
-                BinarySerializationFormat.Encode(node));
+                allowDefaultObject: false
+            );
+            return new SerializationPropertySnapshot(member.name, member.type, BinarySerializationFormat.Encode(node));
         }
         finally
         {
@@ -208,15 +238,15 @@ internal static class PropertySnapshotPipeline
     }
 
     private static bool IsRecoverable(Exception exception)
-        => exception is not OutOfMemoryException and
-           not StackOverflowException and
-           not AccessViolationException and
-           not OperationCanceledException;
+        => exception is not OutOfMemoryException
+           and not StackOverflowException
+           and not AccessViolationException
+           and not OperationCanceledException;
 
     private static Exception Unwrap(Exception exception)
-        => exception is System.Reflection.TargetInvocationException { InnerException: not null } invocation
-            ? invocation.InnerException!
-            : exception;
+        => exception is TargetInvocationException { InnerException: not null } invocation
+           ? invocation.InnerException!
+           : exception;
 
     private static string AppendPath(string name) => "$." + name;
 }

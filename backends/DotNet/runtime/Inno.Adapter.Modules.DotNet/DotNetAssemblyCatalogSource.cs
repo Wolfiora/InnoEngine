@@ -36,49 +36,61 @@ public sealed class DotNetAssemblyCatalogSource : IAssemblyCatalogSource
     {
         ArgumentNullException.ThrowIfNull(roots);
         if (roots.Length == 0)
+        {
             throw new ArgumentException("At least one composition root is required.", nameof(roots));
+        }
         m_roots = roots.Distinct().ToArray();
         m_hostLoadContext = AssemblyLoadContext.GetLoadContext(m_roots[0])!;
-        if (m_roots.Any(assembly =>
-                AssemblyLoadContext.GetLoadContext(assembly) != m_hostLoadContext))
+        if (m_roots.Any(assembly => AssemblyLoadContext.GetLoadContext(assembly) != m_hostLoadContext))
+        {
             throw new ArgumentException("Composition roots must share one load context.", nameof(roots));
+        }
         PreloadInnoHostDependencies();
         AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoaded;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public event Action? changed;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IReadOnlyList<Assembly> GetAssemblies()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         lock (m_ownedAssemblies)
-            return m_ownedAssemblies.Where(static assembly =>
-                assembly.TryGetInnoAssemblyClassification(out AssemblyDomain domain, out _) &&
-                domain == AssemblyDomain.InnoInternal).ToArray();
+        {
+            return m_ownedAssemblies.Where(static assembly => (
+                assembly.TryGetInnoAssemblyClassification(out AssemblyDomain domain, out _)
+                && domain == AssemblyDomain.InnoInternal
+            )).ToArray();
+        }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IReadOnlyList<Assembly> GetSharedAssemblies()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         lock (m_ownedAssemblies)
-            return m_ownedAssemblies.Concat(AppDomain.CurrentDomain.GetAssemblies()
-                .Where(IsTrustedFrameworkAssembly)).Distinct().ToArray();
+        {
+            return m_ownedAssemblies.Concat(
+                AppDomain.CurrentDomain.GetAssemblies()
+                    .Where(IsTrustedFrameworkAssembly)
+            ).Distinct().ToArray();
+        }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool IsFrameworkReference(string assemblyName) => m_trustedPlatformAssemblies.Contains(assemblyName);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool IsFrameworkAssembly(Assembly assembly) => IsTrustedFrameworkAssembly(assembly);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         AppDomain.CurrentDomain.AssemblyLoad -= OnAssemblyLoaded;
         changed = null;
         m_ownedAssemblies.Clear();
@@ -92,12 +104,16 @@ public sealed class DotNetAssemblyCatalogSource : IAssemblyCatalogSource
         // Discovery remains the explicit composition closure. New assemblies become visible only
         // when referenced by a root; arbitrary assemblies in the process never enter the catalog.
         if (AssemblyLoadContext.GetLoadContext(args.LoadedAssembly) != m_hostLoadContext)
+        {
             return;
+        }
         int previousCount;
         lock (m_ownedAssemblies)
         {
             if (m_disposed || m_discovering)
+            {
                 return;
+            }
             previousCount = m_ownedAssemblies.Count;
             m_discovering = true;
             try
@@ -109,7 +125,9 @@ public sealed class DotNetAssemblyCatalogSource : IAssemblyCatalogSource
                 m_discovering = false;
             }
             if (m_ownedAssemblies.Count == previousCount)
+            {
                 return;
+            }
         }
         changed?.Invoke();
     }
@@ -118,7 +136,9 @@ public sealed class DotNetAssemblyCatalogSource : IAssemblyCatalogSource
     {
         Assembly[] roots = m_roots;
         if (roots.Length == 0)
+        {
             return;
+        }
 
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var pending = new Queue<Assembly>();
@@ -126,21 +146,28 @@ public sealed class DotNetAssemblyCatalogSource : IAssemblyCatalogSource
         {
             string rootName = root.GetName().Name ?? string.Empty;
             if (!string.IsNullOrEmpty(rootName))
+            {
                 visited.Add(rootName);
+            }
             m_ownedAssemblies.Add(root);
             pending.Enqueue(root);
         }
         foreach (KeyValuePair<string, string> dependency in HostDependencyManifest.GetInnoRuntimeAssemblies(roots)
-                     .OrderBy(static dependency => dependency.Key, StringComparer.OrdinalIgnoreCase))
+            .OrderBy(static dependency => dependency.Key, StringComparer.OrdinalIgnoreCase)
+        ) {
             TryEnqueueHostAssembly(new AssemblyName(dependency.Key), visited, pending, dependency.Value);
+        }
 
         while (pending.Count > 0)
         {
             Assembly assembly = pending.Dequeue();
             foreach (AssemblyName reference in assembly.GetReferencedAssemblies())
+            {
                 TryEnqueueHostAssembly(reference, visited, pending);
+            }
         }
     }
+
     private void TryEnqueueHostAssembly(
         AssemblyName assemblyName,
         ISet<string> visited,
@@ -149,32 +176,40 @@ public sealed class DotNetAssemblyCatalogSource : IAssemblyCatalogSource
     ) {
         string name = assemblyName.Name ?? string.Empty;
         if (!name.StartsWith("Inno.", StringComparison.Ordinal) || !visited.Add(name))
+        {
             return;
+        }
         Assembly assembly = manifestPath is null
-            ? m_hostLoadContext.LoadFromAssemblyName(assemblyName)
-            : m_hostLoadContext.LoadFromAssemblyPath(manifestPath);
+                            ? m_hostLoadContext.LoadFromAssemblyName(assemblyName)
+                            : m_hostLoadContext.LoadFromAssemblyPath(manifestPath);
         lock (m_ownedAssemblies)
+        {
             m_ownedAssemblies.Add(assembly);
+        }
         pending.Enqueue(assembly);
     }
+
     private static HashSet<string> GetTrustedPlatformAssemblyNames()
     {
         string paths = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string ?? string.Empty;
         return paths.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
-            .Select(Path.GetFileNameWithoutExtension).OfType<string>()
+            .Select(Path.GetFileNameWithoutExtension)
+            .OfType<string>()
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
 
     private static bool IsTrustedFrameworkAssembly(Assembly assembly)
     {
         if (AssemblyLoadContext.GetLoadContext(assembly) != AssemblyLoadContext.Default)
+        {
             return false;
+        }
         AssemblyName identity = assembly.GetName();
         string name = identity.Name ?? string.Empty;
         if (!name.StartsWith("System.", StringComparison.Ordinal)
             && !name.StartsWith("Microsoft.Win32.", StringComparison.Ordinal)
-            && name is not ("System" or "netstandard" or "mscorlib"))
-        {
+            && name is not ("System" or "netstandard" or "mscorlib")
+        ) {
             return false;
         }
         string token = Convert.ToHexString(identity.GetPublicKeyToken() ?? []);

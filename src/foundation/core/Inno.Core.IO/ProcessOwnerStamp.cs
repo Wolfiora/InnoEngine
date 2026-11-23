@@ -27,8 +27,7 @@ public readonly record struct ProcessOwnerStamp
     ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(startedUtcTicks);
-        if (startedUtcTicks > DateTime.MaxValue.Ticks)
-            throw new ArgumentOutOfRangeException(nameof(startedUtcTicks));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(startedUtcTicks, DateTime.MaxValue.Ticks);
         this.processId = processId;
         this.startedUtcTicks = startedUtcTicks;
     }
@@ -42,6 +41,46 @@ public readonly record struct ProcessOwnerStamp
     /// Gets the UTC start ticks; zero denotes an uninitialized stamp.
     /// </summary>
     public long startedUtcTicks { get; }
+
+    /// <summary>
+    /// Checks the exact lifetime conservatively without holding an operating-system handle afterwards.
+    /// </summary>
+    /// <returns>
+    /// Active for the matching live process, Exited for a missing or recycled process,
+    /// or Unknown for uninitialized stamps and inaccessible process information.
+    /// </returns>
+    public ProcessOwnerState Query()
+    {
+        if (processId <= 0 || startedUtcTicks <= 0)
+        {
+            return ProcessOwnerState.Unknown;
+        }
+        try
+        {
+            using Process process = Process.GetProcessById(processId);
+            if (process.HasExited || process.StartTime.ToUniversalTime().Ticks != startedUtcTicks)
+            {
+                return ProcessOwnerState.Exited;
+            }
+            return ProcessOwnerState.Active;
+        }
+        catch (ArgumentException)
+        {
+            return ProcessOwnerState.Exited;
+        }
+        catch (InvalidOperationException)
+        {
+            return ProcessOwnerState.Unknown;
+        }
+        catch (Win32Exception)
+        {
+            return ProcessOwnerState.Unknown;
+        }
+        catch (NotSupportedException)
+        {
+            return ProcessOwnerState.Unknown;
+        }
+    }
 
     /// <summary>
     /// Captures the current process lifetime and releases its temporary inspection handle.
@@ -59,29 +98,5 @@ public readonly record struct ProcessOwnerStamp
     {
         using Process process = Process.GetCurrentProcess();
         return new(process.Id, process.StartTime.ToUniversalTime().Ticks);
-    }
-
-    /// <summary>
-    /// Checks the exact lifetime conservatively without holding an operating-system handle afterwards.
-    /// </summary>
-    /// <returns>
-    /// Active for the matching live process, Exited for a missing or recycled process,
-    /// or Unknown for uninitialized stamps and inaccessible process information.
-    /// </returns>
-    public ProcessOwnerState Query()
-    {
-        if (processId <= 0 || startedUtcTicks <= 0)
-            return ProcessOwnerState.Unknown;
-        try
-        {
-            using Process process = Process.GetProcessById(processId);
-            if (process.HasExited || process.StartTime.ToUniversalTime().Ticks != startedUtcTicks)
-                return ProcessOwnerState.Exited;
-            return ProcessOwnerState.Active;
-        }
-        catch (ArgumentException) { return ProcessOwnerState.Exited; }
-        catch (InvalidOperationException) { return ProcessOwnerState.Unknown; }
-        catch (Win32Exception) { return ProcessOwnerState.Unknown; }
-        catch (NotSupportedException) { return ProcessOwnerState.Unknown; }
     }
 }

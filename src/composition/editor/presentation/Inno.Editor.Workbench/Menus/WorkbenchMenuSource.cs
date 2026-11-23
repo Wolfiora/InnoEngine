@@ -2,7 +2,8 @@ using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Workbench;
-[EditorMenuSource(GlobalInteractionIds.C_MAIN_MENU_AREA)]
+
+[EditorMenuSource(GlobalInteractionIDs.C_MAIN_MENU_AREA)]
 internal sealed class WorkbenchMenuSource : EditorMenuSource
 {
     /// <inheritdoc/>
@@ -20,7 +21,7 @@ internal sealed class WorkbenchMenuSource : EditorMenuSource
         foreach (EditorPanelAttribute panel in context.interactions.GetPanelDeclarations())
         {
             string path = string.IsNullOrEmpty(panel.menuPath) ? "Window/" + panel.title : "Window/" + panel.menuPath + "/" + panel.title;
-            builder.Add(path, GlobalInteractionIds.C_TOGGLE_PANEL, panel.order, panel.separatorBefore, panel.id);
+            builder.Add(path, GlobalInteractionIDs.C_TOGGLE_PANEL, panel.order, panel.separatorBefore, panel.id);
         }
     }
 }

@@ -9,26 +9,9 @@ namespace Inno.Build.Toolchains.Bgfx;
 public abstract class BgfxNativeBuildProfile
 {
     /// <summary>
-    /// Adds the integration's explicit generator executable and its configuration inputs before preparation.
-    /// </summary>
-    /// <param name="context">
-    /// The requested target, checkout and already selected platform SDK.
-    /// </param>
-    /// <param name="includeTools">
-    /// Whether this request builds offline tools, which do not compile a runtime binding bridge.
-    /// </param>
-    /// <returns>
-    /// A frozen selection declaring the generator and all existing SDK commands.
-    /// </returns>
-    public abstract NativeToolchainSelection SelectTools(
-        NativeBuildContext context,
-        bool includeTools
-    );
-
-    /// <summary>
     /// Gets the exact native target accepted by this configuration.
     /// </summary>
-    public abstract string targetId { get; }
+    public abstract string targetID { get; }
 
     /// <summary>
     /// Gets ordered vendor project-generation arguments, excluding shared component options.
@@ -45,6 +28,23 @@ public abstract class BgfxNativeBuildProfile
     /// These options apply only to the independently compiled bridge archive.
     /// </summary>
     public abstract IReadOnlyList<string> bindingCmakeArguments { get; }
+
+    /// <summary>
+    /// Adds the integration's explicit generator executable and its configuration inputs before preparation.
+    /// </summary>
+    /// <param name="context">
+    /// The requested target, checkout and already selected platform SDK.
+    /// </param>
+    /// <param name="includeTools">
+    /// Whether this request builds offline tools, which do not compile a runtime binding bridge.
+    /// </param>
+    /// <returns>
+    /// A frozen selection declaring the generator and all existing SDK commands.
+    /// </returns>
+    public abstract NativeToolchainSelection SelectTools(
+        NativeBuildContext context,
+        bool includeTools
+    );
 
     /// <summary>
     /// Formats bridge dependency and retention requirements for the platform's GENie generator.

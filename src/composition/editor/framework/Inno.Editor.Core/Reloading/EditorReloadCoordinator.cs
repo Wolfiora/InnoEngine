@@ -2,9 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
-
-using Inno.Extensibility.Modules;
 using Inno.Core.Execution;
+using Inno.Extensibility.Modules;
 using Inno.Extensibility.Reload;
 using Inno.Scripting.Reload;
 
@@ -85,9 +84,9 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
         {
             RemoveCollectedParticipants();
             var registration = new Registration(this, Guid.NewGuid(), participant);
-            m_participants.Add(new ParticipantReference(
-                registration.id,
-                new WeakReference<IEditorReloadParticipant>(participant)));
+            m_participants.Add(
+                new ParticipantReference(registration.id, new WeakReference<IEditorReloadParticipant>(participant))
+            );
             return registration;
         }
     }
@@ -116,7 +115,9 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
     ) {
         ArgumentNullException.ThrowIfNull(reload);
         if (!CanActivateReload(out string? reason))
+        {
             throw new InvalidOperationException(reason ?? "An editor owner still prevents generation activation.");
+        }
         IGenerationChange[] transactions = CaptureTransactions(reload.context);
         var publication = new EditorPublication(reload, externalChange);
         return reload.generations.Execute("editor assembly reload", publication, [publication, .. transactions]);
@@ -142,7 +143,8 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
                 Trace.TraceError(
                     "Editor reload participant '{0}' failed to refresh diagnostics: {1}",
                     participant.GetType().FullName,
-                    exception);
+                    exception
+                );
             }
         }
     }
@@ -160,14 +162,16 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
 
     private List<IEditorReloadParticipant> GetParticipants()
     {
-        var participants = new List<IEditorReloadParticipant>();
+        List<IEditorReloadParticipant> participants = [];
         lock (m_sync)
         {
             RemoveCollectedParticipants();
             foreach (ParticipantReference reference in m_participants)
             {
                 if (reference.participant.TryGetTarget(out IEditorReloadParticipant? participant))
+                {
                     participants.Add(participant);
+                }
             }
         }
         return participants;
@@ -184,8 +188,8 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
             foreach (GuardReference reference in m_guards)
             {
                 if (reference.guard.TryGetTarget(out IEditorReloadGuard? guard)
-                    && !(manualRequest ? guard.canRequestReload : guard.canActivateReload))
-                {
+                    && !(manualRequest ? guard.canRequestReload : guard.canActivateReload)
+                ) {
                     reason = guard.blockingReason ?? "Stop Play Mode before reloading scripts or Plugins.";
                     return false;
                 }
@@ -195,11 +199,18 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
         return true;
     }
 
+    private void Unregister(Guid registrationID)
+    {
+        lock (m_sync)
+        {
+            m_participants.RemoveAll(reference => reference.id == registrationID);
+        }
+    }
+
     private sealed class EditorPublication(
         AssemblyReloadSession reload,
         IGenerationChange? external
-    )
-        : IGenerationPublication<IAssemblyUnloadProbe>, IGenerationChange
+    ) : IGenerationPublication<IAssemblyUnloadProbe>, IGenerationChange
     {
         /// <summary>
         /// Publishes candidate assemblies before their external asset and settings generation.
@@ -217,12 +228,6 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
         /// The weak monitor for the retired assembly generation.
         /// </returns>
         public IAssemblyUnloadProbe Complete() => reload.Complete();
-
-        void IGenerationChange.PrepareForActivation() => external?.PrepareForActivation();
-        void IGenerationChange.Apply() { }
-        void IGenerationChange.Complete() => external?.Complete();
-        void IGenerationChange.RollbackStructure() => external?.RollbackStructure();
-        void IGenerationChange.RestorePreviousState() { }
 
         /// <summary>
         /// Restores old assemblies and external resolvers before domains restore their previous property values.
@@ -255,17 +260,29 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
                 failures.Add(exception);
             }
             if (failures.Count > 0)
+            {
                 throw new AggregateException("Editor publication rollback was incomplete.", failures);
+            }
         }
+
+        void IGenerationChange.PrepareForActivation() => external?.PrepareForActivation();
+
+        void IGenerationChange.Apply() {}
+
+        void IGenerationChange.Complete() => external?.Complete();
+
+        void IGenerationChange.RollbackStructure() => external?.RollbackStructure();
+
+        void IGenerationChange.RestorePreviousState() {}
     }
 
     private sealed class ParticipantChange(
         IEditorReloadParticipant participant,
         AssemblyReloadContext context
-    )
-        : IGenerationChange
+    ) : IGenerationChange
     {
         private IGenerationChange? m_change;
+
         /// <summary>
         /// Prepares candidate state without changing the active generation.
         /// </summary>
@@ -275,10 +292,12 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
                 ?? throw new InvalidOperationException($"Editor reload participant '{participant.GetType().FullName}' returned no change.");
             m_change.PrepareForActivation();
         }
+
         /// <summary>
         /// Applies the prepared state at the caller-controlled commit point.
         /// </summary>
         public void Apply() => m_change!.Apply();
+
         /// <summary>
         /// Completes the committed operation and releases temporary state.
         /// </summary>
@@ -287,10 +306,12 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
             m_change!.Complete();
             m_change = null;
         }
+
         /// <summary>
         /// Restores the state that existed before candidate activation began.
         /// </summary>
         public void RollbackStructure() => m_change?.RollbackStructure();
+
         /// <summary>
         /// Restores the state that existed before candidate activation began.
         /// </summary>
@@ -299,12 +320,6 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
             m_change?.RestorePreviousState();
             m_change = null;
         }
-    }
-
-    private void Unregister(Guid registrationId)
-    {
-        lock (m_sync)
-            m_participants.RemoveAll(reference => reference.id == registrationId);
     }
 
     private readonly record struct ParticipantReference(
@@ -325,19 +340,23 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
     {
         private IEditorReloadGuard? m_guard = guard;
 
-        internal Guid id { get; } = id;
-
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public void Dispose()
         {
             IEditorReloadGuard? retained = m_guard;
             if (retained is null)
+            {
                 return;
+            }
             lock (owner.m_sync)
+            {
                 owner.m_guards.RemoveAll(reference => reference.id == id);
+            }
             m_guard = null;
             GC.KeepAlive(retained);
         }
+
+        internal Guid id { get; } = id;
     }
 
     private sealed class Registration : IDisposable
@@ -356,20 +375,22 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
             m_participant = participant;
         }
 
-        internal Guid id { get; }
-
         /// <summary>
         /// Releases the resources owned by this instance.
         /// </summary>
         public void Dispose()
         {
             if (m_disposed)
+            {
                 return;
+            }
             m_disposed = true;
             IEditorReloadParticipant? participant = m_participant;
             m_participant = null;
             m_owner.Unregister(id);
             GC.KeepAlive(participant);
         }
+
+        internal Guid id { get; }
     }
 }

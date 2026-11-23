@@ -178,7 +178,7 @@ public interface IAudioService
     /// <see langword="true"/> when the bus exists and was updated.
     /// </returns>
     bool SetBusVolume(
-        AudioBusId bus,
+        AudioBusID bus,
         float volume
     );
 
@@ -195,7 +195,7 @@ public interface IAudioService
     /// <see langword="true"/> when the bus exists and was updated.
     /// </returns>
     bool SetBusMuted(
-        AudioBusId bus,
+        AudioBusID bus,
         bool muted
     );
 
@@ -212,7 +212,7 @@ public interface IAudioService
     /// <see langword="true"/> when the bus exists and was updated.
     /// </returns>
     bool SetBusPaused(
-        AudioBusId bus,
+        AudioBusID bus,
         bool paused
     );
 

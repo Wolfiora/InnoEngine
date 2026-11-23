@@ -27,19 +27,19 @@ public sealed class ReadOnlyByteDocumentStore : IByteDocumentStore
         m_data = data.ToArray();
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string documentName { get; }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool canWrite => false;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool exists => true;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public byte[] Read() => (byte[])m_data.Clone();
 
-    /// <inheritdoc />
-    public void Write(ReadOnlySpan<byte> data) => throw new NotSupportedException(
-        $"Document '{documentName}' is read-only.");
+    /// <inheritdoc/>
+    public void Write(ReadOnlySpan<byte> data)
+        => throw new NotSupportedException($"Document '{documentName}' is read-only.");
 }

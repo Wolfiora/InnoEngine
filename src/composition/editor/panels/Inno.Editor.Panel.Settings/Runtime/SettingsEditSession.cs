@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Build;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
@@ -9,67 +8,6 @@ using Inno.Editor.Interactions;
 using Inno.Editor.Settings;
 
 namespace Inno.Editor.Panel.Settings;
-
-internal enum SettingsScope
-{
-    Editor,
-    Project,
-    Build
-}
-
-internal sealed class SettingsField
-{
-    private readonly BuildSettingsField? m_build;
-    private readonly EditorSetting? m_editor;
-    private readonly ProjectSettingEditor? m_project;
-
-    internal SettingsField(EditorSetting definition)
-    {
-        m_editor = definition;
-        scope = SettingsScope.Editor;
-        path = definition.path;
-        pagePath = definition.pagePath;
-        label = definition.label;
-        order = definition.order;
-        section = definition.section ?? string.Empty;
-        description = definition.description;
-    }
-
-    internal SettingsField(ProjectSettingEditor definition)
-    {
-        m_project = definition;
-        scope = SettingsScope.Project;
-        path = definition.path;
-        pagePath = definition.pagePath;
-        label = definition.label;
-        order = definition.order;
-        section = definition.section ?? string.Empty;
-        description = definition.description;
-    }
-
-    internal SettingsField(BuildSettingsField definition)
-    {
-        m_build = definition;
-        scope = SettingsScope.Build;
-        path = definition.path;
-        pagePath = definition.pagePath;
-        label = definition.label;
-        order = 0;
-        section = definition.section;
-        description = definition.description;
-    }
-
-    internal SettingsScope scope { get; }
-    internal string path { get; }
-    internal string pagePath { get; }
-    internal string label { get; }
-    internal int order { get; }
-    internal string section { get; }
-    internal string description { get; }
-    internal EditorSetting? editor => m_editor;
-    internal ProjectSettingEditor? project => m_project;
-    internal BuildSettingsField? build => m_build;
-}
 
 internal sealed class SettingsEditSession : IDisposable
 {
@@ -80,12 +18,12 @@ internal sealed class SettingsEditSession : IDisposable
     private readonly HashSet<string> m_editorResetIntent = new(StringComparer.Ordinal);
     private readonly HashSet<string> m_editorResets = new(StringComparer.Ordinal);
     private readonly Dictionary<string, EditorSettingObject> m_editorValues = new(StringComparer.Ordinal);
-    private readonly HashSet<ProjectSettingId> m_projectModified = [];
-    private readonly HashSet<ProjectSettingId> m_projectInitiallyNonDefault = [];
-    private readonly HashSet<ProjectSettingId> m_projectResetIntent = [];
-    private readonly HashSet<ProjectSettingId> m_projectResets = [];
-    private readonly Dictionary<ProjectSettingId, ISerializable> m_projectOriginalValues = [];
-    private readonly Dictionary<ProjectSettingId, ISerializable> m_projectValues = [];
+    private readonly HashSet<ProjectSettingID> m_projectModified = [];
+    private readonly HashSet<ProjectSettingID> m_projectInitiallyNonDefault = [];
+    private readonly HashSet<ProjectSettingID> m_projectResetIntent = [];
+    private readonly HashSet<ProjectSettingID> m_projectResets = [];
+    private readonly Dictionary<ProjectSettingID, ISerializable> m_projectOriginalValues = [];
+    private readonly Dictionary<ProjectSettingID, ISerializable> m_projectValues = [];
     private readonly BuildSettingsStore m_buildSettings;
     private readonly BuildPipeline m_buildPipeline;
     private readonly IEditorHistory m_history;
@@ -101,56 +39,73 @@ internal sealed class SettingsEditSession : IDisposable
         BuildSettingsStore buildSettings,
         IEditorHistory history
     ) {
-        m_editorSettings = editorSettings ?? throw new ArgumentNullException(nameof(editorSettings));
-        m_projectSettings = projectSettings ?? throw new ArgumentNullException(nameof(projectSettings));
-        m_buildPipeline = buildPipeline ?? throw new ArgumentNullException(nameof(buildPipeline));
-        m_buildSettings = buildSettings ?? throw new ArgumentNullException(nameof(buildSettings));
-        m_history = history ?? throw new ArgumentNullException(nameof(history));
-        editorCatalogRevision = editorSettings.catalogRevision;
-        projectCatalogRevision = projectSettings.catalogRevision;
+        ArgumentNullException.ThrowIfNull(editorSettings);
+        ArgumentNullException.ThrowIfNull(projectSettings);
+        ArgumentNullException.ThrowIfNull(buildPipeline);
+        ArgumentNullException.ThrowIfNull(buildSettings);
+        ArgumentNullException.ThrowIfNull(history);
+        m_editorSettings = editorSettings;
+        m_projectSettings = projectSettings;
+        m_buildPipeline = buildPipeline;
+        m_buildSettings = buildSettings;
+        m_history = history;
+        this.editorCatalogRevision = editorSettings.catalogRevision;
+        this.projectCatalogRevision = projectSettings.catalogRevision;
         m_buildDefault = buildSettings.defaultSettings;
         m_buildOriginal = buildSettings.Load();
         m_buildValue = m_buildOriginal.Copy();
 
-        var fields = new List<SettingsField>();
+        List<SettingsField> fields = [];
         foreach (EditorSetting definition in editorSettings.definitions)
         {
             if (!definition.hasValue)
+            {
                 continue;
+            }
             fields.Add(new SettingsField(definition));
             EditorSettingObject value = editorSettings.Get(definition.path);
             m_editorValues.Add(definition.path, value);
             if (!definition.IsDefault(value))
+            {
                 m_editorInitiallyNonDefault.Add(definition.path);
+            }
         }
         foreach (ProjectSettingEditor definition in projectSettings.definitions)
         {
             fields.Add(new SettingsField(definition));
-            if (m_projectValues.ContainsKey(definition.settingId))
+            if (m_projectValues.ContainsKey(definition.settingID))
+            {
                 continue;
+            }
             ISerializable value = projectSettings.Get(definition);
-            m_projectValues.Add(definition.settingId, value);
-            m_projectOriginalValues.Add(definition.settingId, projectSettings.Get(definition));
+            m_projectValues.Add(definition.settingID, value);
+            m_projectOriginalValues.Add(definition.settingID, projectSettings.Get(definition));
             if (!definition.ValuesEqual(value, projectSettings.GetComposedDefault(definition)))
-                m_projectInitiallyNonDefault.Add(definition.settingId);
+            {
+                m_projectInitiallyNonDefault.Add(definition.settingID);
+            }
         }
         foreach (BuildSettingsField definition in BuildSettingsPresentation.fields)
+        {
             fields.Add(new SettingsField(definition));
+        }
 
         string? duplicatePath = fields
             .GroupBy(static field => field.path, StringComparer.Ordinal)
             .FirstOrDefault(static group => group.Count() > 1)?.Key;
         if (duplicatePath is not null)
+        {
             throw new InvalidOperationException($"Settings field path '{duplicatePath}' is registered more than once.");
+        }
 
-        definitions = fields
+        this.definitions = fields
             .OrderBy(static field => field.path, StringComparer.Ordinal)
             .ThenBy(static field => field.order)
             .ToArray();
-        pages = BuildPages(editorSettings.definitions, definitions);
+        this.pages = BuildPages(editorSettings.definitions, definitions);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Dispose()
     {
         m_applyTransaction?.Dispose();
@@ -171,25 +126,36 @@ internal sealed class SettingsEditSession : IDisposable
     internal bool Draw(SettingsField field)
     {
         if (field.editor is EditorSetting editor)
+        {
             return editor.Draw(m_editorValues[editor.path]);
+        }
         if (field.project is ProjectSettingEditor project)
-            return project.Draw(m_projectValues[project.settingId]);
+        {
+            return project.Draw(m_projectValues[project.settingID]);
+        }
         if (field.build is BuildSettingsField build)
+        {
             return build.Draw(m_buildValue, m_buildPipeline);
+        }
         throw new InvalidOperationException($"Settings field '{field.path}' has no owner.");
     }
 
     internal bool CanReset(SettingsField field)
     {
         if (field.editor is EditorSetting editor)
+        {
             return !editor.IsDefault(m_editorValues[editor.path]);
+        }
         if (field.build is BuildSettingsField build)
+        {
             return !build.IsDefault(m_buildValue, m_buildDefault);
+        }
         ProjectSettingEditor project = field.project
-            ?? throw new InvalidOperationException($"Settings field '{field.path}' has no owner.");
+                                       ?? throw new InvalidOperationException($"Settings field '{field.path}' has no owner.");
         bool differsFromDefault = !project.ValuesEqual(
-            m_projectValues[project.settingId],
-            m_projectSettings.GetComposedDefault(project));
+            m_projectValues[project.settingID],
+            m_projectSettings.GetComposedDefault(project)
+        );
         return differsFromDefault;
     }
 
@@ -198,12 +164,16 @@ internal sealed class SettingsEditSession : IDisposable
         for (int i = 0; i < page.settings.Count; i++)
         {
             if (CanReset(page.settings[i]))
+            {
                 return true;
+            }
         }
         for (int i = 0; i < page.children.Count; i++)
         {
             if (CanReset(page.children[i]))
+            {
                 return true;
+            }
         }
         return false;
     }
@@ -211,7 +181,9 @@ internal sealed class SettingsEditSession : IDisposable
     internal void Reset(SettingsField field)
     {
         if (!CanReset(field))
+        {
             return;
+        }
         if (field.editor is EditorSetting editor)
         {
             m_editorValues[editor.path] = editor.defaultValue;
@@ -219,7 +191,8 @@ internal sealed class SettingsEditSession : IDisposable
                 editor.path,
                 m_editorInitiallyNonDefault.Contains(editor.path),
                 m_editorResetIntent,
-                m_editorResets);
+                m_editorResets
+            );
             _ = m_editorModified.Remove(editor.path);
             return;
         }
@@ -229,22 +202,27 @@ internal sealed class SettingsEditSession : IDisposable
             return;
         }
         ProjectSettingEditor project = field.project
-            ?? throw new InvalidOperationException($"Settings field '{field.path}' has no owner.");
-        m_projectValues[project.settingId] = m_projectSettings.GetComposedDefault(project);
+                                       ?? throw new InvalidOperationException($"Settings field '{field.path}' has no owner.");
+        m_projectValues[project.settingID] = m_projectSettings.GetComposedDefault(project);
         SetResetState(
-            project.settingId,
-            m_projectInitiallyNonDefault.Contains(project.settingId),
+            project.settingID,
+            m_projectInitiallyNonDefault.Contains(project.settingID),
             m_projectResetIntent,
-            m_projectResets);
-        _ = m_projectModified.Remove(project.settingId);
+            m_projectResets
+        );
+        _ = m_projectModified.Remove(project.settingID);
     }
 
     internal void Reset(SettingsPage page)
     {
         for (int i = 0; i < page.settings.Count; i++)
+        {
             Reset(page.settings[i]);
+        }
         for (int i = 0; i < page.children.Count; i++)
+        {
             Reset(page.children[i]);
+        }
     }
 
     internal void UpdateDirty(
@@ -252,19 +230,16 @@ internal sealed class SettingsEditSession : IDisposable
         bool differsFromDrawBaseline
     ) {
         if (field.build is not null)
-            return;
-        if (field.editor is EditorSetting editor)
         {
-            UpdateDirty(
-                editor.path,
-                differsFromDrawBaseline,
-                m_editorModified,
-                m_editorResets,
-                m_editorResetIntent);
             return;
         }
-        ProjectSettingId id = field.project?.settingId
-            ?? throw new InvalidOperationException($"Settings field '{field.path}' has no owner.");
+        if (field.editor is EditorSetting editor)
+        {
+            UpdateDirty(editor.path, differsFromDrawBaseline, m_editorModified, m_editorResets, m_editorResetIntent);
+            return;
+        }
+        ProjectSettingID id = field.project?.settingID
+                              ?? throw new InvalidOperationException($"Settings field '{field.path}' has no owner.");
         ProjectSettingEditor project = field.project;
         ISerializable value = m_projectValues[id];
         if (m_projectResetIntent.Contains(id))
@@ -281,15 +256,23 @@ internal sealed class SettingsEditSession : IDisposable
 
         bool differsFromOriginal = !project.ValuesEqual(value, m_projectOriginalValues[id]);
         if (differsFromOriginal)
+        {
             _ = m_projectModified.Add(id);
+        }
         else
+        {
             _ = m_projectModified.Remove(id);
+        }
     }
 
     internal bool Apply()
     {
         if (!canApply)
-            throw new InvalidOperationException("Settings cannot be applied while their previous transaction or History requires recovery.");
+        {
+            throw new InvalidOperationException(
+                "Settings cannot be applied while their previous transaction or History requires recovery."
+            );
+        }
         bool editorDirty = isEditorDirty;
         bool projectDirty = isProjectDirty;
         bool buildDirty = isBuildDirty;
@@ -298,11 +281,17 @@ internal sealed class SettingsEditSession : IDisposable
         try
         {
             if (editorDirty)
+            {
                 changed |= ApplyEditor();
+            }
             if (projectDirty)
+            {
                 changed |= ApplyProject();
+            }
             if (buildDirty)
+            {
                 changed |= ApplyBuild();
+            }
             m_applyTransaction.Commit();
             m_applyTransaction = null;
         }
@@ -317,25 +306,33 @@ internal sealed class SettingsEditSession : IDisposable
                 throw new AggregateException(
                     "Settings Apply failed and its History transaction could not retire. Recovery is required before further editing.",
                     failure,
-                    rollbackFailure);
+                    rollbackFailure
+                );
             }
             throw;
         }
         if (editorDirty)
+        {
             AcceptEditorValues();
+        }
         if (projectDirty)
+        {
             AcceptProjectValues();
+        }
         if (buildDirty)
+        {
             AcceptBuildValues();
+        }
         return changed;
     }
 
     private bool ApplyEditor()
     {
-        var values = m_editorModified.ToDictionary(
+        Dictionary<string, EditorSettingObject> values = m_editorModified.ToDictionary(
             path => path,
             path => m_editorValues[path],
-            StringComparer.Ordinal);
+            StringComparer.Ordinal
+        );
         return m_editorSettings.Apply(values, m_editorResets);
     }
 
@@ -351,13 +348,15 @@ internal sealed class SettingsEditSession : IDisposable
             EditorSettingObject value = m_editorSettings.Get(field.path);
             m_editorValues[field.path] = value;
             if (!definition.IsDefault(value))
+            {
                 m_editorInitiallyNonDefault.Add(field.path);
+            }
         }
     }
 
     private bool ApplyProject()
     {
-        var values = m_projectModified.ToDictionary(id => id, id => m_projectValues[id]);
+        Dictionary<ProjectSettingID, ISerializable> values = m_projectModified.ToDictionary(id => id, id => m_projectValues[id]);
         return m_projectSettings.Apply(values, m_projectResets);
     }
 
@@ -368,16 +367,18 @@ internal sealed class SettingsEditSession : IDisposable
         m_projectResetIntent.Clear();
         m_projectResets.Clear();
         foreach (SettingsField field in definitions
-                     .Where(static field => field.scope == SettingsScope.Project)
-                     .GroupBy(static field => field.project!.settingId)
-                     .Select(static group => group.First()))
-        {
+            .Where(static field => field.scope == SettingsScope.Project)
+            .GroupBy(static field => field.project!.settingID)
+            .Select(static group => group.First())
+        ) {
             ProjectSettingEditor definition = field.project!;
             ISerializable value = m_projectSettings.Get(definition);
-            m_projectValues[definition.settingId] = value;
-            m_projectOriginalValues[definition.settingId] = m_projectSettings.Get(definition);
+            m_projectValues[definition.settingID] = value;
+            m_projectOriginalValues[definition.settingID] = m_projectSettings.Get(definition);
             if (!definition.ValuesEqual(value, m_projectSettings.GetComposedDefault(definition)))
-                m_projectInitiallyNonDefault.Add(definition.settingId);
+            {
+                m_projectInitiallyNonDefault.Add(definition.settingID);
+            }
         }
     }
 
@@ -413,8 +414,7 @@ internal sealed class SettingsEditSession : IDisposable
         ISet<T> modified,
         ISet<T> resets,
         ISet<T> resetIntent
-    )
-        where T : notnull
+    ) where T : notnull
     {
         if (differs)
         {
@@ -424,7 +424,9 @@ internal sealed class SettingsEditSession : IDisposable
         }
         _ = modified.Remove(id);
         if (resetIntent.Contains(id))
+        {
             _ = resets.Add(id);
+        }
     }
 
     private static void SetResetState<T>(
@@ -432,8 +434,7 @@ internal sealed class SettingsEditSession : IDisposable
         bool changesEffectiveValue,
         ISet<T> resetIntent,
         ISet<T> resets
-    )
-        where T : notnull
+    ) where T : notnull
     {
         if (changesEffectiveValue)
         {
@@ -461,11 +462,15 @@ internal sealed class SettingsEditSession : IDisposable
             page.description = definition.description;
         }
         foreach (SettingsField field in fields)
+        {
             EnsurePage(field.pagePath, byPath).settings.Add(field);
+        }
 
         string? collision = fields.Select(static field => field.path).FirstOrDefault(byPath.ContainsKey);
         if (collision is not null)
+        {
             throw new InvalidOperationException($"Settings path '{collision}' cannot be a field and a page.");
+        }
 
         return root.children
             .OrderBy(static page => page.label, StringComparer.OrdinalIgnoreCase)
@@ -478,7 +483,9 @@ internal sealed class SettingsEditSession : IDisposable
         IDictionary<string, MutablePage> byPath
     ) {
         if (byPath.TryGetValue(path, out MutablePage? existing))
+        {
             return existing;
+        }
         string[] segments = path.Split('/');
         string currentPath = string.Empty;
         MutablePage parent = byPath[string.Empty];
@@ -531,9 +538,17 @@ internal sealed class SettingsEditSession : IDisposable
                 label,
                 string.IsNullOrWhiteSpace(description) ? fallback : description,
                 orderedSettings,
-                orderedChildren);
+                orderedChildren
+            );
         }
     }
+}
+
+internal enum SettingsScope
+{
+    Editor,
+    Project,
+    Build
 }
 
 internal sealed record SettingsPage(

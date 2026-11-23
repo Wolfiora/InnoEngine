@@ -8,5 +8,5 @@ public static class NativeDllConstants
     /// <summary>
     /// Output folder name for native binaries.
     /// </summary>
-    public const string NATIVE_DIR_NAME = "native";
+    public const string C_NATIVE_DIR_NAME = "native";
 }

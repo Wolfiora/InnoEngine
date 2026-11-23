@@ -1,23 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Core.Events;
 using Inno.Core.Execution;
 using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Editor.Core;
+using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Interactions;
 
 /// <summary>
 /// Hosts attribute-discovered editor extensions without depending on a presentation backend.
 /// </summary>
-public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
+public sealed class EditorInteractionRuntime : EditorRuntime
 {
     private readonly EditorInteractions m_interactions;
     private readonly EditorExtensionCatalog m_catalog;
+    private readonly List<Exception> m_shutdownFailures = [];
     private EditorExtensionCatalog.Snapshot? m_describedSnapshot;
     private EditorPanelExtension[] m_panels = [];
     private EditorModalExtension[] m_modals = [];
@@ -26,7 +26,27 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
     private bool m_stopping;
     private int m_shutdownStage;
     private EditorExtensionCatalog.ActionRegistration[] m_shutdownActions = [];
-    private readonly List<Exception> m_shutdownFailures = [];
+
+    /// <summary>
+    /// Creates an interaction runtime for an existing passive editor context.
+    /// </summary>
+    /// <param name="context">
+    /// The passive editor context shared with the presentation backend.
+    /// </param>
+    /// <param name="types">
+    /// The type catalog that owns editor extension generations.
+    /// </param>
+    /// <param name="logs">
+    /// The host-owned logging router used by editor infrastructure.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="context"/> or <paramref name="logs"/> is <see langword="null"/>.
+    /// </exception>
+    public EditorInteractionRuntime(
+        EditorContext context,
+        TypeCatalog types,
+        LogRouter logs
+    ) : this(context, types, logs, []) {}
 
     /// <summary>
     /// Creates an interaction runtime for one project.
@@ -48,34 +68,7 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
         TypeCatalog types,
         LogRouter logs,
         EditorKeyboardPolicy keyboard
-    )
-        : this(new EditorContext(projectDirectory, keyboard), types, logs)
-    {
-    }
-
-    /// <summary>
-    /// Creates an interaction runtime for an existing passive editor context.
-    /// </summary>
-    /// <param name="context">
-    /// The passive editor context shared with the presentation backend.
-    /// </param>
-    /// <param name="types">
-    /// The type catalog that owns editor extension generations.
-    /// </param>
-    /// <param name="logs">
-    /// The host-owned logging router used by editor infrastructure.
-    /// </param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="context"/> or <paramref name="logs"/> is <see langword="null"/>.
-    /// </exception>
-    public EditorInteractionRuntime(
-        EditorContext context,
-        TypeCatalog types,
-        LogRouter logs
-    )
-        : this(context, types, logs, Array.Empty<object>())
-    {
-    }
+    ) : this(new EditorContext(projectDirectory, keyboard), types, logs) {}
 
     /// <summary>
     /// Creates an interaction runtime with stable host-owned extension services.
@@ -83,14 +76,14 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
     /// <param name="context">
     /// The passive editor context shared with the presentation backend.
     /// </param>
-    /// <param name="hostServices">
-    /// Stable host-owned services that editor extension constructors may request by assignable contract.
+    /// <param name="types">
+    /// The type catalog that owns editor extension generations.
     /// </param>
     /// <param name="logs">
     /// The host-owned logging router used by editor infrastructure.
     /// </param>
-    /// <param name="types">
-    /// The type catalog that owns editor extension generations.
+    /// <param name="hostServices">
+    /// Stable host-owned services that editor extension constructors may request by assignable contract.
     /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="context"/> or <paramref name="hostServices"/> is <see langword="null"/>.
@@ -100,25 +93,22 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
         TypeCatalog types,
         LogRouter logs,
         IEnumerable<object> hostServices
-    )
-        : base(context)
+    ) : base(context)
     {
         ArgumentNullException.ThrowIfNull(types);
         ArgumentNullException.ThrowIfNull(logs);
         ArgumentNullException.ThrowIfNull(hostServices);
         Logger logger = logs.CreateLogger<EditorInteractionRuntime>();
         object[] services = hostServices.ToArray();
-        m_interactions = new EditorInteractions(
-            context,
-            services.OfType<IdentityAllocator>(),
-            logger);
+        m_interactions = new EditorInteractions(context, services.OfType<IdentityAllocator>(), logger);
         m_catalog = new EditorExtensionCatalog(
             types,
             context,
             m_interactions,
             logger,
             new object[] { logs }.Concat(services),
-            InvalidateDescriptions);
+            InvalidateDescriptions
+        );
         m_interactions.Attach(m_catalog);
     }
 
@@ -163,9 +153,13 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_stopping)
+        {
             throw new InvalidOperationException("A retiring editor runtime cannot restart.");
+        }
         if (m_started)
+        {
             return;
+        }
         _ = m_catalog.extensions;
         m_started = true;
     }
@@ -180,9 +174,13 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_stopping)
+        {
             throw new InvalidOperationException("A retiring editor runtime cannot update.");
+        }
         if (!m_started)
+        {
             Start();
+        }
         SetFrame(frame);
         m_interactions.Update();
         m_catalog.UpdateModules();
@@ -210,13 +208,13 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
     /// Freezes automatic extension-state persistence and writes the final state before modules
     /// begin shutting down.
     /// </summary>
+    /// <exception cref="ObjectDisposedException">
+    /// Thrown after this runtime has been disposed.
+    /// </exception>
     /// <remarks>
     /// This operation is idempotent. After it succeeds, later disposal cannot recapture transient
     /// teardown state such as an empty scene workspace.
     /// </remarks>
-    /// <exception cref="ObjectDisposedException">
-    /// Thrown after this runtime has been disposed.
-    /// </exception>
     public void PrepareShutdown()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
@@ -233,7 +231,9 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
     {
         ArgumentNullException.ThrowIfNull(keyEvent);
         if (m_interactions.DispatchShortcut(keyEvent))
+        {
             keyEvent.HandleInGlobal();
+        }
     }
 
     /// <summary>
@@ -248,7 +248,9 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
     public override void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         if (!m_stopping)
         {
             m_stopping = true;
@@ -258,10 +260,18 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
         {
             switch (m_shutdownStage)
             {
-                case 0: TryShutdownStage(m_catalog.PrepareShutdown, m_shutdownFailures); break;
-                case 1: TryShutdownStage(() => m_catalog.Shutdown(saveState: false), m_shutdownFailures); break;
-                case 2: TryShutdownStage(() => m_interactions.Shutdown(m_shutdownActions), m_shutdownFailures); break;
-                case 3: TryShutdownStage(m_catalog.Dispose, m_shutdownFailures); break;
+                case 0:
+                    TryShutdownStage(m_catalog.PrepareShutdown, m_shutdownFailures);
+                    break;
+                case 1:
+                    TryShutdownStage(() => m_catalog.Shutdown(saveState: false), m_shutdownFailures);
+                    break;
+                case 2:
+                    TryShutdownStage(() => m_interactions.Shutdown(m_shutdownActions), m_shutdownFailures);
+                    break;
+                case 3:
+                    TryShutdownStage(m_catalog.Dispose, m_shutdownFailures);
+                    break;
             }
             m_shutdownStage++;
         }
@@ -275,7 +285,8 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
         {
             var failure = new AggregateException(
                 "One or more editor interaction shutdown stages failed.",
-                m_shutdownFailures);
+                m_shutdownFailures
+            );
             m_shutdownFailures.Clear();
             throw failure;
         }
@@ -285,21 +296,28 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
     {
         EditorExtensionCatalog.Snapshot snapshot = m_catalog.extensions;
         if (ReferenceEquals(snapshot, m_describedSnapshot))
+        {
             return;
+        }
 
         var panels = new List<EditorPanelExtension>(snapshot.panels.Length);
         for (int i = 0; i < snapshot.panels.Length; i++)
         {
             EditorExtensionCatalog.PanelRegistration registration = snapshot.panels[i];
             if (snapshot.quarantinedPanels.Contains(registration.panel))
+            {
                 continue;
-            panels.Add(new EditorPanelExtension(
-                registration.attribute.id,
-                registration.attribute.title,
-                registration.attribute.order,
-                registration.panel,
-                () => m_catalog.TakePanelFocusRequest(registration.attribute.id),
-                exception => m_catalog.QuarantinePanel(snapshot, registration, exception)));
+            }
+            panels.Add(
+                new EditorPanelExtension(
+                    registration.attribute.id,
+                    registration.attribute.title,
+                    registration.attribute.order,
+                    registration.panel,
+                    () => m_catalog.TakePanelFocusRequest(registration.attribute.id),
+                    exception => m_catalog.QuarantinePanel(snapshot, registration, exception)
+                )
+            );
         }
         m_panels = panels.ToArray();
 
@@ -308,13 +326,18 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
         {
             EditorExtensionCatalog.ModalRegistration registration = snapshot.modals[i];
             if (snapshot.quarantinedModals.Contains(registration.modal))
+            {
                 continue;
-            modals.Add(new EditorModalExtension(
-                registration.attribute.id,
-                registration.attribute.title,
-                registration.attribute.order,
-                registration.modal,
-                exception => m_catalog.QuarantineModal(snapshot, registration, exception)));
+            }
+            modals.Add(
+                new EditorModalExtension(
+                    registration.attribute.id,
+                    registration.attribute.title,
+                    registration.attribute.order,
+                    registration.modal,
+                    exception => m_catalog.QuarantineModal(snapshot, registration, exception)
+                )
+            );
         }
         m_modals = modals.ToArray();
         m_describedSnapshot = snapshot;

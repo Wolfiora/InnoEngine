@@ -15,7 +15,7 @@ namespace Inno.Build.Toolchains;
 /// </summary>
 public sealed class NativeBindingCompilation
 {
-    private static readonly JsonSerializerOptions S_OPTIONS = new()
+    private static readonly JsonSerializerOptions OPTIONS = new()
     {
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
         RespectRequiredConstructorParameters = true
@@ -77,33 +77,6 @@ public sealed class NativeBindingCompilation
     public required string[] staticExportNames { get; init; }
 
     /// <summary>
-    /// Reads the current engine-owned compilation description from a selected native output.
-    /// </summary>
-    /// <param name="nativeDirectory">
-    /// The complete selected generation's native directory.
-    /// </param>
-    /// <returns>
-    /// The validated description; missing or malformed descriptions fail explicitly.
-    /// </returns>
-    /// <exception cref="IOException">
-    /// The description cannot be read.
-    /// </exception>
-    /// <exception cref="JsonException">
-    /// The description does not match the current contract.
-    /// </exception>
-    /// <exception cref="InvalidDataException">
-    /// A root, path or content identity is invalid.
-    /// </exception>
-    public static NativeBindingCompilation Load(string nativeDirectory)
-    {
-        NativeBindingCompilation result = JsonSerializer.Deserialize<NativeBindingCompilation>(
-            File.ReadAllBytes(Path.Combine(nativeDirectory, "compilation.json")), S_OPTIONS)
-            ?? throw new InvalidDataException("A native compilation description is required.");
-        result.Validate();
-        return result;
-    }
-
-    /// <summary>
     /// Resolves a component-local root using the current checkout and selected output.
     /// </summary>
     /// <param name="engineRoot">
@@ -112,7 +85,7 @@ public sealed class NativeBindingCompilation
     /// <param name="nativeDirectory">
     /// The selected generation's absolute native output.
     /// </param>
-    /// <param name="rootId">
+    /// <param name="rootID">
     /// An ordinal root identity from this description.
     /// </param>
     /// <returns>
@@ -124,10 +97,10 @@ public sealed class NativeBindingCompilation
     public string ResolveRoot(
         string engineRoot,
         string nativeDirectory,
-        string rootId
+        string rootID
     ) {
-        NativeBindingSourceRoot root = roots.SingleOrDefault(root => root.id == rootId)
-            ?? throw new InvalidDataException("Unknown native compilation root: " + rootId);
+        NativeBindingSourceRoot root = roots.SingleOrDefault(root => root.id == rootID)
+                                       ?? throw new InvalidDataException("Unknown native compilation root: " + rootID);
         return root.generated ? Path.GetFullPath(nativeDirectory) : Path.GetFullPath(root.directory, engineRoot);
     }
 
@@ -160,7 +133,9 @@ public sealed class NativeBindingCompilation
             string path = PathBoundary.Resolve(resolveRoot(input.rootId), input.relativePath);
             using FileStream stream = File.OpenRead(path);
             if (stream.Length != input.length || Convert.ToHexStringLower(SHA256.HashData(stream)) != input.sha256)
+            {
                 throw new InvalidDataException("Native compilation input changed: " + path);
+            }
         }
     }
 
@@ -179,47 +154,99 @@ public sealed class NativeBindingCompilation
     public IEnumerable<NativeBuildInput> GetInputs(
         string engineRoot,
         string nativeDirectory
-    ) => files.Select(input => NativeBuildInput.FromPath(engineRoot,
-        PathBoundary.Resolve(ResolveRoot(engineRoot, nativeDirectory, input.rootId), input.relativePath)));
+    ) => files.Select(input => NativeBuildInput.FromPath(
+        engineRoot,
+        PathBoundary.Resolve(ResolveRoot(engineRoot, nativeDirectory, input.rootId), input.relativePath)
+    ));
+
+    /// <summary>
+    /// Reads the current engine-owned compilation description from a selected native output.
+    /// </summary>
+    /// <param name="nativeDirectory">
+    /// The complete selected generation's native directory.
+    /// </param>
+    /// <returns>
+    /// The validated description; missing or malformed descriptions fail explicitly.
+    /// </returns>
+    /// <exception cref="IOException">
+    /// The description cannot be read.
+    /// </exception>
+    /// <exception cref="JsonException">
+    /// The description does not match the current contract.
+    /// </exception>
+    /// <exception cref="InvalidDataException">
+    /// A root, path or content identity is invalid.
+    /// </exception>
+    public static NativeBindingCompilation Load(string nativeDirectory)
+    {
+        NativeBindingCompilation result = JsonSerializer.Deserialize<NativeBindingCompilation>(
+            File.ReadAllBytes(Path.Combine(nativeDirectory, "compilation.json")),
+            OPTIONS
+        )
+                                          ?? throw new InvalidDataException("A native compilation description is required.");
+        result.Validate();
+        return result;
+    }
 
     private void Validate()
     {
-        if (roots is null || files is null || includeDirectories is null || defines is null || compilerDefines is null || requiredExports is null
-            || staticExportSymbols is null || staticExportNames is null || staticExportAbi is null)
+        if (roots is null
+            || files is null
+            || includeDirectories is null
+            || defines is null
+            || compilerDefines is null
+            || requiredExports is null
+            || staticExportSymbols is null || staticExportNames is null || staticExportAbi is null
+        ) {
             throw new InvalidDataException("Native compilation requirements are incomplete.");
+        }
         var ids = new HashSet<string>(StringComparer.Ordinal);
         foreach (NativeBindingSourceRoot root in roots)
         {
             if (root is null || string.IsNullOrWhiteSpace(root.id) || !ids.Add(root.id) || root.directory is null
                 || root.generated && (!root.frozen || root.directory.Length != 0)
-                || !root.generated && string.IsNullOrWhiteSpace(root.directory))
+                || !root.generated && string.IsNullOrWhiteSpace(root.directory)
+            ) {
                 throw new InvalidDataException("Native compilation roots must have unique, complete identities.");
+            }
         }
         if (roots.Count(static root => root.generated) != 1)
+        {
             throw new InvalidDataException("A native compilation must identify exactly one generated root.");
+        }
         var paths = new HashSet<(string, string)>();
         foreach (NativeBindingSourceFile file in files)
         {
             if (file is null || !ids.Contains(file.rootId) || !IsRelative(file.relativePath, false)
                 || !paths.Add((file.rootId, file.relativePath)) || file.length < 0 || file.sha256 is null
-                || file.sha256.Length != 64 || file.sha256.Any(static value => value is not (>= '0' and <= '9' or >= 'a' and <= 'f')))
+                || file.sha256.Length != 64 || file.sha256.Any(static value => value is not (>= '0' and <= '9' or >= 'a' and <= 'f'))
+            ) {
                 throw new InvalidDataException("Native compilation files require unique paths and exact content identities.");
+            }
         }
-        if (includeDirectories.Any(directory => directory is null || !ids.Contains(directory.rootId)
-            || !IsRelative(directory.relativePath, true)) || defines.Any(string.IsNullOrWhiteSpace)
-            || compilerDefines.Any(string.IsNullOrWhiteSpace) || requiredExports.Any(string.IsNullOrWhiteSpace) || staticExportSymbols.Any(string.IsNullOrWhiteSpace)
+        if (includeDirectories.Any(directory => (
+            directory is null || !ids.Contains(directory.rootId)
+            || !IsRelative(directory.relativePath, true)
+        )) || defines.Any(string.IsNullOrWhiteSpace)
+            || compilerDefines.Any(string.IsNullOrWhiteSpace)
+            || requiredExports.Any(string.IsNullOrWhiteSpace)
+            || staticExportSymbols.Any(string.IsNullOrWhiteSpace)
             || staticExportNames.Any(string.IsNullOrWhiteSpace) || cxxStandard < 0 || cStandard < 0
             || staticExportSymbols.Length == 0 && (staticExportAbi.Length != 0 || staticExportNames.Length != 0)
             || staticExportSymbols.Length != 0 && (staticExportAbi.Length != 64 || staticExportSymbols.Length != 5
-                || staticExportAbi.Any(static value => value is not (>= '0' and <= '9' or >= 'a' and <= 'f'))))
+            || staticExportAbi.Any(static value => value is not (>= '0' and <= '9' or >= 'a' and <= 'f')))
+        ) {
             throw new InvalidDataException("Native compilation search, language or export requirements are invalid.");
+        }
     }
 
     private static bool IsRelative(
         string? value,
         bool allowEmpty
     ) => value is not null && (allowEmpty && value.Length == 0
-        || value.Length > 0 && !Path.IsPathRooted(value) && !value.Contains('\\') && !value.Contains(':')
-            && value.Split('/').All(static segment => segment.Length > 0 && segment is not ("." or "..")
-                && segment.AsSpan().IndexOfAnyInRange('\0', '\x1f') < 0));
+                               || value.Length > 0 && !Path.IsPathRooted(value) && !value.Contains('\\') && !value.Contains(':')
+                                  && value.Split('/').All(static segment => (
+                                      segment.Length > 0 && segment is not ("." or "..")
+                                      && segment.AsSpan().IndexOfAnyInRange('\0', '\x1f') < 0
+                                  )));
 }

@@ -10,7 +10,7 @@ namespace Inno.Adapter.Storage;
 /// </summary>
 public sealed class StorageBackendCatalog : IStorageBackendFactory
 {
-    private readonly Dictionary<StorageBackendId, StorageBackendProvider> m_providers = [];
+    private readonly Dictionary<StorageBackendID, StorageBackendProvider> m_providers = [];
 
     /// <summary>
     /// Validates and captures a complete provider set without creating any service.
@@ -30,28 +30,33 @@ public sealed class StorageBackendCatalog : IStorageBackendFactory
         foreach (StorageBackendProvider provider in providers)
         {
             if (provider is null || !provider.id.isValid || !m_providers.TryAdd(provider.id, provider))
+            {
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
+            }
         }
-        supportedBackends = new ReadOnlyCollection<StorageBackendId>(new List<StorageBackendId>(m_providers.Keys));
+        this.supportedBackends = new ReadOnlyCollection<StorageBackendID>([.. m_providers.Keys]);
     }
 
-    /// <inheritdoc />
-    public IReadOnlyList<StorageBackendId> supportedBackends { get; }
+    /// <inheritdoc/>
+    public IReadOnlyList<StorageBackendID> supportedBackends { get; }
 
-    /// <inheritdoc />
     /// <exception cref="InvalidOperationException">
     /// The selected provider returned no service.
     /// </exception>
+    /// <inheritdoc/>
     public IApplicationStorage CreateStorage(
-        StorageBackendId backend,
+        StorageBackendID backend,
         StorageScope scope
     ) {
         if (!scope.isValid)
+        {
             throw new ArgumentException("Storage requires an assigned application namespace.", nameof(scope));
+        }
         if (!m_providers.TryGetValue(backend, out StorageBackendProvider? provider))
+        {
             throw new NotSupportedException("Storage backend '" + backend + "' is not registered.");
+        }
         return provider.CreateStorage(scope)
-            ?? throw new InvalidOperationException("Storage provider '" + backend + "' returned no service.");
+               ?? throw new InvalidOperationException("Storage provider '" + backend + "' returned no service.");
     }
 }
-

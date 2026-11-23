@@ -1,15 +1,17 @@
-using Inno.Editor.ImGui;
 using System;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Editor.Assets;
 using Inno.Editor.Core;
+using Inno.Editor.ImGui;
 using Inno.Editor.Inspection;
 using Inno.Editor.Interactions;
 using Inno.Editor.Settings;
 using Inno.Extensibility.Types;
+using Inno.Scripting.Api;
 
 namespace Inno.Editor.Assets.ImGui;
+
 /// <summary>
 /// Owns asset navigation and icon presentation independently from source mutations.
 /// </summary>
@@ -18,6 +20,7 @@ public sealed class AssetBrowserModule : EditorModule, IInspectionIconProvider<A
 {
     private readonly EditorSettings m_settings;
     private readonly AssetIconRegistry m_icons;
+
     /// <summary>
     /// Creates the asset presentation module for the current editor generation.
     /// </summary>
@@ -36,31 +39,64 @@ public sealed class AssetBrowserModule : EditorModule, IInspectionIconProvider<A
     /// <exception cref="ArgumentNullException">
     /// A required owner is null.
     /// </exception>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public AssetBrowserModule(
         AssetEditingModule edits,
         EditorInteractions interactions,
         EditorSettings settings,
         TypeCatalog types
     ) {
-        this.edits = edits ?? throw new ArgumentNullException(nameof(edits));
-        m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        ArgumentNullException.ThrowIfNull(edits);
+        ArgumentNullException.ThrowIfNull(settings);
+        this.edits = edits;
+        m_settings = settings;
         m_icons = new AssetIconRegistry(settings, types);
-        browser = new AssetBrowserState(interactions, edits.pipeline);
+        this.browser = new AssetBrowserState(interactions, edits.pipeline);
     }
 
     /// <summary>
     /// Gets the source editing service; this module does not implement source transactions.
     /// </summary>
     public AssetEditingModule edits { get; }
+
     /// <summary>
     /// Gets navigation state; object selection belongs to the shared interaction owner.
     /// </summary>
     public AssetBrowserState browser { get; }
+
     /// <summary>
     /// Gets the configured folder glyph used by asset navigation.
     /// </summary>
-    public string folderIcon => m_settings.Get("Editor/Appearance/Icons/Folder").GetAsString("value", Inno.Editor.ImGui.ImGuiIcon.Folder)!;
+    public string folderIcon => m_settings.Get("Editor/Appearance/Icons/Folder").GetAsString("value", ImGuiIcon.C_FOLDER)!;
+
+    /// <summary>
+    /// Resolves the presentation icon registered for an asset type or source extension.
+    /// </summary>
+    /// <param name="entry">
+    /// The source entry whose presentation icon should be resolved.
+    /// </param>
+    /// <returns>
+    /// The most specific registered icon, or the built-in directory or file icon when no
+    /// registration matches the entry.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="entry"/> is <see langword="null"/>.
+    /// </exception>
+    public string GetIcon(AssetFileEntry entry)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        if (entry.isDirectory)
+        {
+            return folderIcon;
+        }
+        _ = edits.pipeline.TryGetAssetType(entry.assetPath, out Type? assetType);
+        if (m_icons.TryResolve(assetType, entry.assetPath.ToString(), out string icon))
+        {
+            return icon;
+        }
+
+        return m_settings.Get("Editor/Appearance/Icons/File").GetAsString("value", ImGuiIcon.C_FILE)!;
+    }
 
     /// <summary>
     /// Captures an immutable snapshot of the current observable state.
@@ -83,11 +119,16 @@ public sealed class AssetBrowserModule : EditorModule, IInspectionIconProvider<A
     /// </param>
     protected override void Restore(EditorState state)
     {
-        AssetBrowserRoot restoredRoot = Enum.TryParse(state.Get("root", string.Empty), out AssetBrowserRoot parsedRoot) ? parsedRoot : AssetBrowserRoot.Assets;
+        AssetBrowserRoot restoredRoot = Enum.TryParse(state.Get("root", string.Empty), out AssetBrowserRoot parsedRoot)
+                                        ? parsedRoot
+                                        : AssetBrowserRoot.Assets;
         string assetsDirectory = RestoreDirectory(AssetBrowserRoot.Assets, state.Get("assetsDirectory", string.Empty));
         string pluginsDirectory = RestoreDirectory(AssetBrowserRoot.Plugins, state.Get("pluginsDirectory", string.Empty));
         browser.Restore(restoredRoot, assetsDirectory, pluginsDirectory);
     }
+
+    /// <inheritdoc/>
+    protected override void OnDispose() => m_icons.Dispose();
 
     private string RestoreDirectory(
         AssetBrowserRoot root,
@@ -95,51 +136,30 @@ public sealed class AssetBrowserModule : EditorModule, IInspectionIconProvider<A
     ) {
         string directory = AssetPath.Parse(path).ToString();
         if (string.IsNullOrEmpty(directory))
+        {
             return string.Empty;
+        }
         AssetPath isolated = AssetPath.Parse(directory);
-        if ((root == AssetBrowserRoot.Assets) != (isolated.source == AssetSourceId.project))
+        if ((root == AssetBrowserRoot.Assets) != (isolated.source == AssetSourceID.project))
+        {
             return string.Empty;
+        }
         while (!IsAvailableDirectory(directory))
         {
             string parent = ParentDirectory(directory);
             if (string.Equals(parent, directory, StringComparison.Ordinal))
+            {
                 return string.Empty;
+            }
             directory = parent;
         }
 
         return directory;
     }
 
-    private bool IsAvailableDirectory(string path) => edits.pipeline.TryGetFileSystemEntry(AssetPath.Parse(path), out AssetFileEntry entry) && entry.isDirectory;
-    /// <summary>
-    /// Resolves the presentation icon registered for an asset type or source extension.
-    /// </summary>
-    /// <param name="entry">
-    /// The source entry whose presentation icon should be resolved.
-    /// </param>
-    /// <returns>
-    /// The most specific registered icon, or the built-in directory or file icon when no
-    /// registration matches the entry.
-    /// </returns>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="entry"/> is <see langword="null"/>.
-    /// </exception>
-    public string GetIcon(AssetFileEntry entry)
-    {
-        ArgumentNullException.ThrowIfNull(entry);
-        if (entry.isDirectory)
-            return folderIcon;
-        _ = edits.pipeline.TryGetAssetType(entry.assetPath, out Type? assetType);
-        if (m_icons.TryResolve(assetType, entry.assetPath.ToString(), out string icon))
-        {
-            return icon;
-        }
+    private bool IsAvailableDirectory(string path)
+        => edits.pipeline.TryGetFileSystemEntry(AssetPath.Parse(path), out AssetFileEntry entry) && entry.isDirectory;
 
-        return m_settings.Get("Editor/Appearance/Icons/File").GetAsString("value", Inno.Editor.ImGui.ImGuiIcon.File)!;
-    }
-
-    /// <inheritdoc/>
-    protected override void OnDispose() => m_icons.Dispose();
     private static string ParentDirectory(string value)
     {
         AssetPath path = AssetPath.Parse(value);

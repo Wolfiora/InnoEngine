@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Inno.Core.Identity;
 
 namespace Inno.Core.Serialization;
 
@@ -50,22 +51,29 @@ public sealed class SerializationTypeMetadata
     ) {
         ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(members);
-        SerializationMemberMetadata[] completeMembers = inherited is null ? members.ToArray()
-            : inherited.members.Concat(members).ToArray();
+        SerializationMemberMetadata[] completeMembers = inherited is null
+                                                        ? members.ToArray()
+                                                        : inherited.members.Concat(members).ToArray();
         var names = new HashSet<string>(StringComparer.Ordinal);
         foreach (SerializationMemberMetadata member in completeMembers)
+        {
             if (member is null || !names.Add(member.name))
+            {
                 throw new ArgumentException("Serialization metadata requires nonnull members with unique keys.", nameof(members));
+            }
+        }
         this.type = type;
         this.members = Array.AsReadOnly(completeMembers);
-        this.restored = inherited?.restored is not Action<object, SerializationContext> baseRestored ? restored
-            : restored is null ? baseRestored : (
-                value,
-                context
-            ) => {
-                baseRestored(value, context);
-                restored(value, context);
-            };
+        this.restored = inherited?.restored is not Action<object, SerializationContext> baseRestored
+                        ? restored
+                        : restored is null ? baseRestored : (
+                            value,
+                            context
+                        ) =>
+                        {
+                            baseRestored(value, context);
+                            restored(value, context);
+                        };
         this.collection = collection;
         this.requiresConverter = requiresConverter || inherited?.requiresConverter == true;
         m_factory = factory;
@@ -107,9 +115,15 @@ public sealed class SerializationTypeMetadata
     /// </exception>
     public SerializationTypeMetadata WithPureFieldAccess()
     {
-        if (!type.IsValueType || requiresConverter || collection is not null ||
-            members.Any(static member => (member.visibility & PropertyVisibility.Serialize) != 0 && !ValuePipeline.IsPrimitive(member.type)))
-            throw new InvalidOperationException("Pure field capture requires a default value type containing only primitive serialized fields.");
+        if (!type.IsValueType || requiresConverter || collection is not null
+            || members.Any(
+                static member => (member.visibility & PropertyVisibility.Serialize) != 0 && !ValuePipeline.IsPrimitive(member.type)
+            )
+        ) {
+            throw new InvalidOperationException(
+                "Pure field capture requires a default value type containing only primitive serialized fields."
+            );
+        }
         return new SerializationTypeMetadata(type, members, m_factory, restored, collection, requiresConverter)
         {
             hasPureFieldAccess = true
@@ -134,11 +148,12 @@ public sealed class SerializationTypeMetadata
     public SerializationTypeMetadata WithCaptureRevision(Func<object, ulong?> readRevision)
     {
         ArgumentNullException.ThrowIfNull(readRevision);
-        if (!type.IsSealed || type.IsValueType || !typeof(ISerializable).IsAssignableFrom(type) ||
-            !typeof(Inno.Core.Identity.IdentityObject).IsAssignableFrom(type))
-        {
+        if (!type.IsSealed || type.IsValueType || !typeof(ISerializable).IsAssignableFrom(type)
+            || !typeof(IdentityObject).IsAssignableFrom(type)
+        ) {
             throw new InvalidOperationException(
-                "Capture revision metadata requires a sealed serializable Core identity source.");
+                "Capture revision metadata requires a sealed serializable Core identity source."
+            );
         }
         return new SerializationTypeMetadata(type, members, m_factory, restored, collection, requiresConverter)
         {
@@ -159,7 +174,11 @@ public sealed class SerializationTypeMetadata
     public object CreateInstance()
     {
         if (m_factory is null)
-            throw new InvalidOperationException($"Serialization type '{type}' requires a parameterless constructor or an explicit converter.");
+        {
+            throw new InvalidOperationException(
+                $"Serialization type '{type}' requires a parameterless constructor or an explicit converter."
+            );
+        }
         try
         {
             return m_factory();

@@ -1,16 +1,15 @@
-using Inno.Extensibility.Types;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
+using Inno.Extensibility.Types;
 using Inno.Scene;
 
 namespace Inno.Editor.Panel.Inspector;
 
-[EditorAction(InspectorInteractionIds.C_ADD_SYSTEM, InspectorInteractionIds.C_SYSTEM_AREA)]
+[EditorAction(InspectorInteractionIDs.C_ADD_SYSTEM, InspectorInteractionIDs.C_SYSTEM_AREA)]
 internal sealed class AddSystemCommand(
     SceneEdits edits,
     TypeCatalog types
-)
-    : EditorAction<GameScene, TypeRef>
+) : EditorAction<GameScene, TypeRef>
 {
     /// <summary>
     /// Evaluates whether the requested change can be applied to the current generation.
@@ -23,8 +22,8 @@ internal sealed class AddSystemCommand(
     /// </returns>
     protected override EditorActionState Query(EditorActionContext<GameScene, TypeRef> context)
         => context.target.isLoaded && context.argument.IsValid(types)
-            ? EditorActionState.enabled
-            : EditorActionState.hidden;
+           ? EditorActionState.enabled
+           : EditorActionState.hidden;
 
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.

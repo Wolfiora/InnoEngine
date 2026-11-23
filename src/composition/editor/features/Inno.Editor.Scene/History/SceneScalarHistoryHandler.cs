@@ -1,13 +1,13 @@
 using System;
 using System.Diagnostics;
-
+using System.Globalization;
 using Inno.Editor.Interactions;
 using Inno.Scene;
 using Inno.Scene.Layers;
 
 namespace Inno.Editor.Scene;
 
-[EditorHistoryHandler(SceneHistoryKinds.Scalar)]
+[EditorHistoryHandler(SceneHistoryKinds.C_SCALAR)]
 internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
 {
     private const double C_MERGE_WINDOW_SECONDS = 1.0;
@@ -15,7 +15,8 @@ internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
 
     internal SceneScalarHistoryHandler(EditorSceneWorkspace workspace)
     {
-        m_workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+        ArgumentNullException.ThrowIfNull(workspace);
+        m_workspace = workspace;
     }
 
     /// <summary>
@@ -42,9 +43,10 @@ internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
         {
             SceneScalarHistoryData data = SceneScalarHistoryData.Decode(change.payload.ReadBytes());
             return Resolve(data) is not null
-                ? EditorHistoryAvailability.Available()
-                : EditorHistoryAvailability.Unavailable(
-                    $"Scene target '{data.targetId}' is no longer available for '{data.scalarKind}'.");
+                   ? EditorHistoryAvailability.Available()
+                   : EditorHistoryAvailability.Unavailable(
+                       $"Scene target '{data.targetID}' is no longer available for '{data.scalarKind}'."
+                   );
         }
         catch (Exception exception)
         {
@@ -76,7 +78,7 @@ internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
         {
             SceneScalarHistoryData data = SceneScalarHistoryData.Decode(change.payload.ReadBytes());
             EngineObject target = Resolve(data)
-                ?? throw new InvalidOperationException($"Scene target '{data.targetId}' is no longer available.");
+                                  ?? throw new InvalidOperationException($"Scene target '{data.targetID}' is no longer available.");
             string rollback = GetValue(target, data.scalarKind);
             string value = direction == EditorHistoryDirection.Undo ? data.before : data.after;
             try
@@ -92,7 +94,8 @@ internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
                 catch (Exception rollbackException)
                 {
                     return StateIntegrityFailure(
-                        $"Scene scalar update failed: {exception.Message} Rollback failed: {rollbackException.Message}");
+                        $"Scene scalar update failed: {exception.Message} Rollback failed: {rollbackException.Message}"
+                    );
                 }
                 return EditorHistoryResult.Failure(exception.Message);
             }
@@ -126,64 +129,67 @@ internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
     ) {
         merged = null;
         if (older.mergeKey is null || !string.Equals(older.mergeKey, newer.mergeKey, StringComparison.Ordinal))
+        {
             return false;
+        }
         try
         {
             SceneScalarHistoryData previous = SceneScalarHistoryData.Decode(older.payload.ReadBytes());
             SceneScalarHistoryData current = SceneScalarHistoryData.Decode(newer.payload.ReadBytes());
-            if (previous.targetId != current.targetId ||
-                previous.scalarKind != current.scalarKind ||
-                Stopwatch.GetElapsedTime(previous.timestamp, current.timestamp).TotalSeconds > C_MERGE_WINDOW_SECONDS)
-            {
+            if (previous.targetID != current.targetID
+                || previous.scalarKind != current.scalarKind
+                || Stopwatch.GetElapsedTime(previous.timestamp, current.timestamp).TotalSeconds > C_MERGE_WINDOW_SECONDS
+            ) {
                 return false;
             }
             var data = new SceneScalarHistoryData(
-                previous.targetId,
+                previous.targetID,
                 previous.scalarKind,
                 previous.before,
                 current.after,
-                current.timestamp);
+                current.timestamp
+            );
             merged = new EditorHistoryChange(
-                SceneHistoryKinds.Scalar,
+                SceneHistoryKinds.C_SCALAR,
                 EditorHistoryPayload.FromBytes(data.Encode()),
-                older.mergeKey);
+                older.mergeKey
+            );
             return true;
         }
-        catch
+        catch (Exception)
         {
+            // A payload that cannot be decoded is not merged. The two changes stay separate.
             return false;
         }
     }
 
     private EngineObject? Resolve(SceneScalarHistoryData data)
         => data.scalarKind switch
-        {
-            SceneScalarKind.SceneName => m_workspace.Find<GameScene>(data.targetId) is
-                { isLoaded: true, isDestroyed: false } scene ? scene : null,
-            SceneScalarKind.GameObjectName or
-                SceneScalarKind.GameObjectActive or
-                SceneScalarKind.GameObjectTag or
-                SceneScalarKind.GameObjectLayer =>
-                m_workspace.Find<GameObject>(data.targetId) is { isRuntimeValid: true } gameObject
-                    ? gameObject
-                    : null,
-            _ => null
-        };
+    {
+        SceneScalarKind.SceneName => m_workspace.Find<GameScene>(data.targetID) is
+            { isLoaded: true, isDestroyed: false } scene ? scene : null,
+        SceneScalarKind.GameObjectName
+        or SceneScalarKind.GameObjectActive
+        or SceneScalarKind.GameObjectTag
+        or SceneScalarKind.GameObjectLayer =>
+            m_workspace.Find<GameObject>(data.targetID) is { isRuntimeValid: true } gameObject
+            ? gameObject
+            : null,
+        _ => null
+    };
 
     private static string GetValue(
         EngineObject target,
         SceneScalarKind kind
-    )
-        => kind switch
-        {
-            SceneScalarKind.SceneName => ((GameScene)target).name,
-            SceneScalarKind.GameObjectName => ((GameObject)target).name,
-            SceneScalarKind.GameObjectActive => ((GameObject)target).activeSelf ? "1" : "0",
-            SceneScalarKind.GameObjectTag => ((GameObject)target).tag,
-            SceneScalarKind.GameObjectLayer => ((GameObject)target).layer.index.ToString(
-                System.Globalization.CultureInfo.InvariantCulture),
-            _ => throw new InvalidOperationException($"Unsupported scene scalar '{kind}'.")
-        };
+    ) => kind switch
+    {
+        SceneScalarKind.SceneName => ((GameScene)target).name,
+        SceneScalarKind.GameObjectName => ((GameObject)target).name,
+        SceneScalarKind.GameObjectActive => ((GameObject)target).activeSelf ? "1" : "0",
+        SceneScalarKind.GameObjectTag => ((GameObject)target).tag,
+        SceneScalarKind.GameObjectLayer => ((GameObject)target).layer.index.ToString(CultureInfo.InvariantCulture),
+        _ => throw new InvalidOperationException($"Unsupported scene scalar '{kind}'.")
+    };
 
     private static void SetValue(
         EngineObject target,
@@ -205,8 +211,7 @@ internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
                 ((GameObject)target).tag = value;
                 break;
             case SceneScalarKind.GameObjectLayer:
-                ((GameObject)target).layer = new GameLayer(
-                    int.Parse(value, System.Globalization.CultureInfo.InvariantCulture));
+                ((GameObject)target).layer = new GameLayer(int.Parse(value, CultureInfo.InvariantCulture));
                 break;
             default:
                 throw new InvalidOperationException($"Unsupported scene scalar '{kind}'.");

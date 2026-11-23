@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -19,9 +18,9 @@ internal static class FrameworkReferenceResolver
         CancellationToken cancellationToken = default
     ) {
         ScriptCompilationInputs inputs = provider.Capture(cancellationToken);
-        var references = new List<MetadataReference>();
+        List<MetadataReference> references = [];
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "System.Private.CoreLib" };
-        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         foreach (string identity in new[]
                  {
                      ScriptCompilationEnvironment.C_TARGET_FRAMEWORK,
@@ -30,8 +29,8 @@ internal static class FrameworkReferenceResolver
                      typeof(FrameworkReferenceResolver).Module.ModuleVersionId.ToString("N"),
                      inputs.sdkIdentity,
                      string.Join(";", inputs.predefinedSymbols)
-                 })
-        {
+                 }
+        ) {
             hash.AppendData(Encoding.UTF8.GetBytes(identity));
             hash.AppendData([0]);
         }
@@ -42,12 +41,16 @@ internal static class FrameworkReferenceResolver
             hash.AppendData([0]);
             byte[] image = File.ReadAllBytes(path);
             hash.AppendData(SHA256.HashData(image));
-            references.Add(MetadataReference.CreateFromImage(
-                ImmutableCollectionsMarshal.AsImmutableArray(image), filePath: path));
+            references.Add(
+                MetadataReference.CreateFromImage(ImmutableCollectionsMarshal.AsImmutableArray(image), filePath: path)
+            );
             names.Add(Path.GetFileNameWithoutExtension(path));
         }
         return new ScriptCompilationEnvironment(
-            references.AsReadOnly(), names, Convert.ToHexStringLower(hash.GetHashAndReset()), inputs);
+            references.AsReadOnly(),
+            names,
+            Convert.ToHexStringLower(hash.GetHashAndReset()),
+            inputs
+        );
     }
-
 }

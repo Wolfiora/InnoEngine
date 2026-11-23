@@ -40,6 +40,13 @@ public static class WindowsX64BgfxIntegration
             assets,
             serialization,
             types
-        ) => new BgfxGameContentCompiler(assets, serialization, types, shaderProfile, [GraphicsApi.Direct3D11, GraphicsApi.Direct3D12, GraphicsApi.Vulkan, GraphicsApi.OpenGL], tools);
+        ) => new BgfxGameContentCompiler(
+            assets,
+            serialization,
+            types,
+            shaderProfile,
+            [GraphicsApi.direct3D11, GraphicsApi.direct3D12, GraphicsApi.vulkan, GraphicsApi.openGL],
+            tools
+        );
     }
 }

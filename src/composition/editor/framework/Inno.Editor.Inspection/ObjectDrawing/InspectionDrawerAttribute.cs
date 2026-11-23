@@ -9,26 +9,6 @@ namespace Inno.Editor.Inspection;
 public sealed class InspectionDrawerAttribute : Attribute
 {
     /// <summary>
-    /// Gets the selected target type handled by the drawer.
-    /// </summary>
-    public Type targetType { get; }
-
-    /// <summary>
-    /// Gets whether derived target types are accepted.
-    /// </summary>
-    public bool useForChildren { get; }
-
-    /// <summary>
-    /// Gets the tie-breaking registration priority.
-    /// </summary>
-    public int priority { get; }
-
-    /// <summary>
-    /// Gets whether CanInspect selects a subset of targets, allowing peer conditional registrations at the same priority.
-    /// </summary>
-    public bool conditional { get; }
-
-    /// <summary>
     /// Creates an inspector drawer registration.
     /// </summary>
     /// <param name="targetType">
@@ -52,9 +32,30 @@ public sealed class InspectionDrawerAttribute : Attribute
         int priority = 0,
         bool conditional = false
     ) {
-        this.targetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
+        ArgumentNullException.ThrowIfNull(targetType);
+        this.targetType = targetType;
         this.useForChildren = useForChildren;
         this.priority = priority;
         this.conditional = conditional;
     }
+
+    /// <summary>
+    /// Gets the selected target type handled by the drawer.
+    /// </summary>
+    public Type targetType { get; }
+
+    /// <summary>
+    /// Gets whether derived target types are accepted.
+    /// </summary>
+    public bool useForChildren { get; }
+
+    /// <summary>
+    /// Gets the tie-breaking registration priority.
+    /// </summary>
+    public int priority { get; }
+
+    /// <summary>
+    /// Gets whether CanInspect selects a subset of targets, allowing peer conditional registrations at the same priority.
+    /// </summary>
+    public bool conditional { get; }
 }

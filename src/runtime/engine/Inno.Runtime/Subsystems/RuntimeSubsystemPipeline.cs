@@ -1,10 +1,11 @@
-using Inno.Runtime.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
 using Inno.Extensibility.Reload;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Runtime;
 
@@ -18,9 +19,9 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
     private readonly RuntimeSubsystemContext m_context;
     private readonly List<Exception> m_retirementFailures = [];
     private readonly List<Diagnostic> m_startupDiagnostics = [];
-    private DiagnosticReporter? m_reporter;
     private readonly TimeSpan m_retirementTimeout;
     private readonly GenerationCoordinator m_generations;
+    private DiagnosticReporter? m_reporter;
     private int m_begunEntryCount;
     private bool m_frameOpen;
     private bool m_disposed;
@@ -49,67 +50,6 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
         m_resources = context.resources;
         m_retirementTimeout = retirementTimeout;
         m_generations = generations;
-    }
-
-    internal void Start(IReadOnlyList<IRuntimeSubsystemFactory> configuredFactories)
-    {
-        ArgumentNullException.ThrowIfNull(configuredFactories);
-        try
-        {
-            IRuntimeSubsystemFactory[] ordered = Order(configuredFactories.Select(static factory =>
-                (IRuntimeSubsystemFactory)new FactorySnapshot(factory)).ToArray());
-            if (ordered.Any(factory => factory.descriptor.lifetime != m_context.lifetime))
-                throw new InvalidOperationException($"Subsystem lifetime does not match its {m_context.lifetime} owner.");
-            m_reporter = m_resources.Own(m_context.diagnostics.CreateReporter(new DiagnosticSource(
-                $"inno.runtime.subsystems.{m_context.identities.domainId}", "Runtime subsystems")));
-            foreach (IRuntimeSubsystemFactory factory in ordered)
-            {
-                RuntimeSubsystemDescriptor descriptor = factory.descriptor;
-                string? unavailable = UnavailableReason(descriptor);
-                if (unavailable is not null)
-                {
-                    RejectOrReport(descriptor, unavailable);
-                    continue;
-                }
-                var entry = new Entry(descriptor);
-                m_entries.Add(entry);
-                try
-                {
-                    var context = new RuntimeSubsystemContext(m_context.events, m_context.diagnostics,
-                        m_context.identities, m_context.types, entry.resources, m_context.lifetime,
-                        m_context.isEditMode, m_context.capabilities);
-                    entry.subsystem = factory.Create(context)
-                        ?? throw new InvalidOperationException($"Runtime subsystem factory '{descriptor.id}' returned null.");
-                    entry.subsystem.Attach();
-                    entry.isAttached = true;
-                }
-                catch (Exception failure) when (descriptor.requirement == RuntimeSubsystemRequirement.Optional
-                                                && failure is not RetirementPendingException
-                                                && m_generations.state != GenerationState.Faulted)
-                {
-                    // Optional startup can degrade only after the exact candidate owner has retired completely.
-                    try
-                    {
-                        new RetirementBarrier($"Optional subsystem {descriptor.id}", m_retirementTimeout)
-                            .Wait(() => RetireEntry(entry));
-                    }
-                    catch (Exception cleanupFailure)
-                    {
-                        m_generations.Fault(new AggregateException(
-                            $"Optional subsystem '{descriptor.id}' could not compensate startup.", failure, cleanupFailure));
-                        throw;
-                    }
-                    m_entries.RemoveAt(m_entries.Count - 1);
-                    RejectOrReport(descriptor, $"Startup failed: {failure.Message}");
-                }
-            }
-            m_started = true;
-        }
-        catch
-        {
-            m_stopping = true;
-            throw;
-        }
     }
 
     /// <summary>
@@ -148,10 +88,10 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
         return matches.Length switch
         {
             1 => matches[0],
-            0 => throw new InvalidOperationException(
-                $"No runtime subsystem implements '{typeof(TFeature).FullName}'."),
+            0 => throw new InvalidOperationException($"No runtime subsystem implements '{typeof(TFeature).FullName}'."),
             _ => throw new InvalidOperationException(
-                $"Multiple runtime subsystems implement '{typeof(TFeature).FullName}'.")
+                $"Multiple runtime subsystems implement '{typeof(TFeature).FullName}'."
+            )
         };
     }
 
@@ -165,7 +105,9 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
     {
         EnsureActive();
         if (m_frameOpen)
+        {
             throw new InvalidOperationException("A runtime subsystem frame is already active.");
+        }
         m_frameOpen = true;
         m_begunEntryCount = 0;
         for (int index = 0; index < m_entries.Count; index++)
@@ -261,16 +203,21 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
                     state
                 ) => subsystem.AfterRender(state),
                 frame,
-                preparedCount);
+                preparedCount
+            );
         }
         catch (Exception failure)
         {
             failures.Add(failure);
         }
         if (failures.Count == 1)
-            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failures[0]).Throw();
+        {
+            ExceptionDispatchInfo.Capture(failures[0]).Throw();
+        }
         if (failures.Count > 1)
+        {
             throw new AggregateException("Subsystem output and cleanup failed.", failures);
+        }
     }
 
     /// <summary>
@@ -282,7 +229,9 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
     public void EndFrame(RuntimeFrame frame)
     {
         if (!m_frameOpen)
+        {
             return;
+        }
         try
         {
             ExecuteReverse(
@@ -291,7 +240,8 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
                     state
                 ) => subsystem.EndFrame(state),
                 frame,
-                m_begunEntryCount);
+                m_begunEntryCount
+            );
         }
         finally
         {
@@ -309,7 +259,9 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_stopping = true;
         m_frameOpen = false;
         Release();
@@ -334,77 +286,87 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
         }
     }
 
-    private static IRuntimeSubsystemFactory[] Order(IReadOnlyList<IRuntimeSubsystemFactory> factories)
+    internal void Start(IReadOnlyList<IRuntimeSubsystemFactory> configuredFactories)
     {
-        var byId = new Dictionary<RuntimeSubsystemId, IRuntimeSubsystemFactory>();
-        foreach (IRuntimeSubsystemFactory factory in factories)
+        ArgumentNullException.ThrowIfNull(configuredFactories);
+        try
         {
-            ArgumentNullException.ThrowIfNull(factory);
-            RuntimeSubsystemDescriptor descriptor = factory.descriptor
-                ?? throw new InvalidOperationException("A runtime subsystem factory returned a null descriptor.");
-            if (!byId.TryAdd(descriptor.id, factory))
-                throw new InvalidOperationException($"Runtime subsystem ID '{descriptor.id}' is duplicated.");
-        }
-        foreach (IRuntimeSubsystemFactory factory in factories)
-        {
-            foreach (RuntimeSubsystemId dependency in factory.descriptor.dependencies)
+            IRuntimeSubsystemFactory[] ordered = Order(
+                configuredFactories.Select(static factory =>
+                    (IRuntimeSubsystemFactory)new FactorySnapshot(factory)).ToArray()
+            );
+            if (ordered.Any(factory => factory.descriptor.lifetime != m_context.lifetime))
             {
-                if (!byId.ContainsKey(dependency) && factory.descriptor.requirement == RuntimeSubsystemRequirement.Required)
+                throw new InvalidOperationException($"Subsystem lifetime does not match its {m_context.lifetime} owner.");
+            }
+            m_reporter = m_resources.Own(
+                m_context.diagnostics.CreateReporter(
+                    new DiagnosticSource(
+                        $"inno.runtime.subsystems.{m_context.identities.domainID}",
+                        "Runtime subsystems"
+                    )
+                )
+            );
+            foreach (IRuntimeSubsystemFactory factory in ordered)
+            {
+                RuntimeSubsystemDescriptor descriptor = factory.descriptor;
+                string? unavailable = UnavailableReason(descriptor);
+                if (unavailable is not null)
                 {
-                    throw new InvalidOperationException(
-                        $"Runtime subsystem '{factory.descriptor.id}' requires missing subsystem '{dependency}'.");
+                    RejectOrReport(descriptor, unavailable);
+                    continue;
+                }
+                var entry = new Entry(descriptor);
+                m_entries.Add(entry);
+                try
+                {
+                    var context = new RuntimeSubsystemContext(
+                        m_context.events,
+                        m_context.diagnostics,
+                        m_context.identities,
+                        m_context.types,
+                        entry.resources,
+                        m_context.lifetime,
+                        m_context.isEditMode,
+                        m_context.capabilities
+                    );
+                    entry.subsystem = factory.Create(context)
+                                      ?? throw new InvalidOperationException($"Runtime subsystem factory '{descriptor.id}' returned null.");
+                    entry.subsystem.Attach();
+                    entry.isAttached = true;
+                }
+                catch (Exception failure) when (descriptor.requirement == RuntimeSubsystemRequirement.Optional
+                                                && failure is not RetirementPendingException
+                                                && m_generations.state != GenerationState.Faulted)
+                {
+                    // Optional startup can degrade only after the exact candidate owner has retired completely.
+                    try
+                    {
+                        new RetirementBarrier($"Optional subsystem {descriptor.id}", m_retirementTimeout)
+                            .Wait(() => RetireEntry(entry));
+                    }
+                    catch (Exception cleanupFailure)
+                    {
+                        m_generations.Fault(
+                            new AggregateException(
+                                $"Optional subsystem '{descriptor.id}' could not compensate startup.",
+                                failure,
+                                cleanupFailure
+                            )
+                        );
+                        throw;
+                    }
+                    m_entries.RemoveAt(m_entries.Count - 1);
+                    RejectOrReport(descriptor, $"Startup failed: {failure.Message}");
                 }
             }
+            m_started = true;
         }
-
-        var incoming = factories.ToDictionary(
-            static factory => factory.descriptor.id,
-            factory => factory.descriptor.dependencies.Count(byId.ContainsKey));
-        var dependants = factories.ToDictionary(
-            static factory => factory.descriptor.id,
-            static _ => new List<IRuntimeSubsystemFactory>());
-        foreach (IRuntimeSubsystemFactory factory in factories)
+        catch
         {
-            foreach (RuntimeSubsystemId dependency in factory.descriptor.dependencies)
-                if (dependants.TryGetValue(dependency, out List<IRuntimeSubsystemFactory>? consumers))
-                    consumers.Add(factory);
+            m_stopping = true;
+            throw;
         }
-        var ready = new List<IRuntimeSubsystemFactory>(
-            factories.Where(factory => incoming[factory.descriptor.id] == 0));
-        var result = new List<IRuntimeSubsystemFactory>(factories.Count);
-        while (ready.Count > 0)
-        {
-            ready.Sort(CompareFactories);
-            IRuntimeSubsystemFactory next = ready[0];
-            ready.RemoveAt(0);
-            result.Add(next);
-            foreach (IRuntimeSubsystemFactory dependant in dependants[next.descriptor.id])
-            {
-                int remaining = --incoming[dependant.descriptor.id];
-                if (remaining == 0)
-                    ready.Add(dependant);
-            }
-        }
-        if (result.Count != factories.Count)
-        {
-            string unresolved = string.Join(
-                ", ",
-                incoming.Where(static pair => pair.Value > 0)
-                    .Select(static pair => pair.Key.value)
-                    .Order(StringComparer.Ordinal));
-            throw new InvalidOperationException($"Runtime subsystem dependencies contain a cycle: {unresolved}.");
-        }
-        return result.ToArray();
-    }
-
-    private static int CompareFactories(
-        IRuntimeSubsystemFactory left,
-        IRuntimeSubsystemFactory right
-    ) {
-        int order = left.descriptor.order.CompareTo(right.descriptor.order);
-        return order != 0
-            ? order
-            : StringComparer.Ordinal.Compare(left.descriptor.id.value, right.descriptor.id.value);
     }
 
     private void Release()
@@ -426,6 +388,179 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
             }
             m_entries.RemoveAt(m_entries.Count - 1);
         }
+    }
+
+    private string? UnavailableReason(RuntimeSubsystemDescriptor descriptor)
+    {
+        RuntimeCapabilityID[] missing = descriptor.requiredCapabilities.Where(id => !m_context.capabilities.Contains(id)).ToArray();
+        if (missing.Length > 0)
+        {
+            return $"Missing capabilities: {string.Join(", ", missing)}.";
+        }
+        RuntimeSubsystemID[] dependencies = descriptor.dependencies
+            .Where(id => !m_entries.Any(entry => entry.descriptor.id == id && entry.isAttached))
+            .ToArray();
+        return dependencies.Length == 0 ? null : $"Unavailable dependencies: {string.Join(", ", dependencies)}.";
+    }
+
+    private void RejectOrReport(
+        RuntimeSubsystemDescriptor descriptor,
+        string reason
+    ) {
+        if (descriptor.requirement == RuntimeSubsystemRequirement.Required)
+        {
+            throw new InvalidOperationException($"Required subsystem '{descriptor.id}' cannot start: {reason}");
+        }
+        var diagnostic = new Diagnostic(
+            "runtime.subsystem.unavailable",
+            reason,
+            DiagnosticSeverity.Warning,
+            semanticID: descriptor.id.value
+        );
+        m_startupDiagnostics.Add(diagnostic);
+        m_reporter!.Publish(diagnostic);
+    }
+
+    private void ExecuteForward<TState>(
+        Action<IRuntimeSubsystem, TState> action,
+        TState state
+    ) {
+        foreach (Entry entry in m_entries)
+        {
+            action(entry.subsystem, state);
+        }
+    }
+
+    private void ExecuteReverse<TState>(
+        Action<IRuntimeSubsystem, TState> action,
+        TState state,
+        int count
+    ) {
+        List<Exception>? failures = null;
+        for (int index = count - 1; index >= 0; index--)
+        {
+            try
+            {
+                action(m_entries[index].subsystem, state);
+            }
+            catch (Exception exception)
+            {
+                failures ??= [];
+                failures.Add(exception);
+            }
+        }
+        if (failures is not null)
+        {
+            throw new AggregateException("One or more runtime subsystem phases failed.", failures);
+        }
+    }
+
+    private void EnsureActive()
+    {
+        ObjectDisposedException.ThrowIf(m_disposed, this);
+        if (m_stopping)
+        {
+            throw new InvalidOperationException("The subsystem pipeline is retiring and cannot execute new work.");
+        }
+        if (!m_started)
+        {
+            throw new InvalidOperationException("The subsystem pipeline has not finished startup.");
+        }
+    }
+
+    private void EnsureFrame()
+    {
+        EnsureActive();
+        if (!m_frameOpen)
+        {
+            throw new InvalidOperationException("No runtime subsystem frame is active.");
+        }
+    }
+
+    private static IRuntimeSubsystemFactory[] Order(IReadOnlyList<IRuntimeSubsystemFactory> factories)
+    {
+        var byID = new Dictionary<RuntimeSubsystemID, IRuntimeSubsystemFactory>();
+        foreach (IRuntimeSubsystemFactory factory in factories)
+        {
+            ArgumentNullException.ThrowIfNull(factory);
+            RuntimeSubsystemDescriptor descriptor = factory.descriptor
+                ?? throw new InvalidOperationException("A runtime subsystem factory returned a null descriptor.");
+            if (!byID.TryAdd(descriptor.id, factory))
+            {
+                throw new InvalidOperationException($"Runtime subsystem ID '{descriptor.id}' is duplicated.");
+            }
+        }
+        foreach (IRuntimeSubsystemFactory factory in factories)
+        {
+            foreach (RuntimeSubsystemID dependency in factory.descriptor.dependencies)
+            {
+                if (!byID.ContainsKey(dependency) && factory.descriptor.requirement == RuntimeSubsystemRequirement.Required)
+                {
+                    throw new InvalidOperationException(
+                        $"Runtime subsystem '{factory.descriptor.id}' requires missing subsystem '{dependency}'."
+                    );
+                }
+            }
+        }
+
+        Dictionary<RuntimeSubsystemID, int> incoming = factories.ToDictionary(
+            static factory => factory.descriptor.id,
+            factory => factory.descriptor.dependencies.Count(byID.ContainsKey)
+        );
+        Dictionary<RuntimeSubsystemID, List<IRuntimeSubsystemFactory>> dependants = factories.ToDictionary(
+            static factory => factory.descriptor.id,
+            static _ => new List<IRuntimeSubsystemFactory>()
+        );
+        foreach (IRuntimeSubsystemFactory factory in factories)
+        {
+            foreach (RuntimeSubsystemID dependency in factory.descriptor.dependencies)
+            {
+                if (dependants.TryGetValue(dependency, out List<IRuntimeSubsystemFactory>? consumers))
+                {
+                    consumers.Add(factory);
+                }
+            }
+        }
+        var ready = new List<IRuntimeSubsystemFactory>(
+            factories.Where(factory => incoming[factory.descriptor.id] == 0)
+        );
+        var result = new List<IRuntimeSubsystemFactory>(factories.Count);
+        while (ready.Count > 0)
+        {
+            ready.Sort(CompareFactories);
+            IRuntimeSubsystemFactory next = ready[0];
+            ready.RemoveAt(0);
+            result.Add(next);
+            foreach (IRuntimeSubsystemFactory dependant in dependants[next.descriptor.id])
+            {
+                int remaining = --incoming[dependant.descriptor.id];
+                if (remaining == 0)
+                {
+                    ready.Add(dependant);
+                }
+            }
+        }
+        if (result.Count != factories.Count)
+        {
+            string unresolved = string.Join(
+                ", ",
+                incoming.Where(static pair => pair.Value > 0)
+                    .Select(static pair => pair.Key.value)
+                    .Order(StringComparer.Ordinal)
+            );
+            throw new InvalidOperationException($"Runtime subsystem dependencies contain a cycle: {unresolved}.");
+        }
+        return result.ToArray();
+    }
+
+    private static int CompareFactories(
+        IRuntimeSubsystemFactory left,
+        IRuntimeSubsystemFactory right
+    ) {
+        int order = left.descriptor.order.CompareTo(right.descriptor.order);
+        return order != 0
+               ? order
+               : StringComparer.Ordinal.Compare(left.descriptor.id.value, right.descriptor.id.value);
     }
 
     private static void RetireEntry(Entry entry)
@@ -482,74 +617,6 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
         }
     }
 
-    private string? UnavailableReason(RuntimeSubsystemDescriptor descriptor)
-    {
-        RuntimeCapabilityId[] missing = descriptor.requiredCapabilities.Where(id => !m_context.capabilities.Contains(id)).ToArray();
-        if (missing.Length > 0)
-            return $"Missing capabilities: {string.Join(", ", missing)}.";
-        RuntimeSubsystemId[] dependencies = descriptor.dependencies
-            .Where(id => !m_entries.Any(entry => entry.descriptor.id == id && entry.isAttached)).ToArray();
-        return dependencies.Length == 0 ? null : $"Unavailable dependencies: {string.Join(", ", dependencies)}.";
-    }
-
-    private void RejectOrReport(
-        RuntimeSubsystemDescriptor descriptor,
-        string reason
-    ) {
-        if (descriptor.requirement == RuntimeSubsystemRequirement.Required)
-            throw new InvalidOperationException($"Required subsystem '{descriptor.id}' cannot start: {reason}");
-        var diagnostic = new Diagnostic("runtime.subsystem.unavailable", reason, DiagnosticSeverity.Warning,
-            semanticId: descriptor.id.value);
-        m_startupDiagnostics.Add(diagnostic);
-        m_reporter!.Publish(diagnostic);
-    }
-
-    private void ExecuteForward<TState>(
-        Action<IRuntimeSubsystem, TState> action,
-        TState state
-    ) {
-        foreach (Entry entry in m_entries)
-            action(entry.subsystem, state);
-    }
-
-    private void ExecuteReverse<TState>(
-        Action<IRuntimeSubsystem, TState> action,
-        TState state,
-        int count
-    ) {
-        List<Exception>? failures = null;
-        for (int index = count - 1; index >= 0; index--)
-        {
-            try
-            {
-                action(m_entries[index].subsystem, state);
-            }
-            catch (Exception exception)
-            {
-                failures ??= [];
-                failures.Add(exception);
-            }
-        }
-        if (failures is not null)
-            throw new AggregateException("One or more runtime subsystem phases failed.", failures);
-    }
-
-    private void EnsureActive()
-    {
-        ObjectDisposedException.ThrowIf(m_disposed, this);
-        if (m_stopping)
-            throw new InvalidOperationException("The subsystem pipeline is retiring and cannot execute new work.");
-        if (!m_started)
-            throw new InvalidOperationException("The subsystem pipeline has not finished startup.");
-    }
-
-    private void EnsureFrame()
-    {
-        EnsureActive();
-        if (!m_frameOpen)
-            throw new InvalidOperationException("No runtime subsystem frame is active.");
-    }
-
     private sealed class Entry(RuntimeSubsystemDescriptor descriptor)
     {
         internal RuntimeSubsystemDescriptor descriptor { get; } = descriptor;
@@ -569,8 +636,9 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
 
         internal FactorySnapshot(IRuntimeSubsystemFactory factory)
         {
-            m_factory = factory ?? throw new ArgumentNullException(nameof(factory));
-            descriptor = factory.descriptor ?? throw new InvalidOperationException("A subsystem descriptor cannot be null.");
+            ArgumentNullException.ThrowIfNull(factory);
+            m_factory = factory;
+            this.descriptor = factory.descriptor ?? throw new InvalidOperationException("A subsystem descriptor cannot be null.");
         }
 
         /// <summary>

@@ -25,15 +25,16 @@ public sealed class BgfxAuthoringProvider : RenderingAuthoringBackendProvider
     public BgfxAuthoringProvider(
         BgfxShaderTargetProfile target,
         ToolRunner? tools = null
-    ) : base(RenderingBackendId.bgfx) {
+    ) : base(RenderingBackendID.bgfx)
+    {
         ArgumentNullException.ThrowIfNull(target);
         m_target = target;
         m_tools = tools;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override IShaderCompilerToolchain CreateShaderCompilerToolchain() => new BgfxShadercToolchain(m_target, m_tools);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override ITextureTargetCompiler CreateTextureTargetCompiler() => new BgfxTextureTargetCompiler(m_tools);
 }

@@ -1,8 +1,10 @@
 using System.Numerics;
 using Inno.Native.ImGui;
+
 using RawImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Provides pointer-free controls within the active Editor UI session.
 /// </summary>
@@ -28,7 +30,7 @@ public static partial class ImGui
         Vector2 size,
         ImGuiButtonFlags flags = ImGuiButtonFlags.None
     ) {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.InvisibleButton(label, size, (int)flags);
     }
 
@@ -56,7 +58,7 @@ public static partial class ImGui
         bool selected = false,
         bool enabled = true
     ) {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.MenuItem(label, shortcut, selected, enabled);
     }
 
@@ -92,7 +94,7 @@ public static partial class ImGui
         string format = "%d",
         ImGuiSliderFlags flags = ImGuiSliderFlags.None
     ) {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.SliderInt(label, ref value, minimum, maximum, format, (int)flags);
     }
 
@@ -132,7 +134,7 @@ public static partial class ImGui
         string format = "%d",
         ImGuiSliderFlags flags = ImGuiSliderFlags.None
     ) {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.DragInt(label, ref value, speed, minimum, maximum, format, (int)flags);
     }
 }

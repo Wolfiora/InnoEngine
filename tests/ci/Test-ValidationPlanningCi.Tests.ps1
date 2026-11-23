@@ -17,10 +17,10 @@ $env:GIT_ALLOW_PROTOCOL = 'file'
 try {
     foreach ($case in $cases) {
         $root = Join-Path $directory $case.name
-        $scripts = Join-Path $root 'tests/ci'
+        $scripts = Join-Path $root 'tools/ci'
         New-Item -ItemType Directory -Path $scripts -Force | Out-Null
         foreach ($script in @('Invoke-ValidationCi.ps1', 'Initialize-ValidationEntry.ps1', 'Prepare-ValidationSources.ps1', 'Initialize-NativeDependencyWorkloads.ps1')) {
-            Copy-Item -LiteralPath (Join-Path $PSScriptRoot $script) -Destination $scripts
+            Copy-Item -LiteralPath (Join-Path $PSScriptRoot "../../tools/ci/$script") -Destination $scripts
         }
         New-Item -ItemType Directory -Path (Join-Path $root '.github') | Out-Null
         '[{"target":"fixture","runner":"fixture","workloads":[]}]' | Set-Content (Join-Path $root '.github/native-targets.json')

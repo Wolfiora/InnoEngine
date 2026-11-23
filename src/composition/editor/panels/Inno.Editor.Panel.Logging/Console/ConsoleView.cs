@@ -8,13 +8,13 @@ namespace Inno.Editor.Panel.Logging;
 
 internal sealed class ConsoleView
 {
+    private readonly Dictionary<string, int> m_indices = new(StringComparer.Ordinal);
     private long m_revision = -1;
     private string m_query = string.Empty;
     private ulong m_levels;
     private bool m_collapsed;
-    private readonly Dictionary<string, int> m_indices = new(StringComparer.Ordinal);
 
-    internal IReadOnlyList<Row> rows { get; private set; } = Array.Empty<Row>();
+    internal IReadOnlyList<Row> rows { get; private set; } = [];
 
     internal bool Update(
         EditorConsoleSnapshot snapshot,
@@ -24,23 +24,31 @@ internal sealed class ConsoleView
     ) {
         ulong mask = 0;
         foreach (LogLevel level in levels)
+        {
             mask |= 1UL << (int)level;
+        }
         if (m_revision == snapshot.revision && m_levels == mask && m_collapsed == collapsed
-            && string.Equals(m_query, query, StringComparison.Ordinal))
+            && string.Equals(m_query, query, StringComparison.Ordinal)
+        ) {
             return false;
-        var filtered = new List<Row>();
+        }
+        List<Row> filtered = [];
         if (collapsed)
         {
             foreach (EditorConsoleGroup group in snapshot.groups)
             {
-                var matches = new List<EditorConsoleOccurrence>();
+                List<EditorConsoleOccurrence> matches = [];
                 foreach (EditorConsoleOccurrence occurrence in group.occurrences)
                 {
                     if (Matches(occurrence, query, levels))
+                    {
                         matches.Add(occurrence);
+                    }
                 }
                 if (matches.Count > 0)
+                {
                     filtered.Add(new Row("group/" + group.identity, matches[^1], matches.AsReadOnly()));
+                }
             }
         }
         else
@@ -48,7 +56,9 @@ internal sealed class ConsoleView
             foreach (EditorConsoleOccurrence occurrence in snapshot.occurrences)
             {
                 if (Matches(occurrence, query, levels))
-                    filtered.Add(new Row("occurrence/" + occurrence.sequence, occurrence, Array.AsReadOnly(new[] { occurrence })));
+                {
+                    filtered.Add(new Row("occurrence/" + occurrence.sequence, occurrence, Array.AsReadOnly([occurrence])));
+                }
             }
         }
         if (collapsed)
@@ -65,12 +75,16 @@ internal sealed class ConsoleView
             {
                 Row previous = rows[previousIndex];
                 if (ReferenceEquals(previous.latest, candidate.latest) && previous.occurrences.SequenceEqual(candidate.occurrences))
+                {
                     filtered[index] = previous;
+                }
             }
         }
         m_indices.Clear();
         for (int index = 0; index < filtered.Count; index++)
+        {
             m_indices.Add(filtered[index].key, index);
+        }
         rows = filtered.AsReadOnly();
         m_revision = snapshot.revision;
         m_query = query;
@@ -83,7 +97,7 @@ internal sealed class ConsoleView
 
     internal void Clear()
     {
-        rows = Array.Empty<Row>();
+        rows = [];
         m_indices.Clear();
         m_revision = -1;
         m_query = string.Empty;
@@ -96,13 +110,13 @@ internal sealed class ConsoleView
         string query,
         IReadOnlySet<LogLevel> levels
     ) => levels.Contains(occurrence.level)
-        && (query.Length == 0
-            || occurrence.message.Contains(query, StringComparison.OrdinalIgnoreCase)
-            || occurrence.source.Contains(query, StringComparison.OrdinalIgnoreCase)
-            || occurrence.file.Contains(query, StringComparison.OrdinalIgnoreCase)
-            || occurrence.code.Contains(query, StringComparison.OrdinalIgnoreCase)
-            || occurrence.category.Contains(query, StringComparison.OrdinalIgnoreCase)
-            || occurrence.stackTrace.Contains(query, StringComparison.OrdinalIgnoreCase));
+         && (query.Length == 0
+             || occurrence.message.Contains(query, StringComparison.OrdinalIgnoreCase)
+             || occurrence.source.Contains(query, StringComparison.OrdinalIgnoreCase)
+             || occurrence.file.Contains(query, StringComparison.OrdinalIgnoreCase)
+             || occurrence.code.Contains(query, StringComparison.OrdinalIgnoreCase)
+             || occurrence.category.Contains(query, StringComparison.OrdinalIgnoreCase)
+             || occurrence.stackTrace.Contains(query, StringComparison.OrdinalIgnoreCase));
 
     internal sealed class Row
     {
@@ -114,7 +128,7 @@ internal sealed class ConsoleView
             this.key = key;
             this.latest = latest;
             this.occurrences = occurrences;
-            copyTarget = new ConsoleEntryCopyTarget(latest, occurrences.Count);
+            this.copyTarget = new ConsoleEntryCopyTarget(latest, occurrences.Count);
         }
 
         internal string key { get; }

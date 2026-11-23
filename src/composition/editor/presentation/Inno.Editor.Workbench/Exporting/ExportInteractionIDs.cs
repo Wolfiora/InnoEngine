@@ -1,0 +1,8 @@
+namespace Inno.Editor.Workbench;
+
+internal static class ExportInteractionIDs
+{
+    internal const string C_EXPORT_GAME = "export/game";
+    internal const string C_EXPORT_PLUGIN = "export/plugin";
+    internal const string C_MAIN_MENU_AREA = "editor/main-menu";
+}

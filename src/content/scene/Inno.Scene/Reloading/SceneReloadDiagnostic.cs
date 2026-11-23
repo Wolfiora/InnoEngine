@@ -1,5 +1,5 @@
-using Inno.Core.Diagnostics;
 using System;
+using Inno.Core.Diagnostics;
 
 namespace Inno.Scene;
 
@@ -12,8 +12,8 @@ public sealed class SceneReloadDiagnostic
         string code,
         DiagnosticSeverity severity,
         string message,
-        Guid scenePersistentId,
-        Guid objectPersistentId,
+        Guid scenePersistentID,
+        Guid objectPersistentID,
         string propertyName,
         string previousPropertyType,
         string currentPropertyType
@@ -21,8 +21,8 @@ public sealed class SceneReloadDiagnostic
         this.code = code;
         this.severity = severity;
         this.message = message;
-        this.scenePersistentId = scenePersistentId;
-        this.objectPersistentId = objectPersistentId;
+        this.scenePersistentID = scenePersistentID;
+        this.objectPersistentID = objectPersistentID;
         this.propertyName = propertyName;
         this.previousPropertyType = previousPropertyType;
         this.currentPropertyType = currentPropertyType;
@@ -46,12 +46,12 @@ public sealed class SceneReloadDiagnostic
     /// <summary>
     /// Gets the persistent identity of the affected scene.
     /// </summary>
-    public Guid scenePersistentId { get; }
+    public Guid scenePersistentID { get; }
 
     /// <summary>
     /// Gets the persistent identity of the affected component or system.
     /// </summary>
-    public Guid objectPersistentId { get; }
+    public Guid objectPersistentID { get; }
 
     /// <summary>
     /// Gets the incompatible serialized property name.

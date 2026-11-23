@@ -1,8 +1,10 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
-using Ui = Inno.Editor.ImGui.ImGui;
+
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
+
 [PropertyDrawer(typeof(Nullable<>))]
 internal sealed class NullablePropertyDrawer : IPropertyDrawer
 {
@@ -14,7 +16,8 @@ internal sealed class NullablePropertyDrawer : IPropertyDrawer
     /// </param>
     public void Draw(PropertyDrawContext context)
     {
-        Type underlyingType = Nullable.GetUnderlyingType(context.propertyType) ?? throw new InvalidOperationException("Nullable drawer requires a nullable property type.");
+        Type underlyingType = Nullable.GetUnderlyingType(context.propertyType)
+                              ?? throw new InvalidOperationException("Nullable drawer requires a nullable property type.");
         object? value = context.GetValue();
         bool hasValue = value is not null;
         bool previousHasValue = hasValue;
@@ -27,12 +30,12 @@ internal sealed class NullablePropertyDrawer : IPropertyDrawer
 
         if (!hasValue)
         {
-            Ui.SameLine(0f, -1f);
-            Ui.Text("Null");
+            Gui.SameLine(0f, -1f);
+            Gui.Text("Null");
             return;
         }
 
-        Ui.SameLine(0f, -1f);
+        Gui.SameLine(0f, -1f);
         context.DrawInlineChild("Value", underlyingType, context.GetValue, value => context.SetValue(value));
     }
 }

@@ -18,20 +18,36 @@ internal sealed class MiniAudioClipPreparation : IDisposable
         string path,
         SemaphoreSlim slots
     ) {
-        contentHash = source.contentHash.ToUpperInvariant();
-        length = source.length;
+        this.contentHash = source.contentHash.ToUpperInvariant();
+        this.length = source.length;
         this.path = path;
         try
         {
             using AsyncFlowControl? suppression = ExecutionContext.IsFlowSuppressed()
-                ? null : ExecutionContext.SuppressFlow();
-            completion = Task.Run(() => PrepareAsync(source, slots), CancellationToken.None);
+                                                  ? null
+                                                  : ExecutionContext.SuppressFlow();
+            this.completion = Task.Run(() => PrepareAsync(source, slots), CancellationToken.None);
         }
         catch
         {
             m_cancellation.Dispose();
             throw;
         }
+    }
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        if (!completion.IsCompleted)
+        {
+            throw new InvalidOperationException("Encoded preparation must drain before releasing its owner.");
+        }
+        _ = completion.Exception;
+        if (File.Exists(path))
+        {
+            File.Delete(path);
+        }
+        m_cancellation.Dispose();
     }
 
     internal string contentHash { get; }
@@ -41,17 +57,6 @@ internal sealed class MiniAudioClipPreparation : IDisposable
     internal int references { get; set; }
 
     internal void Cancel() => m_cancellation.Cancel();
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        if (!completion.IsCompleted)
-            throw new InvalidOperationException("Encoded preparation must drain before releasing its owner.");
-        _ = completion.Exception;
-        if (File.Exists(path))
-            File.Delete(path);
-        m_cancellation.Dispose();
-    }
 
     private async Task PrepareAsync(
         IAudioClipSource source,
@@ -70,21 +75,30 @@ internal sealed class MiniAudioClipPreparation : IDisposable
                 Directory.CreateDirectory(Path.GetDirectoryName(path)!);
                 using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
                 long copied = 0;
-                using (var output = new FileStream(candidate, FileMode.CreateNew, FileAccess.Write,
-                           FileShare.None, buffer.Length, FileOptions.Asynchronous))
-                {
+                using (var output = new FileStream(
+                    candidate,
+                    FileMode.CreateNew,
+                    FileAccess.Write,
+                    FileShare.None,
+                    buffer.Length,
+                    FileOptions.Asynchronous
+                )) {
                     int count;
                     while ((count = await reader.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) != 0)
                     {
                         copied = checked(copied + count);
                         if (copied > length)
+                        {
                             throw new InvalidDataException("Encoded audio exceeds its declared length.");
+                        }
                         hash.AppendData(buffer, 0, count);
                         await output.WriteAsync(buffer.AsMemory(0, count), cancellationToken).ConfigureAwait(false);
                     }
-                    if (copied != length || !string.Equals(Convert.ToHexString(hash.GetHashAndReset()),
-                            contentHash, StringComparison.Ordinal))
-                    {
+                    if (copied != length || !string.Equals(
+                        Convert.ToHexString(hash.GetHashAndReset()),
+                        contentHash,
+                        StringComparison.Ordinal
+                    )) {
                         throw new InvalidDataException("Encoded audio does not match its content identity.");
                     }
                     await output.FlushAsync(cancellationToken).ConfigureAwait(false);
@@ -97,7 +111,9 @@ internal sealed class MiniAudioClipPreparation : IDisposable
                 try
                 {
                     if (File.Exists(candidate))
+                    {
                         File.Delete(candidate);
+                    }
                 }
                 finally
                 {

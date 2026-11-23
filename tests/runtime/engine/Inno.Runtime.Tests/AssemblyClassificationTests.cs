@@ -1,0 +1,52 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
+using Xunit;
+using Inno.Extensibility.Modules;
+
+namespace Inno.Runtime.Tests;
+
+public sealed class AssemblyClassificationTests
+{
+    [Fact]
+    public async Task IndependentModuleHostsCanPublishTheSameStaticAssemblyConcurrently()
+    {
+        // A separate linked instance keeps the test host's own classification unchanged.
+        Assembly assembly = Assembly.Load(File.ReadAllBytes(typeof(AssemblyClassificationTests).Assembly.Location));
+        var source = new StaticModuleSource(
+            "Shared",
+            AssemblyDomain.InnoScripting,
+            AssemblyScope.Runtime,
+            [assembly],
+            []
+        );
+        const int C_WORKER_COUNT = 8;
+        using var ready = new Barrier(C_WORKER_COUNT);
+        Task[] workers = Enumerable.Range(0, C_WORKER_COUNT).Select(workerIndex => Task.Factory.StartNew(
+            () =>
+            {
+                using var modules = new ModuleHost(new ModuleHostOptions
+                {
+                    catalogSource = new StaticAssemblyCatalogSource([], [])
+                });
+                for (int iteration = 0; iteration < 128; iteration++)
+                {
+                    Assert.True(ready.SignalAndWait(TimeSpan.FromSeconds(10)));
+                    AssemblyModuleHandle handle = modules.Load(source);
+                    Assert.True(assembly.TryGetInnoAssemblyClassification(out AssemblyDomain domain, out AssemblyScope scope));
+                    Assert.Equal(AssemblyDomain.InnoScripting, domain);
+                    Assert.Equal(AssemblyScope.Runtime, scope);
+                    _ = modules.Unload(handle);
+                    modules.generations.Wait();
+                }
+            },
+            CancellationToken.None,
+            TaskCreationOptions.LongRunning,
+            TaskScheduler.Default
+        )).ToArray();
+        await Task.WhenAll(workers).WaitAsync(TimeSpan.FromSeconds(30));
+    }
+}

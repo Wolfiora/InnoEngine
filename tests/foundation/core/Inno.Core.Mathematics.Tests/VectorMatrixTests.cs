@@ -1,0 +1,282 @@
+using System;
+using Xunit;
+using Inno.Core.Mathematics;
+
+namespace Inno.Core.Mathematics.Tests;
+
+public sealed class VectorMatrixTests
+{
+    [Fact]
+    public void Vector2QuaternionTransformPreservesLengthForZRotation()
+    {
+        Quaternion rotation = Quaternion.CreateFromAxisAngle(Vector3.FORWARD, MathF.PI * 0.5f);
+
+        Vector2 result = Vector2.Transform(Vector2.UNIT_X, rotation);
+
+        Assert.InRange(result.x, -0.00001f, 0.00001f);
+        Assert.InRange(result.y, 0.99999f, 1.00001f);
+        Assert.InRange(result.Length(), 0.99999f, 1.00001f);
+    }
+
+    [Fact]
+    public void EulerAnglesXYZRoundTripsCompoundRotation()
+    {
+        var source = new Vector3(0.31f, -0.47f, 0.83f);
+
+        Quaternion original = Quaternion.FromEulerAnglesXYZ(source).normalized;
+        Quaternion roundTrip = Quaternion.FromEulerAnglesXYZ(original.ToEulerAnglesXYZ()).normalized;
+
+        float alignment = MathF.Abs(
+            original.x * roundTrip.x
+            + original.y * roundTrip.y
+            + original.z * roundTrip.z
+            + original.w * roundTrip.w
+        );
+        Assert.InRange(alignment, 0.99999f, 1.00001f);
+    }
+
+    [Fact]
+    public void Vector2LengthSquaredMatchesDot()
+    {
+        var v = new Vector2(3f, 4f);
+        float dot = Vector2.Dot(v, v);
+        Assert.True(MathHelper.AlmostEquals(25f, dot));
+        Assert.True(MathHelper.AlmostEquals(25f, v.LengthSquared()));
+        Assert.True(MathHelper.AlmostEquals(5f, v.Length()));
+    }
+
+    [Fact]
+    public void Vector3CrossIsOrthogonal()
+    {
+        var a = new Vector3(1f, 0f, 0f);
+        var b = new Vector3(0f, 1f, 0f);
+        Vector3 c = Vector3.Cross(a, b);
+
+        Assert.True(MathHelper.AlmostEquals(0f, Vector3.Dot(a, c)));
+        Assert.True(MathHelper.AlmostEquals(0f, Vector3.Dot(b, c)));
+        Assert.True(MathHelper.AlmostEquals(0f, c.x));
+        Assert.True(MathHelper.AlmostEquals(0f, c.y));
+        Assert.True(MathHelper.AlmostEquals(1f, c.z));
+    }
+
+    [Fact]
+    public void Vector3TransformNormalIgnoresTranslation()
+    {
+        var normal = new Vector3(0f, 1f, 0f);
+        Matrix translation = Matrix.CreateTranslation(10f, 20f, 30f);
+        Vector3 result = Vector3.TransformNormal(normal, translation);
+
+        Assert.True(MathHelper.AlmostEquals(normal.x, result.x));
+        Assert.True(MathHelper.AlmostEquals(normal.y, result.y));
+        Assert.True(MathHelper.AlmostEquals(normal.z, result.z));
+    }
+
+    [Fact]
+    public void Vector2AngleSignedAngle()
+    {
+        var right = new Vector2(1f, 0f);
+        var up = new Vector2(0f, 1f);
+        float angle = Vector2.Angle(right, up);
+        float signed = Vector2.SignedAngle(right, up);
+
+        Assert.True(MathHelper.AlmostEquals(MathF.PI * 0.5f, angle));
+        Assert.True(MathHelper.AlmostEquals(MathF.PI * 0.5f, signed));
+    }
+
+    [Fact]
+    public void MatrixMultiplyColumnVectorOrder()
+    {
+        Matrix scale = Matrix.CreateScale(2f);
+        Matrix translate = Matrix.CreateTranslation(1f, 0f, 0f);
+        Matrix combined = translate * scale;
+
+        var v = new Vector3(1f, 0f, 0f);
+        Vector3 result = Vector3.Transform(v, combined);
+
+        Assert.True(MathHelper.AlmostEquals(3f, result.x));
+        Assert.True(MathHelper.AlmostEquals(0f, result.y));
+        Assert.True(MathHelper.AlmostEquals(0f, result.z));
+    }
+
+    [Fact]
+    public void MatrixDeterminantInvertRoundtrip()
+    {
+        Matrix m = Matrix.CreateTranslation(1f, 2f, 3f) * Matrix.CreateScale(2f, 3f, 4f);
+        float det = Matrix.Determinant(m);
+        Assert.True(MathHelper.AlmostEquals(24f, det));
+
+        Matrix inv = Matrix.Invert(m);
+        Matrix identity = m * inv;
+        Assert.True(identity == Matrix.identity);
+    }
+
+    [Fact]
+    public void MatrixDecomposeRoundtrip()
+    {
+        var scale = new Vector3(2f, 3f, 4f);
+        Quaternion rotation = Quaternion.FromEulerAnglesXYZ(new Vector3(0.2f, 0.3f, 0.4f));
+        var translation = new Vector3(5f, 6f, 7f);
+        Matrix m = Matrix.CreateTranslation(translation) * Matrix.CreateFromQuaternion(rotation) * Matrix.CreateScale(scale);
+
+        bool success = Matrix.Decompose(m, out Vector3 outScale, out Quaternion outRotation, out Vector3 outTranslation);
+        Assert.True(success);
+        Assert.True(outTranslation == translation);
+        Assert.True(MathHelper.AlmostEquals(scale.x, outScale.x));
+        Assert.True(MathHelper.AlmostEquals(scale.y, outScale.y));
+        Assert.True(MathHelper.AlmostEquals(scale.z, outScale.z));
+
+        Matrix rotMatrix = outRotation.ToMatrix();
+        Matrix expected = rotation.ToMatrix();
+        Assert.True(rotMatrix == expected);
+    }
+
+    [Fact]
+    public void MatrixDecomposePreservesReflectedTransform()
+    {
+        var scale = new Vector3(-2f, 3f, 4f);
+        Quaternion rotation = Quaternion.FromEulerAnglesXYZ(new Vector3(0.2f, 0.3f, 0.4f));
+        var translation = new Vector3(5f, 6f, 7f);
+        Matrix matrix = Matrix.CreateTranslation(translation)
+                        * Matrix.CreateFromQuaternion(rotation)
+                        * Matrix.CreateScale(scale);
+
+        Assert.True(
+            Matrix.Decompose(
+                matrix,
+                out Vector3 resultScale,
+                out Quaternion resultRotation,
+                out Vector3 resultTranslation
+            )
+        );
+        Matrix reconstructed = Matrix.CreateTranslation(resultTranslation)
+                               * Matrix.CreateFromQuaternion(resultRotation)
+                               * Matrix.CreateScale(resultScale);
+        Assert.True(matrix == reconstructed);
+    }
+
+    [Fact]
+    public void MatrixLookAtRHIdentityForMinusZ()
+    {
+        var eye = new Vector3(0f, 0f, 0f);
+        var target = new Vector3(0f, 0f, -1f);
+        var up = new Vector3(0f, 1f, 0f);
+        Matrix view = Matrix.CreateLookAtRH(eye, target, up);
+
+        Assert.True(view == Matrix.identity);
+    }
+
+    [Fact]
+    public void MatrixPerspectiveRHMapsNearFar()
+    {
+        float near = 0.1f;
+        float far = 10f;
+        Matrix proj = Matrix.CreatePerspectiveFieldOfViewRH(MathF.PI / 2f, 1f, near, far);
+
+        var vNear = new Vector4(0f, 0f, -near, 1f);
+        var vFar = new Vector4(0f, 0f, -far, 1f);
+
+        Vector3 pNear = Vector4.Transform(vNear, proj).ProjectToVector3();
+        Vector3 pFar = Vector4.Transform(vFar, proj).ProjectToVector3();
+
+        Assert.True(MathHelper.AlmostEquals(0f, pNear.z));
+        Assert.True(MathHelper.AlmostEquals(1f, pFar.z));
+    }
+
+    [Fact]
+    public void MatrixPerspectiveLHMapsNearFar()
+    {
+        float near = 0.1f;
+        float far = 10f;
+        Matrix projection = Matrix.CreatePerspectiveFieldOfView(MathF.PI / 2f, 1f, near, far);
+
+        Vector3 projectedNear = (projection * new Vector4(0f, 0f, near, 1f)).ProjectToVector3();
+        Vector3 projectedFar = (projection * new Vector4(0f, 0f, far, 1f)).ProjectToVector3();
+
+        Assert.True(MathHelper.AlmostEquals(0f, projectedNear.z));
+        Assert.True(MathHelper.AlmostEquals(1f, projectedFar.z));
+    }
+
+    [Fact]
+    public void MatrixLookAtLHRotatesWorldIntoCameraAxes()
+    {
+        Matrix view = Matrix.CreateLookAt(Vector3.ZERO, Vector3.RIGHT, Vector3.UP);
+
+        Vector3 forward = Vector3.Transform(Vector3.RIGHT, view);
+        Vector3 right = Vector3.Transform(Vector3.BACK, view);
+
+        Assert.True(forward == Vector3.FORWARD);
+        Assert.True(right == Vector3.RIGHT);
+    }
+
+    [Fact]
+    public void MatrixOrthographicOffCenterMapsEdges()
+    {
+        Matrix ortho = Matrix.CreateOrthographicOffCenter(-2f, 2f, -1f, 1f, 0f, 10f);
+
+        Vector3 left = Vector4.Transform(new Vector4(-2f, 0f, 0f, 1f), ortho).ProjectToVector3();
+        Vector3 right = Vector4.Transform(new Vector4(2f, 0f, 0f, 1f), ortho).ProjectToVector3();
+
+        Assert.True(MathHelper.AlmostEquals(-1f, left.x));
+        Assert.True(MathHelper.AlmostEquals(1f, right.x));
+    }
+
+    [Fact]
+    public void MatrixToColumnMajorArrayLayout()
+    {
+        var m = new Matrix(1f, 2f, 3f, 4f, 5f, 6f, 7f, 8f, 9f, 10f, 11f, 12f, 13f, 14f, 15f, 16f);
+
+        float[] data = m.ToColumnMajorArray();
+
+        Assert.Equal(16, data.Length);
+        Assert.True(MathHelper.AlmostEquals(1f, data[0]));
+        Assert.True(MathHelper.AlmostEquals(5f, data[1]));
+        Assert.True(MathHelper.AlmostEquals(9f, data[2]));
+        Assert.True(MathHelper.AlmostEquals(13f, data[3]));
+        Assert.True(MathHelper.AlmostEquals(2f, data[4]));
+        Assert.True(MathHelper.AlmostEquals(6f, data[5]));
+        Assert.True(MathHelper.AlmostEquals(10f, data[6]));
+        Assert.True(MathHelper.AlmostEquals(14f, data[7]));
+    }
+
+    [Fact]
+    public void QuaternionNormalizeUnitLength()
+    {
+        var q = new Quaternion(1f, 2f, 3f, 4f);
+        Quaternion n = Quaternion.Normalize(q);
+        float len = n.Length();
+        Assert.True(MathHelper.AlmostEquals(1f, len));
+    }
+
+    [Fact]
+    public void QuaternionFromRotationMatrixRoundtrip()
+    {
+        Quaternion q = Quaternion.FromEulerAnglesXYZ(new Vector3(0.25f, 0.5f, 1.1f));
+        Matrix m = q.ToMatrix();
+        Quaternion q2 = Quaternion.FromRotationMatrix(m);
+        if (Dot(q, q2) < 0f)
+        {
+            q2 = new Quaternion(-q2.x, -q2.y, -q2.z, -q2.w);
+        }
+
+        const float C_EPSILON = 1e-3f;
+        Assert.True(MathF.Abs(q.x - q2.x) < C_EPSILON);
+        Assert.True(MathF.Abs(q.y - q2.y) < C_EPSILON);
+        Assert.True(MathF.Abs(q.z - q2.z) < C_EPSILON);
+        Assert.True(MathF.Abs(q.w - q2.w) < C_EPSILON);
+    }
+
+    [Fact]
+    public void MathHelperClampSaturateIsFinite()
+    {
+        Assert.True(MathHelper.AlmostEquals(0.5f, MathHelper.Clamp(0.5f, 0f, 1f)));
+        Assert.True(MathHelper.AlmostEquals(1f, MathHelper.Clamp(2f, 0f, 1f)));
+        Assert.True(MathHelper.AlmostEquals(0f, MathHelper.Saturate(-2f)));
+        Assert.True(MathHelper.IsFinite(1f));
+        Assert.False(MathHelper.IsFinite(float.PositiveInfinity));
+    }
+
+    private static float Dot(
+        Quaternion a,
+        Quaternion b
+    ) => a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+}

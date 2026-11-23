@@ -28,15 +28,19 @@ public static class ContentPackIndexCodec
     ) {
         ArgumentNullException.ThrowIfNull(index);
         ArgumentNullException.ThrowIfNull(serialization);
-        return serialization.Encode(writer => writer.WriteObjectArray("entries", index.entries,
+        return serialization.Encode(writer => writer.WriteObjectArray(
+            "entries",
+            index.entries,
             static (
                 entryWriter,
                 entry
-            ) => {
+            ) =>
+            {
                 entryWriter.Write("key", entry.key.value!);
                 entryWriter.Write("length", entry.length);
                 entryWriter.Write("hash", entry.contentHash);
-            }));
+            }
+        ));
     }
 
     /// <summary>
@@ -61,9 +65,14 @@ public static class ContentPackIndexCodec
         ArgumentNullException.ThrowIfNull(serialization);
         try
         {
-            return serialization.Decode(data, reader => new ContentPackIndex(reader.ReadObjectArray("entries")
-                .Select(static entry => new ContentEntry(new ContentKey(entry.Read<string>("key")),
-                    entry.Read<long>("length"), entry.Read<string>("hash")))));
+            return serialization.Decode(data, reader => new ContentPackIndex(
+                reader.ReadObjectArray("entries")
+                    .Select(static entry => new ContentEntry(
+                        new ContentKey(entry.Read<string>("key")),
+                        entry.Read<long>("length"),
+                        entry.Read<string>("hash")
+                    ))
+            ));
         }
         catch (Exception failure) when (failure is ArgumentException or InvalidOperationException or OverflowException)
         {

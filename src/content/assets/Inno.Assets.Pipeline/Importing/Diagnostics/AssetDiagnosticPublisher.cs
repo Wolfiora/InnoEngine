@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-
 using Inno.Assets;
 using Inno.Core.Diagnostics;
 
@@ -30,147 +29,6 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
         m_diagnostics = diagnostics;
     }
 
-    internal void SynchronizeImports(IReadOnlyList<AssetMeta> entries)
-    {
-        ArgumentNullException.ThrowIfNull(entries);
-        var currentIds = new HashSet<Guid>();
-        for (int i = 0; i < entries.Count; i++)
-        {
-            AssetMeta entry = entries[i];
-            if (entry.persistentId == Guid.Empty || entry.isDirectory)
-                continue;
-
-            if (entry.importStatus != (int)AssetImportStatus.Missing)
-                ResolveReference(entry.persistentId);
-
-            Diagnostic[] diagnostics = CreateImportDiagnostics(entry);
-            if (diagnostics.Length == 0)
-                continue;
-
-            currentIds.Add(entry.persistentId);
-            string state = CreateState(entry, diagnostics);
-            if (m_importStates.TryGetValue(entry.persistentId, out string? previous) &&
-                string.Equals(previous, state, StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            Set(
-                CreateSource(C_IMPORT_GROUP, entry.persistentId, entry.relativePath),
-                diagnostics);
-            m_importStates[entry.persistentId] = state;
-        }
-
-        Guid[] resolved = m_importStates.Keys
-            .Where(id => !currentIds.Contains(id))
-            .ToArray();
-        for (int i = 0; i < resolved.Length; i++)
-        {
-            Clear(CreateSource(C_IMPORT_GROUP, resolved[i]));
-            m_importStates.Remove(resolved[i]);
-        }
-    }
-
-    internal void PublishBuild(
-        Guid targetId,
-        string displayName,
-        IReadOnlyList<string> messages
-    ) {
-        ArgumentNullException.ThrowIfNull(messages);
-        if (targetId == Guid.Empty)
-            return;
-        if (messages.Count == 0)
-        {
-            ResolveBuild(targetId);
-            return;
-        }
-
-        Diagnostic[] diagnostics = messages
-            .Where(static message => !string.IsNullOrWhiteSpace(message))
-            .Select(static message => Diagnostic.Warning("ASSET-BUILD", message))
-            .ToArray();
-        if (diagnostics.Length == 0)
-        {
-            ResolveBuild(targetId);
-            return;
-        }
-
-        string state = string.Join('\n', diagnostics.Select(static diagnostic => diagnostic.message));
-        if (m_buildStates.TryGetValue(targetId, out string? previous) &&
-            string.Equals(previous, state, StringComparison.Ordinal))
-        {
-            return;
-        }
-        Set(CreateSource(C_BUILD_GROUP, targetId, displayName), diagnostics);
-        m_buildStates[targetId] = state;
-    }
-
-    internal void PublishBuildFailure(
-        Guid targetId,
-        string displayName,
-        Exception exception
-    ) {
-        ArgumentNullException.ThrowIfNull(exception);
-        if (targetId == Guid.Empty)
-            return;
-        string state = exception.ToString();
-        if (m_buildStates.TryGetValue(targetId, out string? previous) &&
-            string.Equals(previous, state, StringComparison.Ordinal))
-        {
-            return;
-        }
-        Set(
-            CreateSource(C_BUILD_GROUP, targetId, displayName),
-            [Diagnostic.Error("ASSET-BUILD", exception.Message)]);
-        m_buildStates[targetId] = state;
-    }
-
-    internal bool PublishCatalogFailure(Exception exception)
-    {
-        ArgumentNullException.ThrowIfNull(exception);
-        string state = exception.ToString();
-        if (string.Equals(m_catalogState, state, StringComparison.Ordinal))
-            return false;
-        Set(
-            CreateSource(C_CATALOG_GROUP),
-            [Diagnostic.Error("ASSET-CATALOG", exception.Message)]);
-        m_catalogState = state;
-        return true;
-    }
-
-    internal void PublishMissingReference(
-        Guid targetId,
-        string displayName,
-        Type expectedType
-    ) {
-        if (targetId == Guid.Empty)
-            return;
-        ArgumentNullException.ThrowIfNull(expectedType);
-        string resolvedDisplayName = string.IsNullOrWhiteSpace(displayName)
-            ? targetId.ToString()
-            : displayName;
-        string state = $"{resolvedDisplayName}:{expectedType.FullName}";
-        if (m_referenceStates.TryGetValue(targetId, out string? previous) &&
-            string.Equals(previous, state, StringComparison.Ordinal))
-        {
-            return;
-        }
-        Set(
-            CreateSource(C_REFERENCE_GROUP, targetId, resolvedDisplayName),
-            [Diagnostic.Warning(
-                "ASSET-REFERENCE",
-                $"Asset '{resolvedDisplayName}' required as '{expectedType.FullName}' is missing.")]);
-        m_referenceStates[targetId] = state;
-    }
-
-    internal void ResolveCatalog()
-    {
-        if (string.IsNullOrEmpty(m_catalogState))
-            return;
-        Clear(CreateSource(C_CATALOG_GROUP));
-        m_catalogState = string.Empty;
-    }
-
     /// <summary>
     /// Releases the resources owned by this instance.
     /// </summary>
@@ -184,20 +42,179 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
         m_referenceStates.Clear();
     }
 
+    internal void SynchronizeImports(IReadOnlyList<AssetMeta> entries)
+    {
+        ArgumentNullException.ThrowIfNull(entries);
+        var currentIDs = new HashSet<Guid>();
+        for (int i = 0; i < entries.Count; i++)
+        {
+            AssetMeta entry = entries[i];
+            if (entry.persistentId == Guid.Empty || entry.isDirectory)
+            {
+                continue;
+            }
+
+            if (entry.importStatus != (int)AssetImportStatus.Missing)
+            {
+                ResolveReference(entry.persistentId);
+            }
+
+            Diagnostic[] diagnostics = CreateImportDiagnostics(entry);
+            if (diagnostics.Length == 0)
+            {
+                continue;
+            }
+
+            currentIDs.Add(entry.persistentId);
+            string state = CreateState(entry, diagnostics);
+            if (m_importStates.TryGetValue(entry.persistentId, out string? previous)
+                && string.Equals(previous, state, StringComparison.Ordinal)
+            ) {
+                continue;
+            }
+
+            Set(CreateSource(C_IMPORT_GROUP, entry.persistentId, entry.relativePath), diagnostics);
+            m_importStates[entry.persistentId] = state;
+        }
+
+        Guid[] resolved = m_importStates.Keys
+            .Where(id => !currentIDs.Contains(id))
+            .ToArray();
+        for (int i = 0; i < resolved.Length; i++)
+        {
+            Clear(CreateSource(C_IMPORT_GROUP, resolved[i]));
+            m_importStates.Remove(resolved[i]);
+        }
+    }
+
+    internal void PublishBuild(
+        Guid targetID,
+        string displayName,
+        IReadOnlyList<string> messages
+    ) {
+        ArgumentNullException.ThrowIfNull(messages);
+        if (targetID == Guid.Empty)
+        {
+            return;
+        }
+        if (messages.Count == 0)
+        {
+            ResolveBuild(targetID);
+            return;
+        }
+
+        Diagnostic[] diagnostics = messages
+            .Where(static message => !string.IsNullOrWhiteSpace(message))
+            .Select(static message => Diagnostic.Warning("ASSET-BUILD", message))
+            .ToArray();
+        if (diagnostics.Length == 0)
+        {
+            ResolveBuild(targetID);
+            return;
+        }
+
+        string state = string.Join('\n', diagnostics.Select(static diagnostic => diagnostic.message));
+        if (m_buildStates.TryGetValue(targetID, out string? previous)
+            && string.Equals(previous, state, StringComparison.Ordinal)
+        ) {
+            return;
+        }
+        Set(CreateSource(C_BUILD_GROUP, targetID, displayName), diagnostics);
+        m_buildStates[targetID] = state;
+    }
+
+    internal void PublishBuildFailure(
+        Guid targetID,
+        string displayName,
+        Exception exception
+    ) {
+        ArgumentNullException.ThrowIfNull(exception);
+        if (targetID == Guid.Empty)
+        {
+            return;
+        }
+        string state = exception.ToString();
+        if (m_buildStates.TryGetValue(targetID, out string? previous)
+            && string.Equals(previous, state, StringComparison.Ordinal)
+        ) {
+            return;
+        }
+        Set(CreateSource(C_BUILD_GROUP, targetID, displayName), [Diagnostic.Error("ASSET-BUILD", exception.Message)]);
+        m_buildStates[targetID] = state;
+    }
+
+    internal bool PublishCatalogFailure(Exception exception)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+        string state = exception.ToString();
+        if (string.Equals(m_catalogState, state, StringComparison.Ordinal))
+        {
+            return false;
+        }
+        Set(CreateSource(C_CATALOG_GROUP), [Diagnostic.Error("ASSET-CATALOG", exception.Message)]);
+        m_catalogState = state;
+        return true;
+    }
+
+    internal void PublishMissingReference(
+        Guid targetID,
+        string displayName,
+        Type expectedType
+    ) {
+        if (targetID == Guid.Empty)
+        {
+            return;
+        }
+        ArgumentNullException.ThrowIfNull(expectedType);
+        string resolvedDisplayName = string.IsNullOrWhiteSpace(displayName)
+                                     ? targetID.ToString()
+                                     : displayName;
+        string state = $"{resolvedDisplayName}:{expectedType.FullName}";
+        if (m_referenceStates.TryGetValue(targetID, out string? previous)
+            && string.Equals(previous, state, StringComparison.Ordinal)
+        ) {
+            return;
+        }
+        Set(
+            CreateSource(C_REFERENCE_GROUP, targetID, resolvedDisplayName),
+            [Diagnostic.Warning(
+                "ASSET-REFERENCE",
+                $"Asset '{resolvedDisplayName}' required as '{expectedType.FullName}' is missing."
+            )]
+        );
+        m_referenceStates[targetID] = state;
+    }
+
+    internal void ResolveCatalog()
+    {
+        if (string.IsNullOrEmpty(m_catalogState))
+        {
+            return;
+        }
+        Clear(CreateSource(C_CATALOG_GROUP));
+        m_catalogState = string.Empty;
+    }
+
     internal void SetActive(bool active)
     {
         if (m_active == active)
+        {
             return;
+        }
         m_active = active;
         if (active)
         {
             foreach (Report report in m_reports.Values)
+            {
                 Publish(report);
+            }
         }
         else
         {
             foreach (DiagnosticReporter reporter in m_reporters.Values)
+            {
                 reporter.Dispose();
+            }
             m_reporters.Clear();
         }
     }
@@ -207,77 +224,89 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
         IReadOnlyList<Diagnostic> diagnostics
     ) {
         if (m_reporters.Remove(source.id, out DiagnosticReporter? previous))
+        {
             previous.Dispose();
+        }
         var report = new Report(source, diagnostics.ToArray());
         m_reports[source.id] = report;
         if (m_active)
+        {
             Publish(report);
+        }
     }
 
     private void Clear(DiagnosticSource source)
     {
         m_reports.Remove(source.id);
         if (m_reporters.Remove(source.id, out DiagnosticReporter? reporter))
+        {
             reporter.Dispose();
+        }
     }
 
     private void Publish(Report report)
     {
         DiagnosticReporter reporter = m_diagnostics.CreateReporter(report.source);
         m_reporters.Add(report.source.id, reporter);
-        reporter.Replace(report.diagnostics.Select(static (
-            issue,
-            index
-        ) => new Diagnostic(
-            issue.code, issue.message, issue.severity, index.ToString(CultureInfo.InvariantCulture),
-            issue.objectId, issue.location)));
+        reporter.Replace(
+            report.diagnostics.Select(static (
+                issue,
+                index
+            ) => new Diagnostic(
+                issue.code,
+                issue.message,
+                issue.severity,
+                index.ToString(CultureInfo.InvariantCulture),
+                issue.objectID,
+                issue.location
+            ))
+        );
     }
 
-    private sealed record Report(
-        DiagnosticSource source,
-        Diagnostic[] diagnostics
-    );
-
-    private void ResolveBuild(Guid targetId)
+    private void ResolveBuild(Guid targetID)
     {
-        if (!m_buildStates.Remove(targetId))
+        if (!m_buildStates.Remove(targetID))
+        {
             return;
-        Clear(CreateSource(C_BUILD_GROUP, targetId));
+        }
+        Clear(CreateSource(C_BUILD_GROUP, targetID));
     }
 
-    private void ResolveReference(Guid targetId)
+    private void ResolveReference(Guid targetID)
     {
-        if (!m_referenceStates.Remove(targetId))
+        if (!m_referenceStates.Remove(targetID))
+        {
             return;
-        Clear(CreateSource(C_REFERENCE_GROUP, targetId));
+        }
+        Clear(CreateSource(C_REFERENCE_GROUP, targetID));
     }
 
     private static DiagnosticSource CreateSource(
         string group,
-        Guid? targetId = null,
+        Guid? targetID = null,
         string? displayName = null
     ) {
-        string id = targetId.HasValue
-            ? $"inno.assets.pipeline/{group}/{targetId.Value:N}"
-            : $"inno.assets.pipeline/{group}";
-        return new DiagnosticSource(
-            id,
-            string.IsNullOrWhiteSpace(displayName) ? group : displayName);
+        string id = targetID.HasValue
+                    ? $"inno.assets.pipeline/{group}/{targetID.Value:N}"
+                    : $"inno.assets.pipeline/{group}";
+        return new DiagnosticSource(id, string.IsNullOrWhiteSpace(displayName) ? group : displayName);
     }
 
     private static Diagnostic[] CreateImportDiagnostics(AssetMeta entry)
     {
         AssetImportStatus status = Enum.IsDefined(typeof(AssetImportStatus), entry.importStatus)
-            ? (AssetImportStatus)entry.importStatus
-            : AssetImportStatus.Failed;
+                                   ? (AssetImportStatus)entry.importStatus
+                                   : AssetImportStatus.Failed;
         DiagnosticLocation? location = string.IsNullOrWhiteSpace(entry.relativePath)
-            ? null
-            : new DiagnosticLocation(entry.relativePath);
+                                       ? null
+                                       : new DiagnosticLocation(entry.relativePath);
         string[] messages = entry.diagnostics
             .Where(static message => !string.IsNullOrWhiteSpace(message))
             .ToArray();
         if (messages.Length == 0 || status == AssetImportStatus.Missing)
+        {
             return [];
+        }
         return messages.Select(message => status switch
         {
             AssetImportStatus.Pending => Diagnostic.Info("ASSET-IMPORT-PENDING", message, location),
@@ -290,6 +319,10 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
     private static string CreateState(
         AssetMeta entry,
         IReadOnlyList<Diagnostic> diagnostics
-    )
-        => $"{entry.importStatus}:{entry.relativePath}:{string.Join('\n', diagnostics.Select(static value => value.message))}";
+    ) => $"{entry.importStatus}:{entry.relativePath}:{string.Join('\n', diagnostics.Select(static value => value.message))}";
+
+    private sealed record Report(
+        DiagnosticSource source,
+        Diagnostic[] diagnostics
+    );
 }

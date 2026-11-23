@@ -1,6 +1,7 @@
 using Inno.Core.Events;
 
 namespace Inno.Editor.Interactions;
+
 /// <summary>
 /// Synchronously closes transient edits before command execution or an extension-handler generation switch.
 /// </summary>

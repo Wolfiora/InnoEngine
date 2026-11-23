@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
-using Inno.Extensibility.Types;
+using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
-using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Inspection;
 
@@ -44,8 +43,9 @@ public sealed class InspectionDrawerRegistry : IDisposable
         TypeCatalog types,
         SerializationRegistry serialization
     ) {
+        ArgumentNullException.ThrowIfNull(serialization);
         m_registry = new InspectionTypeRegistry(interactions, factory, types);
-        m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
+        m_serialization = serialization;
     }
 
     /// <summary>
@@ -95,7 +95,8 @@ public sealed class InspectionDrawerRegistry : IDisposable
             target,
             renderer,
             this,
-            GetProperties(target));
+            GetProperties(target)
+        );
         return true;
     }
 
@@ -146,74 +147,56 @@ public sealed class InspectionDrawerRegistry : IDisposable
             target,
             renderer,
             this,
-            GetProperties(target));
+            GetProperties(target)
+        );
         return true;
     }
-
-    private IReadOnlyList<SerializedProperty> GetProperties(object target)
-        => target is ISerializable serializable
-            ? m_serialization.GetProperties(serializable)
-            : Array.Empty<SerializedProperty>();
 
     /// <summary>
     /// Releases every active drawer snapshot and unregisters the registry from type refreshes.
     /// </summary>
     public void Dispose() => m_registry.Dispose();
 
+    private IReadOnlyList<SerializedProperty> GetProperties(object target)
+        => target is ISerializable serializable
+           ? m_serialization.GetProperties(serializable)
+           : [];
+
+    private static void EnsureNoConflict(
+        IReadOnlyList<Registration> registrations,
+        InspectionDrawerAttribute attribute,
+        Type drawerType
+    ) {
+        foreach (Registration existing in registrations)
+        {
+            if (existing.targetType == attribute.targetType && existing.priority == attribute.priority
+                && (existing.drawerType == drawerType || !existing.conditional || !attribute.conditional)
+            ) {
+                throw new InvalidOperationException(
+                    $"Inspector drawers '{existing.drawerType.FullName}' and '{drawerType.FullName}' "
+                    + $"conflict for '{attribute.targetType.FullName}'."
+                );
+            }
+        }
+    }
+
     private sealed class InspectionTypeRegistry : TypeRegistry<Registration[]>
     {
         private readonly InspectionDrawerFactory m_factory;
-
-        internal EditorInteractions interactions { get; }
 
         internal InspectionTypeRegistry(
             EditorInteractions interactions,
             InspectionDrawerFactory factory,
             TypeCatalog types
-        )
-            : base(types)
+        ) : base(types)
         {
-            this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-            m_factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            ArgumentNullException.ThrowIfNull(interactions);
+            ArgumentNullException.ThrowIfNull(factory);
+            this.interactions = interactions;
+            m_factory = factory;
         }
 
-        internal IInspectionDrawer? Resolve(
-            object target,
-            bool exactOnly = false
-        ) {
-            Type targetType = target.GetType();
-            Registration? best = null;
-            Registration? ambiguous = null;
-            int bestDistance = int.MaxValue;
-            foreach (Registration registration in current)
-            {
-                if (exactOnly && registration.targetType != targetType)
-                    continue;
-                if (!DrawerTypeUtility.TryGetDistance(
-                        targetType,
-                        registration.targetType,
-                        registration.useForChildren,
-                        out int distance))
-                    continue;
-                if (!registration.drawer.CanInspect(target))
-                    continue;
-                if (best is null || distance < bestDistance ||
-                    distance == bestDistance && registration.priority > best.priority)
-                {
-                    best = registration;
-                    bestDistance = distance;
-                    ambiguous = null;
-                }
-                else if (distance == bestDistance && registration.priority == best.priority
-                    && registration.drawerType != best.drawerType)
-                    ambiguous = registration;
-            }
-            if (ambiguous is not null)
-                throw new InvalidOperationException($"Inspector drawers '{best!.drawerType.FullName}' and '{ambiguous.drawerType.FullName}' both accept '{targetType.FullName}' at equal specificity and priority.");
-            return best?.drawer;
-        }
-
-        internal IInspectionDrawer? ResolveExact(object target) => Resolve(target, exactOnly: true);
+        internal EditorInteractions interactions { get; }
 
         /// <summary>
         /// Builds a validated result from the current immutable input snapshot.
@@ -227,33 +210,37 @@ public sealed class InspectionDrawerRegistry : IDisposable
         protected override Registration[] Build(TypeCacheSnapshot types)
         {
             var drawers = new Dictionary<Type, IInspectionDrawer>();
-            var registrations = new List<Registration>();
+            List<Registration> registrations = [];
             foreach (Type drawerType in types.GetTypesWithAttribute<InspectionDrawerAttribute>()
-                         .Select(typeRef => typeRef.Resolve(types))
-                         .OrderBy(static type => type.FullName, StringComparer.Ordinal))
-            {
+                .Select(typeRef => typeRef.Resolve(types))
+                .OrderBy(static type => type.FullName, StringComparer.Ordinal)
+            ) {
                 IInspectionDrawer drawer = drawers.TryGetValue(drawerType, out IInspectionDrawer? existing)
-                    ? existing
-                    : OwnCandidateExtension(m_factory(drawerType));
+                                           ? existing
+                                           : OwnCandidateExtension(m_factory(drawerType));
                 if (!drawerType.IsInstanceOfType(drawer))
                 {
                     throw new InvalidOperationException(
-                        $"Inspection drawer factory returned '{drawer.GetType().FullName}' for " +
-                        $"'{drawerType.FullName}'.");
+                        $"Inspection drawer factory returned '{drawer.GetType().FullName}' for "
+                        + $"'{drawerType.FullName}'."
+                    );
                 }
                 drawers[drawerType] = drawer;
 
                 foreach (InspectionDrawerAttribute attribute in
-                         drawerType.GetCustomAttributes<InspectionDrawerAttribute>(false))
-                {
+                         drawerType.GetCustomAttributes<InspectionDrawerAttribute>(false)
+                ) {
                     EnsureNoConflict(registrations, attribute, drawerType);
-                    registrations.Add(new Registration(
-                        attribute.targetType,
-                        attribute.useForChildren,
-                        attribute.priority,
-                        attribute.conditional,
-                        drawerType,
-                        drawer));
+                    registrations.Add(
+                        new Registration(
+                            attribute.targetType,
+                            attribute.useForChildren,
+                            attribute.priority,
+                            attribute.conditional,
+                            drawerType,
+                            drawer
+                        )
+                    );
                 }
             }
             return registrations.ToArray();
@@ -267,23 +254,56 @@ public sealed class InspectionDrawerRegistry : IDisposable
         /// </param>
         protected override void DisposeSnapshot(Registration[] snapshot)
             => DisposeExtensions(snapshot.Select(static registration => registration.drawer));
-    }
 
-    private static void EnsureNoConflict(
-        IReadOnlyList<Registration> registrations,
-        InspectionDrawerAttribute attribute,
-        Type drawerType
-    ) {
-        foreach (Registration existing in registrations)
-        {
-            if (existing.targetType == attribute.targetType && existing.priority == attribute.priority
-                && (existing.drawerType == drawerType || !existing.conditional || !attribute.conditional))
+        internal IInspectionDrawer? Resolve(
+            object target,
+            bool exactOnly = false
+        ) {
+            Type targetType = target.GetType();
+            Registration? best = null;
+            Registration? ambiguous = null;
+            int bestDistance = int.MaxValue;
+            foreach (Registration registration in current)
+            {
+                if (exactOnly && registration.targetType != targetType)
+                {
+                    continue;
+                }
+                if (!DrawerTypeUtility.TryGetDistance(
+                    targetType,
+                    registration.targetType,
+                    registration.useForChildren,
+                    out int distance
+                )) {
+                    continue;
+                }
+                if (!registration.drawer.CanInspect(target))
+                {
+                    continue;
+                }
+                if (best is null || distance < bestDistance
+                    || distance == bestDistance && registration.priority > best.priority
+                ) {
+                    best = registration;
+                    bestDistance = distance;
+                    ambiguous = null;
+                }
+                else if (distance == bestDistance && registration.priority == best.priority
+                         && registration.drawerType != best.drawerType
+                ) {
+                    ambiguous = registration;
+                }
+            }
+            if (ambiguous is not null)
             {
                 throw new InvalidOperationException(
-                    $"Inspector drawers '{existing.drawerType.FullName}' and '{drawerType.FullName}' " +
-                    $"conflict for '{attribute.targetType.FullName}'.");
+                    $"Inspector drawers '{best!.drawerType.FullName}' and '{ambiguous.drawerType.FullName}' both accept '{targetType.FullName}' at equal specificity and priority."
+                );
             }
+            return best?.drawer;
         }
+
+        internal IInspectionDrawer? ResolveExact(object target) => Resolve(target, exactOnly: true);
     }
 
     private sealed record Registration(

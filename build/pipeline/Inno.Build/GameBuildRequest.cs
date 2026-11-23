@@ -27,9 +27,13 @@ public sealed class GameBuildRequest
     public void Validate()
     {
         if (profile is null)
+        {
             throw new InvalidDataException("A game build profile is required.");
+        }
         profile.Validate();
         if (string.IsNullOrWhiteSpace(outputDirectory))
+        {
             throw new InvalidDataException("A game output directory is required.");
+        }
     }
 }

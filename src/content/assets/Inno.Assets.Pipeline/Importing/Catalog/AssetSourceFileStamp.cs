@@ -13,44 +13,7 @@ internal readonly struct AssetSourceFileStamp : IEquatable<AssetSourceFileStamp>
         this.length = length;
         this.lastWriteUtcTicks = lastWriteUtcTicks;
         this.creationTimeUtcTicks = creationTimeUtcTicks;
-        isValid = true;
-    }
-
-    internal bool isValid { get; }
-    internal long length { get; }
-    internal long lastWriteUtcTicks { get; }
-    internal long creationTimeUtcTicks { get; }
-
-    internal static bool TryCapture(
-        string path,
-        out AssetSourceFileStamp stamp
-    ) {
-        try
-        {
-            var info = new FileInfo(path);
-            info.Refresh();
-            if (!info.Exists)
-            {
-                stamp = default;
-                return false;
-            }
-
-            stamp = new AssetSourceFileStamp(
-                info.Length,
-                info.LastWriteTimeUtc.Ticks,
-                info.CreationTimeUtc.Ticks);
-            return true;
-        }
-        catch (IOException)
-        {
-            stamp = default;
-            return false;
-        }
-        catch (UnauthorizedAccessException)
-        {
-            stamp = default;
-            return false;
-        }
+        this.isValid = true;
     }
 
     /// <summary>
@@ -63,10 +26,10 @@ internal readonly struct AssetSourceFileStamp : IEquatable<AssetSourceFileStamp>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool Equals(AssetSourceFileStamp other)
-        => isValid == other.isValid &&
-           length == other.length &&
-           lastWriteUtcTicks == other.lastWriteUtcTicks &&
-           creationTimeUtcTicks == other.creationTimeUtcTicks;
+        => isValid == other.isValid
+           && length == other.length
+           && lastWriteUtcTicks == other.lastWriteUtcTicks
+           && creationTimeUtcTicks == other.creationTimeUtcTicks;
 
     /// <summary>
     /// Determines whether this value and the supplied value represent the same logical state.
@@ -120,4 +83,38 @@ internal readonly struct AssetSourceFileStamp : IEquatable<AssetSourceFileStamp>
         AssetSourceFileStamp left,
         AssetSourceFileStamp right
     ) => !left.Equals(right);
+
+    internal bool isValid { get; }
+    internal long length { get; }
+    internal long lastWriteUtcTicks { get; }
+    internal long creationTimeUtcTicks { get; }
+
+    internal static bool TryCapture(
+        string path,
+        out AssetSourceFileStamp stamp
+    ) {
+        try
+        {
+            var info = new FileInfo(path);
+            info.Refresh();
+            if (!info.Exists)
+            {
+                stamp = default;
+                return false;
+            }
+
+            stamp = new AssetSourceFileStamp(info.Length, info.LastWriteTimeUtc.Ticks, info.CreationTimeUtc.Ticks);
+            return true;
+        }
+        catch (IOException)
+        {
+            stamp = default;
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            stamp = default;
+            return false;
+        }
+    }
 }

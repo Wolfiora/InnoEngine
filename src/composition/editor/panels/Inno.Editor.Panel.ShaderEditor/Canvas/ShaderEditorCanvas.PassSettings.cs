@@ -1,26 +1,32 @@
-using Inno.Editor.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Inno.Core.Graphs;
+using Inno.Editor.ImGui;
 using Inno.Rendering;
-using Inno.Rendering.Shaders;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
 using Inno.Rendering.Assets;
+using Inno.Rendering.Shaders;
+
+using EditorImGui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 
 namespace Inno.Editor.Panel.ShaderEditor;
+
 internal sealed partial class ShaderEditorCanvas
 {
     private void StageSettingsPopup(
         GraphNodeRecord node,
         ShaderGraphStageSettings stage
     ) {
-        EditorImGui.SetNextWindowSize(new(540, 600), (ImGuiCond.Appearing));
+        EditorImGui.SetNextWindowSize(new Vector2(540, 600), (ImGuiCond.Appearing));
         if (!EditorImGui.BeginPopup("##stage-settings"))
+        {
             return;
+        }
         try
         {
-            ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(Controller.document, owner.serialization, owner.context);
+            ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(controller.document, owner.serialization, owner.context);
             bool definitionChanged = false;
             EditorImGui.SeparatorText("Shader");
             string name = definition.name;
@@ -34,22 +40,30 @@ internal sealed partial class ShaderEditorCanvas
 
             Gesture();
             EditorImGui.SeparatorText(stage.stage + " Interface");
-            ShaderGraphPassProgram[] programs = ShaderGraphPrograms.Read(Controller.document, owner.serialization, owner.context);
+            ShaderGraphPassProgram[] programs = ShaderGraphPrograms.Read(controller.document, owner.serialization, owner.context);
             string activePass = draft.inspectedPass;
             if (!definition.passes.Any(pass => pass.name == activePass))
-                activePass = programs.FirstOrDefault(program => program.stages.Contains(node.id.value, StringComparer.Ordinal)).pass ?? definition.passes.FirstOrDefault().name ?? "";
+            {
+                activePass = programs.FirstOrDefault(program => program.stages.Contains(node.id.value, StringComparer.Ordinal)).pass
+                             ?? definition.passes.FirstOrDefault().name
+                             ?? string.Empty;
+            }
             InspectorRow("settings.pass", "Pass State", () =>
             {
                 if (!EditorUI.current.widgets.BeginBoundedCombo("##pass-state", activePass))
+                {
                     return;
+                }
                 try
                 {
                     foreach (ShaderPassDefinition available in definition.passes)
+                    {
                         if (EditorImGui.Selectable(available.name, activePass == available.name))
                         {
                             activePass = available.name;
                             draft.inspectedPass = activePass;
                         }
+                    }
                 }
                 finally
                 {
@@ -60,23 +74,40 @@ internal sealed partial class ShaderEditorCanvas
             bool assigned = assignment.stages?.Contains(node.id.value, StringComparer.Ordinal) == true;
             bool assignmentChanged = false;
             if (activePass.Length != 0)
-                InspectorRow("settings.shared-stage", "Shared Stage", () => assignmentChanged = EditorImGui.Checkbox("##shared-stage", ref assigned));
+            {
+                InspectorRow(
+                    "settings.shared-stage",
+                    "Shared Stage",
+                    () => assignmentChanged = EditorImGui.Checkbox("##shared-stage", ref assigned)
+                );
+            }
             if (assignmentChanged)
             {
-                var stageIds = (assignment.stages ?? []).Where(id => id != node.id.value).Select(static id => new GraphNodeId(id)).ToList();
+                List<GraphNodeID> stageIDs = (assignment.stages ?? [])
+                    .Where(id => id != node.id.value)
+                    .Select(static id => new GraphNodeID(id))
+                    .ToList();
                 if (assigned)
                 {
-                    stageIds.RemoveAll(id => Controller.document.FindNode(id) is GraphNodeRecord existing && Read(existing, "settings", new ShaderGraphStageSettings()).stage == stage.stage);
-                    stageIds.Add(node.id);
+                    stageIDs.RemoveAll(
+                        id => (
+                            controller.document.FindNode(id) is GraphNodeRecord existing
+                            && Read(existing, "settings", new ShaderGraphStageSettings()).stage == stage.stage
+                        )
+                    );
+                    stageIDs.Add(node.id);
                 }
 
-                Controller.ReplaceDocument(ShaderGraphPrograms.Bind(Controller.document, activePass, stageIds, owner.serialization, owner.context), "Assign Shared Shader Stage");
+                controller.ReplaceDocument(
+                    ShaderGraphPrograms.Bind(controller.document, activePass, stageIDs, owner.serialization, owner.context),
+                    "Assign Shared Shader Stage"
+                );
                 owner.Changed(draft);
             }
 
             for (int i = 0; i < stage.outputs.Length; i++)
             {
-                EditorImGui.PushId(i);
+                EditorImGui.PushID(i);
                 try
                 {
                     ShaderGraphOutput output = stage.outputs[i];
@@ -98,9 +129,13 @@ internal sealed partial class ShaderEditorCanvas
                         changed = true;
                     }
 
-                    string semantic = output.semantic ?? "";
+                    string semantic = output.semantic ?? string.Empty;
                     bool semanticChanged = false;
-                    InspectorRow("output.semantic", "Semantic", () => semanticChanged = EditorImGui.InputText("##semantic", ref semantic, 128));
+                    InspectorRow(
+                        "output.semantic",
+                        "Semantic",
+                        () => semanticChanged = EditorImGui.InputText("##semantic", ref semantic, 128)
+                    );
                     if (semanticChanged)
                     {
                         output.semantic = semantic;
@@ -110,7 +145,11 @@ internal sealed partial class ShaderEditorCanvas
                     Gesture();
                     int location = output.location;
                     bool locationChanged = false;
-                    InspectorRow("output.location", "Location", () => locationChanged = EditorImGui.InputInt("##location", ref location, 1, 100, 0));
+                    InspectorRow(
+                        "output.location",
+                        "Location",
+                        () => locationChanged = EditorImGui.InputInt("##location", ref location, 1, 100, 0)
+                    );
                     if (locationChanged)
                     {
                         output.location = location;
@@ -138,20 +177,22 @@ internal sealed partial class ShaderEditorCanvas
                 }
                 finally
                 {
-                    EditorImGui.PopId();
+                    EditorImGui.PopID();
                 }
             }
 
             if (CenteredAddButton("Add Output"))
             {
-                stage.outputs = [..stage.outputs, new()
-                {
-                    id = "output-" + Guid.NewGuid().ToString("N"),
-                    kind = stage.stage == ShaderStage.Vertex ? ShaderIrOutputKind.Varying : ShaderIrOutputKind.Color,
-                    semantic = "texcoord",
-                    location = stage.outputs.Length
-                }
-
+                stage.outputs =
+                [
+                    ..stage.outputs,
+                    new ShaderGraphOutput()
+                    {
+                        id = "output-" + Guid.NewGuid().ToString("N"),
+                        kind = stage.stage == ShaderStage.Vertex ? ShaderIrOutputKind.Varying : ShaderIrOutputKind.Color,
+                        semantic = "texcoord",
+                        location = stage.outputs.Length
+                    }
                 ];
                 Set(node, "settings", stage);
             }
@@ -190,10 +231,20 @@ internal sealed partial class ShaderEditorCanvas
                     changed = true;
                 }
 
-                bool depthWrite = state.depthWrite, multisampling = state.multisampling;
-                bool depthWriteChanged = false, multisamplingChanged = false;
-                InspectorRow("state.depth-write", "Depth Write", () => depthWriteChanged = EditorImGui.Checkbox("##depth-write", ref depthWrite));
-                InspectorRow("state.multisampling", "Multisampling", () => multisamplingChanged = EditorImGui.Checkbox("##multisampling", ref multisampling));
+                bool depthWrite = state.depthWrite;
+                bool multisampling = state.multisampling;
+                bool depthWriteChanged = false;
+                bool multisamplingChanged = false;
+                InspectorRow(
+                    "state.depth-write",
+                    "Depth Write",
+                    () => depthWriteChanged = EditorImGui.Checkbox("##depth-write", ref depthWrite)
+                );
+                InspectorRow(
+                    "state.multisampling",
+                    "Multisampling",
+                    () => multisamplingChanged = EditorImGui.Checkbox("##multisampling", ref multisampling)
+                );
                 if (depthWriteChanged)
                 {
                     state.depthWrite = depthWrite;
@@ -209,7 +260,9 @@ internal sealed partial class ShaderEditorCanvas
                 InspectorRow("state.blend-preset", "Blend Preset", () =>
                 {
                     if (!EditorUI.current.widgets.BeginBoundedCombo("##blend-preset", state.blend.enabled ? "Blended" : "Opaque"))
+                    {
                         return;
+                    }
                     try
                     {
                         if (EditorImGui.Selectable("Opaque"))
@@ -243,7 +296,11 @@ internal sealed partial class ShaderEditorCanvas
                 });
                 int mask = state.colorWriteMask;
                 bool maskChanged = false;
-                InspectorRow("state.write-mask", "RGBA Write Mask", () => maskChanged = EditorImGui.InputInt("##write-mask", ref mask, 1, 100, 0));
+                InspectorRow(
+                    "state.write-mask",
+                    "RGBA Write Mask",
+                    () => maskChanged = EditorImGui.InputInt("##write-mask", ref mask, 1, 100, 0)
+                );
                 if (maskChanged)
                 {
                     state.colorWriteMask = (byte)Math.Clamp(mask, 0, 15);
@@ -262,8 +319,12 @@ internal sealed partial class ShaderEditorCanvas
                         changed = true;
                     }
 
-                    RenderBlendFactor colorSource = blend.colorSource, colorDestination = blend.colorDestination, alphaSource = blend.alphaSource, alphaDestination = blend.alphaDestination;
-                    RenderBlendEquation colorEquation = blend.colorEquation, alphaEquation = blend.alphaEquation;
+                    RenderBlendFactor colorSource = blend.colorSource;
+                    RenderBlendFactor colorDestination = blend.colorDestination;
+                    RenderBlendFactor alphaSource = blend.alphaSource;
+                    RenderBlendFactor alphaDestination = blend.alphaDestination;
+                    RenderBlendEquation colorEquation = blend.colorEquation;
+                    RenderBlendEquation alphaEquation = blend.alphaEquation;
                     if (EnumControl("RGB Source", ref colorSource))
                     {
                         blend.colorSource = colorSource;
@@ -324,7 +385,7 @@ internal sealed partial class ShaderEditorCanvas
             {
                 for (int i = 0; i < definition.keywords.Length; i++)
                 {
-                    EditorImGui.PushId("keyword-" + i);
+                    EditorImGui.PushID("keyword-" + i);
                     try
                     {
                         ShaderKeywordDefinition keyword = definition.keywords[i];
@@ -341,7 +402,8 @@ internal sealed partial class ShaderEditorCanvas
                         for (int j = 0; j < keyword.options.Length; j++)
                         {
                             string option = keyword.options[j];
-                            bool optionChanged = false, remove = false;
+                            bool optionChanged = false;
+                            bool remove = false;
                             InspectorRow("variant.option", "Option " + (j + 1), () =>
                             {
                                 optionChanged = EditorImGui.InputText("##option", ref option, 128);
@@ -385,25 +447,29 @@ internal sealed partial class ShaderEditorCanvas
                     }
                     finally
                     {
-                        EditorImGui.PopId();
+                        EditorImGui.PopID();
                     }
                 }
 
                 if (CenteredAddButton("Add Keyword"))
                 {
-                    definition.keywords = [..definition.keywords, new("Keyword" + definition.keywords.Length, ["Off", "On"])];
+                    definition.keywords =
+                    [
+                        ..definition.keywords,
+                        new ShaderKeywordDefinition("Keyword" + definition.keywords.Length, ["Off", "On"])
+                    ];
                     definitionChanged = true;
                 }
             }
 
             if (definitionChanged)
             {
-                GraphDocument candidate = Controller.document.Clone();
+                GraphDocument candidate = controller.document.Clone();
                 candidate.SetMetadata(
-                    ShaderGraphDocument.definitionKey,
+                    ShaderGraphDocument.C_DEFINITION_KEY,
                     ShaderGraphDocument.Encode(owner.serialization.Serialize(definition, owner.context), owner.serialization, owner.context)
                 );
-                Controller.ReplaceDocument(candidate, "Edit Shader Settings", EditorImGui.IsAnyItemActive() ? draft.valueGesture : null);
+                controller.ReplaceDocument(candidate, "Edit Shader Settings", EditorImGui.IsAnyItemActive() ? draft.valueGesture : null);
                 owner.Changed(draft);
             }
         }
@@ -416,23 +482,26 @@ internal sealed partial class ShaderEditorCanvas
     private bool EnumControl<T>(
         string label,
         ref T value
-    )
-        where T : struct, Enum
+    ) where T : struct, Enum
     {
         bool changed = false;
         T current = value;
         InspectorRow("enum." + label, label, () =>
         {
             if (!EditorUI.current.widgets.BeginBoundedCombo("##enum", current.ToString()))
+            {
                 return;
+            }
             try
             {
                 foreach (T candidate in Enum.GetValues<T>())
+                {
                     if (EditorImGui.Selectable(candidate.ToString(), candidate.Equals(current)))
                     {
                         current = candidate;
                         changed = true;
                     }
+                }
             }
             finally
             {

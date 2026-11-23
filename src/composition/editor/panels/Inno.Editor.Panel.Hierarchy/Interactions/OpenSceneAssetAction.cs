@@ -4,7 +4,7 @@ using Inno.Scene;
 
 namespace Inno.Editor.Panel.Hierarchy;
 
-[EditorAction(HierarchyInteractionIds.C_OPEN, priority: 200)]
+[EditorAction(HierarchyInteractionIDs.C_OPEN, priority: 200)]
 internal sealed class OpenSceneAssetAction(IEditorSceneWorkspace workspace) : EditorAction<SceneAsset, string>
 {
     /// <summary>
@@ -17,9 +17,9 @@ internal sealed class OpenSceneAssetAction(IEditorSceneWorkspace workspace) : Ed
     /// The validated editor action state that represents the completed operation.
     /// </returns>
 protected override EditorActionState Query(EditorActionContext<SceneAsset, string> context)
-        => workspace.canPersist
-            ? EditorActionState.enabled
-            : EditorActionState.disabled;
+    => workspace.canPersist
+       ? EditorActionState.enabled
+       : EditorActionState.disabled;
 
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.
@@ -30,6 +30,6 @@ protected override EditorActionState Query(EditorActionContext<SceneAsset, strin
     protected override void Execute(EditorActionContext<SceneAsset, string> context)
     {
         GameScene scene = workspace.Open(context.argument);
-        _ = context.interactions.For(HierarchyInteractionIds.C_AREA, scene).Select();
+        _ = context.interactions.For(HierarchyInteractionIDs.C_AREA, scene).Select();
     }
 }

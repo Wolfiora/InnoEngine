@@ -1,15 +1,16 @@
-using Inno.Core.Mathematics;
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Inno.Core.Mathematics;
+using Inno.Extensibility.Types;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
 /// <summary>
 /// Decodes normalized CPU geometry committed by mesh importers.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("81298da5-7d85-5964-8cb9-6f70a1e0564f")]
+[StableTypeID("81298da5-7d85-5964-8cb9-6f70a1e0564f")]
 public static class GeometryAssetRuntime
 {
     /// <summary>
@@ -30,4 +31,3 @@ public static class GeometryAssetRuntime
         return GeometryArtifact.Decode(geometry.runtimePayload.Span);
     }
 }
-

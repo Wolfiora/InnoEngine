@@ -1,0 +1,318 @@
+using System.Collections.Generic;
+using Inno.Core.Mathematics;
+
+namespace Inno.UI;
+
+/// <summary>
+/// Provides retained-mode documents and backend-neutral UI frames to scripts and rendering plugins.
+/// </summary>
+public interface IUIService
+{
+    /// <summary>
+    /// Creates one independent UI context.
+    /// </summary>
+    /// <param name="options">
+    /// Initial layout and density for the new context.
+    /// </param>
+    /// <returns>
+    /// A handle owned by the caller until destruction.
+    /// </returns>
+    UIContextHandle CreateContext(UIContextOptions options);
+
+    /// <summary>
+    /// Destroys one UI context and all owned documents.
+    /// </summary>
+    /// <param name="context">
+    /// The context that owns the requested document or state.
+    /// </param>
+    void DestroyContext(UIContextHandle context);
+
+    /// <summary>
+    /// Changes one context's pixel dimensions and density.
+    /// </summary>
+    /// <param name="context">
+    /// The context that owns the requested document or state.
+    /// </param>
+    /// <param name="width">
+    /// New viewport width in physical pixels.
+    /// </param>
+    /// <param name="height">
+    /// New viewport height in physical pixels.
+    /// </param>
+    /// <param name="density">
+    /// Physical pixels per logical layout pixel.
+    /// </param>
+    void SetViewport(
+        UIContextHandle context,
+        int width,
+        int height,
+        float density = 1f
+    );
+
+    /// <summary>
+    /// Loads one explicitly tagged in-memory document.
+    /// </summary>
+    /// <param name="context">
+    /// The context that owns the requested document or state.
+    /// </param>
+    /// <param name="source">
+    /// Tagged source or named texture source for this operation.
+    /// </param>
+    /// <returns>
+    /// A document handle owned by the supplied context.
+    /// </returns>
+    UIDocumentHandle LoadDocument(
+        UIContextHandle context,
+        UIDocumentSource source
+    );
+
+    /// <summary>
+    /// Loads one imported document compatible with the selected backend.
+    /// </summary>
+    /// <param name="context">
+    /// The context that owns the requested document or state.
+    /// </param>
+    /// <param name="document">
+    /// The document owned by the supplied context.
+    /// </param>
+    /// <returns>
+    /// A document handle owned by the supplied context.
+    /// </returns>
+    UIDocumentHandle LoadDocument(
+        UIContextHandle context,
+        UIDocumentAsset document
+    );
+
+    /// <summary>
+    /// Shows one document.
+    /// </summary>
+    /// <param name="context">
+    /// The context that owns the requested document or state.
+    /// </param>
+    /// <param name="document">
+    /// The document owned by the supplied context.
+    /// </param>
+    void ShowDocument(
+        UIContextHandle context,
+        UIDocumentHandle document
+    );
+
+    /// <summary>
+    /// Hides one document.
+    /// </summary>
+    /// <param name="context">
+    /// The context that owns the requested document or state.
+    /// </param>
+    /// <param name="document">
+    /// The document owned by the supplied context.
+    /// </param>
+    void HideDocument(
+        UIContextHandle context,
+        UIDocumentHandle document
+    );
+
+    /// <summary>
+    /// Closes one document.
+    /// </summary>
+    /// <param name="context">
+    /// The context that owns the requested document or state.
+    /// </param>
+    /// <param name="document">
+    /// The document owned by the supplied context.
+    /// </param>
+    void CloseDocument(
+        UIContextHandle context,
+        UIDocumentHandle document
+    );
+
+    /// <summary>
+    /// Replaces an element's children with plain Unicode text.
+    /// </summary>
+    /// <param name="context">
+    /// The context that owns the requested document or state.
+    /// </param>
+    /// <param name="document">
+    /// The document owned by the supplied context.
+    /// </param>
+    /// <param name="elementID">
+    /// The target document element ID.
+    /// </param>
+    /// <param name="text">
+    /// Plain Unicode replacement text; the backend performs source-language escaping.
+    /// </param>
+    /// <returns>
+    /// True when the element exists and the replacement was applied; false when the element is absent.
+    /// This is not a comparison with the preceding text.
+    /// </returns>
+    bool SetText(
+        UIContextHandle context,
+        UIDocumentHandle document,
+        string elementID,
+        string text
+    );
+
+    /// <summary>
+    /// Replaces an element's children with an explicitly tagged source-language fragment.
+    /// </summary>
+    /// <param name="context">
+    /// The context that owns the requested document or state.
+    /// </param>
+    /// <param name="document">
+    /// The document owned by the supplied context.
+    /// </param>
+    /// <param name="elementID">
+    /// The target document element ID.
+    /// </param>
+    /// <param name="fragment">
+    /// Explicitly tagged replacement document fragment.
+    /// </param>
+    /// <returns>
+    /// True when the element exists and the fragment was applied; false when the element is absent.
+    /// This is not a comparison with the preceding content.
+    /// </returns>
+    bool SetContent(
+        UIContextHandle context,
+        UIDocumentHandle document,
+        string elementID,
+        UIDocumentFragment fragment
+    );
+
+    /// <summary>
+    /// Sets one element attribute.
+    /// </summary>
+    /// <param name="context">
+    /// The context that owns the requested document or state.
+    /// </param>
+    /// <param name="document">
+    /// The document owned by the supplied context.
+    /// </param>
+    /// <param name="elementID">
+    /// The target document element ID.
+    /// </param>
+    /// <param name="name">
+    /// Attribute name to change.
+    /// </param>
+    /// <param name="value">
+    /// New attribute value.
+    /// </param>
+    /// <returns>
+    /// True when the element exists and the attribute was assigned; false when the element is absent.
+    /// This is not a comparison with the preceding value.
+    /// </returns>
+    bool SetAttribute(
+        UIContextHandle context,
+        UIDocumentHandle document,
+        string elementID,
+        string name,
+        string value
+    );
+
+    /// <summary>
+    /// Activates or deactivates one element class.
+    /// </summary>
+    /// <param name="context">
+    /// The context that owns the requested document or state.
+    /// </param>
+    /// <param name="document">
+    /// The document owned by the supplied context.
+    /// </param>
+    /// <param name="elementID">
+    /// The target document element ID.
+    /// </param>
+    /// <param name="className">
+    /// CSS class name to toggle.
+    /// </param>
+    /// <param name="active">
+    /// Whether the CSS class is enabled.
+    /// </param>
+    /// <returns>
+    /// True when the element exists and its class state was assigned; false when the element is absent.
+    /// This is not a comparison with the preceding state.
+    /// </returns>
+    bool SetClass(
+        UIContextHandle context,
+        UIDocumentHandle document,
+        string elementID,
+        string className,
+        bool active
+    );
+
+    /// <summary>
+    /// Registers one named RGBA8 texture source.
+    /// </summary>
+    /// <param name="context">
+    /// The context that owns the requested document or state.
+    /// </param>
+    /// <param name="source">
+    /// Tagged source or named texture source for this operation.
+    /// </param>
+    /// <param name="texture">
+    /// Immutable RGBA texture data.
+    /// </param>
+    void RegisterTexture(
+        UIContextHandle context,
+        string source,
+        UITextureData texture
+    );
+
+    /// <summary>
+    /// Tests whether a visible document element receives pointer events at a pixel location.
+    /// </summary>
+    /// <param name="context">
+    /// The context that owns the requested document or state.
+    /// </param>
+    /// <param name="position">
+    /// Pointer position in context pixels.
+    /// </param>
+    /// <returns>
+    /// True when an interactive visible element occupies the location.
+    /// </returns>
+    bool HasElementAtPoint(
+        UIContextHandle context,
+        Vector2 position
+    );
+
+    /// <summary>
+    /// Processes current-frame input and advances one context.
+    /// </summary>
+    /// <param name="context">
+    /// The context that owns the requested document or state.
+    /// </param>
+    void Update(UIContextHandle context);
+
+    /// <summary>
+    /// Advances one context with explicitly routed viewport-local input.
+    /// </summary>
+    /// <param name="context">
+    /// The context that owns the requested document or state.
+    /// </param>
+    /// <param name="input">
+    /// The input snapshot routed to this context.
+    /// </param>
+    void Update(
+        UIContextHandle context,
+        UIInputSnapshot input
+    );
+
+    /// <summary>
+    /// Builds an immutable frame of incremental resources and ordered draws.
+    /// </summary>
+    /// <param name="context">
+    /// The context that owns the requested document or state.
+    /// </param>
+    /// <returns>
+    /// An immutable frame of ordered UI draws and resources.
+    /// </returns>
+    UIRenderFrame Render(UIContextHandle context);
+
+    /// <summary>
+    /// Drains document events queued by preceding updates.
+    /// </summary>
+    /// <param name="context">
+    /// The context that owns the requested document or state.
+    /// </param>
+    /// <returns>
+    /// Events emitted since the preceding drain, in dispatch order.
+    /// </returns>
+    IReadOnlyList<UIEvent> DrainEvents(UIContextHandle context);
+}

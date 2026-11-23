@@ -1,18 +1,19 @@
-using Inno.Core.Mathematics;
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Inno.Core.Mathematics;
+using Inno.Extensibility.Types;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
 /// <summary>
 /// Encodes and validates the stable backend-neutral geometry artifact shared by import and runtime stages.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("8dc59951-b7e4-5c80-b34d-d2ce84174b65")]
+[StableTypeID("8dc59951-b7e4-5c80-b34d-d2ce84174b65")]
 public static class GeometryArtifact
 {
-    private const ulong C_MAGIC = 0x4853454D4F4E4E49;
+    private const ulong C_MAGIC = 0x4853_454D_4F4E_4E49;
 
     /// <summary>
     /// Encodes normalized geometry into the immutable runtime artifact layout.
@@ -105,7 +106,8 @@ public static class GeometryArtifact
                     new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()),
                     new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()),
                     new Vector4(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()),
-                    new Vector2(reader.ReadSingle(), reader.ReadSingle()));
+                    new Vector2(reader.ReadSingle(), reader.ReadSingle())
+                );
             }
 
             for (int index = 0; index < indices.Length; index++)
@@ -142,9 +144,7 @@ public static class GeometryArtifact
     private static int RequireCount(
         int value,
         string kind
-    )
-        => value >= 0 && value <= 100_000_000
-            ? value
-            : throw new InvalidDataException($"Mesh artifact {kind} count is invalid.");
+    ) => value >= 0 && value <= 100_000_000
+         ? value
+         : throw new InvalidDataException($"Mesh artifact {kind} count is invalid.");
 }
-

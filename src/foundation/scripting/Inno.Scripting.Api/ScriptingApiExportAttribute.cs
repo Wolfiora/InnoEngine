@@ -28,10 +28,7 @@ public sealed class ScriptingApiExportAttribute : Attribute
     public ScriptingApiExportAttribute(
         Type type,
         ScriptingApiScope scope
-    )
-        : this(type, GetDefaultName(type), scope)
-    {
-    }
+    ) : this(type, GetDefaultName(type), scope) {}
 
     /// <summary>
     /// Creates an explicit script API export with a script-facing type name.
@@ -56,9 +53,12 @@ public sealed class ScriptingApiExportAttribute : Attribute
         string name,
         ScriptingApiScope scope
     ) {
-        this.type = type ?? throw new ArgumentNullException(nameof(type));
+        ArgumentNullException.ThrowIfNull(type);
+        this.type = type;
         if (string.IsNullOrWhiteSpace(name))
+        {
             throw new ArgumentException("A script-facing type name is required.", nameof(name));
+        }
         this.name = name;
         this.scope = scope;
     }
@@ -81,7 +81,9 @@ public sealed class ScriptingApiExportAttribute : Attribute
     private static string GetDefaultName(Type? type)
     {
         if (type is null)
+        {
             return string.Empty;
+        }
         int aritySeparator = type.Name.IndexOf('`');
         return aritySeparator < 0 ? type.Name : type.Name[..aritySeparator];
     }

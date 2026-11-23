@@ -4,12 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-
-using Inno.Extensibility.Modules;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
+using Inno.Extensibility.Modules;
 
 namespace Inno.Scripting.Compiler;
 
@@ -26,16 +25,21 @@ internal static class ScriptIdePluginReferenceBuilder
         foreach (ScriptAssemblyInput assembly in sources.assemblies)
         {
             if (assembly.domain != AssemblyDomain.InnoPlugin)
+            {
                 continue;
+            }
 
             ScriptApiReferenceSet api = assembly.scope == ScriptAssemblyScope.Editor
-                ? editorApi
-                : runtimeApi;
+                                        ? editorApi
+                                        : runtimeApi;
             string[] dependencies = assembly.references
-                .Select(name => results.TryGetValue(name, out string? path)
+                .Select(name => (
+                    results.TryGetValue(name, out string? path)
                     ? path
                     : throw new InvalidDataException(
-                        $"IDE Plugin dependency '{name}' for '{assembly.name}' is unavailable."))
+                        $"IDE Plugin dependency '{name}' for '{assembly.name}' is unavailable."
+                    )
+                ))
                 .ToArray();
             string fingerprint = CreateFingerprint(assembly, api, dependencies);
             string directory = Path.Combine(root, fingerprint);
@@ -55,17 +59,20 @@ internal static class ScriptIdePluginReferenceBuilder
         ScriptApiReferenceSet api,
         IReadOnlyList<string> dependencies
     ) {
-        string input = string.Join('\n', new[]
-        {
-            assembly.name,
-            assembly.definitionHash,
-            api.artifactFingerprint,
-            assembly.scope.ToString(),
-            assembly.nullable.ToString(),
-            assembly.allowUnsafe.ToString()
-        }.Concat(assembly.defines)
-            .Concat(assembly.sources.Select(static source => source.contentHash))
-            .Concat(dependencies));
+        string input = string.Join(
+            '\n',
+            new[]
+            {
+                assembly.name,
+                assembly.definitionHash,
+                api.artifactFingerprint,
+                assembly.scope.ToString(),
+                assembly.nullable.ToString(),
+                assembly.allowUnsafe.ToString()
+            }.Concat(assembly.defines)
+                .Concat(assembly.sources.Select(static source => source.contentHash))
+                .Concat(dependencies)
+        );
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(input)));
     }
 
@@ -84,12 +91,14 @@ internal static class ScriptIdePluginReferenceBuilder
             LanguageVersion.CSharp14,
             DocumentationMode.Parse,
             SourceCodeKind.Regular,
-            preprocessorSymbols: symbols);
+            preprocessorSymbols: symbols
+        );
         SyntaxTree[] trees = assembly.sources.Select(source =>
             CSharpSyntaxTree.ParseText(
                 SourceText.From(source.snapshotSource, Encoding.UTF8),
                 parseOptions,
-                source.sourcePath)).ToArray();
+                source.sourcePath
+            )).ToArray();
         IEnumerable<MetadataReference> references = api.environment.frameworkReferences
             .Concat(api.ideReferencePaths.Select(static path => MetadataReference.CreateFromFile(path)))
             .Concat(dependencies.Select(static path => MetadataReference.CreateFromFile(path)));
@@ -103,8 +112,10 @@ internal static class ScriptIdePluginReferenceBuilder
                 allowUnsafe: assembly.allowUnsafe,
                 deterministic: true,
                 nullableContextOptions: assembly.nullable
-                    ? NullableContextOptions.Enable
-                    : NullableContextOptions.Disable));
+                                        ? NullableContextOptions.Enable
+                                        : NullableContextOptions.Disable
+            )
+        );
         string temporaryPath = outputPath + ".tmp-" + Guid.NewGuid().ToString("N");
         try
         {
@@ -112,15 +123,19 @@ internal static class ScriptIdePluginReferenceBuilder
             {
                 EmitResult result = compilation.Emit(
                     stream,
-                    options: new EmitOptions(metadataOnly: true, includePrivateMembers: false));
+                    options: new EmitOptions(metadataOnly: true, includePrivateMembers: false)
+                );
                 if (!result.Success)
                 {
-                    string errors = string.Join(Environment.NewLine,
+                    string errors = string.Join(
+                        Environment.NewLine,
                         result.Diagnostics
                             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-                            .Select(static diagnostic => diagnostic.ToString()));
+                            .Select(static diagnostic => diagnostic.ToString())
+                    );
                     throw new InvalidDataException(
-                        $"Failed to generate IDE Plugin reference '{assembly.name}':{Environment.NewLine}{errors}");
+                        $"Failed to generate IDE Plugin reference '{assembly.name}':{Environment.NewLine}{errors}"
+                    );
                 }
             }
             try
@@ -135,7 +150,9 @@ internal static class ScriptIdePluginReferenceBuilder
         finally
         {
             if (File.Exists(temporaryPath))
+            {
                 File.Delete(temporaryPath);
+            }
         }
     }
 }

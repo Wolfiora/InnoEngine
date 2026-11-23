@@ -1,11 +1,10 @@
-using Inno.Extensibility.Reload;
 using System;
-
 using Inno.Assets;
-using Inno.Extensibility.Modules;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
+using Inno.Extensibility.Types;
 using Inno.Runtime;
 using Inno.Scene;
 
@@ -55,9 +54,7 @@ internal static class SceneReloadIntegration
             ArgumentNullException.ThrowIfNull(context);
             using IDisposable scope = m_runtimeSession.EnterExecutionScope();
             TypeCacheReloadContext typeReload = context.GetContext<TypeCacheReloadContext>();
-            return new SceneReloadTransaction(
-                m_runtimeSession,
-                m_reload.Capture(typeReload));
+            return new SceneReloadTransaction(m_runtimeSession, m_reload.Capture(typeReload));
         }
 
         /// <summary>
@@ -83,7 +80,9 @@ internal static class SceneReloadIntegration
             using IDisposable scope = runtimeSession.EnterExecutionScope();
             migration.PrepareForActivation();
             foreach (object retiredObject in migration.retiredObjects)
+            {
                 runtimeSession.StopCoroutines(retiredObject);
+            }
         }
 
         /// <summary>
@@ -103,8 +102,7 @@ internal static class SceneReloadIntegration
             using IDisposable scope = runtimeSession.EnterExecutionScope();
             migration.Complete();
             SceneStateDiagnosticPublisher.PublishReload(migration.diagnostics);
-            SceneStateDiagnosticPublisher.PublishMissingElements(
-                runtimeSession.scenes.loadedScenes);
+            SceneStateDiagnosticPublisher.PublishMissingElements(runtimeSession.scenes.loadedScenes);
         }
 
         /// <summary>
@@ -123,8 +121,7 @@ internal static class SceneReloadIntegration
         {
             using IDisposable scope = runtimeSession.EnterExecutionScope();
             migration.RestorePreviousState();
-            SceneStateDiagnosticPublisher.PublishMissingElements(
-                runtimeSession.scenes.loadedScenes);
+            SceneStateDiagnosticPublisher.PublishMissingElements(runtimeSession.scenes.loadedScenes);
         }
     }
 
@@ -139,7 +136,9 @@ internal static class SceneReloadIntegration
         {
             IDisposable? current = m_registration;
             if (current is null)
+            {
                 return;
+            }
             m_registration = null;
             try
             {
@@ -151,5 +150,4 @@ internal static class SceneReloadIntegration
             }
         }
     }
-
 }

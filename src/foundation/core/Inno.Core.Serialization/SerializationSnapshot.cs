@@ -13,7 +13,10 @@ namespace Inno.Core.Serialization;
 /// </remarks>
 public sealed class SerializationSnapshot
 {
-    internal SerializationSnapshot(SerializationNode root) => this.root = root;
+    internal SerializationSnapshot(SerializationNode root)
+    {
+        this.root = root;
+    }
 
     /// <summary>
     /// Encodes this capture using the same deterministic binary format as ordinary serialization.
@@ -29,10 +32,6 @@ public sealed class SerializationSnapshot
     /// <param name="destination">
     /// The writable caller-owned stream, which remains open.
     /// </param>
-    /// <remarks>
-    /// Immutable keyed objects may retain canonical encoded blocks of at most 64 KiB each. Larger
-    /// objects remain streamed, and cached bytes never contain source objects or generation references.
-    /// </remarks>
     /// <exception cref="ArgumentNullException">
     /// The destination is null.
     /// </exception>
@@ -42,11 +41,17 @@ public sealed class SerializationSnapshot
     /// <exception cref="IOException">
     /// The destination rejects a write; its partial bytes remain the caller's responsibility.
     /// </exception>
+    /// <remarks>
+    /// Immutable keyed objects may retain canonical encoded blocks of at most 64 KiB each. Larger
+    /// objects remain streamed, and cached bytes never contain source objects or generation references.
+    /// </remarks>
     public void WriteTo(Stream destination)
     {
         ArgumentNullException.ThrowIfNull(destination);
         if (!destination.CanWrite)
+        {
             throw new ArgumentException("A writable serialization destination is required.", nameof(destination));
+        }
         BinarySerializationFormat.WriteTo(destination, root);
     }
 

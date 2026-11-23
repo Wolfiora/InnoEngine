@@ -1,7 +1,8 @@
 using System;
 using System.IO;
-using Inno.Core.IO;
 using Microsoft.Build.Framework;
+using Inno.Core.IO;
+
 using BuildTask = Microsoft.Build.Utilities.Task;
 
 namespace Inno.Build.TaskHosting;
@@ -47,9 +48,15 @@ public sealed class RegisterTaskPublisherTask : BuildTask
             PathBoundary.RequireUnlinkedPath(root, bootstrap);
             string assembly = Path.GetFullPath(typeof(RegisterTaskPublisherTask).Assembly.Location);
             string expected = Path.Combine(directory, "Inno.Build.TaskHosting.dll");
-            if (!string.Equals(assembly, expected, OperatingSystem.IsWindows()
-                ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+            if (!string.Equals(
+                assembly,
+                expected,
+                OperatingSystem.IsWindows()
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal
+            )) {
                 throw new InvalidOperationException("Publisher ownership must identify this task's actual private assembly.");
+            }
             TaskRuntimePreparation.RegisterProcessOwner(directory);
             TaskRuntimePreparation.RegisterProcessOwner(bootstrap);
             return true;

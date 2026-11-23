@@ -7,7 +7,6 @@ namespace Inno.Adapter.Rendering.Bgfx;
 internal sealed unsafe partial class BgfxCommandEncoder
 
 {
-
     /// <summary>
     /// Updates the transform state and applies the resulting invariants.
     /// </summary>
@@ -38,10 +37,11 @@ internal sealed unsafe partial class BgfxCommandEncoder
         ArgumentNullException.ThrowIfNull(state);
         _ = RequireGraphicsPipeline();
         if (state.blend.alphaToCoverage
-            && !m_device.capabilities.Supports(GraphicsCapability.AlphaToCoverage))
-        {
+            && !m_device.capabilities.Supports(GraphicsCapability.AlphaToCoverage)
+        ) {
             throw new NotSupportedException(
-                "The active graphics backend does not support alpha-to-coverage rasterization.");
+                "The active graphics backend does not support alpha-to-coverage rasterization."
+            );
         }
         m_rasterState = state;
     }
@@ -58,8 +58,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         _ = RequireGraphicsPipeline();
         if (state.enabled && state.writeMask != byte.MaxValue)
         {
-            throw new NotSupportedException(
-                "BGFX does not expose an independent dynamic stencil write mask.");
+            throw new NotSupportedException("BGFX does not expose an independent dynamic stencil write mask.");
         }
         m_stencilState = state;
     }
@@ -90,11 +89,12 @@ internal sealed unsafe partial class BgfxCommandEncoder
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
         bgfx.set_view_rect(
-            m_viewId,
+            m_viewID,
             checked((ushort)x),
             checked((ushort)y),
             checked((ushort)width),
-            checked((ushort)height));
+            checked((ushort)height)
+        );
     }
 
     /// <summary>
@@ -127,7 +127,8 @@ internal sealed unsafe partial class BgfxCommandEncoder
             checked((ushort)x),
             checked((ushort)y),
             checked((ushort)width),
-            checked((ushort)height));
+            checked((ushort)height)
+        );
     }
 
     private static ulong RasterState(RenderRasterState state)
@@ -192,7 +193,9 @@ internal sealed unsafe partial class BgfxCommandEncoder
         }
 
         if (state.blend.alphaToCoverage)
+        {
             flags |= bgfx.StateFlags.BlendAlphaToCoverage;
+        }
 
         if (state.multisampling)
         {
@@ -214,12 +217,12 @@ internal sealed unsafe partial class BgfxCommandEncoder
 
     private static bgfx.Access StorageAccess(RenderStorageAccess access)
         => access switch
-        {
-            RenderStorageAccess.Read => bgfx.Access.Read,
-            RenderStorageAccess.Write => bgfx.Access.Write,
-            RenderStorageAccess.ReadWrite => bgfx.Access.ReadWrite,
-            _ => throw new ArgumentOutOfRangeException(nameof(access))
-        };
+    {
+        RenderStorageAccess.Read => bgfx.Access.Read,
+        RenderStorageAccess.Write => bgfx.Access.Write,
+        RenderStorageAccess.ReadWrite => bgfx.Access.ReadWrite,
+        _ => throw new ArgumentOutOfRangeException(nameof(access))
+    };
 
     private static uint SamplerFlags(RenderSamplerState state)
     {
@@ -228,7 +231,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
             RenderSamplerFilter.Point => bgfx.SamplerFlags.Point,
             RenderSamplerFilter.Linear => bgfx.SamplerFlags.None,
             RenderSamplerFilter.Anisotropic => bgfx.SamplerFlags.MinAnisotropic
-                | bgfx.SamplerFlags.MagAnisotropic,
+                                               | bgfx.SamplerFlags.MagAnisotropic,
             _ => throw new ArgumentOutOfRangeException(nameof(state))
         };
         flags |= AddressFlags(state.addressU, 'U');
@@ -240,21 +243,20 @@ internal sealed unsafe partial class BgfxCommandEncoder
     private static bgfx.SamplerFlags AddressFlags(
         RenderSamplerAddressMode mode,
         char axis
-    )
-        => (axis, mode) switch
-        {
-            (_, RenderSamplerAddressMode.Repeat) => bgfx.SamplerFlags.None,
-            ('U', RenderSamplerAddressMode.Mirror) => bgfx.SamplerFlags.UMirror,
-            ('U', RenderSamplerAddressMode.Clamp) => bgfx.SamplerFlags.UClamp,
-            ('U', RenderSamplerAddressMode.Border) => bgfx.SamplerFlags.UBorder,
-            ('V', RenderSamplerAddressMode.Mirror) => bgfx.SamplerFlags.VMirror,
-            ('V', RenderSamplerAddressMode.Clamp) => bgfx.SamplerFlags.VClamp,
-            ('V', RenderSamplerAddressMode.Border) => bgfx.SamplerFlags.VBorder,
-            ('W', RenderSamplerAddressMode.Mirror) => bgfx.SamplerFlags.WMirror,
-            ('W', RenderSamplerAddressMode.Clamp) => bgfx.SamplerFlags.WClamp,
-            ('W', RenderSamplerAddressMode.Border) => bgfx.SamplerFlags.WBorder,
-            _ => throw new ArgumentOutOfRangeException(nameof(mode))
-        };
+    ) => (axis, mode) switch
+    {
+        (_, RenderSamplerAddressMode.Repeat) => bgfx.SamplerFlags.None,
+        ('U', RenderSamplerAddressMode.Mirror) => bgfx.SamplerFlags.UMirror,
+        ('U', RenderSamplerAddressMode.Clamp) => bgfx.SamplerFlags.UClamp,
+        ('U', RenderSamplerAddressMode.Border) => bgfx.SamplerFlags.UBorder,
+        ('V', RenderSamplerAddressMode.Mirror) => bgfx.SamplerFlags.VMirror,
+        ('V', RenderSamplerAddressMode.Clamp) => bgfx.SamplerFlags.VClamp,
+        ('V', RenderSamplerAddressMode.Border) => bgfx.SamplerFlags.VBorder,
+        ('W', RenderSamplerAddressMode.Mirror) => bgfx.SamplerFlags.WMirror,
+        ('W', RenderSamplerAddressMode.Clamp) => bgfx.SamplerFlags.WClamp,
+        ('W', RenderSamplerAddressMode.Border) => bgfx.SamplerFlags.WBorder,
+        _ => throw new ArgumentOutOfRangeException(nameof(mode))
+    };
 
     private static uint StencilFlags(
         RenderStencilState state,
@@ -314,8 +316,8 @@ internal sealed unsafe partial class BgfxCommandEncoder
         ulong alphaSource = (ulong)BlendFactor(state.alphaSource);
         ulong alphaDestination = (ulong)BlendFactor(state.alphaDestination);
         return colorSource
-            | (colorDestination << 4)
-            | ((alphaSource | (alphaDestination << 4)) << 8);
+               | (colorDestination << 4)
+               | ((alphaSource | (alphaDestination << 4)) << 8);
     }
 
     private static ulong BlendEquation(RenderBlendState state)
@@ -325,34 +327,33 @@ internal sealed unsafe partial class BgfxCommandEncoder
         return color | (alpha << 3);
     }
 
-    private static bgfx.StateFlags BlendFactor(RenderBlendFactor factor)
-        => factor switch
-        {
-            RenderBlendFactor.Zero => bgfx.StateFlags.BlendZero,
-            RenderBlendFactor.One => bgfx.StateFlags.BlendOne,
-            RenderBlendFactor.SourceColor => bgfx.StateFlags.BlendSrcColor,
-            RenderBlendFactor.InverseSourceColor => bgfx.StateFlags.BlendInvSrcColor,
-            RenderBlendFactor.SourceAlpha => bgfx.StateFlags.BlendSrcAlpha,
-            RenderBlendFactor.InverseSourceAlpha => bgfx.StateFlags.BlendInvSrcAlpha,
-            RenderBlendFactor.DestinationAlpha => bgfx.StateFlags.BlendDstAlpha,
-            RenderBlendFactor.InverseDestinationAlpha => bgfx.StateFlags.BlendInvDstAlpha,
-            RenderBlendFactor.DestinationColor => bgfx.StateFlags.BlendDstColor,
-            RenderBlendFactor.InverseDestinationColor => bgfx.StateFlags.BlendInvDstColor,
-            RenderBlendFactor.SourceAlphaSaturate => bgfx.StateFlags.BlendSrcAlphaSat,
-            RenderBlendFactor.Constant => bgfx.StateFlags.BlendFactor,
-            RenderBlendFactor.InverseConstant => bgfx.StateFlags.BlendInvFactor,
-            _ => throw new ArgumentOutOfRangeException(nameof(factor))
-        };
-
     private static bgfx.StateFlags BlendEquation(RenderBlendEquation equation)
         => equation switch
-        {
-            RenderBlendEquation.Add => bgfx.StateFlags.BlendEquationAdd,
-            RenderBlendEquation.Subtract => bgfx.StateFlags.BlendEquationSub,
-            RenderBlendEquation.ReverseSubtract => bgfx.StateFlags.BlendEquationRevsub,
-            RenderBlendEquation.Minimum => bgfx.StateFlags.BlendEquationMin,
-            RenderBlendEquation.Maximum => bgfx.StateFlags.BlendEquationMax,
-            _ => throw new ArgumentOutOfRangeException(nameof(equation))
-        };
+    {
+        RenderBlendEquation.Add => bgfx.StateFlags.BlendEquationAdd,
+        RenderBlendEquation.Subtract => bgfx.StateFlags.BlendEquationSub,
+        RenderBlendEquation.ReverseSubtract => bgfx.StateFlags.BlendEquationRevsub,
+        RenderBlendEquation.Minimum => bgfx.StateFlags.BlendEquationMin,
+        RenderBlendEquation.Maximum => bgfx.StateFlags.BlendEquationMax,
+        _ => throw new ArgumentOutOfRangeException(nameof(equation))
+    };
 
+    private static bgfx.StateFlags BlendFactor(RenderBlendFactor factor)
+        => factor switch
+    {
+        RenderBlendFactor.Zero => bgfx.StateFlags.BlendZero,
+        RenderBlendFactor.One => bgfx.StateFlags.BlendOne,
+        RenderBlendFactor.SourceColor => bgfx.StateFlags.BlendSrcColor,
+        RenderBlendFactor.InverseSourceColor => bgfx.StateFlags.BlendInvSrcColor,
+        RenderBlendFactor.SourceAlpha => bgfx.StateFlags.BlendSrcAlpha,
+        RenderBlendFactor.InverseSourceAlpha => bgfx.StateFlags.BlendInvSrcAlpha,
+        RenderBlendFactor.DestinationAlpha => bgfx.StateFlags.BlendDstAlpha,
+        RenderBlendFactor.InverseDestinationAlpha => bgfx.StateFlags.BlendInvDstAlpha,
+        RenderBlendFactor.DestinationColor => bgfx.StateFlags.BlendDstColor,
+        RenderBlendFactor.InverseDestinationColor => bgfx.StateFlags.BlendInvDstColor,
+        RenderBlendFactor.SourceAlphaSaturate => bgfx.StateFlags.BlendSrcAlphaSat,
+        RenderBlendFactor.Constant => bgfx.StateFlags.BlendFactor,
+        RenderBlendFactor.InverseConstant => bgfx.StateFlags.BlendInvFactor,
+        _ => throw new ArgumentOutOfRangeException(nameof(factor))
+    };
 }

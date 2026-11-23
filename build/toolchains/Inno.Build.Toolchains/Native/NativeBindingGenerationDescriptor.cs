@@ -14,6 +14,63 @@ namespace Inno.Build.Toolchains;
 public sealed class NativeBindingGenerationDescriptor
 {
     /// <summary>
+    /// Gets the immutable input identity assigned to this target generation.
+    /// </summary>
+    public required string fingerprint { get; init; }
+
+    /// <summary>
+    /// Gets whether the generated context uses runtime-resolved imports instead of a module provider.
+    /// This initialization choice is independent of static or shared native linkage.
+    /// </summary>
+    public required bool usesRuntimeImports { get; init; }
+
+    /// <summary>
+    /// Gets the absolute managed source path selected by the component project.
+    /// </summary>
+    public required string bindingsPath { get; init; }
+
+    /// <summary>
+    /// Gets the complete native artifact and compilation-requirement directory, or empty when none is required.
+    /// </summary>
+    public required string nativeDirectory { get; init; }
+
+    /// <summary>
+    /// Gets the immutable artifact root protected by reading leases, or an empty value for mutable host sources.
+    /// </summary>
+    public required string artifactDirectory { get; init; }
+
+    /// <summary>
+    /// Gets the publisher root coordinating immutable artifact readers and retirement, or empty for host sources.
+    /// This owner remains unchanged when component sources are copied into a frozen build workspace.
+    /// </summary>
+    public required string artifactOwnerDirectory { get; init; }
+
+    /// <summary>
+    /// Atomically writes this completed generation to a request-owned descriptor file.
+    /// </summary>
+    /// <param name="path">
+    /// The descriptor destination; a unique path keeps concurrent requests independent.
+    /// </param>
+    public void Write(string path)
+    {
+        string destination = Path.GetFullPath(path);
+        Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+        string staging = destination + ".staging-" + Guid.NewGuid().ToString("N");
+        try
+        {
+            File.WriteAllText(staging, JsonSerializer.Serialize(this));
+            File.Move(staging, destination, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(staging))
+            {
+                File.Delete(staging);
+            }
+        }
+    }
+
+    /// <summary>
     /// Writes the exact native binding identities for a subsequent managed build without reselecting generations.
     /// Identical content preserves the existing import timestamp; changed content is installed atomically.
     /// </summary>
@@ -46,7 +103,9 @@ public sealed class NativeBindingGenerationDescriptor
         document.Save(buffer);
         byte[] content = buffer.ToArray();
         if (File.Exists(destination) && File.ReadAllBytes(destination).AsSpan().SequenceEqual(content))
+        {
             return;
+        }
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
         AtomicFile.WriteAllBytes(destination, content);
     }
@@ -84,40 +143,10 @@ public sealed class NativeBindingGenerationDescriptor
         IReadOnlyDictionary<string, NativeLibraryKind> linkage
     ) {
         if (!XNode.DeepEquals(XDocument.Load(path), CreateSelection(generations, linkage)))
+        {
             throw new InvalidDataException("Native publication must preserve the exact binding selection used by managed compilation.");
+        }
     }
-
-    /// <summary>
-    /// Gets the immutable input identity assigned to this target generation.
-    /// </summary>
-    public required string fingerprint { get; init; }
-
-    /// <summary>
-    /// Gets whether the generated context uses runtime-resolved imports instead of a module provider.
-    /// This initialization choice is independent of static or shared native linkage.
-    /// </summary>
-    public required bool usesRuntimeImports { get; init; }
-
-    /// <summary>
-    /// Gets the absolute managed source path selected by the component project.
-    /// </summary>
-    public required string bindingsPath { get; init; }
-
-    /// <summary>
-    /// Gets the complete native artifact and compilation-requirement directory, or empty when none is required.
-    /// </summary>
-    public required string nativeDirectory { get; init; }
-
-    /// <summary>
-    /// Gets the immutable artifact root protected by reading leases, or an empty value for mutable host sources.
-    /// </summary>
-    public required string artifactDirectory { get; init; }
-
-    /// <summary>
-    /// Gets the publisher root coordinating immutable artifact readers and retirement, or empty for host sources.
-    /// This owner remains unchanged when component sources are copied into a frozen build workspace.
-    /// </summary>
-    public required string artifactOwnerDirectory { get; init; }
 
     /// <summary>
     /// Reads and validates the result of a completed component generation request.
@@ -140,32 +169,10 @@ public sealed class NativeBindingGenerationDescriptor
     public static NativeBindingGenerationDescriptor Load(string path)
     {
         NativeBindingGenerationDescriptor descriptor = JsonSerializer.Deserialize<NativeBindingGenerationDescriptor>(
-            File.ReadAllText(path)) ?? throw new InvalidDataException("The binding generation descriptor is empty.");
+            File.ReadAllText(path)
+        ) ?? throw new InvalidDataException("The binding generation descriptor is empty.");
         descriptor.Validate();
         return descriptor;
-    }
-
-    /// <summary>
-    /// Atomically writes this completed generation to a request-owned descriptor file.
-    /// </summary>
-    /// <param name="path">
-    /// The descriptor destination; a unique path keeps concurrent requests independent.
-    /// </param>
-    public void Write(string path)
-    {
-        string destination = Path.GetFullPath(path);
-        Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-        string staging = destination + ".staging-" + Guid.NewGuid().ToString("N");
-        try
-        {
-            File.WriteAllText(staging, JsonSerializer.Serialize(this));
-            File.Move(staging, destination, overwrite: true);
-        }
-        finally
-        {
-            if (File.Exists(staging))
-                File.Delete(staging);
-        }
     }
 
     internal void Validate()
@@ -178,12 +185,20 @@ public sealed class NativeBindingGenerationDescriptor
             || descriptor.artifactDirectory.Length == 0 && descriptor.artifactOwnerDirectory.Length != 0
             || descriptor.artifactDirectory.Length > 0 && !Path.IsPathFullyQualified(descriptor.artifactOwnerDirectory)
             || descriptor.artifactDirectory.Length > 0 && (!Path.IsPathFullyQualified(descriptor.artifactDirectory)
-                || Path.GetFullPath(descriptor.bindingsPath) != Path.Combine(Path.GetFullPath(descriptor.artifactDirectory), "Generated", "Bindings.cs"))
+                                                           || Path.GetFullPath(descriptor.bindingsPath) != Path.Combine(
+                                                               Path.GetFullPath(descriptor.artifactDirectory),
+                                                               "Generated",
+                                                               "Bindings.cs"
+                                                           ))
             || descriptor.nativeDirectory.Length > 0 && (!Path.IsPathFullyQualified(descriptor.nativeDirectory)
-                || !Directory.Exists(descriptor.nativeDirectory)))
+                                                         || !Directory.Exists(descriptor.nativeDirectory))
+        ) {
             throw new InvalidDataException("The binding generation descriptor does not identify complete outputs.");
+        }
         if (descriptor.artifactDirectory.Length > 0)
+        {
             BuildCacheCleanupPlan.RequireChild(descriptor.artifactOwnerDirectory, descriptor.artifactDirectory);
+        }
     }
 
     private static XDocument CreateSelection(
@@ -193,25 +208,39 @@ public sealed class NativeBindingGenerationDescriptor
         ArgumentNullException.ThrowIfNull(generations);
         ArgumentNullException.ThrowIfNull(linkage);
         if (generations.Count != linkage.Count || generations.Keys.Any(key => !linkage.ContainsKey(key)))
+        {
             throw new ArgumentException("Binding selections require exact component linkage coverage.", nameof(linkage));
+        }
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var document = new XElement("Project");
-        foreach (var entry in generations.OrderBy(static entry => entry.Key, StringComparer.Ordinal))
-        {
+        foreach (KeyValuePair<string, NativeBindingGenerationDescriptor> entry in generations.OrderBy(
+            static entry => entry.Key,
+            StringComparer.Ordinal
+        )) {
             string name = Path.GetFileNameWithoutExtension(entry.Key);
-            if (string.IsNullOrWhiteSpace(name) || name.Any(static value => !char.IsAsciiLetterOrDigit(value)
-                && value is not ('.' or '_' or '-')) || !names.Add(name))
+            if (string.IsNullOrWhiteSpace(name) || name.Any(static value => (
+                !char.IsAsciiLetterOrDigit(value)
+                && value is not ('.' or '_' or '-')
+            )) || !names.Add(name)
+            ) {
                 throw new ArgumentException("Binding selections require unique portable project names.", nameof(generations));
+            }
             if (!Enum.IsDefined(linkage[entry.Key]))
+            {
                 throw new ArgumentException("A selected native component requires supported linkage.", nameof(linkage));
-            document.Add(new XElement("PropertyGroup",
-                new XAttribute("Condition", "'$(MSBuildProjectName)' == '" + name + "'"),
-                new XElement("BindGenExpectedFingerprint", entry.Value.fingerprint),
-                new XElement("BindGenArtifactDirectory", entry.Value.artifactDirectory),
-                new XElement("BindGenArtifactOwnerDirectory", entry.Value.artifactOwnerDirectory),
-                new XElement("InnoNativeLibraryKind", linkage[entry.Key]),
-                new XElement("InnoNativeRuntimeImports", entry.Value.usesRuntimeImports ? "true" : "false"),
-                new XElement("BindGenOutputDirectory", Path.GetDirectoryName(entry.Value.bindingsPath))));
+            }
+            document.Add(
+                new XElement(
+                    "PropertyGroup",
+                    new XAttribute("Condition", "'$(MSBuildProjectName)' == '" + name + "'"),
+                    new XElement("BindGenExpectedFingerprint", entry.Value.fingerprint),
+                    new XElement("BindGenArtifactDirectory", entry.Value.artifactDirectory),
+                    new XElement("BindGenArtifactOwnerDirectory", entry.Value.artifactOwnerDirectory),
+                    new XElement("InnoNativeLibraryKind", linkage[entry.Key]),
+                    new XElement("InnoNativeRuntimeImports", entry.Value.usesRuntimeImports ? "true" : "false"),
+                    new XElement("BindGenOutputDirectory", Path.GetDirectoryName(entry.Value.bindingsPath))
+                )
+            );
         }
         return new XDocument(document);
     }

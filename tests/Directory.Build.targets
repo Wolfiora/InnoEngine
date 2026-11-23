@@ -1,7 +1,7 @@
 <Project>
   <Import Project="../Directory.Build.targets" />
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)process/Inno.Testing.Discovery.TestLogger/Inno.Testing.Discovery.TestLogger.csproj"
+    <ProjectReference Include="$(MSBuildThisFileDirectory)support/Inno.Testing.Discovery.TestLogger/Inno.Testing.Discovery.TestLogger.csproj"
       ReferenceOutputAssembly="false" PrivateAssets="all" />
   </ItemGroup>
 </Project>

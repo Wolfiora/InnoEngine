@@ -1,29 +1,10 @@
-using Inno.Core.Diagnostics;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using Inno.Extensibility.Types;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
-
-[Inno.Extensibility.Types.StableTypeId("b5677cc4-c195-5f52-a52f-5efecec8314e")]
-internal enum RenderMaterialBindingKind
-{
-    Uniform,
-    Texture
-}
-
-[Inno.Extensibility.Types.StableTypeId("702a1ec9-219b-5d44-b322-1a433e7e41b5")]
-internal sealed record RenderMaterialBinding(
-    RenderMaterialBindingKind kind,
-    RenderBindingId id,
-    byte[]? uniformData,
-    PersistentTextureHandle texture,
-    RenderSamplerState sampler
-);
 
 /// <summary>
 /// Represents one frame-resolved material pass and its material-owned bindings.
@@ -32,12 +13,12 @@ internal sealed record RenderMaterialBinding(
 /// The instance is scoped to the active render device generation. Pipeline-owned graph textures and
 /// buffers remain explicit and are bound by the caller after this material state is applied.
 /// </remarks>
-[Inno.Extensibility.Types.StableTypeId("b1566a8a-dd0a-5dca-8f43-6bb12aa86973")]
+[StableTypeID("b1566a8a-dd0a-5dca-8f43-6bb12aa86973")]
 public sealed class RenderMaterialPass
 {
     private readonly ShaderPassDefinition m_definition;
-    private readonly IReadOnlyDictionary<RenderBindingId, RenderShaderBindingKind> m_declaredBindings;
-    private readonly IReadOnlySet<RenderBindingId> m_activeBindings;
+    private readonly IReadOnlyDictionary<RenderBindingID, RenderShaderBindingKind> m_declaredBindings;
+    private readonly IReadOnlySet<RenderBindingID> m_activeBindings;
     private readonly IReadOnlyList<RenderMaterialBinding> m_bindings;
 
     internal RenderMaterialPass(
@@ -54,15 +35,18 @@ public sealed class RenderMaterialPass
         this.graphicsPipeline = graphicsPipeline;
         this.computePipeline = computePipeline;
         m_declaredBindings = declaredBindings.ToDictionary(
-            static property => new RenderBindingId(property.id.value),
-            static property => ToRenderBindingKind(property.bindingKind));
+            static property => new RenderBindingID(property.id.value),
+            static property => ToRenderBindingKind(property.bindingKind)
+        );
         m_activeBindings = activeInterface.bindings
-            .Select(static binding => new RenderBindingId(binding.id.value))
+            .Select(static binding => new RenderBindingID(binding.id.value))
             .ToHashSet();
-        m_bindings = Array.AsReadOnly(bindings.Select(static binding => binding with
-        {
-            uniformData = binding.uniformData?.ToArray()
-        }).ToArray());
+        m_bindings = Array.AsReadOnly(
+            bindings.Select(static binding => binding with
+            {
+                uniformData = binding.uniformData?.ToArray()
+            }).ToArray()
+        );
     }
 
     /// <summary>
@@ -107,19 +91,28 @@ public sealed class RenderMaterialPass
     /// The binding is not declared by the shader, or its declared kind differs from <paramref name="kind"/>.
     /// </exception>
     public bool UsesBinding(
-        RenderBindingId binding,
+        RenderBindingID binding,
         RenderShaderBindingKind kind
     ) {
         if (!binding.isValid)
+        {
             throw new ArgumentException("A stable shader binding identifier is required.", nameof(binding));
+        }
         if (!Enum.IsDefined(kind))
+        {
             throw new ArgumentOutOfRangeException(nameof(kind));
+        }
         if (!m_declaredBindings.TryGetValue(binding, out RenderShaderBindingKind declaredKind))
+        {
             throw new ArgumentException($"Shader does not declare binding '{binding.value}'.", nameof(binding));
+        }
         if (declaredKind != kind)
+        {
             throw new ArgumentException(
                 $"Shader binding '{binding.value}' is declared as {declaredKind}, not {kind}.",
-                nameof(kind));
+                nameof(kind)
+            );
+        }
         return m_activeBindings.Contains(binding);
     }
 
@@ -133,29 +126,54 @@ public sealed class RenderMaterialPass
     {
         ArgumentNullException.ThrowIfNull(commands);
         if (graphicsPipeline.isValid)
+        {
             commands.BindGraphicsPipeline(graphicsPipeline);
+        }
         else if (computePipeline.isValid)
+        {
             commands.BindComputePipeline(computePipeline);
+        }
         else
+        {
             throw new InvalidOperationException("A resolved material pass has no active program.");
+        }
 
         foreach (RenderMaterialBinding binding in m_bindings)
         {
             if (binding.kind == RenderMaterialBindingKind.Uniform)
+            {
                 commands.SetUniform(binding.id, binding.uniformData ?? []);
+            }
             else
+            {
                 commands.BindTexture(binding.id, binding.texture, binding.sampler);
+            }
         }
     }
 
     private static RenderShaderBindingKind ToRenderBindingKind(ShaderPropertyBindingKind kind)
         => kind switch
-        {
-            ShaderPropertyBindingKind.Uniform => RenderShaderBindingKind.Uniform,
-            ShaderPropertyBindingKind.SampledTexture => RenderShaderBindingKind.Texture,
-            ShaderPropertyBindingKind.StorageTexture => RenderShaderBindingKind.StorageTexture,
-            ShaderPropertyBindingKind.StorageBuffer => RenderShaderBindingKind.StorageBuffer,
-            _ => throw new ArgumentOutOfRangeException(nameof(kind))
-        };
+    {
+        ShaderPropertyBindingKind.Uniform => RenderShaderBindingKind.Uniform,
+        ShaderPropertyBindingKind.SampledTexture => RenderShaderBindingKind.Texture,
+        ShaderPropertyBindingKind.StorageTexture => RenderShaderBindingKind.StorageTexture,
+        ShaderPropertyBindingKind.StorageBuffer => RenderShaderBindingKind.StorageBuffer,
+        _ => throw new ArgumentOutOfRangeException(nameof(kind))
+    };
 }
 
+[StableTypeID("b5677cc4-c195-5f52-a52f-5efecec8314e")]
+internal enum RenderMaterialBindingKind
+{
+    Uniform,
+    Texture
+}
+
+[StableTypeID("702a1ec9-219b-5d44-b322-1a433e7e41b5")]
+internal sealed record RenderMaterialBinding(
+    RenderMaterialBindingKind kind,
+    RenderBindingID id,
+    byte[]? uniformData,
+    PersistentTextureHandle texture,
+    RenderSamplerState sampler
+);

@@ -48,14 +48,18 @@ internal static class FileSystemRename
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 if (Stopwatch.GetElapsedTime(started).TotalMilliseconds >= C_RETRY_WINDOW_MILLISECONDS)
+                {
                     throw;
+                }
 
                 // Windows readers and indexers may briefly open files without delete sharing.
                 // Retry only the atomic rename; permanent access failures retain their original exception.
                 if (cancellationToken.CanBeCanceled)
                 {
                     if (cancellationToken.WaitHandle.WaitOne(C_RETRY_INTERVAL_MILLISECONDS))
+                    {
                         cancellationToken.ThrowIfCancellationRequested();
+                    }
                 }
                 else
                 {
@@ -68,6 +72,6 @@ internal static class FileSystemRename
     private static bool IsTemporarilyBlocked(Exception exception)
         => OperatingSystem.IsWindows()
            && exception is IOException or UnauthorizedAccessException
-           && exception.HResult is unchecked((int)0x80070005)
-               or unchecked((int)0x80070020) or unchecked((int)0x80070021);
+           && exception.HResult is unchecked((int)0x8007_0005)
+              or unchecked((int)0x8007_0020) or unchecked((int)0x8007_0021);
 }

@@ -3,13 +3,11 @@ using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
 using Inno.Extensibility.Types;
 
 namespace Inno.Assets.Pipeline;
 
-internal sealed class AssetBuildProcessorRegistry
-    : TypeRegistry<AssetBuildProcessorRegistry.Snapshot>
+internal sealed class AssetBuildProcessorRegistry : TypeRegistry<AssetBuildProcessorRegistry.Snapshot>
 {
     private readonly TypeCatalog m_types;
 
@@ -18,8 +16,6 @@ internal sealed class AssetBuildProcessorRegistry
     {
         m_types = types;
     }
-
-    internal AssetBuildProcessor? Find(Type definitionType) => current.byDefinitionType.GetValueOrDefault(definitionType);
 
     internal long snapshotVersion
     {
@@ -50,25 +46,29 @@ internal sealed class AssetBuildProcessorRegistry
             if (type.IsAbstract || !typeof(AssetBuildProcessor).IsAssignableFrom(type))
             {
                 throw new InvalidOperationException(
-                    $"Asset build processor metadata on '{type.FullName}' requires a concrete {nameof(AssetBuildProcessor)} subtype.");
+                    $"Asset build processor metadata on '{type.FullName}' requires a concrete {nameof(AssetBuildProcessor)} subtype."
+                );
             }
             return (type, type.GetCustomAttribute<AssetBuildProcessorAttribute>(inherit: false)!.id);
         }).ToArray();
-        string? duplicateId = registrations
+        string? duplicateID = registrations
             .GroupBy(static registration => registration.id, StringComparer.Ordinal)
             .FirstOrDefault(static group => group.Count() > 1)?.Key;
-        if (duplicateId is not null)
-            throw new InvalidOperationException($"Asset build processor ID '{duplicateId}' is registered more than once.");
+        if (duplicateID is not null)
+        {
+            throw new InvalidOperationException($"Asset build processor ID '{duplicateID}' is registered more than once.");
+        }
 
         var processors = new Dictionary<Type, AssetBuildProcessor>();
-        foreach ((Type type, string processorId) in registrations)
+        foreach ((Type type, string processorID) in registrations)
         {
             AssetBuildProcessor processor = CreateExtension<AssetBuildProcessor>(type);
-            processor.BindProcessorId(processorId);
+            processor.BindProcessorID(processorID);
             if (!processors.TryAdd(processor.definitionType, processor))
             {
                 throw new InvalidOperationException(
-                    $"Asset build definition '{processor.definitionType.FullName}' has multiple processors.");
+                    $"Asset build definition '{processor.definitionType.FullName}' has multiple processors."
+                );
             }
         }
         return new Snapshot(processors.ToFrozenDictionary());
@@ -81,6 +81,8 @@ internal sealed class AssetBuildProcessorRegistry
     /// The immutable state snapshot consumed by this operation.
     /// </param>
     protected override void DisposeSnapshot(Snapshot snapshot) => DisposeExtensions(snapshot.byDefinitionType.Values);
+
+    internal AssetBuildProcessor? Find(Type definitionType) => current.byDefinitionType.GetValueOrDefault(definitionType);
 
     internal sealed record Snapshot(FrozenDictionary<Type, AssetBuildProcessor> byDefinitionType);
 }

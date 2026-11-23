@@ -1,16 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-
+using Inno.Core.IO;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
-using Inno.Core.IO;
 
 namespace Inno.Editor.Settings;
 
 internal sealed class EditorSettingsStore
 {
-    internal const string C_FILE_NAME = SettingsFileNames.editor;
+    internal const string C_FILE_NAME = SettingsFileNames.C_EDITOR;
 
     private readonly SettingsDocumentStore<EditorSettingsDocument> m_documents;
     private Dictionary<string, EditorSettingObject> m_values;
@@ -26,7 +25,8 @@ internal sealed class EditorSettingsStore
             new FileByteDocumentStore(path),
             serialization,
             static () => new EditorSettingsDocument(),
-            ValidateDocumentValue);
+            ValidateDocumentValue
+        );
         m_values = ValidateAndCopy(m_documents.Load().values);
     }
 
@@ -75,18 +75,21 @@ internal sealed class EditorSettingsStore
             return ValidateAndCopy(parsed.values);
         }
         catch (Exception exception) when (exception is ArgumentException
-            or InvalidDataException
-            or InvalidOperationException
-            or NotSupportedException)
+                                          or InvalidDataException
+                                          or InvalidOperationException
+                                          or NotSupportedException)
         {
             throw new InvalidDataException(
                 "The editor Settings document is not a valid current-format document.",
-                exception);
+                exception
+            );
         }
     }
 
     private byte[] Serialize(IReadOnlyDictionary<string, EditorSettingObject> values)
         => m_documents.Capture(new EditorSettingsDocument { values = Copy(values) });
+
+    private void Write(ReadOnlySpan<byte> document) => m_documents.Restore(document);
 
     private static Dictionary<string, EditorSettingObject> ValidateAndCopy(IReadOnlyDictionary<string, EditorSettingObject> values)
     {
@@ -104,9 +107,13 @@ internal sealed class EditorSettingsStore
                 throw new InvalidDataException("The editor Settings document contains an invalid path.", exception);
             }
             if (!string.Equals(path, normalized, StringComparison.Ordinal))
+            {
                 throw new InvalidDataException($"Settings path '{path}' is not normalized.");
+            }
             if (value is null)
+            {
                 throw new InvalidDataException($"Settings path '{path}' has a null object.");
+            }
             value.Validate(path);
             result.Add(path, value.Copy());
         }
@@ -117,11 +124,11 @@ internal sealed class EditorSettingsStore
     {
         var result = new Dictionary<string, EditorSettingObject>(values.Count, StringComparer.Ordinal);
         foreach ((string path, EditorSettingObject value) in values)
+        {
             result.Add(path, value.Copy());
+        }
         return result;
     }
-
-    private void Write(ReadOnlySpan<byte> document) => m_documents.Restore(document);
 
     private static void ValidateDocumentValue(EditorSettingsDocument document)
     {

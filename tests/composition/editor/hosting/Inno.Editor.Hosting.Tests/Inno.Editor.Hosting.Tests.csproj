@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <InnoValidationLayer>contract</InnoValidationLayer>
+  </PropertyGroup>
+
+  <!-- Logical script contracts must observe the real product's complete discoverable feature closure. -->
+  <Import Project="../../../../../src/composition/editor/EditorProduct.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../../build/cli/Inno.Build.Cli/Inno.Build.Cli.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../../src/content/assets/Inno.Assets/Inno.Assets.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../../src/content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../../src/foundation/core/Inno.Core.Identity/Inno.Core.Identity.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../../src/foundation/core/Inno.Core.Settings/Inno.Core.Settings.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../../src/runtime/plugins/Inno.Plugins.Authoring/Inno.Plugins.Authoring.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../../src/runtime/engine/Inno.Runtime/Inno.Runtime.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../../src/runtime/scripting/Inno.Scripting.Compiler/Inno.Scripting.Compiler.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../../build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj" />
+    <ProjectReference Include="../../../../../platforms/WindowsX64/integrations/Inno.Integration.WindowsX64.Bgfx.Runtime/Inno.Integration.WindowsX64.Bgfx.Runtime.csproj" />
+    <ProjectReference Include="../../../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Bgfx/Inno.Adapter.Presentation.ImGui.Bgfx.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../../platforms/WindowsX64/integrations/Inno.Integration.WindowsX64.Sdl3/Inno.Integration.WindowsX64.Sdl3.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../../src/composition/editor/hosting/Inno.Editor.Hosting/Inno.Editor.Hosting.csproj" />
+    <ProjectReference Include="../../../../../src/composition/adapters/Inno.Adapter.Authoring.Default/Inno.Adapter.Authoring.Default.csproj" />
+    <ProjectReference Include="../../../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Tools/Inno.Build.Toolchains.Bgfx.Tools.csproj" />
+    <ProjectReference Include="../../../../../backends/FileSystem/runtime/Inno.Adapter.Storage.FileSystem/Inno.Adapter.Storage.FileSystem.csproj" />
+    <ProjectReference Include="../../../../../build/distributions/Inno.Build.Distribution.Standard/Inno.Build.Distribution.Standard.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.6.6" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>

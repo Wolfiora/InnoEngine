@@ -7,7 +7,6 @@ namespace Inno.Adapter.Rendering.Bgfx;
 internal sealed unsafe partial class BgfxCommandEncoder
 
 {
-
     /// <summary>
     /// Renders the value presentation for the current editor frame.
     /// </summary>
@@ -26,7 +25,8 @@ internal sealed unsafe partial class BgfxCommandEncoder
         if (m_vertexBuffer is null)
         {
             throw new InvalidOperationException(
-                "A direct non-procedural draw requires a bound vertex buffer. Use DrawProcedural explicitly otherwise.");
+                "A direct non-procedural draw requires a bound vertex buffer. Use DrawProcedural explicitly otherwise."
+            );
         }
 
         SetVertexBuffer(pipeline, m_vertexBuffer, m_firstVertex, vertexCount);
@@ -49,8 +49,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         BgfxPipelineResource pipeline = RequireGraphicsPipeline();
         if (!m_device.capabilities.Supports(GraphicsCapability.ProceduralDraw))
         {
-            throw new NotSupportedException(
-                "The active graphics backend does not support procedural vertex-ID draws.");
+            throw new NotSupportedException("The active graphics backend does not support procedural vertex-ID draws.");
         }
         ValidateDrawCounts(vertexCount, instanceCount);
         bgfx.Raw.encoder_set_vertex_count(m_encoder, checked((uint)vertexCount));
@@ -86,7 +85,8 @@ internal sealed unsafe partial class BgfxCommandEncoder
             pipeline,
             m_vertexBuffer,
             m_firstVertex,
-            m_vertexBuffer.descriptor.elementCount - m_firstVertex);
+            m_vertexBuffer.descriptor.elementCount - m_firstVertex
+        );
         SetIndexBuffer(m_indexBuffer, m_firstIndex, indexCount);
         Submit(pipeline, instanceCount);
     }
@@ -107,8 +107,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         RenderBufferHandle buffer,
         int firstCommand = 0,
         int commandCount = 1
-    )
-        => DrawIndirect(m_device.ResolveBuffer(buffer), firstCommand, commandCount);
+    ) => DrawIndirect(m_device.ResolveBuffer(buffer), firstCommand, commandCount);
 
     /// <summary>
     /// Renders the indirect presentation for the current editor frame.
@@ -126,8 +125,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         PersistentBufferHandle buffer,
         int firstCommand = 0,
         int commandCount = 1
-    )
-        => DrawIndirect(m_device.ResolveBuffer(buffer), firstCommand, commandCount);
+    ) => DrawIndirect(m_device.ResolveBuffer(buffer), firstCommand, commandCount);
 
     private void DrawIndirect(
         BgfxBufferResource buffer,
@@ -142,30 +140,30 @@ internal sealed unsafe partial class BgfxCommandEncoder
                 pipeline,
                 m_vertexBuffer,
                 m_firstVertex,
-                m_vertexBuffer.descriptor.elementCount - m_firstVertex);
+                m_vertexBuffer.descriptor.elementCount - m_firstVertex
+            );
         }
         else if (!m_device.capabilities.Supports(GraphicsCapability.ProceduralDraw))
         {
             throw new NotSupportedException(
-                "An indirect draw without a vertex buffer requires procedural draw capability.");
+                "An indirect draw without a vertex buffer requires procedural draw capability."
+            );
         }
         if (m_indexBuffer is not null)
         {
-            SetIndexBuffer(
-                m_indexBuffer,
-                m_firstIndex,
-                m_indexBuffer.descriptor.elementCount - m_firstIndex);
+            SetIndexBuffer(m_indexBuffer, m_firstIndex, m_indexBuffer.descriptor.elementCount - m_firstIndex);
         }
         SetDrawState(pipeline);
         BgfxNativeCalls.EncoderSubmitIndirect(
             m_encoder,
-            m_viewId,
+            m_viewID,
             pipeline.program,
             new bgfx.IndirectBufferHandle { idx = buffer.nativeIndex },
             checked((uint)firstCommand),
             checked((uint)commandCount),
             0,
-            checked((byte)bgfx.DiscardFlags.All));
+            checked((byte)bgfx.DiscardFlags.All)
+        );
         m_device.RecordDraw(commandCount);
         m_instanceDataBound = false;
     }
@@ -175,12 +173,15 @@ internal sealed unsafe partial class BgfxCommandEncoder
         int instanceCount
     ) {
         if (instanceCount > 1 && !m_device.capabilities.Supports(GraphicsCapability.Instancing))
+        {
             throw new NotSupportedException("The active graphics backend does not support instancing.");
+        }
         if (m_instanceDataBound && instanceCount != 1)
         {
             throw new ArgumentException(
                 "A draw with bound instance data must use the bound instance count.",
-                nameof(instanceCount));
+                nameof(instanceCount)
+            );
         }
         if (!m_instanceDataBound && instanceCount > 1)
         {
@@ -188,12 +189,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         }
 
         SetDrawState(pipeline);
-        BgfxNativeCalls.EncoderSubmit(
-            m_encoder,
-            m_viewId,
-            pipeline.program,
-            0,
-            checked((byte)bgfx.DiscardFlags.All));
+        BgfxNativeCalls.EncoderSubmit(m_encoder, m_viewID, pipeline.program, 0, checked((byte)bgfx.DiscardFlags.All));
         m_device.RecordDraw();
         m_instanceDataBound = false;
     }
@@ -210,7 +206,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         bgfx.Raw.encoder_set_stencil(
             m_encoder,
             StencilFlags(m_stencilState, m_stencilState.front),
-            StencilFlags(m_stencilState, m_stencilState.back));
+            StencilFlags(m_stencilState, m_stencilState.back)
+        );
     }
-
 }

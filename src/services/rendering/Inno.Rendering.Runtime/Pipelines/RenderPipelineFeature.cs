@@ -1,17 +1,18 @@
+using System;
+using System.Collections.Generic;
 using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
-using System;
-using System.Collections.Generic;
 
 namespace Inno.Rendering.Runtime;
 
 /// <summary>
 /// Adds capability-aware passes without owning frame graph state.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("a16b9e1e-2bf1-5ba4-85aa-ee24ebda097b")]
+[StableTypeID("a16b9e1e-2bf1-5ba4-85aa-ee24ebda097b")]
 public abstract class RenderPipelineFeature
 {
     /// <summary>
@@ -51,6 +52,5 @@ public abstract class RenderPipelineFeature
     protected virtual void OnConfigure(
         SerializedRenderExtensionState state,
         RenderExtensionStateContext settings
-    ) { }
+    ) {}
 }
-

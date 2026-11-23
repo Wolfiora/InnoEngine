@@ -11,17 +11,62 @@ namespace Inno.Core.Mathematics;
 public struct Vector3Int : IEquatable<Vector3Int>
 {
     /// <summary>
+    /// A value whose components are all zero.
+    /// </summary>
+    public static readonly Vector3Int ZERO = new(0, 0, 0);
+
+    /// <summary>
+    /// A value whose components are all one.
+    /// </summary>
+    public static readonly Vector3Int ONE  = new(1, 1, 1);
+
+    /// <summary>
+    /// The up value used as part of this type's public representation.
+    /// </summary>
+    public static readonly Vector3Int UP = new(0, 1, 0);
+
+    /// <summary>
+    /// The down value used as part of this type's public representation.
+    /// </summary>
+    public static readonly Vector3Int DOWN = new(0, -1, 0);
+
+    /// <summary>
+    /// The left value used as part of this type's public representation.
+    /// </summary>
+    public static readonly Vector3Int LEFT = new(-1, 0, 0);
+
+    /// <summary>
+    /// The right value used as part of this type's public representation.
+    /// </summary>
+    public static readonly Vector3Int RIGHT = new(1, 0, 0);
+
+    /// <summary>
+    /// The forward value used as part of this type's public representation.
+    /// </summary>
+    public static readonly Vector3Int FORWARD = new(0, 0, 1);
+
+    /// <summary>
+    /// The back value used as part of this type's public representation.
+    /// </summary>
+    public static readonly Vector3Int BACK = new(0, 0, -1);
+
+    /// <summary>
     /// The horizontal or first component.
     /// </summary>
-    [DataMember] public int x;
+    [DataMember]
+    public int x;
+
     /// <summary>
     /// The vertical or second component.
     /// </summary>
-    [DataMember] public int y;
+    [DataMember]
+    public int y;
+
     /// <summary>
     /// The depth or third component.
     /// </summary>
-    [DataMember] public int z;
+    [DataMember]
+    public int z;
 
     /// <summary>
     /// Creates a vector from explicit component values.
@@ -46,37 +91,42 @@ public struct Vector3Int : IEquatable<Vector3Int>
     }
 
     /// <summary>
-    /// A value whose components are all zero.
+    /// Determines whether this value and the supplied value represent the same logical state.
     /// </summary>
-    public static readonly Vector3Int ZERO = new(0, 0, 0);
+    /// <param name="obj">
+    /// The object compared with this value.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    public override bool Equals(object? obj) => obj is Vector3Int other && Equals(other);
+
     /// <summary>
-    /// A value whose components are all one.
+    /// Determines whether this value and the supplied value represent the same logical state.
     /// </summary>
-    public static readonly Vector3Int ONE  = new(1, 1, 1);
+    /// <param name="other">
+    /// The strongly typed value compared with this value.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    public bool Equals(Vector3Int other) => x == other.x && y == other.y && z == other.z;
+
     /// <summary>
-    /// The up value used as part of this type's public representation.
+    /// Computes a hash code consistent with the implemented equality contract.
     /// </summary>
-    public static readonly Vector3Int UP = new(0, 1, 0);
+    /// <returns>
+    /// The scalar result calculated from the supplied inputs.
+    /// </returns>
+    public override int GetHashCode() => HashCode.Combine(x, y, z);
+
     /// <summary>
-    /// The down value used as part of this type's public representation.
+    /// Formats this value as a human-readable component list.
     /// </summary>
-    public static readonly Vector3Int DOWN = new(0, -1, 0);
-    /// <summary>
-    /// The left value used as part of this type's public representation.
-    /// </summary>
-    public static readonly Vector3Int LEFT = new(-1, 0, 0);
-    /// <summary>
-    /// The right value used as part of this type's public representation.
-    /// </summary>
-    public static readonly Vector3Int RIGHT = new(1, 0, 0);
-    /// <summary>
-    /// The forward value used as part of this type's public representation.
-    /// </summary>
-    public static readonly Vector3Int FORWARD = new(0, 0, 1);
-    /// <summary>
-    /// The back value used as part of this type's public representation.
-    /// </summary>
-    public static readonly Vector3Int BACK = new(0, 0, -1);
+    /// <returns>
+    /// The validated text representation owned by the caller.
+    /// </returns>
+    public override string ToString() => $"({x}, {y}, {z})";
 
     /// <summary>
     /// Adds the supplied values component by component.
@@ -99,6 +149,18 @@ public struct Vector3Int : IEquatable<Vector3Int>
     /// <summary>
     /// Subtracts or negates the supplied value component by component.
     /// </summary>
+    /// <param name="v">
+    /// The concrete value read or transformed by this operation.
+    /// </param>
+    /// <returns>
+    /// The validated vector3int that represents the completed operation.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Vector3Int operator -(Vector3Int v) => new(-v.x, -v.y, -v.z);
+
+    /// <summary>
+    /// Subtracts or negates the supplied value component by component.
+    /// </summary>
     /// <param name="a">
     /// The first operand or interpolation endpoint.
     /// </param>
@@ -113,18 +175,6 @@ public struct Vector3Int : IEquatable<Vector3Int>
         Vector3Int a,
         Vector3Int b
     ) => new(a.x - b.x, a.y - b.y, a.z - b.z);
-
-    /// <summary>
-    /// Subtracts or negates the supplied value component by component.
-    /// </summary>
-    /// <param name="v">
-    /// The concrete value read or transformed by this operation.
-    /// </param>
-    /// <returns>
-    /// The validated vector3int that represents the completed operation.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector3Int operator -(Vector3Int v) => new(-v.x, -v.y, -v.z);
 
     /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
@@ -239,42 +289,4 @@ public struct Vector3Int : IEquatable<Vector3Int>
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static explicit operator Vector3Int(Vector3 v) => new((int)v.x, (int)v.y, (int)v.z);
-
-    /// <summary>
-    /// Determines whether this value and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="obj">
-    /// The object compared with this value.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public override bool Equals(object? obj) => obj is Vector3Int other && Equals(other);
-
-    /// <summary>
-    /// Determines whether this value and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="other">
-    /// The strongly typed value compared with this value.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public bool Equals(Vector3Int other) => x == other.x && y == other.y && z == other.z;
-
-    /// <summary>
-    /// Computes a hash code consistent with the implemented equality contract.
-    /// </summary>
-    /// <returns>
-    /// The scalar result calculated from the supplied inputs.
-    /// </returns>
-    public override int GetHashCode() => HashCode.Combine(x, y, z);
-
-    /// <summary>
-    /// Formats this value as a human-readable component list.
-    /// </summary>
-    /// <returns>
-    /// The validated text representation owned by the caller.
-    /// </returns>
-    public override string ToString() => $"({x}, {y}, {z})";
 }

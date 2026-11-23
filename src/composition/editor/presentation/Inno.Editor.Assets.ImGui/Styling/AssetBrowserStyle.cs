@@ -30,17 +30,17 @@ public readonly struct AssetBrowserStyle
     /// <summary>
     /// Gets asset browser window padding.
     /// </summary>
-    public Vector2 windowPadding => ScaleVector(new(2f, 1f));
+    public Vector2 windowPadding => ScaleVector(new Vector2(2f, 1f));
 
     /// <summary>
     /// Gets asset browser cell padding.
     /// </summary>
-    public Vector2 cellPadding => ScaleVector(new(5f, 2f));
+    public Vector2 cellPadding => ScaleVector(new Vector2(5f, 2f));
 
     /// <summary>
     /// Gets asset browser item spacing.
     /// </summary>
-    public Vector2 itemSpacing => ScaleVector(new(2f, 2f));
+    public Vector2 itemSpacing => ScaleVector(new Vector2(2f, 2f));
 
     /// <summary>
     /// Gets asset browser frame rounding.

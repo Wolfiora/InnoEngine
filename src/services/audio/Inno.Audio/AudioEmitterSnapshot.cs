@@ -1,0 +1,71 @@
+using System;
+
+namespace Inno.Audio;
+
+/// <summary>
+/// Describes one immutable source playback request produced by a content provider.
+/// </summary>
+public readonly record struct AudioEmitterSnapshot
+{
+    /// <summary>
+    /// Creates an immutable emitter snapshot.
+    /// </summary>
+    /// <param name="id">
+    /// Stable emitter identity across updates.
+    /// </param>
+    /// <param name="clip">
+    /// Imported clip requested by the emitter.
+    /// </param>
+    /// <param name="options">
+    /// Current playback and spatial parameters.
+    /// </param>
+    /// <param name="shouldPlay">
+    /// Whether the runtime should retain active playback for this emitter.
+    /// </param>
+    /// <param name="playbackRevision">
+    /// Monotonic source-owned revision used to request a fresh voice for the same emitter.
+    /// </param>
+    public AudioEmitterSnapshot(
+        Guid id,
+        AudioClipAsset clip,
+        AudioPlayOptions options,
+        bool shouldPlay,
+        ulong playbackRevision = 0
+    ) {
+        ArgumentNullException.ThrowIfNull(clip);
+        if (id == Guid.Empty)
+        {
+            throw new ArgumentException("An emitter identity cannot be empty.", nameof(id));
+        }
+        this.id = id;
+        this.clip = clip;
+        this.options = options;
+        this.shouldPlay = shouldPlay;
+        this.playbackRevision = playbackRevision;
+    }
+
+    /// <summary>
+    /// Gets the stable emitter identity.
+    /// </summary>
+    public Guid id { get; }
+
+    /// <summary>
+    /// Gets the imported clip requested by the emitter.
+    /// </summary>
+    public AudioClipAsset clip { get; }
+
+    /// <summary>
+    /// Gets current playback and spatial parameters.
+    /// </summary>
+    public AudioPlayOptions options { get; }
+
+    /// <summary>
+    /// Gets whether the runtime should retain active playback for this emitter.
+    /// </summary>
+    public bool shouldPlay { get; }
+
+    /// <summary>
+    /// Gets the source-owned revision that distinguishes explicit replay requests.
+    /// </summary>
+    public ulong playbackRevision { get; }
+}

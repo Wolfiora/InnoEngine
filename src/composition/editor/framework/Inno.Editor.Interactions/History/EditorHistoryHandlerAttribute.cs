@@ -27,5 +27,4 @@ public sealed class EditorHistoryHandlerAttribute : Attribute
     /// Gets the stable globally unique change protocol identifier.
     /// </summary>
     public string kind { get; }
-
 }

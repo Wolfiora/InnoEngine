@@ -4,25 +4,41 @@ using System.IO;
 using System.Linq;
 using Inno.Assets;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 
 namespace Inno.Scene;
 
 internal sealed class SceneElementState : ISerializable
 {
-    [SerializableProperty] internal Guid typeId { get; set; }
-    [SerializableProperty] internal string typeName { get; set; } = string.Empty;
-    [SerializableProperty] internal byte[] properties { get; set; } = [];
-    [SerializableProperty] internal Guid[] dependencyIds { get; set; } = [];
-    [SerializableProperty] internal Guid[] dependencyTypes { get; set; } = [];
-    [SerializableProperty] internal string[] dependencyPaths { get; set; } = [];
-    [SerializableProperty] internal Guid[] aliasIds { get; set; } = [];
-    [SerializableProperty] internal Guid[] aliasTargets { get; set; } = [];
+    [SerializableProperty]
+    internal Guid typeId { get; set; }
+
+    [SerializableProperty]
+    internal string typeName { get; set; } = string.Empty;
+
+    [SerializableProperty]
+    internal byte[] properties { get; set; } = [];
+
+    [SerializableProperty]
+    internal Guid[] dependencyIds { get; set; } = [];
+
+    [SerializableProperty]
+    internal Guid[] dependencyTypes { get; set; } = [];
+
+    [SerializableProperty]
+    internal string[] dependencyPaths { get; set; } = [];
+
+    [SerializableProperty]
+    internal Guid[] aliasIds { get; set; } = [];
+
+    [SerializableProperty]
+    internal Guid[] aliasTargets { get; set; } = [];
 
     internal void SetDependencies(IEnumerable<AssetDependency> dependencies)
     {
-        AssetDependency[] snapshot = dependencies.OrderBy(static value => value.persistentId).ToArray();
-        dependencyIds = snapshot.Select(static value => value.persistentId).ToArray();
-        dependencyTypes = snapshot.Select(static value => value.type.stableId).ToArray();
+        AssetDependency[] snapshot = dependencies.OrderBy(static value => value.persistentID).ToArray();
+        dependencyIds = snapshot.Select(static value => value.persistentID).ToArray();
+        dependencyTypes = snapshot.Select(static value => value.type.stableID).ToArray();
         dependencyPaths = snapshot.Select(static value => value.lastKnownPath).ToArray();
     }
 
@@ -37,8 +53,7 @@ internal sealed class SceneElementState : ISerializable
         => dependencyIds.Select((
             id,
             index
-        ) => new AssetDependency(id,
-            new Inno.Extensibility.Types.TypeRef(dependencyTypes[index]), dependencyPaths[index])).ToArray();
+        ) => new AssetDependency(id, new TypeRef(dependencyTypes[index]), dependencyPaths[index])).ToArray();
 
     internal IReadOnlyDictionary<Guid, Guid> GetAliases()
         => aliasIds.Select((
@@ -48,15 +63,17 @@ internal sealed class SceneElementState : ISerializable
 
     internal void Validate()
     {
-        if (typeId == Guid.Empty || string.IsNullOrWhiteSpace(typeName) || properties is null ||
-            dependencyIds is null || dependencyTypes is null || dependencyPaths is null ||
-            aliasIds is null || aliasTargets is null ||
-            dependencyIds.Length != dependencyTypes.Length || dependencyIds.Length != dependencyPaths.Length ||
-            aliasIds.Length != aliasTargets.Length ||
-            dependencyIds.Any(static id => id == Guid.Empty) ||
-            dependencyIds.Distinct().Count() != dependencyIds.Length ||
-            aliasIds.Any(static id => id == Guid.Empty) || aliasTargets.Any(static id => id == Guid.Empty) ||
-            aliasIds.Distinct().Count() != aliasIds.Length)
+        if (typeId == Guid.Empty || string.IsNullOrWhiteSpace(typeName) || properties is null
+            || dependencyIds is null || dependencyTypes is null || dependencyPaths is null
+            || aliasIds is null || aliasTargets is null
+            || dependencyIds.Length != dependencyTypes.Length || dependencyIds.Length != dependencyPaths.Length
+            || aliasIds.Length != aliasTargets.Length
+            || dependencyIds.Any(static id => id == Guid.Empty)
+            || dependencyIds.Distinct().Count() != dependencyIds.Length
+            || aliasIds.Any(static id => id == Guid.Empty) || aliasTargets.Any(static id => id == Guid.Empty)
+            || aliasIds.Distinct().Count() != aliasIds.Length
+        ) {
             throw new InvalidDataException("Scene element state contains invalid type, dependency or alias metadata.");
+        }
     }
 }

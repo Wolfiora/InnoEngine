@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-
 using Inno.Core.Identity;
 
 namespace Inno.Scene;
@@ -16,6 +15,25 @@ public abstract class EngineObject : IdentityObject
     /// Gets whether the engine has destroyed this object.
     /// </summary>
     public bool isDestroyed => m_isDestroyed;
+
+    /// <summary>
+    /// Compares this instance to another object using reference identity.
+    /// </summary>
+    /// <param name="obj">
+    /// The object to compare with this instance.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when <paramref name="obj"/> is this instance.
+    /// </returns>
+    public override bool Equals(object? obj) => ReferenceEquals(this, obj);
+
+    /// <summary>
+    /// Returns a stable runtime reference hash code.
+    /// </summary>
+    /// <returns>
+    /// The reference hash code.
+    /// </returns>
+    public override int GetHashCode() => RuntimeHelpers.GetHashCode(this);
 
     /// <summary>
     /// Compares engine objects using reference identity and destroyed-object null semantics.
@@ -34,11 +52,17 @@ public abstract class EngineObject : IdentityObject
         EngineObject? right
     ) {
         if (ReferenceEquals(left, right))
+        {
             return true;
+        }
         if (ReferenceEquals(left, null))
+        {
             return right!.m_isDestroyed;
+        }
         if (ReferenceEquals(right, null))
+        {
             return left.m_isDestroyed;
+        }
         return ReferenceEquals(left, right);
     }
 
@@ -59,37 +83,24 @@ public abstract class EngineObject : IdentityObject
         EngineObject? right
     ) => !(left == right);
 
-    /// <summary>
-    /// Compares this instance to another object using reference identity.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when <paramref name="obj"/> is this instance.
-    /// </returns>
-    /// <param name="obj">
-    /// The object to compare with this instance.
-    /// </param>
-    public override bool Equals(object? obj) => ReferenceEquals(this, obj);
-
-    /// <summary>
-    /// Returns a stable runtime reference hash code.
-    /// </summary>
-    /// <returns>
-    /// The reference hash code.
-    /// </returns>
-    public override int GetHashCode() => RuntimeHelpers.GetHashCode(this);
-
-    internal void RegisterIdentity(Guid? persistentId = null)
+    internal void RegisterIdentity(Guid? persistentID = null)
     {
         if (m_isDestroyed)
+        {
             throw new InvalidOperationException($"Destroyed object '{GetType().FullName}' cannot be registered.");
-        if (!IdentityAllocator.current.Register(this, persistentId))
+        }
+        if (!IdentityAllocator.current.Register(this, persistentID))
+        {
             throw new InvalidOperationException($"Identity registration failed for '{GetType().FullName}'.");
+        }
     }
 
     internal void MarkDestroyed()
     {
         if (m_isDestroyed)
+        {
             return;
+        }
         try
         {
             IdentityAllocator.current.Unregister(this);
@@ -103,24 +114,29 @@ public abstract class EngineObject : IdentityObject
     internal Guid ReleaseIdentityForReplacement()
     {
         ValidateIdentityForReplacement();
-        Guid persistentId = identity.persistentId;
+        Guid persistentID = identity.persistentID;
         if (!IdentityAllocator.current.Unregister(this))
+        {
             throw new InvalidOperationException($"Identity release failed for '{GetType().FullName}'.");
-        return persistentId;
+        }
+        return persistentID;
     }
 
     internal void ValidateIdentityForReplacement()
     {
         if (m_isDestroyed)
+        {
             throw new InvalidOperationException($"Destroyed object '{GetType().FullName}' cannot be replaced.");
+        }
         RuntimeIdentity? owner = identity.runtimeIdentity;
         IdentityAllocator allocator = IdentityAllocator.current;
-        if (owner is not RuntimeIdentity registered || registered.domainId != allocator.domainId
-            || !ReferenceEquals(allocator.Get<EngineObject>(registered), this))
-        {
+        if (owner is not RuntimeIdentity registered || registered.domainID != allocator.domainID
+            || !ReferenceEquals(allocator.Get<EngineObject>(registered), this)
+        ) {
             throw new InvalidOperationException(
                 $"Identity replacement for '{GetType().FullName}' requires its owning domain "
-                + $"'{owner?.domainId.ToString() ?? "detached"}', but the current domain is '{allocator.domainId}'.");
+                + $"'{owner?.domainID.ToString() ?? "detached"}', but the current domain is '{allocator.domainID}'."
+            );
         }
     }
 }

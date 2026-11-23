@@ -13,7 +13,6 @@ public sealed class BrowserWasm32GameBuildTarget : IGameBuildTarget
 {
     private readonly IPlayerSupportPackValidator m_supportPackValidator;
 
-
     /// <summary>
     /// Creates a site packager bound to the selected native closure validator.
     /// </summary>
@@ -30,6 +29,22 @@ public sealed class BrowserWasm32GameBuildTarget : IGameBuildTarget
     }
 
     /// <summary>
+    /// Gets the browser WebAssembly target identity.
+    /// </summary>
+    public BuildTargetID id => BrowserWasm32BuildModule.target.id;
+
+    /// <inheritdoc/>
+    public ManagedDeploymentID defaultManagedDeployment => ManagedDeploymentID.monoWasm;
+
+    /// <inheritdoc/>
+    public string runtimeIdentifier => "browser-wasm";
+
+    /// <summary>
+    /// Gets the name shown by authoring hosts.
+    /// </summary>
+    public string displayName => "Web (WebGL 2)";
+
+    /// <summary>
     /// Validates the target closure before runtime script compilation.
     /// </summary>
     /// <param name="directory">
@@ -39,24 +54,6 @@ public sealed class BrowserWasm32GameBuildTarget : IGameBuildTarget
     /// The required platform inputs are incomplete or incompatible.
     /// </exception>
     public void Validate(string directory) => m_supportPackValidator.Validate(directory);
-
-    /// <summary>
-    /// Gets the browser WebAssembly target identity.
-    /// </summary>
-    public BuildTargetId id => Inno.Build.BrowserWasm32.BrowserWasm32BuildModule.target.id;
-
-    /// <inheritdoc />
-    public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.monoWasm;
-
-    /// <inheritdoc />
-    public string runtimeIdentifier => "browser-wasm";
-
-    /// <summary>
-    /// Gets the name shown by authoring hosts.
-    /// </summary>
-    public string displayName => "Web (WebGL 2)";
-
-
 
     /// <summary>
     /// Composes an independently hostable site from a verified browser Support Pack and content pack.
@@ -79,14 +76,19 @@ public sealed class BrowserWasm32GameBuildTarget : IGameBuildTarget
         await CopyDirectoryAsync(
             Path.Combine(context.managedDeployment.outputDirectory, "wwwroot"),
             site,
-            cancellationToken);
+            cancellationToken
+        ).ConfigureAwait(false);
         if (!File.Exists(Path.Combine(site, "index.html")))
+        {
             throw new InvalidDataException("The browser Support Pack has no index.html entry point.");
+        }
         string contentDirectory = Path.Combine(site, "Content");
-        await CopyDirectoryAsync(context.contentDirectory, contentDirectory, cancellationToken);
+        await CopyDirectoryAsync(context.contentDirectory, contentDirectory, cancellationToken).ConfigureAwait(false);
         string[] packs = Directory.GetFiles(contentDirectory, "content-*.pack", SearchOption.TopDirectoryOnly);
         if (packs.Length != 1)
+        {
             throw new InvalidDataException("The browser deployment must contain exactly one content pack.");
+        }
         return site;
     }
 
@@ -102,9 +104,9 @@ public sealed class BrowserWasm32GameBuildTarget : IGameBuildTarget
             string relativePath = Path.GetRelativePath(source, file);
             string target = Path.Combine(destination, relativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-            await using FileStream input = new(file, FileMode.Open, FileAccess.Read, FileShare.Read, 131072, true);
-            await using FileStream output = new(target, FileMode.CreateNew, FileAccess.Write, FileShare.None, 131072, true);
-            await input.CopyToAsync(output, cancellationToken);
+            await using var input = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true);
+            await using var output = new FileStream(target, FileMode.CreateNew, FileAccess.Write, FileShare.None, 131_072, true);
+            await input.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
         }
     }
 }

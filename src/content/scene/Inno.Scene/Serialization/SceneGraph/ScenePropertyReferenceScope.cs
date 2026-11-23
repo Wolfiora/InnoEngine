@@ -16,66 +16,81 @@ internal sealed class ScenePropertyReferenceScope : SceneReferenceScope
     internal ScenePropertyReferenceScope(
         GameScene scene,
         IReadOnlyDictionary<Guid, Guid>? aliases = null
-    ) : base(scene) {
+    ) : base(scene)
+    {
         m_identities = IdentityAllocator.current;
-        if (scene.identity.runtimeIdentity is not { } owner || owner.domainId != m_identities.domainId ||
-            scene.isDestroyed || !ReferenceEquals(m_identities.Get<GameScene>(owner), scene))
+        if (scene.identity.runtimeIdentity is not { } owner || owner.domainID != m_identities.domainID
+            || scene.isDestroyed || !ReferenceEquals(m_identities.Get<GameScene>(owner), scene)
+        ) {
             throw new InvalidOperationException("Scene property serialization requires its current owning identity domain.");
+        }
         m_sceneIdentity = owner;
         if (aliases is not { Count: > 0 })
-            return;
-        m_aliases = new Dictionary<Guid, Guid>(aliases.Count);
-        foreach ((Guid alias, Guid targetId) in aliases)
         {
-            EngineObject? target = m_identities.Get<EngineObject>(targetId);
+            return;
+        }
+        m_aliases = new Dictionary<Guid, Guid>(aliases.Count);
+        foreach ((Guid alias, Guid targetID) in aliases)
+        {
+            EngineObject? target = m_identities.Get<EngineObject>(targetID);
             if (target is null || !BelongsToScene(target))
-                throw new InvalidOperationException($"Scene reference alias '{alias}' targets missing object '{targetId}'.");
+            {
+                throw new InvalidOperationException($"Scene reference alias '{alias}' targets missing object '{targetID}'.");
+            }
             EngineObject? previous = m_identities.Get<EngineObject>(alias);
             if (previous is not null && BelongsToScene(previous) && !ReferenceEquals(previous, target))
+            {
                 throw new InvalidOperationException($"Duplicate scene graph local identity '{alias}'.");
-            m_aliases.Add(alias, targetId);
+            }
+            m_aliases.Add(alias, targetID);
         }
     }
 
-    /// <inheritdoc />
     /// <remarks>
     /// The current allocator must still own the Scene and the exact registered object in that Scene.
     /// </remarks>
-    protected override bool TryGetSourceId(
+    /// <inheritdoc/>
+    protected override bool TryGetSourceID(
         EngineObject engineObject,
-        out Guid sourceId
+        out Guid sourceID
     ) {
-        sourceId = default;
-        if (!HasCurrentOwner() || engineObject.identity.runtimeIdentity is not { } identity ||
-            identity.domainId != m_identities.domainId || !ReferenceEquals(m_identities.Get<EngineObject>(identity), engineObject) ||
-            !BelongsToScene(engineObject))
+        sourceID = default;
+        if (!HasCurrentOwner() || engineObject.identity.runtimeIdentity is not { } identity
+            || identity.domainID != m_identities.domainID || !ReferenceEquals(m_identities.Get<EngineObject>(identity), engineObject)
+            || !BelongsToScene(engineObject)
+        ) {
             return false;
-        sourceId = engineObject.identity.persistentId;
+        }
+        sourceID = engineObject.identity.persistentID;
         return true;
     }
 
-    /// <inheritdoc />
     /// <remarks>
     /// Neutral aliases resolve to current Core identities; destroyed or foreign Scene objects are rejected.
     /// </remarks>
+    /// <inheritdoc/>
     protected override bool TryResolve(
-        Guid sourceId,
+        Guid sourceID,
         out EngineObject? engineObject
     ) {
         engineObject = null;
         if (!HasCurrentOwner())
+        {
             return false;
-        Guid target = m_aliases is not null && m_aliases.TryGetValue(sourceId, out Guid alias) ? alias : sourceId;
+        }
+        Guid target = m_aliases is not null && m_aliases.TryGetValue(sourceID, out Guid alias) ? alias : sourceID;
         EngineObject? candidate = m_identities.Get<EngineObject>(target);
         if (candidate is null || !BelongsToScene(candidate))
+        {
             return false;
+        }
         engineObject = candidate;
         return true;
     }
 
     private bool HasCurrentOwner()
-        => IdentityAllocator.hasCurrent && ReferenceEquals(IdentityAllocator.current, m_identities) &&
-           !scene.isDestroyed && ReferenceEquals(m_identities.Get<GameScene>(m_sceneIdentity), scene);
+        => IdentityAllocator.hasCurrent && ReferenceEquals(IdentityAllocator.current, m_identities)
+           && !scene.isDestroyed && ReferenceEquals(m_identities.Get<GameScene>(m_sceneIdentity), scene);
 
     private bool BelongsToScene(EngineObject value)
         => !value.isDestroyed && value switch

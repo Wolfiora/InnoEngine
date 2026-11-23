@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Assets;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 using Inno.Scene.Components;
 using Inno.Scene.Layers;
 
@@ -34,21 +33,20 @@ public sealed class GameScene : EngineObject, ISerializable
     /// Initial scene name.
     /// </param>
     public GameScene(string name = "Untitled Scene")
-        : this(SceneWorld.current.typeCatalog, name, persistentId: null)
-    {
-    }
+        : this(SceneWorld.current.typeCatalog, name, persistentID: null) {}
 
     internal GameScene(
         SceneTypeCatalog types,
         string name,
-        Guid? persistentId
+        Guid? persistentID
     ) {
-        m_types = types ?? throw new ArgumentNullException(nameof(types));
+        ArgumentNullException.ThrowIfNull(types);
+        m_types = types;
         m_name = name ?? string.Empty;
         m_store = new SceneStore(types);
         m_hierarchy = new HierarchyService(this);
         m_systems = new SceneSystemScheduler(this, types);
-        RegisterIdentity(persistentId);
+        RegisterIdentity(persistentID);
     }
 
     /// <summary>
@@ -78,9 +76,6 @@ public sealed class GameScene : EngineObject, ISerializable
     /// </remarks>
     public ulong hierarchyRevision => m_hierarchy.revision;
 
-    internal SceneTypeCatalog typeCatalog => m_types;
-    internal long structureRevision => m_store.structureRevision;
-
     /// <summary>
     /// Creates a game object with a mandatory transform component.
     /// </summary>
@@ -91,7 +86,7 @@ public sealed class GameScene : EngineObject, ISerializable
     /// The created game object.
     /// </returns>
     public GameObject CreateObject(string name = "GameObject")
-        => CreateObject(name, persistentId: null, transformPersistentId: null, invokeReset: true);
+        => CreateObject(name, persistentID: null, transformPersistentID: null, invokeReset: true);
 
     /// <summary>
     /// Creates a connected instance of an imported prefab in this loaded scene.
@@ -114,9 +109,8 @@ public sealed class GameScene : EngineObject, ISerializable
     public GameObject InstantiatePrefab(
         PrefabAsset prefab,
         Transform? parent = null
-    )
-        => (m_ownerWorld ?? throw new InvalidOperationException("The scene is not loaded in a world."))
-            .InstantiatePrefab(prefab, this, parent);
+    ) => (m_ownerWorld ?? throw new InvalidOperationException("The scene is not loaded in a world."))
+        .InstantiatePrefab(prefab, this, parent);
 
     /// <summary>
     /// Recursively destroys a game object and its complete child subtree.
@@ -131,8 +125,10 @@ public sealed class GameScene : EngineObject, ISerializable
     {
         ArgumentNullException.ThrowIfNull(gameObject);
         if (!Contains(gameObject))
+        {
             return false;
-        Guid persistentId = gameObject.identity.persistentId;
+        }
+        Guid persistentID = gameObject.identity.persistentID;
         Exception? firstException = null;
 
         Transform[] children = gameObject.transform.children.ToArray();
@@ -156,7 +152,9 @@ public sealed class GameScene : EngineObject, ISerializable
             try
             {
                 if (removed[i].wasCommitted && component is GameBehavior behavior)
+                {
                     m_systems.DestroyGameBehavior(behavior);
+                }
             }
             catch (Exception exception)
             {
@@ -165,14 +163,18 @@ public sealed class GameScene : EngineObject, ISerializable
             finally
             {
                 if (!component.isDestroyed)
+                {
                     component.Detach();
+                }
             }
         }
         m_systems.NotifyGameBehaviorStructureChanged();
 
         gameObject.DestroyDirect();
         if (firstException is not null)
-            throw new InvalidOperationException($"A destruction callback failed for GameObject '{persistentId}'.", firstException);
+        {
+            throw new InvalidOperationException($"A destruction callback failed for GameObject '{persistentID}'.", firstException);
+        }
         return true;
     }
 
@@ -294,7 +296,8 @@ public sealed class GameScene : EngineObject, ISerializable
     /// <returns>
     /// The registered system.
     /// </returns>
-    public TSystem AddSystem<TSystem>() where TSystem : GameSystem, new()
+    public TSystem AddSystem<TSystem>()
+        where TSystem : GameSystem, new()
     {
         EnsureNotDestroyed();
         return m_systems.Add<TSystem>();
@@ -316,9 +319,10 @@ public sealed class GameScene : EngineObject, ISerializable
         {
             throw new ArgumentException(
                 $"{nameof(MissingGameSystem)} instances are created only by scene restoration.",
-                nameof(systemType));
+                nameof(systemType)
+            );
         }
-        return m_systems.Add(systemType, persistentId: null, invokeReset: true);
+        return m_systems.Add(systemType, persistentID: null, invokeReset: true);
     }
 
     /// <summary>
@@ -410,26 +414,24 @@ public sealed class GameScene : EngineObject, ISerializable
         m_systems.SetIndex(system, systemIndex);
     }
 
+    internal SceneTypeCatalog typeCatalog => m_types;
+    internal long structureRevision => m_store.structureRevision;
+
+    internal bool canDispatch => m_isLoaded && !m_isUnloading && !isDestroyed;
+
     internal GameSystem AddSystem(
         Type systemType,
-        Guid? persistentId,
+        Guid? persistentID,
         bool invokeReset
-    )
-        => m_systems.Add(systemType, persistentId, invokeReset);
+    ) => m_systems.Add(systemType, persistentID, invokeReset);
 
     internal MissingGameSystem AddMissingSystem(
         TypeRef missingType,
         string missingTypeName,
         ReadOnlySpan<byte> serializedState,
-        Guid? persistentId,
+        Guid? persistentID,
         IReadOnlyList<AssetDependency>? dependencies = null
-    )
-        => m_systems.AddMissing(
-            missingType,
-            missingTypeName,
-            serializedState,
-            persistentId,
-            dependencies);
+    ) => m_systems.AddMissing(missingType, missingTypeName, serializedState, persistentID, dependencies);
 
     internal bool Contains(GameObject gameObject) => !isDestroyed && m_store.Contains(gameObject);
 
@@ -442,7 +444,7 @@ public sealed class GameScene : EngineObject, ISerializable
     internal GameComponent AddComponent(
         GameObject owner,
         Type componentType,
-        Guid? persistentId,
+        Guid? persistentID,
         bool invokeReset
     ) {
         EnsureOwned(owner);
@@ -451,29 +453,35 @@ public sealed class GameScene : EngineObject, ISerializable
         {
             throw new ArgumentException(
                 $"{nameof(MissingGameComponent)} instances are created only by scene restoration.",
-                nameof(componentType));
+                nameof(componentType)
+            );
         }
         if (!typeof(GameComponent).IsAssignableFrom(componentType))
-            throw new ArgumentException($"Type '{componentType.FullName}' is not a scene component.", nameof(componentType));
-
-        if (!m_types.TryGetComponent(componentType, out SceneComponentTypeDescriptor? descriptor) ||
-            !descriptor!.isConcrete)
         {
+            throw new ArgumentException($"Type '{componentType.FullName}' is not a scene component.", nameof(componentType));
+        }
+
+        if (!m_types.TryGetComponent(componentType, out SceneComponentTypeDescriptor? descriptor)
+            || !descriptor!.isConcrete
+        ) {
             throw new ArgumentException(
                 $"Type '{componentType.FullName}' is not an active concrete scene component.",
-                nameof(componentType));
+                nameof(componentType)
+            );
         }
 
         bool allowsMultiple = descriptor.allowsMultiple;
         GameComponent component = ComponentFactory.Create(componentType, m_types.snapshot);
         if (component is GameBehavior createdBehavior)
+        {
             createdBehavior.lifecyclePhases = descriptor.behaviorPhases;
+        }
         component.Attach(owner);
         bool addedToStore = false;
         bool registeredHierarchy = false;
         try
         {
-            component.RegisterIdentity(persistentId);
+            component.RegisterIdentity(persistentID);
             m_store.AddComponent(owner, component, descriptor, allowsMultiple);
             addedToStore = true;
             if (component is Transform transform)
@@ -485,19 +493,29 @@ public sealed class GameScene : EngineObject, ISerializable
             }
 
             if (invokeReset)
+            {
                 component.DispatchReset();
+            }
             if (component is GameBehavior behavior)
+            {
                 m_systems.NotifyGameBehaviorActivationChanged(behavior);
+            }
             return component;
         }
         catch
         {
             if (registeredHierarchy && component is Transform transform)
+            {
                 m_hierarchy.Unregister(transform);
+            }
             if (addedToStore)
+            {
                 m_store.RemoveComponent(owner, component);
+            }
             if (!component.isDestroyed)
+            {
                 component.Detach();
+            }
             throw;
         }
     }
@@ -508,22 +526,32 @@ public sealed class GameScene : EngineObject, ISerializable
     ) {
         EnsureOwned(owner);
         if (!ReferenceEquals(component.ownerOrNull, owner))
+        {
             return false;
+        }
         if (component is Transform)
+        {
             throw new InvalidOperationException("The mandatory Transform component cannot be removed.");
+        }
         SceneStoreRemovalKind removal = m_store.RemoveComponent(owner, component);
         if (removal == SceneStoreRemovalKind.None)
+        {
             return false;
+        }
 
         try
         {
             if (removal == SceneStoreRemovalKind.RemovedCommitted && component is GameBehavior behavior)
+            {
                 m_systems.DestroyGameBehavior(behavior);
+            }
         }
         finally
         {
             if (!component.isDestroyed)
+            {
                 component.Detach();
+            }
             m_systems.NotifyGameBehaviorStructureChanged();
         }
         return true;
@@ -534,20 +562,16 @@ public sealed class GameScene : EngineObject, ISerializable
         TypeRef missingType,
         string missingTypeName,
         ReadOnlySpan<byte> serializedState,
-        Guid? persistentId,
+        Guid? persistentID,
         IReadOnlyList<AssetDependency>? dependencies = null
     ) {
         EnsureOwned(owner);
-        var component = new MissingGameComponent(
-            missingType,
-            missingTypeName,
-            serializedState,
-            dependencies);
+        var component = new MissingGameComponent(missingType, missingTypeName, serializedState, dependencies);
         component.Attach(owner);
         bool addedToStore = false;
         try
         {
-            component.RegisterIdentity(persistentId);
+            component.RegisterIdentity(persistentID);
             SceneComponentTypeDescriptor descriptor = m_types.GetComponent(typeof(MissingGameComponent));
             m_store.AddComponent(owner, component, descriptor, allowsMultiple: true);
             addedToStore = true;
@@ -556,9 +580,13 @@ public sealed class GameScene : EngineObject, ISerializable
         catch
         {
             if (addedToStore)
+            {
                 m_store.RemoveComponent(owner, component);
+            }
             if (!component.isDestroyed)
+            {
                 component.Detach();
+            }
             throw;
         }
     }
@@ -570,14 +598,29 @@ public sealed class GameScene : EngineObject, ISerializable
         EnsureOwned(owner);
         ArgumentNullException.ThrowIfNull(component);
         if (!ReferenceEquals(component.ownerOrNull, owner))
-            throw new InvalidOperationException($"GameComponent '{component.GetType().FullName}' is not attached to GameObject '{owner.name}'.");
+        {
+            throw new InvalidOperationException(
+                $"GameComponent '{component.GetType().FullName}' is not attached to GameObject '{owner.name}'."
+            );
+        }
         component.DispatchReset();
     }
+
+    internal IReadOnlyList<TComponent> GetComponents<TComponent>()
+        where TComponent : GameComponent
+            => m_store.GetComponents<TComponent>(m_types.GetComponent(typeof(TComponent)));
 
     internal IReadOnlyList<GameComponent> GetComponents(GameObject owner)
     {
         EnsureOwned(owner);
         return m_store.GetComponents(owner);
+    }
+
+    internal IReadOnlyList<TComponent> GetComponents<TComponent>(GameObject owner)
+        where TComponent : GameComponent
+    {
+        EnsureOwned(owner);
+        return m_store.GetComponents<TComponent>(owner, m_types.GetComponent(typeof(TComponent)));
     }
 
     internal int GetComponentIndex(
@@ -597,27 +640,13 @@ public sealed class GameScene : EngineObject, ISerializable
         m_store.SetComponentIndex(owner, component, componentIndex);
     }
 
-    internal IReadOnlyList<TComponent> GetComponents<TComponent>(GameObject owner)
-        where TComponent : GameComponent
-    {
-        EnsureOwned(owner);
-        return m_store.GetComponents<TComponent>(owner, m_types.GetComponent(typeof(TComponent)));
-    }
-
-    internal IReadOnlyList<TComponent> GetComponents<TComponent>() where TComponent : GameComponent
-        => m_store.GetComponents<TComponent>(m_types.GetComponent(typeof(TComponent)));
-
     internal bool TryGetComponent<TComponent>(
         GameObject owner,
         out TComponent? component
-    )
-        where TComponent : GameComponent
+    ) where TComponent : GameComponent
     {
         EnsureOwned(owner);
-        return m_store.TryGetComponent(
-            owner,
-            m_types.GetComponent(typeof(TComponent)),
-            out component);
+        return m_store.TryGetComponent(owner, m_types.GetComponent(typeof(TComponent)), out component);
     }
 
     internal bool TryGetComponent(
@@ -635,23 +664,23 @@ public sealed class GameScene : EngineObject, ISerializable
         return m_store.TryGetComponent(owner, descriptor!, out component);
     }
 
-    internal IReadOnlyList<GameObject> Query<T1>() where T1 : GameComponent => m_store.Query(m_types.GetComponent(typeof(T1)));
+    internal IReadOnlyList<GameObject> Query<T1>()
+        where T1 : GameComponent => m_store.Query(m_types.GetComponent(typeof(T1)));
 
     internal IReadOnlyList<GameObject> Query<T1, T2>()
         where T1 : GameComponent
         where T2 : GameComponent
-        => m_store.Query(
-            m_types.GetComponent(typeof(T1)),
-            m_types.GetComponent(typeof(T2)));
+            => m_store.Query(m_types.GetComponent(typeof(T1)), m_types.GetComponent(typeof(T2)));
 
     internal IReadOnlyList<GameObject> Query<T1, T2, T3>()
         where T1 : GameComponent
         where T2 : GameComponent
         where T3 : GameComponent
-        => m_store.Query(
-            m_types.GetComponent(typeof(T1)),
-            m_types.GetComponent(typeof(T2)),
-            m_types.GetComponent(typeof(T3)));
+            => m_store.Query(
+                m_types.GetComponent(typeof(T1)),
+                m_types.GetComponent(typeof(T2)),
+                m_types.GetComponent(typeof(T3))
+            );
 
     internal IDisposable BeginExecutionPhase() => m_store.BeginExecutionPhase();
 
@@ -659,44 +688,52 @@ public sealed class GameScene : EngineObject, ISerializable
 
     internal IReadOnlyList<GameObject> GetOwnedObjects() => m_store.GetOwnedObjects();
 
-    internal GameObject? FindObject(Guid persistentId) => m_store.FindObject(persistentId);
+    internal GameObject? FindObject(Guid persistentID) => m_store.FindObject(persistentID);
 
-    internal GameComponent? FindComponent(Guid persistentId) => m_store.FindComponent(persistentId);
+    internal GameComponent? FindComponent(Guid persistentID) => m_store.FindComponent(persistentID);
 
     internal void ReplaceComponentForReload(
         GameComponent previous,
         GameComponent replacement,
-        int replacementRuntimeTypeId
+        int replacementRuntimeTypeID
     ) {
         GameObject owner = previous.ownerOrNull
-            ?? throw new InvalidOperationException("The component being replaced is detached.");
+                           ?? throw new InvalidOperationException("The component being replaced is detached.");
         if (!Contains(owner) || previous is Transform || replacement is Transform)
+        {
             throw new InvalidOperationException("Only attached non-Transform components can be hot reloaded.");
+        }
         previous.ValidateIdentityForReplacement();
-        if (replacement.identity.runtimeId is not null)
+        if (replacement.identity.runtimeID is not null)
+        {
             throw new InvalidOperationException("The replacement component already has a registered identity.");
+        }
         bool attachedHere = replacement.ownerOrNull is null;
         if (attachedHere)
+        {
             replacement.Attach(owner);
+        }
         else if (!ReferenceEquals(replacement.ownerOrNull, owner))
+        {
             throw new InvalidOperationException("The replacement component belongs to another GameObject.");
-        Guid persistentId = previous.identity.persistentId;
+        }
+        Guid persistentID = previous.identity.persistentID;
         try
         {
-            if (replacement is GameBehavior replacementBehavior &&
-                m_types.TryGetComponent(replacement.GetType(), out SceneComponentTypeDescriptor? replacementDescriptor))
-            {
+            if (replacement is GameBehavior replacementBehavior
+                && m_types.TryGetComponent(replacement.GetType(), out SceneComponentTypeDescriptor? replacementDescriptor)
+            ) {
                 replacementBehavior.lifecyclePhases = replacementDescriptor!.behaviorPhases;
             }
             _ = previous.ReleaseIdentityForReplacement();
-            replacement.RegisterIdentity(persistentId);
-            m_store.ReplaceComponent(previous, replacement, replacementRuntimeTypeId);
+            replacement.RegisterIdentity(persistentID);
+            m_store.ReplaceComponent(previous, replacement, replacementRuntimeTypeID);
             m_systems.NotifyGameBehaviorStructureChanged();
         }
         catch (Exception exception)
         {
             List<Exception>? rollbackFailures = null;
-            if (replacement.identity.runtimeId is not null)
+            if (replacement.identity.runtimeID is not null)
             {
                 try
                 {
@@ -708,11 +745,11 @@ public sealed class GameScene : EngineObject, ISerializable
                     rollbackFailures.Add(rollbackFailure);
                 }
             }
-            if (previous.identity.runtimeId is null)
+            if (previous.identity.runtimeID is null)
             {
                 try
                 {
-                    previous.RegisterIdentity(persistentId);
+                    previous.RegisterIdentity(persistentID);
                 }
                 catch (Exception rollbackFailure)
                 {
@@ -733,21 +770,21 @@ public sealed class GameScene : EngineObject, ISerializable
                 }
             }
             if (rollbackFailures is null)
+            {
                 throw;
+            }
             throw new InvalidOperationException(
                 "Component hot-reload replacement failed and its identity rollback was incomplete.",
-                new AggregateException([exception, .. rollbackFailures]));
+                new AggregateException([exception, .. rollbackFailures])
+            );
         }
     }
 
     internal void ReplaceSystemForReload(
         GameSystem previous,
         GameSystem replacement,
-        int replacementRuntimeTypeId
-    )
-        => m_systems.ReplaceForReload(previous, replacement, replacementRuntimeTypeId);
-
-    internal bool canDispatch => m_isLoaded && !m_isUnloading && !isDestroyed;
+        int replacementRuntimeTypeID
+    ) => m_systems.ReplaceForReload(previous, replacement, replacementRuntimeTypeID);
 
     internal void SetSourceAsset(AssetObject sourceAsset)
     {
@@ -755,22 +792,27 @@ public sealed class GameScene : EngineObject, ISerializable
         m_sourceAsset = sourceAsset;
     }
 
-    internal void PrepareRestoreTarget(Guid persistentId)
+    internal void PrepareRestoreTarget(Guid persistentID)
     {
         EnsureNotDestroyed();
-        if (identity.persistentId != persistentId)
+        if (identity.persistentID != persistentID)
         {
             throw new InvalidOperationException(
-                $"Scene identity '{identity.persistentId}' does not match serialized identity '{persistentId}'.");
+                $"Scene identity '{identity.persistentID}' does not match serialized identity '{persistentID}'."
+            );
         }
 
         foreach (GameSystem system in GetSystems().ToArray())
+        {
             RemoveSystem(system);
+        }
         GameObject[] objects = GetObjects().ToArray();
         for (int i = 0; i < objects.Length; i++)
         {
             if (objects[i].isRuntimeValid)
+            {
                 DestroyObject(objects[i]);
+            }
         }
     }
 
@@ -796,14 +838,18 @@ public sealed class GameScene : EngineObject, ISerializable
     {
         ArgumentNullException.ThrowIfNull(behavior);
         if (behavior.ownerOrNull is GameObject owner && Contains(owner))
+        {
             m_systems.NotifyGameBehaviorActivationChanged(behavior);
+        }
     }
 
     internal void NotifyGameSystemActivationChanged(GameSystem system)
     {
         ArgumentNullException.ThrowIfNull(system);
         if (ReferenceEquals(system.ownerScene, this))
+        {
             m_systems.NotifyGameSystemActivationChanged(system);
+        }
     }
 
     internal void SetParent(
@@ -837,12 +883,15 @@ public sealed class GameScene : EngineObject, ISerializable
         ArgumentNullException.ThrowIfNull(destination);
         destination.EnsureNotDestroyed();
         if (ReferenceEquals(this, destination))
-            return;
-        if (m_store.isExecuting || m_store.hasPendingChanges ||
-            destination.m_store.isExecuting || destination.m_store.hasPendingChanges)
         {
+            return;
+        }
+        if (m_store.isExecuting || m_store.hasPendingChanges
+            || destination.m_store.isExecuting || destination.m_store.hasPendingChanges
+        ) {
             throw new InvalidOperationException(
-                "A GameObject cannot move between scenes during a scene execution phase or while structural changes are pending.");
+                "A GameObject cannot move between scenes during a scene execution phase or while structural changes are pending."
+            );
         }
 
         Transform rootTransform = gameObject.transform;
@@ -851,10 +900,14 @@ public sealed class GameScene : EngineObject, ISerializable
         GameObject[] subtree = EnumerateSubtree(rootTransform).ToArray();
         var components = new Dictionary<GameObject, GameComponent[]>(ReferenceEqualityComparer.Instance);
         for (int i = 0; i < subtree.Length; i++)
+        {
             components.Add(subtree[i], m_store.GetComponents(subtree[i]).ToArray());
+        }
 
         if (previousParent is not null)
+        {
             m_hierarchy.SetParent(rootTransform, parent: null, worldPositionStays: true);
+        }
         m_hierarchy.Unregister(rootTransform);
 
         int transferredCount = 0;
@@ -875,7 +928,8 @@ public sealed class GameScene : EngineObject, ISerializable
                         current,
                         component,
                         m_types.GetComponent(component.GetType()),
-                        allowsMultiple: true);
+                        allowsMultiple: true
+                    );
                 }
                 current.SetSceneDirect(destination);
             }
@@ -887,7 +941,9 @@ public sealed class GameScene : EngineObject, ISerializable
         catch
         {
             if (registeredDestinationHierarchy)
+            {
                 destination.m_hierarchy.Unregister(rootTransform);
+            }
             for (int i = transferredCount - 1; i >= 0; i--)
             {
                 GameObject current = subtree[i];
@@ -901,14 +957,17 @@ public sealed class GameScene : EngineObject, ISerializable
                         current,
                         component,
                         m_types.GetComponent(component.GetType()),
-                        allowsMultiple: true);
+                        allowsMultiple: true
+                    );
                 }
                 current.SetSceneDirect(this);
             }
 
             m_hierarchy.Register(rootTransform);
             if (previousParent is not null)
+            {
                 m_hierarchy.SetParent(rootTransform, previousParent, worldPositionStays: true);
+            }
             m_hierarchy.SetSiblingIndex(rootTransform, previousSiblingIndex);
             m_activation.RecomputeSubtree(gameObject);
             throw;
@@ -917,25 +976,29 @@ public sealed class GameScene : EngineObject, ISerializable
 
     internal GameObject CreateObject(
         string name,
-        Guid? persistentId,
-        Guid? transformPersistentId,
+        Guid? persistentID,
+        Guid? transformPersistentID,
         bool invokeReset
     ) {
         EnsureNotDestroyed();
         var gameObject = new GameObject(this, name);
-        gameObject.RegisterIdentity(persistentId);
+        gameObject.RegisterIdentity(persistentID);
         try
         {
             m_store.AddObject(gameObject);
-            AddComponent(gameObject, typeof(Transform), transformPersistentId, invokeReset);
+            AddComponent(gameObject, typeof(Transform), transformPersistentID, invokeReset);
             return gameObject;
         }
         catch
         {
             if (Contains(gameObject))
+            {
                 DestroyObject(gameObject);
+            }
             else if (!gameObject.isDestroyed)
+            {
                 gameObject.DestroyDirect();
+            }
             throw;
         }
     }
@@ -945,7 +1008,9 @@ public sealed class GameScene : EngineObject, ISerializable
         ArgumentNullException.ThrowIfNull(ownerWorld);
         EnsureNotDestroyed();
         if (m_isLoaded)
+        {
             throw new InvalidOperationException($"Scene '{m_name}' is already loaded.");
+        }
         m_ownerWorld = ownerWorld;
         m_isLoaded = true;
         m_systems.NotifyHierarchyActivationChanged();
@@ -954,7 +1019,9 @@ public sealed class GameScene : EngineObject, ISerializable
     internal void Unload()
     {
         if (isDestroyed || m_isUnloading)
+        {
             return;
+        }
 
         m_isUnloading = true;
         m_isLoaded = false;
@@ -966,7 +1033,9 @@ public sealed class GameScene : EngineObject, ISerializable
             try
             {
                 if (Contains(objects[i]))
+                {
                     DestroyObject(objects[i]);
+                }
             }
             catch (Exception exception)
             {
@@ -980,25 +1049,33 @@ public sealed class GameScene : EngineObject, ISerializable
         m_sourceAsset = null;
         MarkDestroyed();
         if (firstException is not null)
+        {
             throw new InvalidOperationException($"Scene '{m_name}' encountered an error while unloading.", firstException);
+        }
     }
 
     internal void FixedUpdate(float fixedDeltaTime)
     {
         if (canDispatch)
+        {
             m_systems.FixedUpdate();
+        }
     }
 
     internal void Update(float deltaTime)
     {
         if (canDispatch)
+        {
             m_systems.Update();
+        }
     }
 
     internal void LateUpdate(float deltaTime)
     {
         if (canDispatch)
+        {
             m_systems.LateUpdate();
+        }
     }
 
     private void EnsureOwned(GameObject gameObject)
@@ -1006,13 +1083,17 @@ public sealed class GameScene : EngineObject, ISerializable
         ArgumentNullException.ThrowIfNull(gameObject);
         EnsureNotDestroyed();
         if (!m_store.Contains(gameObject))
+        {
             throw new InvalidOperationException($"GameObject does not belong to scene '{m_name}'.");
+        }
     }
 
     private void EnsureNotDestroyed()
     {
         if (isDestroyed)
+        {
             throw new InvalidOperationException($"Scene '{m_name}' has been destroyed and cannot be reused.");
+        }
     }
 
     private static IEnumerable<GameObject> EnumerateSubtree(Transform root)
@@ -1022,7 +1103,9 @@ public sealed class GameScene : EngineObject, ISerializable
         for (int i = 0; i < children.Count; i++)
         {
             foreach (GameObject descendant in EnumerateSubtree(children[i]))
+            {
                 yield return descendant;
+            }
         }
     }
 }

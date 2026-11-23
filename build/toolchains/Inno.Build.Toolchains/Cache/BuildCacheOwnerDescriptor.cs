@@ -58,7 +58,9 @@ public sealed class BuildCacheOwnerDescriptor
         ArgumentNullException.ThrowIfNull(readArtifacts);
         ArgumentNullException.ThrowIfNull(readProtectedArtifacts);
         if (!Path.IsPathFullyQualified(directory) || !Path.IsPathFullyQualified(coordinationPath))
+        {
             throw new ArgumentException("Cache registration requires absolute owner paths.");
+        }
         this.id = id;
         this.directory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
         this.coordinationPath = Path.GetFullPath(coordinationPath);
@@ -82,11 +84,12 @@ public sealed class BuildCacheOwnerDescriptor
     /// </summary>
     public string coordinationPath { get; }
 
-    internal void RetireMetadata(CancellationToken cancellation) => m_retireMetadata?.Invoke(cancellation);
+    internal void RetireMetadata(CancellationToken cancellationToken) => m_retireMetadata?.Invoke(cancellationToken);
 
-    internal IReadOnlyList<BuildCacheArtifactDescriptor> ReadArtifacts(CancellationToken cancellation)
-        => m_readArtifacts(cancellation) ?? throw new InvalidDataException($"Cache owner '{id}' returned no inventory.");
+    internal IReadOnlyList<BuildCacheArtifactDescriptor> ReadArtifacts(CancellationToken cancellationToken)
+        => m_readArtifacts(cancellationToken) ?? throw new InvalidDataException($"Cache owner '{id}' returned no inventory.");
 
-    internal IReadOnlyList<string> ReadProtectedArtifacts(CancellationToken cancellation)
-        => m_readProtectedArtifacts(cancellation) ?? throw new InvalidDataException($"Cache owner '{id}' returned no protection inventory.");
+    internal IReadOnlyList<string> ReadProtectedArtifacts(CancellationToken cancellationToken)
+        => m_readProtectedArtifacts(cancellationToken)
+           ?? throw new InvalidDataException($"Cache owner '{id}' returned no protection inventory.");
 }

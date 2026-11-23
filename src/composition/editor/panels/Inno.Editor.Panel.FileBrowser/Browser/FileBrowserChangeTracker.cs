@@ -1,29 +1,31 @@
-using Inno.Editor.Assets;
-using Inno.Editor.Assets.ImGui;
 using System;
 using System.IO;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 using Inno.Editor.Core;
 
 namespace Inno.Editor.Panel.FileBrowser;
+
 internal sealed class FileBrowserChangeTracker(AssetBrowserModule assets)
 {
     private EditorContext? m_context;
+
     internal void Attach(EditorContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
         m_context = context;
-        assets.edits.pipeline.Changed -= OnAssetsChanged;
-        assets.edits.pipeline.Changed += OnAssetsChanged;
-        assets.edits.pipeline.SourceMountsChanged -= OnSourceMountsChanged;
-        assets.edits.pipeline.SourceMountsChanged += OnSourceMountsChanged;
+        assets.edits.pipeline.changed -= OnAssetsChanged;
+        assets.edits.pipeline.changed += OnAssetsChanged;
+        assets.edits.pipeline.sourceMountsChanged -= OnSourceMountsChanged;
+        assets.edits.pipeline.sourceMountsChanged += OnSourceMountsChanged;
     }
 
     internal void Detach()
     {
-        assets.edits.pipeline.Changed -= OnAssetsChanged;
-        assets.edits.pipeline.SourceMountsChanged -= OnSourceMountsChanged;
+        assets.edits.pipeline.changed -= OnAssetsChanged;
+        assets.edits.pipeline.sourceMountsChanged -= OnSourceMountsChanged;
         m_context = null;
     }
 
@@ -31,27 +33,40 @@ internal sealed class FileBrowserChangeTracker(AssetBrowserModule assets)
     {
         EditorContext? context = m_context;
         if (context is null)
+        {
             return;
+        }
         string currentDirectory = FileBrowserUtility.NormalizePath(assets.browser.currentDirectory);
-        if (!assets.edits.pipeline.TryGetFileSystemEntry(AssetPath.Parse(currentDirectory), out AssetFileEntry current) || !current.isDirectory)
+        if (!assets.edits.pipeline.TryGetFileSystemEntry(AssetPath.Parse(currentDirectory), out AssetFileEntry current)
+            || !current.isDirectory
+        ) {
             assets.browser.SetCurrentDirectory(string.Empty);
+        }
         string selectedPath = FileBrowserUtility.NormalizePath(assets.browser.GetSelectedPath(context));
         if (!string.IsNullOrEmpty(selectedPath) && !assets.edits.pipeline.TryGetFileSystemEntry(AssetPath.Parse(selectedPath), out _))
+        {
             assets.browser.Select(context, null);
+        }
     }
 
     private void OnAssetsChanged(AssetChangeSet changes)
     {
         EditorContext? context = m_context;
         if (context is null)
+        {
             return;
+        }
         for (int i = 0; i < changes.changes.Count; i++)
         {
             AssetChange change = changes.changes[i];
             if (change.kind == AssetChangeKind.Moved)
+            {
                 ApplyMove(context, change.previousAssetPath?.ToString() ?? string.Empty, change.assetPath.ToString());
+            }
             else if (change.kind is AssetChangeKind.Missing or AssetChangeKind.Removed)
+            {
                 ApplyRemoval(context, change.assetPath.ToString());
+            }
         }
     }
 
@@ -63,7 +78,9 @@ internal sealed class FileBrowserChangeTracker(AssetBrowserModule assets)
         oldPath = Normalize(oldPath);
         newPath = Normalize(newPath);
         if (string.IsNullOrEmpty(oldPath) || string.IsNullOrEmpty(newPath))
+        {
             return;
+        }
         string currentDirectory = Normalize(assets.browser.currentDirectory);
         if (IsSameOrDescendant(currentDirectory, oldPath))
         {
@@ -73,7 +90,9 @@ internal sealed class FileBrowserChangeTracker(AssetBrowserModule assets)
 
         string selectedPath = Normalize(assets.browser.GetSelectedPath(context));
         if (!IsSameOrDescendant(selectedPath, oldPath))
+        {
             return;
+        }
         string selectedSuffix = selectedPath.Length == oldPath.Length ? string.Empty : selectedPath[oldPath.Length..].TrimStart('/');
         assets.browser.Select(context, Combine(newPath, selectedSuffix));
     }
@@ -84,40 +103,44 @@ internal sealed class FileBrowserChangeTracker(AssetBrowserModule assets)
     ) {
         removedPath = Normalize(removedPath);
         if (string.IsNullOrEmpty(removedPath))
+        {
             return;
+        }
         string selectedPath = Normalize(assets.browser.GetSelectedPath(context));
         if (IsSameOrDescendant(selectedPath, removedPath))
+        {
             assets.browser.Select(context, null);
+        }
         string currentDirectory = Normalize(assets.browser.currentDirectory);
         if (!IsSameOrDescendant(currentDirectory, removedPath))
-            return;
-        string fallback = FileBrowserUtility.GetParentDirectory(removedPath);
-        while (!string.Equals(
-            fallback,
-            FileBrowserUtility.GetParentDirectory(fallback),
-            StringComparison.Ordinal
-        )
-            && (!assets.edits.pipeline.TryGetFileSystemEntry(
-            AssetPath.Parse(fallback),
-            out var entry
-        )
-            || !entry.isDirectory))
         {
+            return;
+        }
+        string fallback = FileBrowserUtility.GetParentDirectory(removedPath);
+        while (!string.Equals(fallback, FileBrowserUtility.GetParentDirectory(fallback), StringComparison.Ordinal)
+               && (!assets.edits.pipeline.TryGetFileSystemEntry(AssetPath.Parse(fallback), out AssetFileEntry entry)
+                   || !entry.isDirectory)
+        ) {
             fallback = FileBrowserUtility.GetParentDirectory(fallback);
         }
 
         if (!assets.edits.pipeline.TryGetFileSystemEntry(AssetPath.Parse(fallback), out AssetFileEntry available) || !available.isDirectory)
+        {
             fallback = string.Empty;
+        }
         assets.browser.SetCurrentDirectory(fallback);
     }
 
     private static bool IsSameOrDescendant(
         string path,
         string ancestor
-    ) => string.Equals(path, ancestor, StringComparison.OrdinalIgnoreCase) || path.StartsWith(ancestor + "/", StringComparison.OrdinalIgnoreCase);
+    ) => string.Equals(path, ancestor, StringComparison.OrdinalIgnoreCase)
+         || path.StartsWith(ancestor + "/", StringComparison.OrdinalIgnoreCase);
+
     private static string Combine(
         string left,
         string right
     ) => string.IsNullOrEmpty(right) ? left : $"{left}/{right}";
+
     private static string Normalize(string? path) => string.IsNullOrWhiteSpace(path) ? string.Empty : path.Replace('\\', '/').Trim('/');
 }

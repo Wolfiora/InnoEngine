@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Assets;
 using Inno.Core.Serialization;
 using Inno.Core.Serialization.Converters;
@@ -27,24 +26,27 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(value);
         if (value.isDestroyed)
+        {
             throw new InvalidOperationException("A destroyed scene cannot be serialized.");
+        }
 
         SceneStructureSnapshot snapshot = value.CaptureStructure();
         IReadOnlyList<GameSystem> systems = value.GetSystems();
-        var sourceIds = new SceneGraphSourceIds(snapshot.CaptureObjectSourceIds(), systems);
-        var references = new SceneGraphReferenceMap(value, sourceIds);
+        var sourceIDs = new SceneGraphSourceIDs(snapshot.CaptureObjectSourceIDs(), systems);
+        var references = new SceneGraphReferenceMap(value, sourceIDs);
 
-        writer.Write(SceneGraphSerialization.C_SCENE_ID_KEY, value.identity.persistentId);
+        writer.Write(SceneGraphSerialization.C_SCENE_ID_KEY, value.identity.persistentID);
         writer.Write(SceneGraphSerialization.C_NAME_KEY, value.name);
         using (references.Enter())
         {
             SceneGraphSerialization.WriteObjects(
                 writer,
                 snapshot.objects,
-                sourceIds,
-                gameObject => sourceIds.ContainsKey(gameObject),
-                preserveRootSiblingOrder: true);
-            SceneGraphSerialization.WriteSystems(writer, systems, sourceIds);
+                sourceIDs,
+                gameObject => sourceIDs.ContainsKey(gameObject),
+                preserveRootSiblingOrder: true
+            );
+            SceneGraphSerialization.WriteSystems(writer, systems, sourceIDs);
         }
     }
 
@@ -61,29 +63,32 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
     {
         ArgumentNullException.ThrowIfNull(reader);
         SceneGraphSerialization.ValidateScene(reader);
-        Guid sceneId = reader.Read<Guid>(SceneGraphSerialization.C_SCENE_ID_KEY);
+        Guid sceneID = reader.Read<Guid>(SceneGraphSerialization.C_SCENE_ID_KEY);
         bool instantiateFromAsset = reader.context.TryGet(out AssetObject? sourceAsset) && sourceAsset is not null;
         var scene = new GameScene(
             SceneWorld.current.typeCatalog,
             reader.Read<string>(SceneGraphSerialization.C_NAME_KEY),
-            instantiateFromAsset ? null : sceneId);
+            instantiateFromAsset ? null : sceneID
+        );
         if (sourceAsset is not null)
+        {
             scene.SetSourceAsset(sourceAsset);
+        }
         try
         {
-            RestoreSceneGraph(scene, reader, preservePersistentIds: !instantiateFromAsset);
+            RestoreSceneGraph(scene, reader, preservePersistentIDs: !instantiateFromAsset);
             SceneGraphSerialization.ReconcilePrefabConnections(scene, reader.context);
             return scene;
         }
         catch
         {
             if (!scene.isDestroyed)
+            {
                 scene.Unload();
+            }
             throw;
         }
     }
-
-
 
     /// <summary>
     /// Restores the supplied snapshot while preserving current invariants.
@@ -101,23 +106,27 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
         ArgumentNullException.ThrowIfNull(reader);
         ArgumentNullException.ThrowIfNull(target);
         SceneGraphSerialization.ValidateScene(reader);
-        Guid sceneId = reader.Read<Guid>(SceneGraphSerialization.C_SCENE_ID_KEY);
-        target.PrepareRestoreTarget(sceneId);
+        Guid sceneID = reader.Read<Guid>(SceneGraphSerialization.C_SCENE_ID_KEY);
+        target.PrepareRestoreTarget(sceneID);
         target.name = reader.Read<string>(SceneGraphSerialization.C_NAME_KEY);
         try
         {
-            RestoreSceneGraph(target, reader, preservePersistentIds: true);
+            RestoreSceneGraph(target, reader, preservePersistentIDs: true);
             SceneGraphSerialization.ReconcilePrefabConnections(target, reader.context);
         }
         catch
         {
             foreach (GameSystem system in target.GetSystems().ToArray())
+            {
                 target.RemoveSystem(system);
+            }
             GameObject[] createdObjects = target.GetObjects().ToArray();
             for (int i = 0; i < createdObjects.Length; i++)
             {
                 if (createdObjects[i].isRuntimeValid)
+                {
                     target.DestroyObject(createdObjects[i]);
+                }
             }
             throw;
         }
@@ -126,38 +135,42 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
     private static void RestoreSceneGraph(
         GameScene scene,
         SerializationReader reader,
-        bool preservePersistentIds
+        bool preservePersistentIDs
     ) {
         var references = new SceneGraphReferenceMap(scene);
         RestoredSceneGraph graph = SceneGraphSerialization.RestoreObjects(
             scene,
             reader.ReadObjectArray(SceneGraphSerialization.C_OBJECTS_KEY),
-            preservePersistentIds,
+            preservePersistentIDs,
             references,
             SceneGraphSerialization.ReadMissingReferenceAliases(reader),
             reader.context,
-            restoreProperties: false);
-        IReadOnlyList<SerializationReader> systemReaders =
-            reader.ReadObjectArray(SceneGraphSerialization.C_SYSTEMS_KEY);
-        var missingPlaceholders = graph.missingPlaceholders.ToList();
-        IReadOnlyList<(GameSystem system, byte[] state)> systemStates =
-            SceneGraphSerialization.CreateSystems(
-                scene,
-                systemReaders,
-                preservePersistentIds,
-                references,
-                missingPlaceholders);
+            restoreProperties: false
+        );
+        IReadOnlyList<SerializationReader> systemReaders = reader.ReadObjectArray(SceneGraphSerialization.C_SYSTEMS_KEY);
+        List<EngineObject> missingPlaceholders = graph.missingPlaceholders.ToList();
+        IReadOnlyList<(GameSystem system, byte[] state)> systemStates = SceneGraphSerialization.CreateSystems(
+            scene,
+            systemReaders,
+            preservePersistentIDs,
+            references,
+            missingPlaceholders
+        );
         SceneGraphSerialization.RestoreMissingReferenceAliases(
             graph with { missingPlaceholders = missingPlaceholders },
-            references);
+            references
+        );
         using (references.Enter())
         {
             SerializationRegistry serialization = reader.context.GetRequired<SerializationRegistry>();
             foreach ((GameComponent component, byte[] state) in graph.componentStates)
+            {
                 serialization.RestorePropertiesData(component, state, context: reader.context);
+            }
             foreach ((GameSystem system, byte[] state) in systemStates)
+            {
                 serialization.RestorePropertiesData(system, state, context: reader.context);
+            }
         }
     }
-
 }

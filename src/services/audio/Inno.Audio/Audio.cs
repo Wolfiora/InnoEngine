@@ -1,44 +1,8 @@
-using Inno.Core.Execution;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Inno.Audio;
-
-/// <summary>
-/// Binds one host-owned audio service to the current asynchronous execution context.
-/// </summary>
-public static class AudioExecutionContext
-{
-    private static readonly ExecutionSlot<IAudioService> S_CURRENT_SCOPE = new("audio");
-
-    /// <summary>
-    /// Gets the audio service bound to the current asynchronous execution context.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown when no audio service is active for the caller.
-    /// </exception>
-    public static IAudioService current => S_CURRENT_SCOPE.current;
-
-    /// <summary>
-    /// Binds an audio service until the returned strict last-in-first-out scope is disposed.
-    /// </summary>
-    /// <param name="audio">
-    /// Host-owned audio service exposed to script-facing operations.
-    /// </param>
-    /// <returns>
-    /// A strict last-in-first-out scope owned by the caller.
-    /// </returns>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="audio"/> is <see langword="null"/>.
-    /// </exception>
-    public static IDisposable EnterScope(IAudioService audio)
-    {
-        ArgumentNullException.ThrowIfNull(audio);
-        return S_CURRENT_SCOPE.Enter(audio);
-    }
-
-}
 
 /// <summary>
 /// Provides script-friendly access to the audio service in the current execution context.
@@ -112,8 +76,7 @@ public static class Audio
         AudioClipAsset clip,
         double scheduledDspTime,
         AudioPlayOptions options
-    )
-        => AudioExecutionContext.current.PlayScheduled(clip, scheduledDspTime, options);
+    ) => AudioExecutionContext.current.PlayScheduled(clip, scheduledDspTime, options);
 
     /// <summary>
     /// Stops a live voice.
@@ -180,8 +143,7 @@ public static class Audio
     public static bool SetVoiceParameters(
         AudioVoiceHandle voice,
         AudioVoiceParameters parameters
-    )
-        => AudioExecutionContext.current.SetVoiceParameters(voice, parameters);
+    ) => AudioExecutionContext.current.SetVoiceParameters(voice, parameters);
 
     /// <summary>
     /// Queries the current state of a voice.
@@ -198,8 +160,7 @@ public static class Audio
     public static bool TryGetVoiceState(
         AudioVoiceHandle voice,
         out AudioPlaybackState playbackState
-    )
-        => AudioExecutionContext.current.TryGetVoiceState(voice, out playbackState);
+    ) => AudioExecutionContext.current.TryGetVoiceState(voice, out playbackState);
 
     /// <summary>
     /// Updates linear gain for a semantic mixer bus.
@@ -214,7 +175,7 @@ public static class Audio
     /// <see langword="true"/> when the bus exists and was updated.
     /// </returns>
     public static bool SetBusVolume(
-        AudioBusId bus,
+        AudioBusID bus,
         float volume
     ) => AudioExecutionContext.current.SetBusVolume(bus, volume);
 
@@ -231,7 +192,7 @@ public static class Audio
     /// <see langword="true"/> when the bus exists and was updated.
     /// </returns>
     public static bool SetBusMuted(
-        AudioBusId bus,
+        AudioBusID bus,
         bool muted
     ) => AudioExecutionContext.current.SetBusMuted(bus, muted);
 
@@ -248,7 +209,7 @@ public static class Audio
     /// <see langword="true"/> when the bus exists and was updated.
     /// </returns>
     public static bool SetBusPaused(
-        AudioBusId bus,
+        AudioBusID bus,
         bool paused
     ) => AudioExecutionContext.current.SetBusPaused(bus, paused);
 
@@ -271,8 +232,7 @@ public static class Audio
         AudioClipAsset clip,
         AudioClipLoadMode loadMode = AudioClipLoadMode.Automatic,
         CancellationToken cancellationToken = default
-    )
-        => AudioExecutionContext.current.PreloadAsync(clip, loadMode, cancellationToken);
+    ) => AudioExecutionContext.current.PreloadAsync(clip, loadMode, cancellationToken);
 
     /// <summary>
     /// Releases one explicit preload retention without interrupting active voices.

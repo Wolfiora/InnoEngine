@@ -8,15 +8,17 @@ namespace Inno.Scripting.Compiler;
 internal static class ScriptApiArtifactCache
 {
     private const long C_MAXIMUM_SIZE = 512L * 1024 * 1024;
-    private static readonly TimeSpan S_GRACE_PERIOD = TimeSpan.FromDays(7);
+    private static readonly TimeSpan GRACE_PERIOD = TimeSpan.FromDays(7);
 
     internal static int Collect(
         string root,
         IEnumerable<string?> protectedDirectories
     ) {
         if (!Directory.Exists(root))
+        {
             return 0;
-        var protectedPaths = protectedDirectories
+        }
+        HashSet<string> protectedPaths = protectedDirectories
             .Where(static path => !string.IsNullOrWhiteSpace(path))
             .Select(static path => Path.GetFullPath(path!))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -27,13 +29,13 @@ internal static class ScriptApiArtifactCache
             .OrderBy(static entry => entry.lastWriteUtc)
             .ToArray();
         long totalSize = entries.Sum(static entry => entry.size);
-        DateTime cutoff = DateTime.UtcNow - S_GRACE_PERIOD;
+        DateTime cutoff = DateTime.UtcNow - GRACE_PERIOD;
         int removed = 0;
         foreach (Entry entry in entries)
         {
-            if (protectedPaths.Contains(entry.path) ||
-                entry.lastWriteUtc > cutoff && totalSize <= C_MAXIMUM_SIZE)
-            {
+            if (protectedPaths.Contains(entry.path)
+                || entry.lastWriteUtc > cutoff && totalSize <= C_MAXIMUM_SIZE
+            ) {
                 continue;
             }
             try

@@ -34,65 +34,79 @@ public sealed class OwnedReadStream : Stream
         ArgumentNullException.ThrowIfNull(input);
         ArgumentNullException.ThrowIfNull(owner);
         if (!input.CanRead)
+        {
             throw new ArgumentException("An owned read stream requires readable input.", nameof(input));
+        }
         m_input = input;
         m_owner = owner;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override bool CanRead => !m_inputClosed && m_input.CanRead;
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public override bool CanSeek => !m_inputClosed && m_input.CanSeek;
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public override bool CanWrite => false;
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public override long Length => m_input.Length;
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public override long Position
     {
         get => m_input.Position;
         set => m_input.Position = value;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
+    public override int Read(Span<byte> buffer) => m_input.Read(buffer);
+
+    /// <inheritdoc/>
     public override int Read(
         byte[] buffer,
         int offset,
         int count
     ) => m_input.Read(buffer, offset, count);
-    /// <inheritdoc />
-    public override int Read(Span<byte> buffer) => m_input.Read(buffer);
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public override int ReadByte() => m_input.ReadByte();
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public override ValueTask<int> ReadAsync(
         Memory<byte> buffer,
         CancellationToken cancellationToken = default
     ) => m_input.ReadAsync(buffer, cancellationToken);
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public override Task<int> ReadAsync(
         byte[] buffer,
         int offset,
         int count,
         CancellationToken cancellationToken
     ) => m_input.ReadAsync(buffer, offset, count, cancellationToken);
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public override long Seek(
         long offset,
         SeekOrigin origin
     ) => m_input.Seek(offset, origin);
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public override void Flush() => throw new NotSupportedException();
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public override void SetLength(long value) => throw new NotSupportedException();
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public override void Write(
         byte[] buffer,
         int offset,
         int count
     ) => throw new NotSupportedException();
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {
         if (disposing)

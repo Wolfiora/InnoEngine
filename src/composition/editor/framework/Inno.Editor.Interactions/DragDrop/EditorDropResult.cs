@@ -62,6 +62,5 @@ public readonly record struct EditorDropResult
     public static EditorDropResult Accepted(
         object? selectionTarget = null,
         object? revealTarget = null
-    )
-        => new(true, selectionTarget, revealTarget);
+    ) => new(true, selectionTarget, revealTarget);
 }

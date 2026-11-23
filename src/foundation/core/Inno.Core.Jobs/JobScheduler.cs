@@ -84,8 +84,7 @@ public sealed class JobScheduler : IDisposable
         Action<object?> job,
         object? state,
         ReadOnlySpan<JobHandle> dependencies
-    )
-        => m_implementation.Schedule(job, state, dependencies);
+    ) => m_implementation.Schedule(job, state, dependencies);
 
     /// <summary>
     /// Creates one handle that completes after every supplied dependency.

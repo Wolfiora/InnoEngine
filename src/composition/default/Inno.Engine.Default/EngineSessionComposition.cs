@@ -35,11 +35,11 @@ public sealed class EngineSessionComposition
     /// <param name="audioSettings">
     /// The portable audio defaults, captured during factory activation.
     /// </param>
-    /// <param name="audioOverride">
-    /// An optional product-specific audio owner, such as Editor preview/Play isolation.
-    /// </param>
     /// <param name="createStorage">
     /// The host factory transferring one isolated storage service to the session.
+    /// </param>
+    /// <param name="audioOverride">
+    /// An optional product-specific audio owner, such as Editor preview/Play isolation.
     /// </param>
     public EngineSessionComposition(
         RuntimeSession session,
@@ -51,13 +51,19 @@ public sealed class EngineSessionComposition
         Func<IApplicationStorage> createStorage,
         IRuntimeSubsystemFactory? audioOverride = null
     ) {
-        this.session = session ?? throw new ArgumentNullException(nameof(session));
-        this.adapters = adapters ?? throw new ArgumentNullException(nameof(adapters));
+        ArgumentNullException.ThrowIfNull(session);
+        ArgumentNullException.ThrowIfNull(adapters);
+        ArgumentNullException.ThrowIfNull(inputSource);
+        ArgumentNullException.ThrowIfNull(artifacts);
+        ArgumentNullException.ThrowIfNull(audioSettings);
+        ArgumentNullException.ThrowIfNull(createStorage);
+        this.session = session;
+        this.adapters = adapters;
         this.selection = selection;
-        this.inputSource = inputSource ?? throw new ArgumentNullException(nameof(inputSource));
-        this.artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
-        this.audioSettings = audioSettings ?? throw new ArgumentNullException(nameof(audioSettings));
-        this.createStorage = createStorage ?? throw new ArgumentNullException(nameof(createStorage));
+        this.inputSource = inputSource;
+        this.artifacts = artifacts;
+        this.audioSettings = audioSettings;
+        this.createStorage = createStorage;
         this.audioOverride = audioOverride;
     }
 
@@ -65,30 +71,37 @@ public sealed class EngineSessionComposition
     /// Gets the isolated session selected by the product.
     /// </summary>
     public RuntimeSession session { get; }
+
     /// <summary>
     /// Gets the backend-neutral adapter factory catalog.
     /// </summary>
     public IAdapterCatalog adapters { get; }
+
     /// <summary>
     /// Gets portable backend selection values.
     /// </summary>
     public AdapterSelection selection { get; }
+
     /// <summary>
     /// Gets the host input source shared by isolated session readers.
     /// </summary>
     public IInputEventSource inputSource { get; }
+
     /// <summary>
     /// Gets immutable encoded content artifacts from the selected host environment.
     /// </summary>
     public IAssetArtifactLookup artifacts { get; }
+
     /// <summary>
     /// Gets the control-thread source of portable audio defaults.
     /// </summary>
     public Func<AudioProjectSettings> audioSettings { get; }
+
     /// <summary>
     /// Gets the factory transferring storage ownership to this session.
     /// </summary>
     public Func<IApplicationStorage> createStorage { get; }
+
     /// <summary>
     /// Gets an optional product-specific audio owner factory.
     /// </summary>

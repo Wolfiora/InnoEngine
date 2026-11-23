@@ -13,6 +13,8 @@ indent_size = 2
 [*.cs]
 indent_style = space
 indent_size = 4
+# F-04: aim for 120 columns; 140 is the hard limit checked by 'InnoEngine.Build style'.
+max_line_length = 140
 # Method and lambda bodies keep the opening brace with the closing parameter list.
 csharp_new_line_before_open_brace = types, properties, accessors, anonymous_types, control_blocks, object_collection_array_initializers
 csharp_using_directive_placement = outside_namespace:warning
@@ -23,40 +25,183 @@ dotnet_diagnostic.CS1573.severity = warning
 dotnet_diagnostic.CS1591.severity = warning
 dotnet_diagnostic.IDE0005.severity = warning
 
-dotnet_naming_rule.properties_are_camel_case.symbols = properties
-dotnet_naming_rule.properties_are_camel_case.style = camel_case
-dotnet_naming_rule.properties_are_camel_case.severity = warning
-dotnet_naming_symbols.properties.applicable_kinds = property
-dotnet_naming_style.camel_case.capitalization = camel_case
+# N-01: file-scoped namespaces.
+csharp_style_namespace_declarations = file_scoped
+dotnet_diagnostic.IDE0161.severity = warning
+# T-01: every type and member states its accessibility.
+dotnet_style_require_accessibility_modifiers = for_non_interface_members
+dotnet_diagnostic.IDE0040.severity = warning
+# T-02: modifier order.
+csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,required,volatile,async,partial
+dotnet_diagnostic.IDE0036.severity = warning
+# T-05: structs are readonly when they can be.
+csharp_style_prefer_readonly_struct = true
+dotnet_diagnostic.IDE0250.severity = warning
+# M-02: one expression is an expression body; constructors use a block.
+csharp_style_expression_bodied_methods = true
+csharp_style_expression_bodied_properties = true
+csharp_style_expression_bodied_indexers = true
+csharp_style_expression_bodied_operators = true
+csharp_style_expression_bodied_accessors = true
+csharp_style_expression_bodied_local_functions = true
+csharp_style_expression_bodied_lambdas = true
+csharp_style_expression_bodied_constructors = false
+dotnet_diagnostic.IDE0021.severity = warning
+dotnet_diagnostic.IDE0022.severity = warning
+dotnet_diagnostic.IDE0023.severity = warning
+dotnet_diagnostic.IDE0024.severity = warning
+dotnet_diagnostic.IDE0025.severity = warning
+dotnet_diagnostic.IDE0026.severity = warning
+dotnet_diagnostic.IDE0027.severity = warning
+dotnet_diagnostic.IDE0053.severity = warning
+dotnet_diagnostic.IDE0061.severity = warning
+# I-02: collections use collection expressions.
+dotnet_style_prefer_collection_expression = when_types_exactly_match
+dotnet_diagnostic.IDE0028.severity = warning
+dotnet_diagnostic.IDE0300.severity = warning
+dotnet_diagnostic.IDE0301.severity = warning
+dotnet_diagnostic.IDE0302.severity = warning
+dotnet_diagnostic.IDE0303.severity = warning
+dotnet_diagnostic.IDE0304.severity = warning
+dotnet_diagnostic.IDE0305.severity = warning
+# E-01, E-02: locals state their type. 'var' with 'new T(...)' is checked by 'InnoEngine.Build style'.
+csharp_style_var_for_built_in_types = false
+csharp_style_var_when_type_is_apparent = true
+csharp_style_var_elsewhere = false
+dotnet_diagnostic.IDE0008.severity = warning
+# E-03: built-in types use keywords.
+dotnet_style_predefined_type_for_locals_parameters_members = true
+dotnet_style_predefined_type_for_member_access = true
+dotnet_diagnostic.IDE0049.severity = warning
+# E-04: null checks use patterns.
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true
+csharp_style_prefer_not_pattern = true
+dotnet_diagnostic.IDE0041.severity = warning
+dotnet_diagnostic.IDE0083.severity = warning
+# E-07: common values.
+csharp_prefer_simple_default_expression = true
+csharp_style_pattern_matching_over_as_with_null_check = true
+csharp_style_pattern_matching_over_is_with_cast_check = true
+csharp_style_conditional_delegate_call = true
+dotnet_diagnostic.IDE0034.severity = warning
+dotnet_diagnostic.IDE0019.severity = warning
+dotnet_diagnostic.IDE0020.severity = warning
+dotnet_diagnostic.IDE0038.severity = warning
+dotnet_diagnostic.IDE1005.severity = warning
+dotnet_diagnostic.IDE0100.severity = warning
+dotnet_diagnostic.CA2200.severity = suggestion
+# E-05: argument validation uses the ThrowIf helpers.
+dotnet_diagnostic.CA1510.severity = suggestion
+dotnet_diagnostic.CA1511.severity = suggestion
+dotnet_diagnostic.CA1512.severity = suggestion
+dotnet_diagnostic.CA1513.severity = suggestion
+# E-09: identifiers use nameof; string operations state their comparison and culture.
+dotnet_diagnostic.CA1507.severity = suggestion
+dotnet_diagnostic.CA1304.severity = suggestion
+dotnet_diagnostic.CA1305.severity = suggestion
+dotnet_diagnostic.CA1307.severity = suggestion
+dotnet_diagnostic.CA1309.severity = suggestion
+dotnet_diagnostic.CA1310.severity = suggestion
+dotnet_diagnostic.CA1311.severity = suggestion
+# E-11: lambdas that capture nothing are static.
+csharp_prefer_static_anonymous_function = true
+dotnet_diagnostic.IDE0320.severity = warning
+# E-12: using declarations.
+csharp_prefer_simple_using_statement = true
+dotnet_diagnostic.IDE0063.severity = warning
+# T-03: internal classes without derived types are sealed.
+dotnet_diagnostic.CA1852.severity = suggestion
+# X-05: asynchronous code.
+dotnet_diagnostic.CA2007.severity = suggestion
+dotnet_diagnostic.CA2016.severity = suggestion
 
-dotnet_naming_rule.private_fields_have_owner_prefix.symbols = private_fields
-dotnet_naming_rule.private_fields_have_owner_prefix.style = owner_field
-dotnet_naming_rule.private_fields_have_owner_prefix.severity = warning
-dotnet_naming_symbols.private_fields.applicable_kinds = field
-dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+# NM-01 to NM-12: the naming table. 'InnoEngine.Build style' checks the same table, the acronyms of NM-13 and the
+# exceptions for contract names. NM-04 is checked only there because test methods take no 'Async' suffix.
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+dotnet_naming_style.camel_case.capitalization = camel_case
+dotnet_naming_style.interface_name.required_prefix = I
+dotnet_naming_style.interface_name.capitalization = pascal_case
+dotnet_naming_style.type_parameter_name.required_prefix = T
+dotnet_naming_style.type_parameter_name.capitalization = pascal_case
 dotnet_naming_style.owner_field.required_prefix = m_
 dotnet_naming_style.owner_field.capitalization = camel_case
-
-# More specific modifier rules take precedence over the private-field rule.
-dotnet_naming_rule.constants_have_constant_prefix.symbols = constants
-dotnet_naming_rule.constants_have_constant_prefix.style = constant_name
-dotnet_naming_rule.constants_have_constant_prefix.severity = warning
-dotnet_naming_symbols.constants.applicable_kinds = field
-dotnet_naming_symbols.constants.required_modifiers = const
+dotnet_naming_style.static_field.required_prefix = s_
+dotnet_naming_style.static_field.capitalization = camel_case
 dotnet_naming_style.constant_name.required_prefix = C_
 dotnet_naming_style.constant_name.capitalization = all_upper
+dotnet_naming_style.constant_name.word_separator = _
+dotnet_naming_style.upper_snake.capitalization = all_upper
+dotnet_naming_style.upper_snake.word_separator = _
 
-dotnet_naming_rule.static_readonly_fields_have_semantic_names.symbols = static_readonly_fields
-dotnet_naming_rule.static_readonly_fields_have_semantic_names.style = pascal_case
-dotnet_naming_rule.static_readonly_fields_have_semantic_names.severity = warning
-dotnet_naming_symbols.static_readonly_fields.applicable_kinds = field
-dotnet_naming_symbols.static_readonly_fields.required_modifiers = static, readonly
-
+# NM-01: types.
 dotnet_naming_rule.types_are_pascal_case.symbols = types
 dotnet_naming_rule.types_are_pascal_case.style = pascal_case
 dotnet_naming_rule.types_are_pascal_case.severity = warning
-dotnet_naming_symbols.types.applicable_kinds = class, struct, interface, enum, delegate
-dotnet_naming_style.pascal_case.capitalization = pascal_case
+dotnet_naming_symbols.types.applicable_kinds = class, struct, enum, delegate
+
+# NM-02: interfaces and type parameters.
+dotnet_naming_rule.interfaces_start_with_i.symbols = interfaces
+dotnet_naming_rule.interfaces_start_with_i.style = interface_name
+dotnet_naming_rule.interfaces_start_with_i.severity = warning
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+
+dotnet_naming_rule.type_parameters_start_with_t.symbols = type_parameters
+dotnet_naming_rule.type_parameters_start_with_t.style = type_parameter_name
+dotnet_naming_rule.type_parameters_start_with_t.severity = warning
+dotnet_naming_symbols.type_parameters.applicable_kinds = type_parameter
+
+# NM-03: methods and local functions.
+dotnet_naming_rule.methods_are_pascal_case.symbols = methods
+dotnet_naming_rule.methods_are_pascal_case.style = pascal_case
+dotnet_naming_rule.methods_are_pascal_case.severity = warning
+dotnet_naming_symbols.methods.applicable_kinds = method, local_function
+
+# NM-05 and NM-10: properties and events.
+dotnet_naming_rule.properties_are_camel_case.symbols = properties
+dotnet_naming_rule.properties_are_camel_case.style = camel_case
+dotnet_naming_rule.properties_are_camel_case.severity = warning
+dotnet_naming_symbols.properties.applicable_kinds = property, event
+
+# NM-07: constants, including local constants.
+dotnet_naming_rule.constants_have_constant_prefix.symbols = constants
+dotnet_naming_rule.constants_have_constant_prefix.style = constant_name
+dotnet_naming_rule.constants_have_constant_prefix.severity = warning
+dotnet_naming_symbols.constants.applicable_kinds = field, local
+dotnet_naming_symbols.constants.required_modifiers = const
+
+# NM-08: static readonly fields.
+dotnet_naming_rule.static_readonly_fields_are_upper_snake.symbols = static_readonly_fields
+dotnet_naming_rule.static_readonly_fields_are_upper_snake.style = upper_snake
+dotnet_naming_rule.static_readonly_fields_are_upper_snake.severity = warning
+dotnet_naming_symbols.static_readonly_fields.applicable_kinds = field
+dotnet_naming_symbols.static_readonly_fields.required_modifiers = static, readonly
+
+# NM-09: private static mutable fields.
+dotnet_naming_rule.private_static_fields_have_static_prefix.symbols = private_static_fields
+dotnet_naming_rule.private_static_fields_have_static_prefix.style = static_field
+dotnet_naming_rule.private_static_fields_have_static_prefix.severity = warning
+dotnet_naming_symbols.private_static_fields.applicable_kinds = field
+dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_fields.required_modifiers = static
+
+# NM-06: instance fields.
+dotnet_naming_rule.owned_fields_have_owner_prefix.symbols = owned_fields
+dotnet_naming_rule.owned_fields_have_owner_prefix.style = owner_field
+dotnet_naming_rule.owned_fields_have_owner_prefix.severity = warning
+dotnet_naming_symbols.owned_fields.applicable_kinds = field
+dotnet_naming_symbols.owned_fields.applicable_accessibilities = private, protected, private_protected
+
+dotnet_naming_rule.shared_fields_are_camel_case.symbols = shared_fields
+dotnet_naming_rule.shared_fields_are_camel_case.style = camel_case
+dotnet_naming_rule.shared_fields_are_camel_case.severity = warning
+dotnet_naming_symbols.shared_fields.applicable_kinds = field
+dotnet_naming_symbols.shared_fields.applicable_accessibilities = public, internal, protected_internal
+
+# NM-12: parameters and local variables.
+dotnet_naming_rule.locals_are_camel_case.symbols = locals
+dotnet_naming_rule.locals_are_camel_case.style = camel_case
+dotnet_naming_rule.locals_are_camel_case.severity = warning
+dotnet_naming_symbols.locals.applicable_kinds = parameter, local
 
 [**/Generated/*.cs]
 generated_code = true

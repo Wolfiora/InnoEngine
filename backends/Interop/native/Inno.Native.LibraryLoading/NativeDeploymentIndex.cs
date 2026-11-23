@@ -21,7 +21,7 @@ public sealed class NativeDeploymentIndex
     /// <summary>
     /// Freezes one product target and its explicit aliases without detecting the host OS.
     /// </summary>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The exact deployment target selected by the product.
     /// </param>
     /// <param name="libraries">
@@ -37,12 +37,12 @@ public sealed class NativeDeploymentIndex
     /// A mapping is absent.
     /// </exception>
     public NativeDeploymentIndex(
-        string targetId,
+        string targetID,
         IReadOnlyDictionary<string, string> libraries,
         IReadOnlyDictionary<string, string> files
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
-        this.targetId = targetId;
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetID);
+        this.targetID = targetID;
         this.libraries = Freeze(libraries);
         this.files = Freeze(files);
     }
@@ -50,7 +50,7 @@ public sealed class NativeDeploymentIndex
     /// <summary>
     /// Gets the explicit product target, without reconstructing it from OS or CPU names.
     /// </summary>
-    public string targetId { get; }
+    public string targetID { get; }
 
     /// <summary>
     /// Gets immutable logical library mappings selected by composition.
@@ -74,42 +74,12 @@ public sealed class NativeDeploymentIndex
         using (var writer = new Utf8JsonWriter(stream))
         {
             writer.WriteStartObject();
-            writer.WriteString("targetId", targetId);
+            writer.WriteString("targetId", targetID);
             WriteMapping(writer, "libraries", libraries);
             WriteMapping(writer, "files", files);
             writer.WriteEndObject();
         }
         return stream.ToArray();
-    }
-
-    /// <summary>
-    /// Reads only the current index format and validates its complete path mappings.
-    /// </summary>
-    /// <param name="bytes">
-    /// Complete encoded bytes borrowed for this call.
-    /// </param>
-    /// <returns>
-    /// An immutable layout; malformed or incomplete input is rejected.
-    /// </returns>
-    /// <exception cref="InvalidDataException">
-    /// The index is malformed, incomplete or contains invalid mappings.
-    /// </exception>
-    public static NativeDeploymentIndex Decode(ReadOnlySpan<byte> bytes)
-    {
-        try
-        {
-            using JsonDocument document = JsonDocument.Parse(bytes.ToArray());
-            JsonElement root = document.RootElement;
-            string[] names = root.EnumerateObject().Select(static entry => entry.Name).Order(StringComparer.Ordinal).ToArray();
-            if (!names.SequenceEqual(new[] { "files", "libraries", "targetId" }, StringComparer.Ordinal))
-                throw new InvalidDataException("The native deployment index must contain its exact current fields.");
-            return new(root.GetProperty("targetId").GetString()!, ReadMapping(root.GetProperty("libraries")),
-                ReadMapping(root.GetProperty("files")));
-        }
-        catch (Exception failure) when (failure is JsonException or ArgumentException or InvalidOperationException)
-        {
-            throw new InvalidDataException("The native deployment index is malformed or incomplete.", failure);
-        }
     }
 
     /// <summary>
@@ -133,8 +103,10 @@ public sealed class NativeDeploymentIndex
     ) {
         string file = Resolve(nativeDirectory, name, libraries);
         if (!OperatingSystem.IsWindows() || file.StartsWith(@"\\?\", StringComparison.Ordinal)
-            || file.StartsWith(@"\\.\", StringComparison.Ordinal))
+            || file.StartsWith(@"\\.\", StringComparison.Ordinal)
+        ) {
             return file;
+        }
         // Windows native loading can reject ordinary paths even below MAX_PATH.
         // Apply loading syntax only after validating the actual deployment boundary.
         return file.StartsWith(@"\\", StringComparison.Ordinal) ? @"\\?\UNC\" + file[2..] : @"\\?\" + file;
@@ -160,6 +132,41 @@ public sealed class NativeDeploymentIndex
         string name
     ) => Resolve(nativeDirectory, name, files);
 
+    /// <summary>
+    /// Reads only the current index format and validates its complete path mappings.
+    /// </summary>
+    /// <param name="bytes">
+    /// Complete encoded bytes borrowed for this call.
+    /// </param>
+    /// <returns>
+    /// An immutable layout; malformed or incomplete input is rejected.
+    /// </returns>
+    /// <exception cref="InvalidDataException">
+    /// The index is malformed, incomplete or contains invalid mappings.
+    /// </exception>
+    public static NativeDeploymentIndex Decode(ReadOnlySpan<byte> bytes)
+    {
+        try
+        {
+            using JsonDocument document = JsonDocument.Parse(bytes.ToArray());
+            JsonElement root = document.RootElement;
+            string[] names = root.EnumerateObject().Select(static entry => entry.Name).Order(StringComparer.Ordinal).ToArray();
+            if (!names.SequenceEqual(["files", "libraries", "targetId"], StringComparer.Ordinal))
+            {
+                throw new InvalidDataException("The native deployment index must contain its exact current fields.");
+            }
+            return new(
+                root.GetProperty("targetId").GetString()!,
+                ReadMapping(root.GetProperty("libraries")),
+                ReadMapping(root.GetProperty("files"))
+            );
+        }
+        catch (Exception failure) when (failure is JsonException or ArgumentException or InvalidOperationException)
+        {
+            throw new InvalidDataException("The native deployment index is malformed or incomplete.", failure);
+        }
+    }
+
     private static IReadOnlyDictionary<string, string> Freeze(IReadOnlyDictionary<string, string> mapping)
     {
         ArgumentNullException.ThrowIfNull(mapping);
@@ -168,8 +175,10 @@ public sealed class NativeDeploymentIndex
         {
             if (string.IsNullOrWhiteSpace(alias) || alias.IndexOfAny(['/', '\\', ':', '*', '?']) >= 0
                 || alias is "." or ".." || string.IsNullOrWhiteSpace(path) || path.Contains('\\')
-                || path.Contains(':') || path.Split('/').Any(static part => part is "" or "." or ".."))
+                || path.Contains(':') || path.Split('/').Any(static part => part is "" or "." or "..")
+            ) {
                 throw new ArgumentException("Native deployment aliases and paths must be assigned and portable.", nameof(mapping));
+            }
             result.Add(alias, path);
         }
         return new ReadOnlyDictionary<string, string>(result);
@@ -182,15 +191,21 @@ public sealed class NativeDeploymentIndex
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         if (!mapping.TryGetValue(name, out string? relative))
+        {
             throw new FileNotFoundException($"No native deployment entry is registered for '{name}'.");
+        }
         string file = PathBoundary.RequireUnlinkedPath(directory, PathBoundary.Resolve(directory, relative));
         if (!File.Exists(file))
+        {
             throw new FileNotFoundException("An explicitly deployed native payload is absent.", file);
+        }
         return file;
     }
 
     private static IReadOnlyDictionary<string, string> ReadMapping(JsonElement element)
-        => element.EnumerateObject().ToDictionary(static entry => entry.Name, static entry => entry.Value.GetString()!, StringComparer.Ordinal);
+        => element
+            .EnumerateObject()
+            .ToDictionary(static entry => entry.Name, static entry => entry.Value.GetString()!, StringComparer.Ordinal);
 
     private static void WriteMapping(
         Utf8JsonWriter writer,
@@ -199,7 +214,9 @@ public sealed class NativeDeploymentIndex
     ) {
         writer.WriteStartObject(name);
         foreach ((string alias, string path) in mapping)
+        {
             writer.WriteString(alias, path);
+        }
         writer.WriteEndObject();
     }
 }

@@ -3,27 +3,6 @@ using System;
 namespace Inno.Build;
 
 /// <summary>
-/// Identifies the severity of one structured build diagnostic.
-/// </summary>
-public enum BuildDiagnosticSeverity
-{
-    /// <summary>
-    /// Provides non-failing build context.
-    /// </summary>
-    Information,
-
-    /// <summary>
-    /// Reports a condition that did not prevent output creation.
-    /// </summary>
-    Warning,
-
-    /// <summary>
-    /// Reports a condition that prevented a valid build.
-    /// </summary>
-    Error
-}
-
-/// <summary>
 /// Describes one stable machine-readable build problem or informational event.
 /// </summary>
 public sealed class BuildDiagnostic
@@ -69,4 +48,23 @@ public sealed class BuildDiagnostic
     /// Gets the human-readable explanation.
     /// </summary>
     public string message { get; }
+}
+
+/// <summary>
+/// Identifies the severity of one structured build diagnostic.
+/// </summary>
+public enum BuildDiagnosticSeverity
+{
+    /// <summary>
+    /// Provides non-failing build context.
+    /// </summary>
+    Information,
+    /// <summary>
+    /// Reports a condition that did not prevent output creation.
+    /// </summary>
+    Warning,
+    /// <summary>
+    /// Reports a condition that prevented a valid build.
+    /// </summary>
+    Error
 }

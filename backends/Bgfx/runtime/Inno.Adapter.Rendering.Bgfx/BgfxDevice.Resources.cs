@@ -49,11 +49,12 @@ public sealed unsafe partial class BgfxDevice
         {
             throw new ArgumentException(
                 $"Initial buffer data must contain exactly {expectedSize} bytes.",
-                nameof(initialData));
+                nameof(initialData)
+            );
         }
 
         BgfxBufferResource resource = CreateNativeBuffer(descriptor, initialData, name);
-        ulong id = m_nextPersistentId++;
+        ulong id = m_nextPersistentID++;
         m_persistentBuffers.Add(id, resource);
         return CreatePersistentBufferHandle(id, generation);
     }
@@ -104,7 +105,8 @@ public sealed unsafe partial class BgfxDevice
         if (resource.kind == BgfxBufferKind.Indirect)
         {
             throw new NotSupportedException(
-                "BGFX indirect command buffers are populated by compute shaders, not CPU updates.");
+                "BGFX indirect command buffers are populated by compute shaders, not CPU updates."
+            );
         }
         if ((resource.descriptor.usage & RenderBufferUsage.Dynamic) == 0)
         {
@@ -129,13 +131,15 @@ public sealed unsafe partial class BgfxDevice
                 BgfxNativeCalls.UpdateDynamicVertexBuffer(
                     new bgfx.DynamicVertexBufferHandle { idx = resource.nativeIndex },
                     checked((uint)startElement),
-                    memory);
+                    memory
+                );
                 break;
             case BgfxBufferKind.DynamicIndex:
                 BgfxNativeCalls.UpdateDynamicIndexBuffer(
                     new bgfx.DynamicIndexBufferHandle { idx = resource.nativeIndex },
                     checked((uint)startElement),
-                    memory);
+                    memory
+                );
                 break;
             default:
                 throw new InvalidOperationException("A Dynamic descriptor resolved to an immutable BGFX buffer.");
@@ -162,7 +166,7 @@ public sealed unsafe partial class BgfxDevice
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         BgfxPipelineResource resource = CreateGraphicsPipelineResource(descriptor, name);
-        ulong id = m_nextPersistentId++;
+        ulong id = m_nextPersistentID++;
         m_graphicsPipelines.Add(id, resource);
         return CreateGraphicsPipelineHandle(id, generation);
     }
@@ -214,7 +218,7 @@ public sealed unsafe partial class BgfxDevice
         }
 
         BgfxPipelineResource resource = CreateComputePipelineResource(descriptor, name);
-        ulong id = m_nextPersistentId++;
+        ulong id = m_nextPersistentID++;
         m_computePipelines.Add(id, resource);
         return CreateComputePipelineHandle(id, generation);
     }
@@ -263,8 +267,8 @@ public sealed unsafe partial class BgfxDevice
     {
         if (m_activeGraph is null
             || GetHandleIdentity(buffer).generation != m_activeGraph.generation
-            || !m_graphBuffers.TryGetValue(GetHandleIdentity(buffer).index, out BgfxBufferResource? resource))
-        {
+            || !m_graphBuffers.TryGetValue(GetHandleIdentity(buffer).index, out BgfxBufferResource? resource)
+        ) {
             throw new ArgumentException("Buffer is not active in the current BGFX graph.", nameof(buffer));
         }
 
@@ -317,7 +321,8 @@ public sealed unsafe partial class BgfxDevice
                 if (!resource.descriptor.Equals(buffer.descriptor))
                 {
                     throw new InvalidOperationException(
-                        $"Imported buffer '{buffer.name}' does not match its persistent descriptor.");
+                        $"Imported buffer '{buffer.name}' does not match its persistent descriptor."
+                    );
                 }
             }
             else
@@ -335,7 +340,8 @@ public sealed unsafe partial class BgfxDevice
                 else if (!resource.descriptor.Equals(buffer.descriptor))
                 {
                     throw new InvalidOperationException(
-                        $"Render-graph physical buffer slot {buffer.physicalSlot} aliases incompatible descriptors.");
+                        $"Render-graph physical buffer slot {buffer.physicalSlot} aliases incompatible descriptors."
+                    );
                 }
             }
 
@@ -350,18 +356,20 @@ public sealed unsafe partial class BgfxDevice
     ) {
         RenderBufferDescriptor buffer = descriptor.buffer;
         if ((buffer.usage & RenderBufferUsage.Indirect) != 0
-            && (buffer.usage & (RenderBufferUsage.Vertex | RenderBufferUsage.Index)) == 0)
-        {
+            && (buffer.usage & (RenderBufferUsage.Vertex | RenderBufferUsage.Index)) == 0
+        ) {
             if (!capabilities.Supports(GraphicsCapability.Indirect))
+            {
                 throw new NotSupportedException("The active backend does not support indirect command buffers.");
+            }
             if (!initialData.IsEmpty)
             {
                 throw new ArgumentException(
                     "BGFX indirect buffers cannot be initialized from CPU data.",
-                    nameof(initialData));
+                    nameof(initialData)
+                );
             }
-            bgfx.IndirectBufferHandle indirect = bgfx.create_indirect_buffer(
-                checked((uint)buffer.elementCount));
+            bgfx.IndirectBufferHandle indirect = bgfx.create_indirect_buffer(checked((uint)buffer.elementCount));
             EnsureValid(indirect.Valid, name);
             return BgfxBufferResource.FromIndirect(buffer, indirect);
         }
@@ -369,8 +377,8 @@ public sealed unsafe partial class BgfxDevice
         bool dynamic = (buffer.usage & (RenderBufferUsage.Dynamic | RenderBufferUsage.Storage)) != 0;
         if (indexBuffer
             && descriptor.indexFormat == RenderIndexFormat.UInt32
-            && !capabilities.Supports(GraphicsCapability.Index32))
-        {
+            && !capabilities.Supports(GraphicsCapability.Index32)
+        ) {
             throw new NotSupportedException("The active backend does not support unsigned 32-bit indices.");
         }
         ValidateVertexLayoutCapabilities(descriptor.vertexLayout);
@@ -387,7 +395,8 @@ public sealed unsafe partial class BgfxDevice
             {
                 bgfx.DynamicIndexBufferHandle handle = bgfx.create_dynamic_index_buffer(
                     checked((uint)buffer.elementCount),
-                    flags);
+                    flags
+                );
                 EnsureValid(handle.Valid, name);
                 if (!initialData.IsEmpty)
                 {
@@ -401,7 +410,8 @@ public sealed unsafe partial class BgfxDevice
             EnsureValid(staticHandle.Valid, name);
             int indexBufferNameLength = Encoding.UTF8.GetByteCount(name);
             Span<byte> indexBufferNameBytes = indexBufferNameLength < 256
-                ? stackalloc byte[256] : new byte[checked(indexBufferNameLength + 1)];
+                                              ? stackalloc byte[256]
+                                              : new byte[checked(indexBufferNameLength + 1)];
             Encoding.UTF8.GetBytes(name, indexBufferNameBytes);
             indexBufferNameBytes[indexBufferNameLength] = 0;
             fixed (byte* indexBufferNamePointer = indexBufferNameBytes)
@@ -415,19 +425,19 @@ public sealed unsafe partial class BgfxDevice
         bool storageBuffer = (buffer.usage & RenderBufferUsage.Storage) != 0;
         if (!vertexBuffer && !storageBuffer)
         {
-            throw new NotSupportedException(
-                "BGFX persistent buffers must be vertex, index, or storage resources.");
+            throw new NotSupportedException("BGFX persistent buffers must be vertex, index, or storage resources.");
         }
 
         bgfx.VertexLayout nativeLayout = descriptor.vertexLayout is null
-            ? CreateSkippedLayout(buffer.elementStride)
-            : CreateNativeLayout(descriptor.vertexLayout);
+                                         ? CreateSkippedLayout(buffer.elementStride)
+                                         : CreateNativeLayout(descriptor.vertexLayout);
         if (initialData.IsEmpty || dynamic)
         {
             bgfx.DynamicVertexBufferHandle handle = BgfxNativeCalls.CreateDynamicVertexBuffer(
                 checked((uint)buffer.elementCount),
                 &nativeLayout,
-                flags);
+                flags
+            );
             EnsureValid(handle.Valid, name);
             if (!initialData.IsEmpty)
             {
@@ -441,7 +451,8 @@ public sealed unsafe partial class BgfxDevice
         EnsureValid(vertexHandle.Valid, name);
         int vertexBufferNameLength = Encoding.UTF8.GetByteCount(name);
         Span<byte> vertexBufferNameBytes = vertexBufferNameLength < 256
-            ? stackalloc byte[256] : new byte[checked(vertexBufferNameLength + 1)];
+                                           ? stackalloc byte[256]
+                                           : new byte[checked(vertexBufferNameLength + 1)];
         Encoding.UTF8.GetBytes(name, vertexBufferNameBytes);
         vertexBufferNameBytes[vertexBufferNameLength] = 0;
         fixed (byte* vertexBufferNamePointer = vertexBufferNameBytes)
@@ -454,12 +465,13 @@ public sealed unsafe partial class BgfxDevice
     private BgfxBufferResource CreateTransientBuffer(RenderBufferDescriptor descriptor)
     {
         if ((descriptor.usage & RenderBufferUsage.Indirect) != 0
-            && (descriptor.usage & (RenderBufferUsage.Vertex | RenderBufferUsage.Index)) == 0)
-        {
+            && (descriptor.usage & (RenderBufferUsage.Vertex | RenderBufferUsage.Index)) == 0
+        ) {
             if (!capabilities.Supports(GraphicsCapability.Indirect))
+            {
                 throw new NotSupportedException("The active backend does not support indirect command buffers.");
-            bgfx.IndirectBufferHandle indirect = bgfx.create_indirect_buffer(
-                checked((uint)descriptor.elementCount));
+            }
+            bgfx.IndirectBufferHandle indirect = bgfx.create_indirect_buffer(checked((uint)descriptor.elementCount));
             EnsureValid(indirect.Valid, "transient indirect buffer");
             return BgfxBufferResource.FromIndirect(descriptor, indirect);
         }
@@ -472,28 +484,29 @@ public sealed unsafe partial class BgfxDevice
                 _ => throw new NotSupportedException("Transient index buffers require a two- or four-byte stride.")
             };
             if (format == RenderIndexFormat.UInt32
-                && !capabilities.Supports(GraphicsCapability.Index32))
-            {
+                && !capabilities.Supports(GraphicsCapability.Index32)
+            ) {
                 throw new NotSupportedException("The active backend does not support unsigned 32-bit indices.");
             }
             bgfx.DynamicIndexBufferHandle index = bgfx.create_dynamic_index_buffer(
                 checked((uint)descriptor.elementCount),
-                BufferFlags(descriptor, format));
+                BufferFlags(descriptor, format)
+            );
             EnsureValid(index.Valid, "transient index buffer");
             return BgfxBufferResource.FromDynamicIndex(descriptor, format, index);
         }
 
         if ((descriptor.usage & (RenderBufferUsage.Vertex | RenderBufferUsage.Storage)) == 0)
         {
-            throw new NotSupportedException(
-                "BGFX transient buffers must be vertex, index, or storage resources.");
+            throw new NotSupportedException("BGFX transient buffers must be vertex, index, or storage resources.");
         }
 
         bgfx.VertexLayout layout = CreateSkippedLayout(descriptor.elementStride);
         bgfx.DynamicVertexBufferHandle vertex = BgfxNativeCalls.CreateDynamicVertexBuffer(
             checked((uint)descriptor.elementCount),
             &layout,
-            BufferFlags(descriptor, RenderIndexFormat.UInt32));
+            BufferFlags(descriptor, RenderIndexFormat.UInt32)
+        );
         EnsureValid(vertex.Valid, "transient vertex or storage buffer");
         return BgfxBufferResource.FromDynamicVertex(descriptor, null, vertex);
     }
@@ -506,8 +519,8 @@ public sealed unsafe partial class BgfxDevice
         {
             PooledTransientBuffer pooled = m_transientBufferPool[index];
             if (pooled.physicalSlot != physicalSlot
-                || !pooled.resource.descriptor.Equals(descriptor))
-            {
+                || !pooled.resource.descriptor.Equals(descriptor)
+            ) {
                 continue;
             }
             m_transientBufferPool.RemoveAt(index);
@@ -518,7 +531,9 @@ public sealed unsafe partial class BgfxDevice
         {
             PooledTransientBuffer pooled = m_transientBufferPool[index];
             if (!pooled.resource.descriptor.Equals(descriptor))
+            {
                 continue;
+            }
             m_transientBufferPool.RemoveAt(index);
             return pooled.resource;
         }
@@ -543,8 +558,7 @@ public sealed unsafe partial class BgfxDevice
             vertexShader = CreateShader(descriptor.vertexShader.Span, $"{name}.Vertex");
             fragmentShader = CreateShader(descriptor.fragmentShader.Span, $"{name}.Fragment");
             Dictionary<string, ReflectedUniform> reflected = ReflectShaders(vertexShader, fragmentShader);
-            IReadOnlyDictionary<string, BgfxShaderBindingResource> bindings =
-                ValidateReflectedBindings(descriptor.bindings, reflected);
+            IReadOnlyDictionary<string, BgfxShaderBindingResource> bindings = ValidateReflectedBindings(descriptor.bindings, reflected);
 
             program = bgfx.create_program(vertexShader, fragmentShader, true);
             EnsureValid(program.Valid, name);
@@ -562,7 +576,8 @@ public sealed unsafe partial class BgfxDevice
                 descriptor.vertexLayout,
                 layoutHandle,
                 descriptor.rasterState,
-                false);
+                false
+            );
         }
         catch
         {
@@ -586,21 +601,25 @@ public sealed unsafe partial class BgfxDevice
     private void ValidateVertexLayoutCapabilities(RenderVertexLayout? layout)
     {
         if (layout is null)
+        {
             return;
+        }
         foreach (RenderVertexAttribute attribute in layout.attributes)
         {
             if (attribute.format is RenderVertexFormat.Half2 or RenderVertexFormat.Half4
-                && !capabilities.Supports(GraphicsCapability.VertexAttributeHalf))
-            {
+                && !capabilities.Supports(GraphicsCapability.VertexAttributeHalf)
+            ) {
                 throw new NotSupportedException(
-                    "The active backend does not support half-precision vertex attributes.");
+                    "The active backend does not support half-precision vertex attributes."
+                );
             }
 
             if (attribute.format == RenderVertexFormat.UInt10Normalized4
-                && !capabilities.Supports(GraphicsCapability.VertexAttributeUInt10))
-            {
+                && !capabilities.Supports(GraphicsCapability.VertexAttributeUInt10)
+            ) {
                 throw new NotSupportedException(
-                    "The active backend does not support packed 10:10:10:2 vertex attributes.");
+                    "The active backend does not support packed 10:10:10:2 vertex attributes."
+                );
             }
         }
     }
@@ -608,10 +627,9 @@ public sealed unsafe partial class BgfxDevice
     private void ValidateRasterStateCapabilities(RenderRasterState state)
     {
         if (state.blend.alphaToCoverage
-            && !capabilities.Supports(GraphicsCapability.AlphaToCoverage))
-        {
-            throw new NotSupportedException(
-                "The active backend does not support alpha-to-coverage rasterization.");
+            && !capabilities.Supports(GraphicsCapability.AlphaToCoverage)
+        ) {
+            throw new NotSupportedException("The active backend does not support alpha-to-coverage rasterization.");
         }
     }
 
@@ -626,18 +644,11 @@ public sealed unsafe partial class BgfxDevice
         {
             computeShader = CreateShader(descriptor.computeShader.Span, $"{name}.Compute");
             Dictionary<string, ReflectedUniform> reflected = ReflectShaders(computeShader);
-            IReadOnlyDictionary<string, BgfxShaderBindingResource> bindings =
-                ValidateReflectedBindings(descriptor.bindings, reflected);
+            IReadOnlyDictionary<string, BgfxShaderBindingResource> bindings = ValidateReflectedBindings(descriptor.bindings, reflected);
             program = bgfx.create_compute_program(computeShader, true);
             EnsureValid(program.Valid, name);
             computeShader = InvalidShader();
-            return new BgfxPipelineResource(
-                program,
-                bindings,
-                null,
-                InvalidVertexLayout(),
-                null,
-                true);
+            return new BgfxPipelineResource(program, bindings, null, InvalidVertexLayout(), null, true);
         }
         catch
         {
@@ -652,97 +663,6 @@ public sealed unsafe partial class BgfxDevice
         }
     }
 
-    private static IReadOnlyDictionary<string, BgfxShaderBindingResource> ValidateReflectedBindings(
-        IReadOnlyList<RenderShaderBindingDescriptor> declaredBindings,
-        IReadOnlyDictionary<string, ReflectedUniform> reflected
-    ) {
-        Dictionary<string, RenderShaderBindingDescriptor> declared = declaredBindings
-            .ToDictionary(static value => value.nativeName, StringComparer.Ordinal);
-        foreach ((string name, ReflectedUniform uniform) in reflected)
-        {
-            if (!declared.TryGetValue(name, out RenderShaderBindingDescriptor? binding)
-                || binding.kind is RenderShaderBindingKind.StorageBuffer or RenderShaderBindingKind.StorageTexture)
-            {
-                throw new InvalidOperationException(
-                    $"Shader reflection contains undeclared uniform '{name}'.");
-            }
-
-            bgfx.UniformType expectedType = binding.kind == RenderShaderBindingKind.Texture
-                ? bgfx.UniformType.Sampler
-                : ToNativeUniformType(binding.uniformType);
-            if (uniform.type != expectedType || uniform.count != binding.count)
-            {
-                throw new InvalidOperationException(
-                    $"Shader binding '{name}' reflected as {uniform.type}[{uniform.count}] but the manifest requires "
-                    + $"{expectedType}[{binding.count}].");
-            }
-        }
-
-        Dictionary<string, BgfxShaderBindingResource> result = new(StringComparer.Ordinal);
-        foreach (RenderShaderBindingDescriptor binding in declaredBindings)
-        {
-            if (binding.kind is RenderShaderBindingKind.StorageBuffer or RenderShaderBindingKind.StorageTexture)
-            {
-                result.Add(binding.id.value, new BgfxShaderBindingResource(binding, InvalidUniform()));
-                continue;
-            }
-
-            if (!reflected.TryGetValue(binding.nativeName, out ReflectedUniform uniform))
-            {
-                throw new InvalidOperationException(
-                    $"Shader manifest binding '{binding.id.value}' is absent from compiled reflection.");
-            }
-
-            result.Add(binding.id.value, new BgfxShaderBindingResource(binding, uniform.handle));
-        }
-
-        return result;
-    }
-
-    private static Dictionary<string, ReflectedUniform> ReflectShaders(params bgfx.ShaderHandle[] shaders)
-    {
-        Dictionary<string, ReflectedUniform> result = new(StringComparer.Ordinal);
-        foreach (bgfx.ShaderHandle shader in shaders)
-        {
-            ushort count = BgfxNativeCalls.GetShaderUniforms(shader, null, 0);
-            if (count == 0)
-            {
-                continue;
-            }
-
-            bgfx.UniformHandle[] uniforms = new bgfx.UniformHandle[count];
-            fixed (bgfx.UniformHandle* handles = uniforms)
-            {
-                ushort written = BgfxNativeCalls.GetShaderUniforms(shader, handles, count);
-                for (int index = 0; index < written; index++)
-                {
-                    bgfx.UniformInfo info = default;
-                    BgfxNativeCalls.GetUniformInfo(uniforms[index], &info);
-                    string name = UniformName(info);
-                    ReflectedUniform reflected = new(uniforms[index], info.type, info.num);
-                    if (result.TryGetValue(name, out ReflectedUniform current)
-                        && (current.type != reflected.type || current.count != reflected.count))
-                    {
-                        throw new InvalidOperationException(
-                            $"Shader stages disagree about reflected binding '{name}'.");
-                    }
-
-                    result[name] = reflected;
-                }
-            }
-        }
-
-        return result;
-    }
-
-    private static string UniformName(bgfx.UniformInfo info)
-    {
-        ReadOnlySpan<sbyte> nativeName = info.name;
-        ReadOnlySpan<byte> name = MemoryMarshal.AsBytes(nativeName);
-        int terminator = name.IndexOf((byte)0);
-        return Encoding.UTF8.GetString(terminator >= 0 ? name[..terminator] : name);
-    }
-
     private bgfx.ShaderHandle CreateShader(
         ReadOnlySpan<byte> binary,
         string name
@@ -752,7 +672,8 @@ public sealed unsafe partial class BgfxDevice
         EnsureValid(shader.Valid, name);
         int shaderNameLength = Encoding.UTF8.GetByteCount(name);
         Span<byte> shaderNameBytes = shaderNameLength < 256
-            ? stackalloc byte[256] : new byte[checked(shaderNameLength + 1)];
+                                     ? stackalloc byte[256]
+                                     : new byte[checked(shaderNameLength + 1)];
         Encoding.UTF8.GetBytes(name, shaderNameBytes);
         shaderNameBytes[shaderNameLength] = 0;
         fixed (byte* shaderNamePointer = shaderNameBytes)
@@ -777,7 +698,8 @@ public sealed unsafe partial class BgfxDevice
                 count,
                 type,
                 normalized ? (byte)1 : (byte)0,
-                asInteger ? (byte)1 : (byte)0);
+                asInteger ? (byte)1 : (byte)0
+            );
             currentOffset = checked(attribute.byteOffset + attribute.byteSize);
         }
 
@@ -787,24 +709,11 @@ public sealed unsafe partial class BgfxDevice
         if (native.stride != layout.stride)
         {
             throw new InvalidOperationException(
-                $"BGFX produced vertex stride {native.stride}, expected {layout.stride}.");
+                $"BGFX produced vertex stride {native.stride}, expected {layout.stride}."
+            );
         }
 
         return native;
-    }
-
-    private static void AddVertexLayoutPadding(
-        bgfx.VertexLayout* layout,
-        int byteCount
-    ) {
-        if (byteCount < 0)
-            throw new InvalidOperationException("A resolved vertex layout cannot contain overlapping attributes.");
-        while (byteCount != 0)
-        {
-            byte chunk = checked((byte)Math.Min(byteCount, byte.MaxValue));
-            bgfx.Raw.vertex_layout_skip(layout, chunk);
-            byteCount -= chunk;
-        }
     }
 
     private bgfx.VertexLayout CreateSkippedLayout(int stride)
@@ -823,60 +732,6 @@ public sealed unsafe partial class BgfxDevice
         return native;
     }
 
-    private static (byte count, bgfx.AttribType type, bool normalized, bool asInteger) AttributeFormat(RenderVertexFormat format)
-        => format switch
-        {
-            RenderVertexFormat.Float1 => (1, bgfx.AttribType.Float, false, false),
-            RenderVertexFormat.Float2 => (2, bgfx.AttribType.Float, false, false),
-            RenderVertexFormat.Float3 => (3, bgfx.AttribType.Float, false, false),
-            RenderVertexFormat.Float4 => (4, bgfx.AttribType.Float, false, false),
-            RenderVertexFormat.Half2 => (2, bgfx.AttribType.Half, false, false),
-            RenderVertexFormat.Half4 => (4, bgfx.AttribType.Half, false, false),
-            RenderVertexFormat.UInt8Normalized2 => (2, bgfx.AttribType.Uint8, true, false),
-            RenderVertexFormat.UInt8Normalized4 => (4, bgfx.AttribType.Uint8, true, false),
-            RenderVertexFormat.UInt8Integer2 => (2, bgfx.AttribType.Uint8, false, true),
-            RenderVertexFormat.UInt8Integer4 => (4, bgfx.AttribType.Uint8, false, true),
-            RenderVertexFormat.UInt10Normalized4 => (4, bgfx.AttribType.Uint10, true, false),
-            RenderVertexFormat.Int16Normalized2 => (2, bgfx.AttribType.Int16, true, false),
-            RenderVertexFormat.Int16Normalized4 => (4, bgfx.AttribType.Int16, true, false),
-            RenderVertexFormat.Int16Integer2 => (2, bgfx.AttribType.Int16, false, true),
-            RenderVertexFormat.Int16Integer4 => (4, bgfx.AttribType.Int16, false, true),
-            _ => throw new ArgumentOutOfRangeException(nameof(format))
-        };
-
-    private static bgfx.Attrib ToNativeAttribute(RenderVertexSemantic semantic)
-        => semantic switch
-        {
-            RenderVertexSemantic.Position => bgfx.Attrib.Position,
-            RenderVertexSemantic.Normal => bgfx.Attrib.Normal,
-            RenderVertexSemantic.Tangent => bgfx.Attrib.Tangent,
-            RenderVertexSemantic.Bitangent => bgfx.Attrib.Bitangent,
-            RenderVertexSemantic.Color0 => bgfx.Attrib.Color0,
-            RenderVertexSemantic.Color1 => bgfx.Attrib.Color1,
-            RenderVertexSemantic.Color2 => bgfx.Attrib.Color2,
-            RenderVertexSemantic.Color3 => bgfx.Attrib.Color3,
-            RenderVertexSemantic.TextureCoordinate0 => bgfx.Attrib.TexCoord0,
-            RenderVertexSemantic.TextureCoordinate1 => bgfx.Attrib.TexCoord1,
-            RenderVertexSemantic.TextureCoordinate2 => bgfx.Attrib.TexCoord2,
-            RenderVertexSemantic.TextureCoordinate3 => bgfx.Attrib.TexCoord3,
-            RenderVertexSemantic.TextureCoordinate4 => bgfx.Attrib.TexCoord4,
-            RenderVertexSemantic.TextureCoordinate5 => bgfx.Attrib.TexCoord5,
-            RenderVertexSemantic.TextureCoordinate6 => bgfx.Attrib.TexCoord6,
-            RenderVertexSemantic.TextureCoordinate7 => bgfx.Attrib.TexCoord7,
-            RenderVertexSemantic.BlendIndices => bgfx.Attrib.Indices,
-            RenderVertexSemantic.BlendWeights => bgfx.Attrib.Weight,
-            _ => throw new ArgumentOutOfRangeException(nameof(semantic))
-        };
-
-    private static bgfx.UniformType ToNativeUniformType(RenderUniformType type)
-        => type switch
-        {
-            RenderUniformType.Vector4 => bgfx.UniformType.Vec4,
-            RenderUniformType.Matrix3x3 => bgfx.UniformType.Mat3,
-            RenderUniformType.Matrix4x4 => bgfx.UniformType.Mat4,
-            _ => throw new ArgumentOutOfRangeException(nameof(type))
-        };
-
     private void ValidateBindingSlots(
         IReadOnlyList<RenderShaderBindingDescriptor> bindings,
         bool allowStorageResources
@@ -885,34 +740,40 @@ public sealed unsafe partial class BgfxDevice
         foreach (RenderShaderBindingDescriptor binding in bindings)
         {
             if (binding.kind is RenderShaderBindingKind.Texture
-                    or RenderShaderBindingKind.StorageTexture
-                    or RenderShaderBindingKind.StorageBuffer
-                && binding.slot > byte.MaxValue)
-            {
+                or RenderShaderBindingKind.StorageTexture
+                or RenderShaderBindingKind.StorageBuffer
+                && binding.slot > byte.MaxValue
+            ) {
                 throw new ArgumentOutOfRangeException(
                     nameof(bindings),
-                    $"Binding '{binding.id.value}' slot exceeds the BGFX byte-sized stage range.");
+                    $"Binding '{binding.id.value}' slot exceeds the BGFX byte-sized stage range."
+                );
             }
             if (binding.kind is not (RenderShaderBindingKind.StorageTexture or RenderShaderBindingKind.StorageBuffer))
+            {
                 continue;
+            }
             if (!allowStorageResources)
             {
                 throw new NotSupportedException(
-                    $"BGFX graphics pipelines cannot bind storage resource '{binding.id.value}'.");
+                    $"BGFX graphics pipelines cannot bind storage resource '{binding.id.value}'."
+                );
             }
             if (!storageSlots.Add(binding.slot))
             {
                 throw new ArgumentException(
                     $"Storage binding slot {binding.slot} is declared more than once.",
-                    nameof(bindings));
+                    nameof(bindings)
+                );
             }
             GraphicsCapability required = binding.kind == RenderShaderBindingKind.StorageTexture
-                ? GraphicsCapability.StorageTexture
-                : GraphicsCapability.StorageBuffer;
+                                          ? GraphicsCapability.StorageTexture
+                                          : GraphicsCapability.StorageBuffer;
             if (!capabilities.Supports(required))
             {
                 throw new NotSupportedException(
-                    $"The active backend does not support {binding.kind} binding '{binding.id.value}'.");
+                    $"The active backend does not support {binding.kind} binding '{binding.id.value}'."
+                );
             }
         }
 
@@ -921,9 +782,197 @@ public sealed unsafe partial class BgfxDevice
         {
             throw new NotSupportedException(
                 $"Pipeline requires {storageCount} storage bindings, but the device supports "
-                + $"{capabilities.limits.maxComputeBindings}.");
+                + $"{capabilities.limits.maxComputeBindings}."
+            );
         }
     }
+
+    private void ValidatePersistentHandle(PersistentBufferHandle buffer)
+    {
+        if (!buffer.isValid || GetHandleIdentity(buffer).generation != generation)
+        {
+            throw new ArgumentException("Buffer handle belongs to another device generation.", nameof(buffer));
+        }
+    }
+
+    private void ValidatePersistentHandle(GraphicsPipelineHandle pipeline)
+    {
+        if (!pipeline.isValid || GetHandleIdentity(pipeline).generation != generation)
+        {
+            throw new ArgumentException("Graphics pipeline belongs to another device generation.", nameof(pipeline));
+        }
+    }
+
+    private void ValidatePersistentHandle(ComputePipelineHandle pipeline)
+    {
+        if (!pipeline.isValid || GetHandleIdentity(pipeline).generation != generation)
+        {
+            throw new ArgumentException("Compute pipeline belongs to another device generation.", nameof(pipeline));
+        }
+    }
+
+    private static IReadOnlyDictionary<string, BgfxShaderBindingResource> ValidateReflectedBindings(
+        IReadOnlyList<RenderShaderBindingDescriptor> declaredBindings,
+        IReadOnlyDictionary<string, ReflectedUniform> reflected
+    ) {
+        Dictionary<string, RenderShaderBindingDescriptor> declared = declaredBindings
+            .ToDictionary(static value => value.nativeName, StringComparer.Ordinal);
+        foreach ((string name, ReflectedUniform uniform) in reflected)
+        {
+            if (!declared.TryGetValue(name, out RenderShaderBindingDescriptor? binding)
+                || binding.kind is RenderShaderBindingKind.StorageBuffer or RenderShaderBindingKind.StorageTexture
+            ) {
+                throw new InvalidOperationException($"Shader reflection contains undeclared uniform '{name}'.");
+            }
+
+            bgfx.UniformType expectedType = binding.kind == RenderShaderBindingKind.Texture
+                                            ? bgfx.UniformType.Sampler
+                                            : ToNativeUniformType(binding.uniformType);
+            if (uniform.type != expectedType || uniform.count != binding.count)
+            {
+                throw new InvalidOperationException(
+                    $"Shader binding '{name}' reflected as {uniform.type}[{uniform.count}] but the manifest requires "
+                    + $"{expectedType}[{binding.count}]."
+                );
+            }
+        }
+
+        var result = new Dictionary<string, BgfxShaderBindingResource>(StringComparer.Ordinal);
+        foreach (RenderShaderBindingDescriptor binding in declaredBindings)
+        {
+            if (binding.kind is RenderShaderBindingKind.StorageBuffer or RenderShaderBindingKind.StorageTexture)
+            {
+                result.Add(binding.id.value, new BgfxShaderBindingResource(binding, InvalidUniform()));
+                continue;
+            }
+
+            if (!reflected.TryGetValue(binding.nativeName, out ReflectedUniform uniform))
+            {
+                throw new InvalidOperationException(
+                    $"Shader manifest binding '{binding.id.value}' is absent from compiled reflection."
+                );
+            }
+
+            result.Add(binding.id.value, new BgfxShaderBindingResource(binding, uniform.handle));
+        }
+
+        return result;
+    }
+
+    private static Dictionary<string, ReflectedUniform> ReflectShaders(params bgfx.ShaderHandle[] shaders)
+    {
+        var result = new Dictionary<string, ReflectedUniform>(StringComparer.Ordinal);
+        foreach (bgfx.ShaderHandle shader in shaders)
+        {
+            ushort count = BgfxNativeCalls.GetShaderUniforms(shader, null, 0);
+            if (count == 0)
+            {
+                continue;
+            }
+
+            var uniforms = new bgfx.UniformHandle[count];
+            fixed (bgfx.UniformHandle* handles = uniforms)
+            {
+                ushort written = BgfxNativeCalls.GetShaderUniforms(shader, handles, count);
+                for (int index = 0; index < written; index++)
+                {
+                    bgfx.UniformInfo info = default;
+                    BgfxNativeCalls.GetUniformInfo(uniforms[index], &info);
+                    string name = UniformName(info);
+                    var reflected = new ReflectedUniform(uniforms[index], info.type, info.num);
+                    if (result.TryGetValue(name, out ReflectedUniform current)
+                        && (current.type != reflected.type || current.count != reflected.count)
+                    ) {
+                        throw new InvalidOperationException(
+                            $"Shader stages disagree about reflected binding '{name}'."
+                        );
+                    }
+
+                    result[name] = reflected;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private static string UniformName(bgfx.UniformInfo info)
+    {
+        ReadOnlySpan<sbyte> nativeName = info.name;
+        ReadOnlySpan<byte> name = MemoryMarshal.AsBytes(nativeName);
+        int terminator = name.IndexOf((byte)0);
+        return Encoding.UTF8.GetString(terminator >= 0 ? name[..terminator] : name);
+    }
+
+    private static void AddVertexLayoutPadding(
+        bgfx.VertexLayout* layout,
+        int byteCount
+    ) {
+        if (byteCount < 0)
+        {
+            throw new InvalidOperationException("A resolved vertex layout cannot contain overlapping attributes.");
+        }
+        while (byteCount != 0)
+        {
+            byte chunk = checked((byte)Math.Min(byteCount, byte.MaxValue));
+            bgfx.Raw.vertex_layout_skip(layout, chunk);
+            byteCount -= chunk;
+        }
+    }
+
+    private static (byte count, bgfx.AttribType type, bool normalized, bool asInteger) AttributeFormat(RenderVertexFormat format)
+        => format switch
+    {
+        RenderVertexFormat.Float1 => (1, bgfx.AttribType.Float, false, false),
+        RenderVertexFormat.Float2 => (2, bgfx.AttribType.Float, false, false),
+        RenderVertexFormat.Float3 => (3, bgfx.AttribType.Float, false, false),
+        RenderVertexFormat.Float4 => (4, bgfx.AttribType.Float, false, false),
+        RenderVertexFormat.Half2 => (2, bgfx.AttribType.Half, false, false),
+        RenderVertexFormat.Half4 => (4, bgfx.AttribType.Half, false, false),
+        RenderVertexFormat.UInt8Normalized2 => (2, bgfx.AttribType.Uint8, true, false),
+        RenderVertexFormat.UInt8Normalized4 => (4, bgfx.AttribType.Uint8, true, false),
+        RenderVertexFormat.UInt8Integer2 => (2, bgfx.AttribType.Uint8, false, true),
+        RenderVertexFormat.UInt8Integer4 => (4, bgfx.AttribType.Uint8, false, true),
+        RenderVertexFormat.UInt10Normalized4 => (4, bgfx.AttribType.Uint10, true, false),
+        RenderVertexFormat.Int16Normalized2 => (2, bgfx.AttribType.Int16, true, false),
+        RenderVertexFormat.Int16Normalized4 => (4, bgfx.AttribType.Int16, true, false),
+        RenderVertexFormat.Int16Integer2 => (2, bgfx.AttribType.Int16, false, true),
+        RenderVertexFormat.Int16Integer4 => (4, bgfx.AttribType.Int16, false, true),
+        _ => throw new ArgumentOutOfRangeException(nameof(format))
+    };
+
+    private static bgfx.Attrib ToNativeAttribute(RenderVertexSemantic semantic)
+        => semantic switch
+    {
+        RenderVertexSemantic.Position => bgfx.Attrib.Position,
+        RenderVertexSemantic.Normal => bgfx.Attrib.Normal,
+        RenderVertexSemantic.Tangent => bgfx.Attrib.Tangent,
+        RenderVertexSemantic.Bitangent => bgfx.Attrib.Bitangent,
+        RenderVertexSemantic.Color0 => bgfx.Attrib.Color0,
+        RenderVertexSemantic.Color1 => bgfx.Attrib.Color1,
+        RenderVertexSemantic.Color2 => bgfx.Attrib.Color2,
+        RenderVertexSemantic.Color3 => bgfx.Attrib.Color3,
+        RenderVertexSemantic.TextureCoordinate0 => bgfx.Attrib.TexCoord0,
+        RenderVertexSemantic.TextureCoordinate1 => bgfx.Attrib.TexCoord1,
+        RenderVertexSemantic.TextureCoordinate2 => bgfx.Attrib.TexCoord2,
+        RenderVertexSemantic.TextureCoordinate3 => bgfx.Attrib.TexCoord3,
+        RenderVertexSemantic.TextureCoordinate4 => bgfx.Attrib.TexCoord4,
+        RenderVertexSemantic.TextureCoordinate5 => bgfx.Attrib.TexCoord5,
+        RenderVertexSemantic.TextureCoordinate6 => bgfx.Attrib.TexCoord6,
+        RenderVertexSemantic.TextureCoordinate7 => bgfx.Attrib.TexCoord7,
+        RenderVertexSemantic.BlendIndices => bgfx.Attrib.Indices,
+        RenderVertexSemantic.BlendWeights => bgfx.Attrib.Weight,
+        _ => throw new ArgumentOutOfRangeException(nameof(semantic))
+    };
+
+    private static bgfx.UniformType ToNativeUniformType(RenderUniformType type)
+        => type switch
+    {
+        RenderUniformType.Vector4 => bgfx.UniformType.Vec4,
+        RenderUniformType.Matrix3x3 => bgfx.UniformType.Mat3,
+        RenderUniformType.Matrix4x4 => bgfx.UniformType.Mat4,
+        _ => throw new ArgumentOutOfRangeException(nameof(type))
+    };
 
     private static ushort BufferFlags(
         RenderBufferDescriptor descriptor,
@@ -1004,30 +1053,6 @@ public sealed unsafe partial class BgfxDevice
         if (pipeline.vertexLayoutHandle.Valid)
         {
             bgfx.destroy_vertex_layout(pipeline.vertexLayoutHandle);
-        }
-    }
-
-    private void ValidatePersistentHandle(PersistentBufferHandle buffer)
-    {
-        if (!buffer.isValid || GetHandleIdentity(buffer).generation != generation)
-        {
-            throw new ArgumentException("Buffer handle belongs to another device generation.", nameof(buffer));
-        }
-    }
-
-    private void ValidatePersistentHandle(GraphicsPipelineHandle pipeline)
-    {
-        if (!pipeline.isValid || GetHandleIdentity(pipeline).generation != generation)
-        {
-            throw new ArgumentException("Graphics pipeline belongs to another device generation.", nameof(pipeline));
-        }
-    }
-
-    private void ValidatePersistentHandle(ComputePipelineHandle pipeline)
-    {
-        if (!pipeline.isValid || GetHandleIdentity(pipeline).generation != generation)
-        {
-            throw new ArgumentException("Compute pipeline belongs to another device generation.", nameof(pipeline));
         }
     }
 

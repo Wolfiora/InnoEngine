@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Adapter.Audio;
 using Inno.Adapter.Default;
 using Inno.Adapter.Input;
@@ -49,13 +48,8 @@ public sealed class DefaultAuthoringAdapterCatalog :
         m_runtime = new DefaultAdapterCatalog(options);
         ArgumentNullException.ThrowIfNull(presentationProviders);
         m_presentation = new PresentationBackendCatalog(presentationProviders);
-        m_renderingAuthoring = new RenderingAuthoringBackendCatalog(
-            m_runtime.rendering,
-            authoringProviders);
+        m_renderingAuthoring = new RenderingAuthoringBackendCatalog(m_runtime.rendering, authoringProviders);
     }
-
-    IReadOnlyList<RenderingBackendId> IRenderingAuthoringBackendFactory.supportedBackends
-        => m_renderingAuthoring.supportedBackends;
 
     /// <summary>
     /// Gets the built-in platform backend factory.
@@ -90,7 +84,7 @@ public sealed class DefaultAuthoringAdapterCatalog :
     /// <summary>
     /// Gets the built-in retained-mode UI backend factory.
     /// </summary>
-    public IUiBackendFactory ui => m_runtime.ui;
+    public IUIBackendFactory ui => m_runtime.ui;
 
     /// <summary>
     /// Gets the built-in rendering authoring toolchain factory.
@@ -102,12 +96,12 @@ public sealed class DefaultAuthoringAdapterCatalog :
     /// </summary>
     public IPresentationBackendFactory presentation => m_presentation;
 
-    IShaderCompilerToolchain IRenderingAuthoringBackendFactory.CreateShaderCompilerToolchain(
-        RenderingBackendId backend)
+    IReadOnlyList<RenderingBackendID> IRenderingAuthoringBackendFactory.supportedBackends
+        => m_renderingAuthoring.supportedBackends;
+
+    IShaderCompilerToolchain IRenderingAuthoringBackendFactory.CreateShaderCompilerToolchain(RenderingBackendID backend)
         => m_renderingAuthoring.CreateShaderCompilerToolchain(backend);
 
-    ITextureTargetCompiler IRenderingAuthoringBackendFactory.CreateTextureTargetCompiler(
-        RenderingBackendId backend)
+    ITextureTargetCompiler IRenderingAuthoringBackendFactory.CreateTextureTargetCompiler(RenderingBackendID backend)
         => m_renderingAuthoring.CreateTextureTargetCompiler(backend);
-
 }

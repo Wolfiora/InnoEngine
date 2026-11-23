@@ -5,8 +5,8 @@ using System.Threading;
 
 namespace Inno.Core.Collections;
 
-sealed partial class IndexedObjectStore<T>
-where T : class
+public sealed partial class IndexedObjectStore<T>
+    where T : class
 {
     internal IEnumerable<T> ExecuteOrderedQueryFast<TKey>(
         IndexedObjectKey<TKey> orderKey,
@@ -22,86 +22,22 @@ where T : class
         m_lock.EnterReadLock();
         try
         {
-            var index = GetIndex(orderKey);
+            IndexedObjectIndex<T, TKey> index = GetIndex(orderKey);
             if ((index.flags & IndexedObjectKeyFlags.Ordered) == 0)
             {
                 throw new InvalidOperationException($"Key '{orderKey.name}' is not ordered.");
             }
 
             if (TryBuildOrderedCandidates(index, conditions, out List<OrderedCandidate<TKey>>? candidates))
+            {
                 return SelectOrderedItems(candidates);
+            }
 
             return ScanOrderedSnapshot(index, conditions);
         }
         finally
         {
             m_lock.ExitReadLock();
-        }
-    }
-
-    private IEnumerable<T> EnumerateOrderedQuery<TKey>(
-        IndexedObjectKey<TKey> orderKey,
-        List<IIndexedObjectQueryCondition<T>> conditions
-    ) where TKey : notnull
-    {
-        var version = Volatile.Read(ref m_version);
-        var index = GetIndex(orderKey);
-        if ((index.flags & IndexedObjectKeyFlags.Ordered) == 0)
-            throw new InvalidOperationException($"Key '{orderKey.name}' is not ordered.");
-
-        if (TryBuildOrderedCandidates(index, conditions, out List<OrderedCandidate<TKey>>? candidates))
-        {
-            for (int i = 0; i < candidates.Count; i++)
-            {
-                EnsureVersion(version);
-                yield return candidates[i].item;
-            }
-            yield break;
-        }
-
-        foreach (var key in index.EnumerateOrderedKeys())
-        {
-            EnsureVersion(version);
-            if (index.TryGetSingle(key, out var single) && single != null)
-            {
-                bool ok = true;
-                for (int i = 0; i < conditions.Count; i++)
-                {
-                    if (!conditions[i].Validate(this, single))
-                    {
-                        ok = false;
-                        break;
-                    }
-                }
-
-                if (ok)
-                    yield return single;
-
-                continue;
-            }
-
-            var set = index.FindUnsafe(key);
-            if (set == null || set.Count == 0)
-                continue;
-
-            foreach (var item in set)
-            {
-                bool ok = true;
-                for (int i = 0; i < conditions.Count; i++)
-                {
-                    if (!conditions[i].Validate(this, item))
-                    {
-                        ok = false;
-                        break;
-                    }
-                }
-
-                if (ok)
-                {
-                    EnsureVersion(version);
-                    yield return item;
-                }
-            }
         }
     }
 
@@ -113,14 +49,18 @@ where T : class
         m_lock.EnterReadLock();
         try
         {
-            var index = GetIndex(orderKey);
+            IndexedObjectIndex<T, TKey> index = GetIndex(orderKey);
             if ((index.flags & IndexedObjectKeyFlags.Ordered) == 0)
+            {
                 throw new InvalidOperationException($"Key '{orderKey.name}' is not ordered.");
+            }
 
             if (TryGetOrderedCandidateSeed(conditions, out int seedIndex, out int seedCount))
             {
                 if (seedCount == 0)
+                {
                     return null;
+                }
                 if (seedCount == 1 && conditions[seedIndex].TryGetSingle(this, out T single))
                 {
                     return ValidateConditions(conditions, single) ? single : null;
@@ -134,10 +74,10 @@ where T : class
                     int firstDenseIndex = int.MaxValue;
                     foreach (T item in seed)
                     {
-                        if (!ValidateConditions(conditions, item) ||
-                            !index.TryGetKey(item, out TKey itemKey) ||
-                            !m_activeIndex.TryGetValue(item, out int denseIndex))
-                        {
+                        if (!ValidateConditions(conditions, item)
+                            || !index.TryGetKey(item, out TKey itemKey)
+                            || !m_activeIndex.TryGetValue(item, out int denseIndex)
+                        ) {
                             continue;
                         }
 
@@ -161,6 +101,78 @@ where T : class
         }
     }
 
+    private IEnumerable<T> EnumerateOrderedQuery<TKey>(
+        IndexedObjectKey<TKey> orderKey,
+        List<IIndexedObjectQueryCondition<T>> conditions
+    ) where TKey : notnull
+    {
+        int version = Volatile.Read(ref m_version);
+        IndexedObjectIndex<T, TKey> index = GetIndex(orderKey);
+        if ((index.flags & IndexedObjectKeyFlags.Ordered) == 0)
+        {
+            throw new InvalidOperationException($"Key '{orderKey.name}' is not ordered.");
+        }
+
+        if (TryBuildOrderedCandidates(index, conditions, out List<OrderedCandidate<TKey>>? candidates))
+        {
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                EnsureVersion(version);
+                yield return candidates[i].item;
+            }
+            yield break;
+        }
+
+        foreach (TKey key in index.EnumerateOrderedKeys())
+        {
+            EnsureVersion(version);
+            if (index.TryGetSingle(key, out T? single) && single is not null)
+            {
+                bool ok = true;
+                for (int i = 0; i < conditions.Count; i++)
+                {
+                    if (!conditions[i].Validate(this, single))
+                    {
+                        ok = false;
+                        break;
+                    }
+                }
+
+                if (ok)
+                {
+                    yield return single;
+                }
+
+                continue;
+            }
+
+            HashSet<T>? set = index.FindUnsafe(key);
+            if (set is null || set.Count == 0)
+            {
+                continue;
+            }
+
+            foreach (T item in set)
+            {
+                bool ok = true;
+                for (int i = 0; i < conditions.Count; i++)
+                {
+                    if (!conditions[i].Validate(this, item))
+                    {
+                        ok = false;
+                        break;
+                    }
+                }
+
+                if (ok)
+                {
+                    EnsureVersion(version);
+                    yield return item;
+                }
+            }
+        }
+    }
+
     private bool TryBuildOrderedCandidates<TKey>(
         IndexedObjectIndex<T, TKey> orderIndex,
         List<IIndexedObjectQueryCondition<T>> conditions,
@@ -169,9 +181,13 @@ where T : class
     {
         candidates = [];
         if (!TryGetOrderedCandidateSeed(conditions, out int seedIndex, out int seedCount))
+        {
             return false;
+        }
         if (seedCount == 0)
+        {
             return true;
+        }
 
         if (seedCount == 1 && conditions[seedIndex].TryGetSingle(this, out T single))
         {
@@ -181,9 +197,13 @@ where T : class
 
         HashSet<T>? seed = conditions[seedIndex].GetSet(this);
         if (seed is null)
+        {
             return false;
+        }
         foreach (T item in seed)
+        {
             AddOrderedCandidate(orderIndex, conditions, candidates, item);
+        }
         SortOrderedCandidates(orderIndex, candidates);
         return true;
     }
@@ -199,7 +219,9 @@ where T : class
         {
             int candidateCount = conditions[i].GetCandidateCount(this);
             if (candidateCount >= seedCount)
+            {
                 continue;
+            }
             seedCount = candidateCount;
             seedIndex = i;
         }
@@ -213,20 +235,12 @@ where T : class
         T item
     ) where TKey : notnull
     {
-        if (ValidateConditions(conditions, item) &&
-            orderIndex.TryGetKey(item, out TKey itemKey) &&
-            m_activeIndex.TryGetValue(item, out int denseIndex))
-        {
+        if (ValidateConditions(conditions, item)
+            && orderIndex.TryGetKey(item, out TKey itemKey)
+            && m_activeIndex.TryGetValue(item, out int denseIndex)
+        ) {
             candidates.Add(new OrderedCandidate<TKey>(item, itemKey, denseIndex));
         }
-    }
-
-    private static IReadOnlyList<T> SelectOrderedItems<TKey>(List<OrderedCandidate<TKey>> candidates) where TKey : notnull
-    {
-        var result = new T[candidates.Count];
-        for (int i = 0; i < candidates.Count; i++)
-            result[i] = candidates[i].item;
-        return result;
     }
 
     private IReadOnlyList<T> ScanOrderedSnapshot<TKey>(
@@ -234,23 +248,29 @@ where T : class
         List<IIndexedObjectQueryCondition<T>> conditions
     ) where TKey : notnull
     {
-        var result = new List<T>();
+        List<T> result = [];
         foreach (TKey key in index.EnumerateOrderedKeys())
         {
             if (index.TryGetSingle(key, out T? single) && single is not null)
             {
                 if (ValidateConditions(conditions, single))
+                {
                     result.Add(single);
+                }
                 continue;
             }
 
             HashSet<T>? set = index.FindUnsafe(key);
             if (set is null)
+            {
                 continue;
+            }
             foreach (T item in set)
             {
                 if (ValidateConditions(conditions, item))
+                {
                     result.Add(item);
+                }
             }
         }
         return result;
@@ -266,20 +286,37 @@ where T : class
             if (index.TryGetSingle(key, out T? single) && single is not null)
             {
                 if (ValidateConditions(conditions, single))
+                {
                     return single;
+                }
                 continue;
             }
 
             HashSet<T>? set = index.FindUnsafe(key);
             if (set is null)
+            {
                 continue;
+            }
             foreach (T item in set)
             {
                 if (ValidateConditions(conditions, item))
+                {
                     return item;
+                }
             }
         }
         return null;
+    }
+
+    private static IReadOnlyList<T> SelectOrderedItems<TKey>(List<OrderedCandidate<TKey>> candidates)
+        where TKey : notnull
+    {
+        var result = new T[candidates.Count];
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            result[i] = candidates[i].item;
+        }
+        return result;
     }
 
     private static void SortOrderedCandidates<TKey>(
@@ -293,15 +330,13 @@ where T : class
         {
             int comparison = index.CompareKeys(left.key, right.key);
             return comparison != 0
-                ? comparison
-                : left.denseIndex.CompareTo(right.denseIndex);
+                   ? comparison
+                   : left.denseIndex.CompareTo(right.denseIndex);
         });
 
     private readonly record struct OrderedCandidate<TKey>(
         T item,
         TKey key,
         int denseIndex
-    )
-        where TKey : notnull;
-
+    ) where TKey : notnull;
 }

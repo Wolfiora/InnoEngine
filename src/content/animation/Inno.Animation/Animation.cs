@@ -1,37 +1,4 @@
-using Inno.Core.Execution;
-using System;
-using System.Threading;
-
 namespace Inno.Animation;
-
-/// <summary>
-/// Binds one animation service to the current asynchronous execution context.
-/// </summary>
-public static class AnimationExecutionContext
-{
-    private static readonly ExecutionSlot<IAnimationService> S_CURRENT_SCOPE = new("animation");
-
-    /// <summary>
-    /// Gets the animation service bound to the current execution context.
-    /// </summary>
-    public static IAnimationService current => S_CURRENT_SCOPE.current;
-
-    /// <summary>
-    /// Binds one animation service until the returned strict scope is disposed.
-    /// </summary>
-    /// <param name="animation">
-    /// Session-owned animation service.
-    /// </param>
-    /// <returns>
-    /// A strict last-in-first-out execution scope.
-    /// </returns>
-    public static IDisposable EnterScope(IAnimationService animation)
-    {
-        ArgumentNullException.ThrowIfNull(animation);
-        return S_CURRENT_SCOPE.Enter(animation);
-    }
-
-}
 
 /// <summary>
 /// Provides script-friendly animation control through the current runtime context.
@@ -44,17 +11,16 @@ public static class Animation
     /// <param name="clip">
     /// Valid imported animation clip.
     /// </param>
-    /// <returns>
-    /// A generation-checked playback handle.
-    /// </returns>
     /// <param name="target">
     /// The weak destination or explicit sampling-only policy.
     /// </param>
+    /// <returns>
+    /// A generation-checked playback handle.
+    /// </returns>
     public static AnimationPlaybackHandle Play(
         AnimationClipAsset clip,
         AnimationTarget target
-    )
-        => AnimationExecutionContext.current.Play(clip, target);
+    ) => AnimationExecutionContext.current.Play(clip, target);
 
     /// <summary>
     /// Starts one clip with explicit playback options.
@@ -62,21 +28,20 @@ public static class Animation
     /// <param name="clip">
     /// Valid imported animation clip.
     /// </param>
+    /// <param name="target">
+    /// The weak destination or explicit sampling-only policy.
+    /// </param>
     /// <param name="options">
     /// Playback and blend options.
     /// </param>
     /// <returns>
     /// A generation-checked playback handle.
     /// </returns>
-    /// <param name="target">
-    /// The weak destination or explicit sampling-only policy.
-    /// </param>
     public static AnimationPlaybackHandle Play(
         AnimationClipAsset clip,
         AnimationTarget target,
         AnimationPlayOptions options
-    )
-        => AnimationExecutionContext.current.Play(clip, target, options);
+    ) => AnimationExecutionContext.current.Play(clip, target, options);
 
     /// <summary>
     /// Stops one live playback.
@@ -147,6 +112,5 @@ public static class Animation
         AnimationPlaybackHandle handle,
         out AnimationPlaybackState state,
         out float time
-    )
-        => AnimationExecutionContext.current.TryGetState(handle, out state, out time);
+    ) => AnimationExecutionContext.current.TryGetState(handle, out state, out time);
 }

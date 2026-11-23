@@ -3,10 +3,13 @@ using System.Runtime.CompilerServices;
 
 namespace Inno.Core.Collections;
 
-internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T : class where TKey : notnull
+internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T>
+    where T : class
+    where TKey : notnull
 {
-    private readonly Dictionary<TKey, HashSet<T>> m_map = new(EqualityComparer<TKey>.Default);
     private static readonly HashSet<T> EMPTY_SET = new(IndexedObjectStore<T>.ReferenceEqualityComparer<T>.INSTANCE);
+
+    private readonly Dictionary<TKey, HashSet<T>> m_map = new(EqualityComparer<TKey>.Default);
 
     /// <summary>
     /// Adds the supplied value while preserving the collection's invariants.
@@ -24,13 +27,13 @@ internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T : 
         TKey key,
         T item
     ) {
-        if (!m_map.TryGetValue(key, out var set))
+        if (!m_map.TryGetValue(key, out HashSet<T>? set))
         {
             set = new HashSet<T>(IndexedObjectStore<T>.ReferenceEqualityComparer<T>.INSTANCE);
             m_map[key] = set;
         }
 
-        var added = set.Add(item);
+        bool added = set.Add(item);
         return added && set.Count == 1;
     }
 
@@ -47,12 +50,16 @@ internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T : 
         TKey key,
         T item
     ) {
-        if (!m_map.TryGetValue(key, out var set))
+        if (!m_map.TryGetValue(key, out HashSet<T>? set))
+        {
             return;
+        }
 
         set.Remove(item);
         if (set.Count == 0)
+        {
             m_map.Remove(key);
+        }
     }
 
     /// <summary>
@@ -72,12 +79,16 @@ internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T : 
         out T? item
     ) {
         item = null;
-        if (!m_map.TryGetValue(key, out var set) || set.Count == 0)
+        if (!m_map.TryGetValue(key, out HashSet<T>? set) || set.Count == 0)
+        {
             return false;
+        }
 
-        using var e = set.GetEnumerator();
+        using HashSet<T>.Enumerator e = set.GetEnumerator();
         if (!e.MoveNext())
+        {
             return false;
+        }
 
         item = e.Current;
         return true;
@@ -93,7 +104,7 @@ internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T : 
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int GetCount(TKey key) => m_map.TryGetValue(key, out var set) ? set.Count : 0;
+    public int GetCount(TKey key) => m_map.TryGetValue(key, out HashSet<T>? set) ? set.Count : 0;
 
     /// <summary>
     /// Determines whether current state contains the requested value value.
@@ -111,7 +122,7 @@ internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T : 
     public bool Contains(
         TKey key,
         T item
-    ) => m_map.TryGetValue(key, out var set) && set.Contains(item);
+    ) => m_map.TryGetValue(key, out HashSet<T>? set) && set.Contains(item);
 
     /// <summary>
     /// Determines whether a key currently has no indexed values.
@@ -123,7 +134,7 @@ internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T : 
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsKeyEmpty(TKey key) => !m_map.TryGetValue(key, out var set) || set.Count == 0;
+    public bool IsKeyEmpty(TKey key) => !m_map.TryGetValue(key, out HashSet<T>? set) || set.Count == 0;
 
     /// <summary>
     /// Retrieves the requested set value from current authoritative state.
@@ -135,7 +146,7 @@ internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T : 
     /// The validated hash sett? that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public HashSet<T>? GetSet(TKey key) => m_map.TryGetValue(key, out var set) ? set : EMPTY_SET;
+    public HashSet<T>? GetSet(TKey key) => m_map.TryGetValue(key, out HashSet<T>? set) ? set : EMPTY_SET;
 
     /// <summary>
     /// Removes all retained entries and returns the instance to an empty reusable state.

@@ -1,5 +1,6 @@
 using System;
 using Inno.Native.ImGui;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
@@ -48,27 +49,42 @@ public sealed unsafe partial class ImGuiWidget
     ) {
         m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(drawRange);
-        if (itemCount < 0)
-            throw new ArgumentOutOfRangeException(nameof(itemCount));
+        ArgumentOutOfRangeException.ThrowIfNegative(itemCount);
         if (!float.IsFinite(itemHeight) || (itemHeight <= 0f && itemHeight != -1f))
+        {
             throw new ArgumentOutOfRangeException(nameof(itemHeight));
+        }
         foreach (int row in preservedRows)
+        {
             if (row < 0 || row >= itemCount)
+            {
                 throw new ArgumentOutOfRangeException(nameof(preservedRows));
+            }
+        }
         if (NativeImGui.Raw.GetCurrentContext()->WithinFrameScope == 0)
+        {
             throw new InvalidOperationException("Row clipping requires an active native frame.");
+        }
         if (itemCount == 0)
+        {
             return;
+        }
         ImGuiListClipper* clipper = NativeImGui.Raw.ImGuiListClipper();
-        if (clipper == null)
+        if (clipper is null)
+        {
             throw new OutOfMemoryException("The native row clipper could not be allocated.");
+        }
         try
         {
             NativeImGui.Raw.Begin(clipper, itemCount, itemHeight);
             foreach (int row in preservedRows)
+            {
                 NativeImGui.Raw.IncludeItemByIndex(clipper, row);
+            }
             while (NativeImGui.Raw.Step(clipper) != 0)
+            {
                 drawRange(state, clipper->DisplayStart, clipper->DisplayEnd);
+            }
         }
         finally
         {

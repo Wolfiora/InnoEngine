@@ -1,24 +1,22 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Scripting.Api;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
 /// <summary>
 /// Represents imported geometry without prescribing scene or draw semantics.
 /// </summary>
-[StableTypeId("f214637e-0a54-438d-8a72-9d892bd29a56")]
+[StableTypeID("f214637e-0a54-438d-8a72-9d892bd29a56")]
 public sealed class GeometryAsset : AssetObject
 {
-    internal GeometryAsset()
-    {
-    }
+    internal GeometryAsset() {}
 
     /// <summary>
     /// Creates an immutable imported geometry description.
@@ -52,7 +50,9 @@ public sealed class GeometryAsset : AssetObject
         ArgumentOutOfRangeException.ThrowIfNegative(indexCount);
         ArgumentOutOfRangeException.ThrowIfNegative(sectionCount);
         if (boundsExtents.x < 0f || boundsExtents.y < 0f || boundsExtents.z < 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(boundsExtents), "Geometry bounds extents cannot be negative.");
+        }
         this.vertexCount = vertexCount;
         this.indexCount = indexCount;
         this.sectionCount = sectionCount;
@@ -90,4 +90,3 @@ public sealed class GeometryAsset : AssetObject
     [SerializableProperty]
     public Vector3 boundsExtents { get; internal set; }
 }
-

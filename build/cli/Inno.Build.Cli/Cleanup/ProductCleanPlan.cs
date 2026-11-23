@@ -4,6 +4,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Build.Composition;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
 
@@ -18,20 +19,29 @@ internal sealed record ProductCleanPlan(
         string project,
         CancellationToken cancellationToken
     ) {
-        var projects = new List<string> { project };
-        foreach (var platform in context.distribution.platforms)
+        List<string> projects = [project];
+        foreach (BuildPlatformContribution platform in context.distribution.platforms)
+        {
             if (platform.descriptor.id == context.target && platform.editorProject is not null)
+            {
                 projects.Add(Path.GetFullPath(platform.editorProject, context.root));
-        var directories = new List<string>();
+            }
+        }
+        List<string> directories = [];
         foreach (string selected in projects)
         {
             string result = await ToolchainEnvironment.CaptureOutputAsync(
                 context.composition.dotnetHost,
-                ["msbuild", selected, "-nologo", "-getProperty:TargetDir,IntermediateOutputPath",
-                    "-p:Configuration=" + context.configuration],
+                [
+                    "msbuild",
+                    selected,
+                    "-nologo",
+                    "-getProperty:TargetDir,IntermediateOutputPath",
+                    "-p:Configuration=" + context.configuration
+                ],
                 context.root,
-                cancellationToken,
-                DotNetSdkEnvironment.Create(context.composition.dotnetHost)
+                DotNetSdkEnvironment.Create(context.composition.dotnetHost),
+                cancellationToken
             ).ConfigureAwait(false);
             using JsonDocument document = JsonDocument.Parse(result);
             JsonElement properties = document.RootElement.GetProperty("Properties");
@@ -52,8 +62,10 @@ internal sealed record ProductCleanPlan(
         string path = Path.GetFullPath(output, owner).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         string relative = Path.GetRelativePath(root, path);
         if (Path.IsPathRooted(relative) || relative == "." || relative == ".."
-            || relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+            || relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+        ) {
             throw new InvalidOperationException($"The selected product output is outside its '{category}' owner: '{path}'.");
+        }
         return PathBoundary.RequireUnlinkedPath(root, path);
     }
 }

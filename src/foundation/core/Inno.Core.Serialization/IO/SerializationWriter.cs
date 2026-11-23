@@ -29,7 +29,9 @@ public sealed class SerializationWriter
         m_operationGeneration = operation.writerGeneration;
         m_previous = previous;
         if (previous is null)
+        {
             m_node = new ObjectSerializationNode();
+        }
         this.path = path;
         this.valueType = valueType;
     }
@@ -42,13 +44,13 @@ public sealed class SerializationWriter
     /// <summary>
     /// Borrows the immutable type snapshot pinned by this operation's converter generation.
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// The writer no longer belongs to an active capture.
+    /// </exception>
     /// <remarks>
     /// Use this snapshot for consistent type identities during a complete capture. It must not be retained beyond
     /// the writer's operation; keeping it would retain its collectible types after the converter lease is released.
     /// </remarks>
-    /// <exception cref="InvalidOperationException">
-    /// The writer no longer belongs to an active capture.
-    /// </exception>
     [ScriptingApiIgnore]
     public TypeCacheSnapshot typeSnapshot
     {
@@ -96,10 +98,10 @@ public sealed class SerializationWriter
         if (m_previous is not null && m_previous.values.Count <= 64 && m_writtenCount < m_previous.values.Count)
         {
             KeyValuePair<string, SerializationNode> entry = m_previous.values.GetAt(m_writtenCount);
-            if (string.Equals(entry.Key, name, StringComparison.Ordinal) && entry.Value is ScalarSerializationNode scalar &&
-                scalar.value.GetType() == typeof(TValue) && m_operation.ResolveConverter(typeof(TValue)) is null &&
-                SerializationNodeReuse.SameScalar(value, scalar.value))
-            {
+            if (string.Equals(entry.Key, name, StringComparison.Ordinal) && entry.Value is ScalarSerializationNode scalar
+                && scalar.value.GetType() == typeof(TValue) && m_operation.ResolveConverter(typeof(TValue)) is null
+                && SerializationNodeReuse.SameScalar(value, scalar.value)
+            ) {
                 MarkWritten(name, m_writtenCount);
                 return;
             }
@@ -137,8 +139,10 @@ public sealed class SerializationWriter
         ValidateName(name);
         EnsureActive();
         SerializationNode? previous = Previous(name);
-        AddNode(name, ValuePipeline.Write(value, declaredType, m_operation, AppendPath(name),
-            allowDefaultObject: false, previous));
+        AddNode(
+            name,
+            ValuePipeline.Write(value, declaredType, m_operation, AppendPath(name), allowDefaultObject: false, previous)
+        );
     }
 
     /// <summary>
@@ -161,7 +165,12 @@ public sealed class SerializationWriter
         ValidateName(name);
         EnsureActive();
         SerializationNode? previous = Previous(name);
-        var child = new SerializationWriter(m_operation, previous as ObjectSerializationNode, AppendPath(name), typeof(object));
+        var child = new SerializationWriter(
+            m_operation,
+            previous as ObjectSerializationNode,
+            AppendPath(name),
+            typeof(object)
+        );
         AddNode(name, previous ?? child.m_node!);
         write(child);
         ReplaceNode(name, child.Complete());
@@ -187,11 +196,6 @@ public sealed class SerializationWriter
     /// a current Core identity owner and return true only for a complete proof. Snapshot capture alone
     /// can reuse a matching element; ordinary serialization always executes writeElement.
     /// </param>
-    /// <remarks>
-    /// The key builder belongs only to its synchronous callback. Uncertified rows and rows that invoke
-    /// nested converters execute the ordinary element writer on every capture. Callback failures and
-    /// changed declared inputs abort publication without modifying a previous snapshot.
-    /// </remarks>
     /// <exception cref="ArgumentNullException">
     /// Values or writeElement is null.
     /// </exception>
@@ -201,6 +205,11 @@ public sealed class SerializationWriter
     /// <exception cref="InvalidOperationException">
     /// The writer has retired, a member is duplicated, or declared capture inputs change during writing.
     /// </exception>
+    /// <remarks>
+    /// The key builder belongs only to its synchronous callback. Uncertified rows and rows that invoke
+    /// nested converters execute the ordinary element writer on every capture. Callback failures and
+    /// changed declared inputs abort publication without modifying a previous snapshot.
+    /// </remarks>
     public void WriteObjectArray<TValue>(
         string name,
         IEnumerable<TValue> values,
@@ -219,17 +228,24 @@ public sealed class SerializationWriter
         if (values is TValue[] items)
         {
             for (int itemIndex = 0; itemIndex < items.Length; itemIndex++)
+            {
                 WriteElement(items[itemIndex]);
+            }
         }
         else
+        {
             foreach (TValue value in values)
+            {
                 WriteElement(value);
+            }
+        }
         ReplaceNode(name, array.Complete());
 
         void WriteElement(TValue value)
         {
-            ObjectSerializationNode? prior = array.Next as ObjectSerializationNode;
-            SerializationCaptureAttempt attempt = captureKey is null ? SerializationCaptureAttempt.empty
+            ObjectSerializationNode? prior = array.next as ObjectSerializationNode;
+            SerializationCaptureAttempt attempt = captureKey is null
+                ? SerializationCaptureAttempt.EMPTY
                 : SerializationCaptureAttempt.Capture(m_operation, typeof(TValue), value, prior?.captureKey, captureKey: captureKey);
             SerializationCaptureKey? key = attempt.key;
             if (key is not null && ReferenceEquals(key, prior?.captureKey))
@@ -238,8 +254,12 @@ public sealed class SerializationWriter
                 index++;
                 return;
             }
-            var child = new SerializationWriter(m_operation, prior,
-                array.Next?.capturePath ?? $"{AppendPath(name)}[{index}]", typeof(TValue));
+            var child = new SerializationWriter(
+                m_operation,
+                prior,
+                array.next?.capturePath ?? $"{AppendPath(name)}[{index}]",
+                typeof(TValue)
+            );
             long converterWrites = m_operation.converterWrites;
             writeElement(child, value);
             ObjectSerializationNode result = child.Complete();
@@ -248,10 +268,14 @@ public sealed class SerializationWriter
                 attempt.ValidateIdentities();
                 key = attempt.Verify(SerializationCaptureAttempt.Capture(m_operation, typeof(TValue), value, key, captureKey: captureKey));
                 if (m_operation.converterWrites != converterWrites)
+                {
                     key = null;
+                }
             }
             if (ReferenceEquals(result, prior) && prior!.captureKey is null)
+            {
                 key = null;
+            }
             array.Add(SerializationNodeReuse.WithCaptureKey(result, prior, key));
             index++;
         }
@@ -324,7 +348,9 @@ public sealed class SerializationWriter
             {
                 string name = m_previous.values.GetAt(index).Key;
                 if (m_previous.values.Count <= 64 ? (m_writtenMask & (1UL << index)) == 0 : m_writtenNames?.Contains(name) != true)
+                {
                     m_node!.values.Remove(name);
+                }
             }
         }
         ObjectSerializationNode result = m_node ?? m_previous ?? new ObjectSerializationNode();
@@ -334,9 +360,11 @@ public sealed class SerializationWriter
 
     private SerializationNode? Previous(string name)
     {
-        if (m_previous is not null && m_writtenCount < m_previous.values.Count &&
-            string.Equals(m_previous.values.GetAt(m_writtenCount).Key, name, StringComparison.Ordinal))
+        if (m_previous is not null && m_writtenCount < m_previous.values.Count
+            && string.Equals(m_previous.values.GetAt(m_writtenCount).Key, name, StringComparison.Ordinal)
+        ) {
             return m_previous.values.GetAt(m_writtenCount).Value;
+        }
         return m_previous is not null && m_previous.values.TryGetValue(name, out SerializationNode? value) ? value : null;
     }
 
@@ -349,17 +377,23 @@ public sealed class SerializationWriter
         {
             m_node ??= new ObjectSerializationNode();
             if (!m_node.values.TryAdd(name, node))
+            {
                 throw new InvalidOperationException($"Serialization object '{path}' already contains key '{name}'.");
+            }
             return;
         }
         int index = -1;
         if (m_previous.values.Count <= 64)
         {
-            if (m_writtenCount < m_previous.values.Count &&
-                string.Equals(m_previous.values.GetAt(m_writtenCount).Key, name, StringComparison.Ordinal))
+            if (m_writtenCount < m_previous.values.Count
+                && string.Equals(m_previous.values.GetAt(m_writtenCount).Key, name, StringComparison.Ordinal)
+            ) {
                 index = m_writtenCount;
+            }
             else
+            {
                 index = m_previous.values.IndexOf(name);
+            }
         }
         SerializationNode? previous = index >= 0 ? m_previous.values.GetAt(index).Value : Previous(name);
         MarkWritten(name, index);
@@ -382,16 +416,22 @@ public sealed class SerializationWriter
             m_writtenMask |= bit;
         }
         else
+        {
             duplicate = !(m_writtenNames ??= new(StringComparer.Ordinal)).Add(name);
+        }
         if (duplicate)
+        {
             throw new InvalidOperationException($"Serialization object '{path}' already contains key '{name}'.");
+        }
         m_writtenCount++;
     }
 
     private void EnsureMutable()
     {
         if (m_node is not null)
+        {
             return;
+        }
         m_node = m_previous is null ? new ObjectSerializationNode() : SerializationNodeReuse.CopyObject(m_previous);
     }
 
@@ -411,9 +451,13 @@ public sealed class SerializationWriter
     {
         m_operation.EnsureActive();
         if (m_operationGeneration != m_operation.writerGeneration)
+        {
             throw new InvalidOperationException("The serialization writer belongs to a completed property capture.");
+        }
         if (m_completed && m_operation.isSnapshotCapture)
+        {
             throw new InvalidOperationException("The serialization writer callback has already completed.");
+        }
     }
 
     private string AppendPath(string name) => Previous(name)?.capturePath ?? (path == "$" ? $"$.{name}" : $"{path}.{name}");
@@ -421,6 +465,8 @@ public sealed class SerializationWriter
     private static void ValidateName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
+        {
             throw new ArgumentException("A non-empty serialization member name is required.", nameof(name));
+        }
     }
 }

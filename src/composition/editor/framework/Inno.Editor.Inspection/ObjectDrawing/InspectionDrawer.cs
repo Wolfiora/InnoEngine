@@ -16,6 +16,17 @@ public abstract class InspectionDrawer<TTarget> : IInspectionDrawer
     /// </summary>
     public abstract string icon { get; }
 
+    bool IInspectionDrawer.CanInspect(object target) => target is TTarget value && CanInspect(value);
+
+    string IInspectionDrawer.GetIcon(InspectionDrawContext context) => GetIcon(context, GetTarget(context));
+
+    (string name, Action<string>? setter) IInspectionDrawer.BindName(InspectionDrawContext context)
+        => BindName(context, GetTarget(context));
+
+    void IInspectionDrawer.DrawHeader(InspectionDrawContext context) => DrawHeader(context, GetTarget(context));
+
+    void IInspectionDrawer.Draw(InspectionDrawContext context) => Draw(context, GetTarget(context));
+
     /// <summary>
     /// Determines whether this drawer handles the selected value, in addition to its registered type.
     /// </summary>
@@ -26,8 +37,6 @@ public abstract class InspectionDrawer<TTarget> : IInspectionDrawer
     /// Whether this drawer accepts the target.
     /// </returns>
     protected virtual bool CanInspect(TTarget target) => true;
-
-    bool IInspectionDrawer.CanInspect(object target) => target is TTarget value && CanInspect(value);
 
     /// <summary>
     /// Binds the name displayed in the first row of the Inspector target header.
@@ -80,8 +89,7 @@ public abstract class InspectionDrawer<TTarget> : IInspectionDrawer
     protected virtual void DrawHeader(
         InspectionDrawContext context,
         TTarget target
-    ) {
-    }
+    ) {}
 
     /// <summary>
     /// Draws the target-specific Inspector body below the shared target header.
@@ -97,80 +105,12 @@ public abstract class InspectionDrawer<TTarget> : IInspectionDrawer
         TTarget target
     );
 
-    string IInspectionDrawer.GetIcon(InspectionDrawContext context)
-        => GetIcon(context, GetTarget(context));
-
-    (string name, Action<string>? setter) IInspectionDrawer.BindName(
-        InspectionDrawContext context)
-        => BindName(context, GetTarget(context));
-
-    void IInspectionDrawer.DrawHeader(InspectionDrawContext context)
-        => DrawHeader(context, GetTarget(context));
-
-    void IInspectionDrawer.Draw(InspectionDrawContext context)
-        => Draw(context, GetTarget(context));
-
     private static TTarget GetTarget(InspectionDrawContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
         return context.target as TTarget ?? throw new InvalidOperationException(
-            $"Inspector drawer for '{typeof(TTarget).FullName}' cannot draw target " +
-            $"'{context.target.GetType().FullName}'.");
+            $"Inspector drawer for '{typeof(TTarget).FullName}' cannot draw target "
+            + $"'{context.target.GetType().FullName}'."
+        );
     }
-}
-
-/// <summary>
-/// Defines the runtime bridge used to render a discovered inspection drawer.
-/// </summary>
-public interface IInspectionDrawer
-{
-    /// <summary>
-    /// Determines whether a type-compatible selected value can be inspected by this drawer.
-    /// </summary>
-    /// <param name="target">
-    /// Selected value, never mutated by this query.
-    /// </param>
-    /// <returns>
-    /// Whether this drawer accepts the value; ordinary type-only drawers accept by default.
-    /// </returns>
-    bool CanInspect(object target) => true;
-
-    /// <summary>
-    /// Gets the icon glyph displayed in the Inspector target header.
-    /// </summary>
-    /// <param name="context">
-    /// The active Inspector drawing context.
-    /// </param>
-    /// <returns>
-    /// The icon glyph for the current target.
-    /// </returns>
-    string GetIcon(InspectionDrawContext context);
-
-    /// <summary>
-    /// Binds the target name displayed by the Inspector target header.
-    /// </summary>
-    /// <param name="context">
-    /// The active Inspector drawing context.
-    /// </param>
-    /// <returns>
-    /// The current target name and a callback that accepts a requested replacement name, or
-    /// <see langword="null"/> for the callback when the name is read-only.
-    /// </returns>
-    (string name, Action<string>? setter) BindName(InspectionDrawContext context);
-
-    /// <summary>
-    /// Draws the target-specific second header row.
-    /// </summary>
-    /// <param name="context">
-    /// The active Inspector drawing context.
-    /// </param>
-    void DrawHeader(InspectionDrawContext context);
-
-    /// <summary>
-    /// Draws the target-specific Inspector body.
-    /// </summary>
-    /// <param name="context">
-    /// The active Inspector drawing context.
-    /// </param>
-    void Draw(InspectionDrawContext context);
 }

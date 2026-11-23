@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Settings;
@@ -9,9 +8,7 @@ namespace Inno.Editor.Settings;
 internal sealed class EditorSettingsCatalog : TypeRegistry<EditorSettingsCatalog.Snapshot>
 {
     internal EditorSettingsCatalog(TypeCatalog types)
-        : base(types)
-    {
-    }
+        : base(types) {}
 
     internal Snapshot snapshot => current;
 
@@ -40,13 +37,10 @@ internal sealed class EditorSettingsCatalog : TypeRegistry<EditorSettingsCatalog
             .FirstOrDefault(static group => group.Count() > 1)?.Key;
         if (duplicatePath is not null)
         {
-            throw new InvalidOperationException(
-                $"Editor setting path '{duplicatePath}' is registered more than once.");
+            throw new InvalidOperationException($"Editor setting path '{duplicatePath}' is registered more than once.");
         }
 
-        var byPath = definitions.ToDictionary(
-            static setting => setting.path,
-            StringComparer.Ordinal);
+        Dictionary<string, EditorSetting> byPath = definitions.ToDictionary(static setting => setting.path, StringComparer.Ordinal);
         return new Snapshot(types.version, definitions, byPath);
     }
 

@@ -1,7 +1,5 @@
 using System;
-
 using Inno.Core.Identity;
-using Inno.Editor.Core;
 
 namespace Inno.Editor.Interactions;
 
@@ -79,8 +77,8 @@ public abstract class EditorDrop<TSource, TTarget> : EditorDrop
     {
         ArgumentNullException.ThrowIfNull(context);
         return context.source is TSource source && context.target is TTarget target
-            ? Query(new EditorDropContext<TSource, TTarget>(context, source, target))
-            : EditorDropStatus.rejected;
+               ? Query(new EditorDropContext<TSource, TTarget>(context, source, target))
+               : EditorDropStatus.rejected;
     }
 
     /// <summary>
@@ -96,7 +94,9 @@ public abstract class EditorDrop<TSource, TTarget> : EditorDrop
     {
         ArgumentNullException.ThrowIfNull(context);
         if (context.source is not TSource source || context.target is not TTarget target)
+        {
             return EditorDropResult.rejected;
+        }
         return Drop(new EditorDropContext<TSource, TTarget>(context, source, target));
     }
 
@@ -121,63 +121,4 @@ public abstract class EditorDrop<TSource, TTarget> : EditorDrop
     /// The observable selection and reveal result of the operation.
     /// </returns>
     protected abstract EditorDropResult Drop(EditorDropContext<TSource, TTarget> context);
-}
-
-/// <summary>
-/// Provides strongly typed source and target values to a drop operation.
-/// </summary>
-/// <typeparam name="TSource">
-/// The managed drag-source type.
-/// </typeparam>
-/// <typeparam name="TTarget">
-/// The managed drop-target type.
-/// </typeparam>
-public sealed class EditorDropContext<TSource, TTarget>
-    where TSource : class
-    where TTarget : class
-{
-    internal EditorDropContext(
-        EditorDropContext context,
-        TSource source,
-        TTarget target
-    ) {
-        untyped = context;
-        this.source = source;
-        this.target = target;
-    }
-
-    /// <summary>
-    /// Gets the untyped drop context.
-    /// </summary>
-    public EditorDropContext untyped { get; }
-
-    /// <summary>
-    /// Gets the active editor context.
-    /// </summary>
-    public EditorContext editor => untyped.editor;
-
-    /// <summary>
-    /// Gets the active interaction entry point.
-    /// </summary>
-    public EditorInteractions interactions => untyped.interactions;
-
-    /// <summary>
-    /// Gets the interaction area.
-    /// </summary>
-    public string area => untyped.area;
-
-    /// <summary>
-    /// Gets the typed drag source.
-    /// </summary>
-    public TSource source { get; }
-
-    /// <summary>
-    /// Gets the typed drop target.
-    /// </summary>
-    public TTarget target { get; }
-
-    /// <summary>
-    /// Gets the requested placement.
-    /// </summary>
-    public EditorDropPlacement placement => untyped.placement;
 }

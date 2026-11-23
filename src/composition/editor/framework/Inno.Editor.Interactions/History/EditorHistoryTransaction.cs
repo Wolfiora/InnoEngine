@@ -25,8 +25,6 @@ public sealed class EditorHistoryTransaction : IDisposable
     /// </summary>
     public string name { get; }
 
-    internal Guid id { get; }
-
     /// <summary>
     /// Commits all recorded child operations as one atomic history entry.
     /// </summary>
@@ -54,9 +52,13 @@ public sealed class EditorHistoryTransaction : IDisposable
         EditorHistory owner = GetOwner();
         EditorHistoryResult result = owner.RollbackTransaction(this);
         if (result.succeeded)
+        {
             Complete();
+        }
         else if (!result.statePreserved)
+        {
             Complete();
+        }
         return result;
     }
 
@@ -66,7 +68,9 @@ public sealed class EditorHistoryTransaction : IDisposable
     public void Dispose()
     {
         if (m_completed)
+        {
             return;
+        }
         EditorHistory? owner = m_owner;
         if (owner is null)
         {
@@ -88,19 +92,23 @@ public sealed class EditorHistoryTransaction : IDisposable
             Complete();
             GC.SuppressFinalize(this);
             throw new InvalidOperationException(
-                $"Transaction '{name}' could not roll back and was committed to Undo instead: {result.message}");
+                $"Transaction '{name}' could not roll back and was committed to Undo instead: {result.message}"
+            );
         }
 
         Complete();
         GC.SuppressFinalize(this);
         throw new InvalidOperationException(
-            $"Transaction '{name}' lost state integrity while rolling back. The history is faulted: {result.message}");
+            $"Transaction '{name}' lost state integrity while rolling back. The history is faulted: {result.message}"
+        );
     }
+
+    internal Guid id { get; }
 
     private EditorHistory GetOwner()
         => !m_completed && m_owner is not null
-            ? m_owner
-            : throw new InvalidOperationException("The editor history transaction is no longer active.");
+           ? m_owner
+           : throw new InvalidOperationException("The editor history transaction is no longer active.");
 
     private void Complete()
     {

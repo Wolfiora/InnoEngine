@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using Inno.Core.Graphs;
 using Inno.Editor.ImGui;
+
 using CanvasDrawing = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Graph.ImGui;
@@ -53,9 +54,11 @@ public readonly partial struct GraphCanvasView
         for (int index = layout.nodes.Count - 1; index >= 0; index--)
         {
             GraphCanvasNode node = layout.nodes[index];
-            var bounds = NodeBounds(node);
+            (Vector2 minimum, Vector2 maximum) bounds = NodeBounds(node);
             if (Contains(bounds, point))
+            {
                 return node;
+            }
         }
         return null;
     }
@@ -85,21 +88,34 @@ public readonly partial struct GraphCanvasView
     ) {
         ArgumentNullException.ThrowIfNull(layout);
         if (!float.IsFinite(radius) || radius < 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(radius));
+        }
         float hitRadius = MathF.Max(radius, 7f * zoom);
         for (int index = layout.nodes.Count - 1; index >= 0; index--)
         {
             GraphCanvasNode node = layout.nodes[index];
             Vector2 minimum = ToScreen(node.position);
             foreach (GraphCanvasPort port in node.ports)
+            {
                 if (Vector2.DistanceSquared(point, minimum + port.position * m_zoom) <= hitRadius * hitRadius)
+                {
                     return port;
+                }
+            }
             if (!Contains(NodeBounds(node), point))
+            {
                 continue;
+            }
             foreach (GraphCanvasPort port in node.ports)
+            {
                 if (port.labelBounds is { } label && Contains(
-                    (ToScreen(node.position) + label.minimum * m_zoom, ToScreen(node.position) + label.maximum * m_zoom), point))
+                    (ToScreen(node.position) + label.minimum * m_zoom, ToScreen(node.position) + label.maximum * m_zoom),
+                    point
+                )) {
                     return port;
+                }
+            }
             // Covered nodes must not receive interaction through the frontmost node's body.
             return null;
         }
@@ -121,7 +137,7 @@ public readonly partial struct GraphCanvasView
     /// <returns>
     /// Stable graph node IDs; no live domain objects are returned.
     /// </returns>
-    public IReadOnlyList<GraphNodeId> BoxNodes(
+    public IReadOnlyList<GraphNodeID> BoxNodes(
         GraphCanvasLayout layout,
         Vector2 first,
         Vector2 second
@@ -129,13 +145,15 @@ public readonly partial struct GraphCanvasView
         ArgumentNullException.ThrowIfNull(layout);
         Vector2 minimum = Vector2.Min(first, second);
         Vector2 maximum = Vector2.Max(first, second);
-        var nodes = new List<GraphNodeId>();
+        List<GraphNodeID> nodes = [];
         foreach (GraphCanvasNode node in layout.nodes)
         {
-            var bounds = NodeBounds(node);
+            (Vector2 minimum, Vector2 maximum) bounds = NodeBounds(node);
             if (bounds.maximum.X >= minimum.X && bounds.minimum.X <= maximum.X
-                && bounds.maximum.Y >= minimum.Y && bounds.minimum.Y <= maximum.Y)
+                && bounds.maximum.Y >= minimum.Y && bounds.minimum.Y <= maximum.Y
+            ) {
                 nodes.Add(node.id);
+            }
         }
         return nodes.AsReadOnly();
     }
@@ -178,45 +196,73 @@ public readonly partial struct GraphCanvasView
         Action? drawContent = null,
         GraphPosition? previewPosition = null
     ) {
-        var bounds = NodeBounds(node, previewPosition);
+        (Vector2 minimum, Vector2 maximum) bounds = NodeBounds(node, previewPosition);
         Vector2 minimum = bounds.minimum;
         Vector2 maximum = bounds.maximum;
         if (m_size.X == 0f || m_size.Y == 0f || maximum.X < m_origin.X || minimum.X > m_origin.X + m_size.X
-            || maximum.Y < m_origin.Y || minimum.Y > m_origin.Y + m_size.Y)
+            || maximum.Y < m_origin.Y || minimum.Y > m_origin.Y + m_size.Y
+        ) {
             return false;
-        var clip = CanvasDrawing.GetClipBounds();
+        }
+        (Vector2 minimum, Vector2 maximum) clip = CanvasDrawing.GetClipBounds();
         if (maximum.X < clip.minimum.X || minimum.X > clip.maximum.X || maximum.Y < clip.minimum.Y || minimum.Y > clip.maximum.Y)
+        {
             return false;
+        }
         float zoom = this.zoom;
-        draw.PushClip(Vector2.Max(m_origin, minimum - new Vector2(6f * zoom)),
-            Vector2.Min(m_origin + m_size, maximum + new Vector2(6f * zoom)), true);
+        draw.PushClip(
+            Vector2.Max(m_origin, minimum - new Vector2(6f * zoom)),
+            Vector2.Min(m_origin + m_size, maximum + new Vector2(6f * zoom)),
+            true
+        );
         try
         {
-            draw.FilledRectangle(minimum + new Vector2(3, 5), maximum + new Vector2(3, 5), Pack(0f, 0f, 0f, EditorPalette.opacityMuted), 6f * zoom, false);
+            draw.FilledRectangle(
+                minimum + new Vector2(3, 5),
+                maximum + new Vector2(3, 5),
+                Pack(0f, 0f, 0f, EditorPalette.C_OPACITY_MUTED),
+                6f * zoom,
+                false
+            );
             draw.FilledRectangle(minimum, maximum, Pack(0.115f, 0.12f, 0.14f), 6f * zoom, false);
-            draw.FilledRectangle(minimum, new(maximum.X, minimum.Y + node.headerHeight * zoom), headerColor, 6f * zoom, true);
-            draw.Rectangle(minimum, maximum, selected ? Pack(0.65f, 0.47f, 0.88f) : Pack(0.26f, 0.27f, 0.31f), 6f * zoom, selected ? 2f : 1f);
+            draw.FilledRectangle(minimum, new Vector2(maximum.X, minimum.Y + node.headerHeight * zoom), headerColor, 6f * zoom, true);
+            draw.Rectangle(
+                minimum,
+                maximum,
+                selected ? Pack(0.65f, 0.47f, 0.88f) : Pack(0.26f, 0.27f, 0.31f),
+                6f * zoom,
+                selected ? 2f : 1f
+            );
             draw.Text(minimum + new Vector2(10f, 7f) * zoom, CanvasDrawing.GetStyleColor(ImGuiCol.Text), node.title, zoom);
             foreach (GraphCanvasPort port in node.ports)
             {
                 Vector2 point = minimum + port.position * zoom;
-                uint color = port.isMissing ? Pack(0.95f, 0.35f, 0.3f) : Pack(0.60f, 0.48f, 0.84f);
+                uint color = port.isMissing ? Pack(0.95f, 0.35f, 0.3f) : Pack(0.6f, 0.48f, 0.84f);
                 draw.FilledCircle(point, 5f * zoom, color);
                 if (port.isOptional && !port.isMissing)
+                {
                     draw.FilledCircle(point, 2.75f * zoom, Pack(0.115f, 0.12f, 0.14f));
+                }
                 if (port.labelBounds is not { } labelBounds)
+                {
                     continue;
+                }
                 Vector2 labelMinimum = minimum + labelBounds.minimum * zoom;
                 Vector2 labelMaximum = minimum + labelBounds.maximum * zoom;
                 float padding = 12f * zoom;
-                var label = FitLabel(port.label, labelMaximum.X - labelMinimum.X - padding * 2f, zoom);
-                float textX = port.direction == GraphPortDirection.Input ? labelMinimum.X + padding
-                    : labelMaximum.X - padding - label.width;
+                (string text, float width) label = FitLabel(port.label, labelMaximum.X - labelMinimum.X - padding * 2f, zoom);
+                float textX = port.direction == GraphPortDirection.Input
+                              ? labelMinimum.X + padding
+                              : labelMaximum.X - padding - label.width;
                 draw.PushClip(labelMinimum, labelMaximum, true);
                 try
                 {
-                    draw.Text(new Vector2(textX, point.Y - 8f * zoom),
-                        CanvasDrawing.ToPackedColor(port.isOptional ? EditorPalette.textDisabled : EditorPalette.text), label.text, zoom);
+                    draw.Text(
+                        new Vector2(textX, point.Y - 8f * zoom),
+                        CanvasDrawing.ToPackedColor(port.isOptional ? EditorPalette.textDisabled : EditorPalette.text),
+                        label.text,
+                        zoom
+                    );
                 }
                 finally
                 {
@@ -239,24 +285,34 @@ public readonly partial struct GraphCanvasView
     ) {
         float measuredWidth = CanvasDrawing.MeasureText(label).X * zoom;
         if (measuredWidth <= width)
+        {
             return (label, measuredWidth);
-        const string ellipsis = "…";
-        if (CanvasDrawing.MeasureText(ellipsis).X * zoom > width)
+        }
+        const string C_ELLIPSIS = "…";
+        if (CanvasDrawing.MeasureText(C_ELLIPSIS).X * zoom > width)
+        {
             return (string.Empty, 0f);
+        }
         int low = 0;
         int high = label.Length;
         while (low < high)
         {
             int length = (low + high + 1) / 2;
-            if (CanvasDrawing.MeasureText(label[..length] + ellipsis).X * zoom <= width)
+            if (CanvasDrawing.MeasureText(label[..length] + C_ELLIPSIS).X * zoom <= width)
+            {
                 low = length;
+            }
             else
+            {
                 high = length - 1;
+            }
         }
         // Avoid splitting a UTF-16 surrogate pair when a label contains supplementary characters.
         if (low > 0 && low < label.Length && char.IsHighSurrogate(label[low - 1]))
+        {
             low--;
-        string text = label[..low] + ellipsis;
+        }
+        string text = label[..low] + C_ELLIPSIS;
         return (text, CanvasDrawing.MeasureText(text).X * zoom);
     }
 
@@ -264,7 +320,7 @@ public readonly partial struct GraphCanvasView
         (Vector2 minimum, Vector2 maximum) bounds,
         Vector2 point
     ) => point.X >= bounds.minimum.X && point.X <= bounds.maximum.X
-        && point.Y >= bounds.minimum.Y && point.Y <= bounds.maximum.Y;
+         && point.Y >= bounds.minimum.Y && point.Y <= bounds.maximum.Y;
 
     private static uint Pack(
         float red,

@@ -1,0 +1,301 @@
+using System;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using Xunit;
+using Inno.Core.Mathematics;
+using Inno.Core.Serialization;
+using Inno.Core.Serialization.Converters;
+using Inno.Extensibility.Types;
+using Inno.Scene.Components;
+using Inno.Scene.Layers;
+
+namespace Inno.Scene.Tests;
+
+[Collection(SceneTestsCollection.C_NAME)]
+public sealed partial class SceneSerializationTests : IDisposable
+{
+    private readonly TypeCatalog m_types;
+    private readonly SerializationRegistry m_serialization;
+    private readonly SerializationContext m_serializationContext;
+    private readonly IDisposable m_sceneScope;
+
+    public SceneSerializationTests(SceneTestsFixture fixture)
+    {
+        m_types = fixture.types;
+        m_serialization = fixture.serialization;
+        m_serializationContext = fixture.serializationContext;
+        m_sceneScope = fixture.world.EnterScope();
+    }
+
+    public void Dispose()
+    {
+        SceneManager.UnloadAllScenes();
+        m_sceneScope.Dispose();
+    }
+
+    [Fact]
+    public void MissingSceneTypeDiagnosticPreservesStableIdentity()
+    {
+        Guid stableTypeID = Guid.Parse("80f1fb70-95f7-4db2-b338-2567cf8bb2c1");
+
+        var exception = new SceneTypeResolutionException(stableTypeID, "component");
+
+        Assert.Equal(stableTypeID, exception.stableTypeID);
+        Assert.Equal("component", exception.elementKind);
+        Assert.Contains(stableTypeID.ToString("D"), exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SceneRoundtripPreservesHierarchyOrderStateAndDirectReferences()
+    {
+        var source = new GameScene("Roundtrip");
+        GameObject root = source.CreateObject("Root");
+        GameObject child = source.CreateObject("Child");
+        root.tag = "Player";
+        child.tag = "Companion";
+        root.layer = new GameLayer(3);
+        child.layer = new GameLayer(7);
+        child.transform.SetParent(root.transform);
+        child.transform.localPosition = new Vector3(1, 2, 3);
+        child.SetActive(false);
+        ReferenceComponent rootReference = root.AddComponent<ReferenceComponent>();
+        ReferenceComponent childReference = child.AddComponent<ReferenceComponent>();
+        rootReference.value = 10;
+        childReference.value = 20;
+        rootReference.targetObject = child;
+        rootReference.targetComponent = childReference;
+        childReference.targetObject = root;
+        childReference.targetComponent = rootReference;
+
+        Guid sceneID = source.identity.persistentID;
+        Guid rootID = root.identity.persistentID;
+        Guid childID = child.identity.persistentID;
+        byte[] bytes = m_serialization.Serialize(source, m_serializationContext);
+        Assert.Contains(
+            m_types.GetSubTypesOf<SerializationConverter>(),
+            type => type.Resolve(m_types).Name == "GameSceneConverter"
+        );
+        SceneManager.LoadScene(source);
+        Assert.True(SceneManager.UnloadScene(source));
+
+        GameScene restored = m_serialization.Deserialize<GameScene>(bytes, m_serializationContext);
+        SceneManager.LoadScene(restored);
+
+        Assert.Equal(sceneID, restored.identity.persistentID);
+        Assert.Equal("Roundtrip", restored.name);
+        Assert.Equal(2, restored.GetObjects().Count);
+        GameObject restoredRoot = restored.GetObjects().Single(gameObject => gameObject.identity.persistentID == rootID);
+        GameObject restoredChild = restored.GetObjects().Single(gameObject => gameObject.identity.persistentID == childID);
+        Assert.Equal("Player", restoredRoot.tag);
+        Assert.Equal("Companion", restoredChild.tag);
+        Assert.Equal(new GameLayer(3), restoredRoot.layer);
+        Assert.Equal(new GameLayer(7), restoredChild.layer);
+        Assert.Same(restoredRoot, restored.FindObjectWithLayer(new GameLayer(3)));
+        Assert.Same(restoredRoot, restored.FindObjectWithTag("Player"));
+        Assert.Equal(
+            new[] { typeof(Transform), typeof(ReferenceComponent) },
+            restoredRoot.GetComponents().Select(static component => component.GetType())
+        );
+        Assert.Same(restoredRoot.transform, restoredChild.transform.parent);
+        Assert.Equal(new Vector3(1, 2, 3), restoredChild.transform.localPosition);
+        Assert.False(restoredChild.activeSelf);
+        Assert.False(restoredChild.activeInHierarchy);
+
+        ReferenceComponent restoredRootReference = restoredRoot.GetComponent<ReferenceComponent>();
+        ReferenceComponent restoredChildReference = restoredChild.GetComponent<ReferenceComponent>();
+        Assert.Equal(10, restoredRootReference.value);
+        Assert.Equal(20, restoredChildReference.value);
+        Assert.Same(restoredChild, restoredRootReference.targetObject);
+        Assert.Same(restoredChildReference, restoredRootReference.targetComponent);
+        Assert.Same(restoredRoot, restoredChildReference.targetObject);
+        Assert.Same(restoredRootReference, restoredChildReference.targetComponent);
+        Assert.Equal(0, restoredRootReference.resetCount);
+        Assert.Equal(0, restoredChildReference.resetCount);
+    }
+
+    [Fact]
+    public void PrefabInstantiationRemapsIdentitiesAndIsolatesInternalReferences()
+    {
+        var sourceScene = new GameScene("PrefabSource");
+        GameObject sourceRoot = sourceScene.CreateObject("Root");
+        GameObject sourceChild = sourceScene.CreateObject("Child");
+        sourceRoot.tag = "Spawn";
+        sourceChild.tag = "Collectible";
+        sourceRoot.layer = new GameLayer(4);
+        sourceChild.layer = new GameLayer(5);
+        sourceChild.transform.SetParent(sourceRoot.transform);
+        ReferenceComponent sourceReference = sourceRoot.AddComponent<ReferenceComponent>();
+        ReferenceComponent sourceChildReference = sourceChild.AddComponent<ReferenceComponent>();
+        sourceReference.targetObject = sourceChild;
+        sourceReference.targetComponent = sourceChildReference;
+        byte[] bytes = m_serialization.Serialize(sourceRoot, m_serializationContext);
+
+        var targetScene = new GameScene("Target");
+        SerializationContext context = SerializationContext.empty.With(targetScene);
+        GameObject first = m_serialization.Deserialize<GameObject>(bytes, context);
+        GameObject second = m_serialization.Deserialize<GameObject>(bytes, context);
+        SceneManager.LoadScene(sourceScene);
+        SceneManager.LoadSceneAdditive(targetScene);
+
+        Assert.NotSame(first, second);
+        Assert.NotEqual(first.identity.persistentID, second.identity.persistentID);
+        GameObject firstChild = Assert.Single(first.transform.children).gameObject;
+        GameObject secondChild = Assert.Single(second.transform.children).gameObject;
+        Assert.Equal("Spawn", first.tag);
+        Assert.Equal("Collectible", firstChild.tag);
+        Assert.Equal(new GameLayer(4), first.layer);
+        Assert.Equal(new GameLayer(5), firstChild.layer);
+        Assert.Equal("Spawn", second.tag);
+        Assert.Equal("Collectible", secondChild.tag);
+        Assert.Equal(new GameLayer(4), second.layer);
+        Assert.Equal(new GameLayer(5), secondChild.layer);
+        ReferenceComponent firstReference = first.GetComponent<ReferenceComponent>();
+        ReferenceComponent secondReference = second.GetComponent<ReferenceComponent>();
+        Assert.Same(firstChild, firstReference.targetObject);
+        Assert.Same(firstChild.GetComponent<ReferenceComponent>(), firstReference.targetComponent);
+        Assert.Same(secondChild, secondReference.targetObject);
+        Assert.Same(secondChild.GetComponent<ReferenceComponent>(), secondReference.targetComponent);
+        Assert.NotSame(firstReference.targetObject, secondReference.targetObject);
+        Assert.NotEqual(
+            firstReference.targetComponent!.identity.persistentID,
+            secondReference.targetComponent!.identity.persistentID
+        );
+    }
+
+    [Fact]
+    public void SceneRoundtripPreservesManualComponentAndSystemOrder()
+    {
+        var source = new GameScene("Manual Order");
+        GameObject gameObject = source.CreateObject("Object");
+        _ = gameObject.AddComponent<OrderComponentA>();
+        OrderComponentB componentB = gameObject.AddComponent<OrderComponentB>();
+        gameObject.SetComponentIndex(componentB, 1);
+        gameObject.SetComponentIndex(gameObject.transform, 2);
+        _ = source.AddSystem<OrderSerializationSystemA>();
+        OrderSerializationSystemB systemB = source.AddSystem<OrderSerializationSystemB>();
+        source.SetSystemIndex(systemB, 0);
+
+        byte[] bytes = m_serialization.Serialize(source, m_serializationContext);
+        SceneManager.LoadScene(source);
+        Assert.True(SceneManager.UnloadScene(source));
+        GameScene restored = m_serialization.Deserialize<GameScene>(bytes, m_serializationContext);
+
+        Assert.Equal(
+            [typeof(OrderComponentB), typeof(OrderComponentA), typeof(Transform)],
+            Assert.Single(restored.GetObjects()).GetComponents().Select(static component => component.GetType())
+        );
+        Assert.Equal(
+            [typeof(OrderSerializationSystemB), typeof(OrderSerializationSystemA)],
+            restored.GetSystems().Select(static system => system.GetType())
+        );
+    }
+
+    [Fact]
+    public void SerializableLayerValuesRoundtripThroughComponentState()
+    {
+        var scene = new GameScene("GameLayer Values");
+        LayerValueComponent component = scene.CreateObject("Object").AddComponent<LayerValueComponent>();
+        component.layer = new GameLayer(9);
+        component.mask = GameLayerMask.FromLayers([new GameLayer(2), new GameLayer(9)]);
+
+        byte[] bytes = m_serialization.Serialize(scene, m_serializationContext);
+        SceneManager.LoadScene(scene);
+        Assert.True(SceneManager.UnloadScene(scene));
+        GameScene restored = m_serialization.Deserialize<GameScene>(bytes, m_serializationContext);
+        LayerValueComponent restoredComponent = Assert.Single(restored.GetObjects())
+            .GetComponent<LayerValueComponent>();
+
+        Assert.Equal(new GameLayer(9), restoredComponent.layer);
+        Assert.True(restoredComponent.mask.Contains(new GameLayer(2)));
+        Assert.True(restoredComponent.mask.Contains(new GameLayer(9)));
+    }
+
+    [Fact]
+    public void LoadedSceneRestoreKeepsSceneIdentityAndRebuildsItsObjectGraph()
+    {
+        var scene = new GameScene("Before");
+        GameObject original = scene.CreateObject("Original");
+        Guid sceneID = scene.identity.persistentID;
+        Guid objectID = original.identity.persistentID;
+        byte[] before = m_serialization.Serialize(scene, m_serializationContext);
+        SceneManager.LoadScene(scene);
+
+        scene.name = "After";
+        _ = scene.CreateObject("Added");
+        m_serialization.Restore(scene, before, m_serializationContext);
+
+        Assert.Same(scene, SceneManager.activeScene);
+        Assert.Equal(sceneID, scene.identity.persistentID);
+        Assert.Equal("Before", scene.name);
+        GameObject restored = Assert.Single(scene.GetObjects());
+        Assert.Equal(objectID, restored.identity.persistentID);
+        Assert.Equal("Original", restored.name);
+        Assert.True(scene.isLoaded);
+    }
+
+    [Fact]
+    public void PrefabCaptureRejectsReferenceOutsideCapturedSubtreeWithDiagnosticContext()
+    {
+        var scene = new GameScene("Boundary");
+        GameObject root = scene.CreateObject("Root");
+        GameObject external = scene.CreateObject("External");
+        root.AddComponent<ReferenceComponent>().targetObject = external;
+
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(
+            () => m_serialization.Serialize(root, m_serializationContext)
+        );
+
+        Assert.Contains(typeof(ReferenceComponent).FullName!, exception.Message);
+        Assert.Contains("targetObject", exception.Message);
+        Assert.Contains(external.identity.persistentID.ToString(), exception.Message);
+        Assert.Contains(root.identity.persistentID.ToString(), exception.Message);
+
+        SceneManager.LoadScene(scene);
+        Assert.True(SceneManager.UnloadScene(scene));
+    }
+
+    [Fact]
+    public void SceneUnloadReleasesCyclicSceneObjectGraphForGarbageCollection()
+    {
+        (
+            WeakReference<GameScene> scene,
+            WeakReference<GameObject> gameObject,
+            WeakReference<GameComponent> component
+        ) = CreateAndUnloadCyclicGraph();
+
+        for (int i = 0; i < 8; i++)
+        {
+            GC.Collect(2, GCCollectionMode.Forced, blocking: true, compacting: true);
+            GC.WaitForPendingFinalizers();
+        }
+
+        Assert.False(scene.TryGetTarget(out _));
+        Assert.False(gameObject.TryGetTarget(out _));
+        Assert.False(component.TryGetTarget(out _));
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static (
+        WeakReference<GameScene> scene,
+        WeakReference<GameObject> gameObject,
+        WeakReference<GameComponent> component) CreateAndUnloadCyclicGraph()
+    {
+        var scene = new GameScene("GC");
+        GameObject first = scene.CreateObject("First");
+        GameObject second = scene.CreateObject("Second");
+        second.transform.SetParent(first.transform);
+        ReferenceComponent firstReference = first.AddComponent<ReferenceComponent>();
+        ReferenceComponent secondReference = second.AddComponent<ReferenceComponent>();
+        firstReference.targetObject = second;
+        firstReference.targetComponent = secondReference;
+        secondReference.targetObject = first;
+        secondReference.targetComponent = firstReference;
+
+        var sceneReference = new WeakReference<GameScene>(scene);
+        var objectReference = new WeakReference<GameObject>(first);
+        var componentReference = new WeakReference<GameComponent>(firstReference);
+        SceneManager.LoadScene(scene);
+        Assert.True(SceneManager.UnloadScene(scene));
+        return (sceneReference, objectReference, componentReference);
+    }
+}

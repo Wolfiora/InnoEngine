@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build;
@@ -23,13 +24,15 @@ public abstract class PlayerSupportPackPlan
     /// The target has no stable identity.
     /// </exception>
     protected PlayerSupportPackPlan(
-        BuildTargetId target,
+        BuildTargetID target,
         string preparationIdentity
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(target.value);
         if (preparationIdentity is null || preparationIdentity.Length != 64
-            || System.Linq.Enumerable.Any(preparationIdentity, static character => !char.IsAsciiHexDigitLower(character)))
+            || Enumerable.Any(preparationIdentity, static character => !char.IsAsciiHexDigitLower(character))
+        ) {
             throw new ArgumentException("A Support Pack requires a complete lowercase source input identity.", nameof(preparationIdentity));
+        }
         this.target = target;
         this.preparationIdentity = preparationIdentity;
     }
@@ -37,7 +40,7 @@ public abstract class PlayerSupportPackPlan
     /// <summary>
     /// Gets the immutable target checked by the publisher before creating output.
     /// </summary>
-    public BuildTargetId target { get; }
+    public BuildTargetID target { get; }
 
     /// <summary>
     /// Gets the complete source preparation identity, independently of the resulting Pack content fingerprint.

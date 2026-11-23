@@ -13,6 +13,5 @@ public static class WindowsX64LinkerSettings
     /// <returns>
     /// The immutable target linker plan.
     /// </returns>
-    public static NativeLinkPlan Create()
-        => new(".dll", ".lib", ".lib", []);
+    public static NativeLinkPlan Create() => new(".dll", ".lib", ".lib", []);
 }

@@ -1,8 +1,7 @@
 using System;
-
 using Inno.Assets;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 
 namespace Inno.Scene;
 
@@ -18,11 +17,11 @@ public sealed class SceneReloadService
     /// <summary>
     /// Creates a scene reload service bound to one serialization generation owner.
     /// </summary>
-    /// <param name="serialization">
-    /// The serialization registry used to capture and restore scene state.
-    /// </param>
     /// <param name="world">
     /// The isolated scene world whose active generation is captured.
+    /// </param>
+    /// <param name="serialization">
+    /// The serialization registry used to capture and restore scene state.
     /// </param>
     /// <param name="assets">
     /// The asset reference generation used throughout capture, activation, and rollback.
@@ -36,9 +35,12 @@ public sealed class SceneReloadService
         SerializationRegistry serialization,
         IAssetReferenceResolver assets
     ) {
-        m_world = world ?? throw new ArgumentNullException(nameof(world));
-        m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
-        m_assets = assets ?? throw new ArgumentNullException(nameof(assets));
+        ArgumentNullException.ThrowIfNull(world);
+        ArgumentNullException.ThrowIfNull(serialization);
+        ArgumentNullException.ThrowIfNull(assets);
+        m_world = world;
+        m_serialization = serialization;
+        m_assets = assets;
     }
 
     /// <summary>
@@ -55,6 +57,9 @@ public sealed class SceneReloadService
         ArgumentNullException.ThrowIfNull(context);
         return new SceneReloadRecovery(
             SceneReloadStateTransfer.Capture(m_world, context, m_serialization, m_assets),
-            m_world, context, m_assets);
+            m_world,
+            context,
+            m_assets
+        );
     }
 }

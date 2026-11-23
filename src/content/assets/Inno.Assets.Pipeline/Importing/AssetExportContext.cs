@@ -1,7 +1,6 @@
 using System;
-
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 using Inno.Scripting.Api;
 
 namespace Inno.Assets.Pipeline;
@@ -14,12 +13,15 @@ public sealed class AssetExportContext
     internal AssetExportContext(
         TypeCatalog types,
         SerializationRegistry serialization,
-        Inno.Assets.IAssetArtifactLookup artifacts
+        IAssetArtifactLookup artifacts
     ) {
-        this.types = types ?? throw new ArgumentNullException(nameof(types));
-        this.serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
-        this.artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
-        services = new AssetSerializationServices(types, serialization, references: null, dependencySink: null);
+        ArgumentNullException.ThrowIfNull(types);
+        ArgumentNullException.ThrowIfNull(serialization);
+        ArgumentNullException.ThrowIfNull(artifacts);
+        this.types = types;
+        this.serialization = serialization;
+        this.artifacts = artifacts;
+        this.services = new AssetSerializationServices(types, serialization, references: null, dependencySink: null);
     }
 
     /// <summary>
@@ -43,5 +45,5 @@ public sealed class AssetExportContext
     /// Gets the owner-bound immutable outputs used to reconstruct editable sources.
     /// </summary>
     [ScriptingApiIgnore]
-    public Inno.Assets.IAssetArtifactLookup artifacts { get; }
+    public IAssetArtifactLookup artifacts { get; }
 }

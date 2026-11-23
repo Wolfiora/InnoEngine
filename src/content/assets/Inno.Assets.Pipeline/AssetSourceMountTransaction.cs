@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Scripting.Api;
-using Inno.References;
 using Inno.Core.Execution;
+using Inno.References;
+using Inno.Scripting.Api;
 
 namespace Inno.Assets.Pipeline;
 
@@ -32,31 +32,11 @@ public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnaps
         this.catalogCandidate = catalogCandidate;
         this.candidateFileSystem = candidateFileSystem;
         m_recovery = new ReferenceRecoveryTransaction(
-            ReferenceCatalog.Create(generation, [candidateLoader]), previousStates,
-            [new AssetSourceMountRecovery(owner, this)]);
+            ReferenceCatalog.Create(generation, [candidateLoader]),
+            previousStates,
+            [new AssetSourceMountRecovery(owner, this)]
+        );
     }
-
-    internal AssetCatalogCandidate catalogCandidate { get; }
-
-    internal AssetLoader candidateLoader => catalogCandidate.loader;
-
-    internal AssetFileSystem candidateFileSystem { get; }
-
-    internal AssetLoader? previousLoader { get; set; }
-
-    internal AssetFileSystem? previousFileSystem { get; set; }
-
-    internal IReadOnlyList<AssetSourceMount>? previousMounts { get; set; }
-
-    internal AssetPipelineOptions previousOptions { get; set; }
-
-    internal bool isActivated { get; set; }
-
-    internal bool isFinished { get; set; }
-
-    internal LifetimeScope? retirement { get; set; }
-
-    internal RetirementBarrier retirementBarrier { get; } = new("Asset source-mount generation");
 
     /// <summary>
     /// Gets the complete isolated mount snapshot represented by this candidate.
@@ -102,12 +82,14 @@ public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnaps
     /// Thrown when no compatible candidate asset exists.
     /// </exception>
     [ScriptingApiIgnore]
-    public TAsset Load<TAsset>(AssetPath path) where TAsset : AssetObject
+    public TAsset Load<TAsset>(AssetPath path)
+        where TAsset : AssetObject
     {
         EnsureOpen();
         AssetObject? asset = candidateLoader.Load(path, typeof(TAsset));
         return asset as TAsset ?? throw new InvalidOperationException(
-            $"Candidate asset '{path}' cannot be loaded as '{typeof(TAsset).FullName}'.");
+            $"Candidate asset '{path}' cannot be loaded as '{typeof(TAsset).FullName}'."
+        );
     }
 
     /// <summary>
@@ -131,20 +113,20 @@ public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnaps
         return candidateLoader.TryGetInfo(path, out info);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     [ScriptingApiIgnore]
     public ArtifactLease AcquireArtifact(
-        Guid persistentId,
+        Guid persistentID,
         string outputName
     ) {
         EnsureOpen();
-        return candidateLoader.AcquireArtifact(persistentId, outputName);
+        return candidateLoader.AcquireArtifact(persistentID, outputName);
     }
 
     /// <summary>
     /// Tries to resolve one named candidate artifact.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// Candidate asset identity.
     /// </param>
     /// <param name="outputName">
@@ -158,12 +140,12 @@ public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnaps
     /// </returns>
     [ScriptingApiIgnore]
     public bool TryGetArtifact(
-        Guid persistentId,
+        Guid persistentID,
         string outputName,
         out AssetArtifactInfo? artifact
     ) {
         EnsureOpen();
-        return candidateLoader.TryGetArtifact(persistentId, outputName, out artifact);
+        return candidateLoader.TryGetArtifact(persistentID, outputName, out artifact);
     }
 
     /// <summary>
@@ -174,7 +156,9 @@ public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnaps
     {
         EnsureOpen();
         if (m_activationComplete)
+        {
             return;
+        }
         if (!m_prepared)
         {
             m_prepared = true;
@@ -198,7 +182,9 @@ public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnaps
     {
         EnsureOpen();
         if (!m_activationComplete)
+        {
             throw new InvalidOperationException("A source-mount candidate must finish activation before completion.");
+        }
         try
         {
             m_recovery.Complete();
@@ -223,9 +209,13 @@ public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnaps
     public void Rollback()
     {
         if (isFinished)
+        {
             return;
+        }
         if (m_terminalFailure is not null)
+        {
             throw m_terminalFailure;
+        }
         if (!m_prepared)
         {
             m_prepared = true;
@@ -252,11 +242,34 @@ public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnaps
         GC.SuppressFinalize(this);
     }
 
+    internal AssetCatalogCandidate catalogCandidate { get; }
+
+    internal AssetLoader candidateLoader => catalogCandidate.loader;
+
+    internal AssetFileSystem candidateFileSystem { get; }
+
+    internal AssetLoader? previousLoader { get; set; }
+
+    internal AssetFileSystem? previousFileSystem { get; set; }
+
+    internal IReadOnlyList<AssetSourceMount>? previousMounts { get; set; }
+
+    internal AssetPipelineOptions previousOptions { get; set; }
+
+    internal bool isActivated { get; set; }
+
+    internal bool isFinished { get; set; }
+
+    internal LifetimeScope? retirement { get; set; }
+
+    internal RetirementBarrier retirementBarrier { get; } = new("Asset source-mount generation");
+
     private void EnsureOpen()
     {
         if (m_terminalFailure is not null)
+        {
             throw m_terminalFailure;
-        if (isFinished)
-            throw new ObjectDisposedException(nameof(AssetSourceMountTransaction));
+        }
+        ObjectDisposedException.ThrowIf(isFinished, this);
     }
 }

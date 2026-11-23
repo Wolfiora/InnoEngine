@@ -1,14 +1,15 @@
-using Inno.Core.Events;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Inno.Core.Events;
 using Inno.Core.Logging;
 using Inno.Core.Serialization;
-using Inno.Extensibility.Types;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Settings;
+
 /// <summary>
 /// Owns the discovered Settings catalog and the project-root Settings document.
 /// </summary>
@@ -21,6 +22,7 @@ public sealed class EditorSettings : EditorModule
     private readonly Logger m_log;
     private readonly object m_sync = new();
     private readonly EditorSettingsStore m_store;
+
     /// <summary>
     /// Creates the Settings service for one project and its shared editor history.
     /// </summary>
@@ -30,13 +32,6 @@ public sealed class EditorSettings : EditorModule
     /// <param name="interactions">
     /// The runtime that owns the shared Undo and Redo history.
     /// </param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name = "context"/> or <paramref name="interactions"/> is
-    /// <see langword="null"/>.
-    /// </exception>
-    /// <exception cref="InvalidDataException">
-    /// Thrown when the project-root Settings document is malformed.
-    /// </exception>
     /// <param name="types">
     /// The host-owned type catalog used to discover setting presentations.
     /// </param>
@@ -46,6 +41,13 @@ public sealed class EditorSettings : EditorModule
     /// <param name="serialization">
     /// The host-owned current-generation serialization registry used for the project document.
     /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name = "context"/> or <paramref name="interactions"/> is
+    /// <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="InvalidDataException">
+    /// Thrown when the project-root Settings document is malformed.
+    /// </exception>
     internal EditorSettings(
         EditorContext context,
         EditorInteractions interactions,
@@ -66,6 +68,16 @@ public sealed class EditorSettings : EditorModule
     }
 
     /// <summary>
+    /// Gets the current discovered type-catalog revision.
+    /// </summary>
+    public long catalogRevision => m_catalog.snapshot.revision;
+
+    /// <summary>
+    /// Gets all discovered path definitions in deterministic path order.
+    /// </summary>
+    public IReadOnlyList<EditorSetting> definitions => Array.AsReadOnly(m_catalog.snapshot.definitions);
+
+    /// <summary>
     /// Observes committed Apply, Undo and Redo changes through an owned Core Event hub.
     /// </summary>
     /// <param name="observer">
@@ -84,7 +96,9 @@ public sealed class EditorSettings : EditorModule
         hub.Listen<EditorSettingsChangedEvent>(change =>
         {
             if (!ReferenceEquals(change.settings, this))
+            {
                 return;
+            }
             try
             {
                 observer(this);
@@ -96,15 +110,6 @@ public sealed class EditorSettings : EditorModule
         });
         return hub;
     }
-
-    /// <summary>
-    /// Gets the current discovered type-catalog revision.
-    /// </summary>
-    public long catalogRevision => m_catalog.snapshot.revision;
-    /// <summary>
-    /// Gets all discovered path definitions in deterministic path order.
-    /// </summary>
-    public IReadOnlyList<EditorSetting> definitions => Array.AsReadOnly(m_catalog.snapshot.definitions);
 
     /// <summary>
     /// Reads an isolated effective object from one complete Settings path.
@@ -123,7 +128,9 @@ public sealed class EditorSettings : EditorModule
         EditorSetting definition = ResolveField(path);
         lock (m_sync)
         {
-            return m_store.TryGet(definition.path, out EditorSettingObject? value) && value is not null ? value : definition.CreateDefault();
+            return m_store.TryGet(definition.path, out EditorSettingObject? value) && value is not null
+                   ? value
+                   : definition.CreateDefault();
         }
     }
 
@@ -169,7 +176,9 @@ public sealed class EditorSettings : EditorModule
         {
             normalizedResets = new HashSet<string>(StringComparer.Ordinal);
             foreach (string path in resets)
+            {
                 _ = normalizedResets.Add(ResolveField(path).path);
+            }
         }
 
         byte[] before;
@@ -181,13 +190,17 @@ public sealed class EditorSettings : EditorModule
             if (normalizedResets is not null)
             {
                 foreach (string path in normalizedResets)
+                {
                     storageChanged |= replacement.Remove(path);
+                }
             }
 
             foreach ((string path, EditorSettingObject candidate)in normalizedValues)
             {
                 if (normalizedResets?.Contains(path) == true)
+                {
                     continue;
+                }
                 if (replacement.TryGetValue(path, out EditorSettingObject? current) && current.ValueEquals(candidate))
                 {
                     continue;
@@ -203,7 +216,9 @@ public sealed class EditorSettings : EditorModule
             }
 
             if (!storageChanged)
+            {
                 return false;
+            }
             before = m_store.GetDocument();
             m_store.Replace(replacement);
             after = m_store.GetDocument();
@@ -217,7 +232,9 @@ public sealed class EditorSettings : EditorModule
         catch
         {
             lock (m_sync)
+            {
                 m_store.ReplaceDocument(before);
+            }
             throw;
         }
 
@@ -229,32 +246,44 @@ public sealed class EditorSettings : EditorModule
     /// Releases resources retained by this feature after it has stopped.
     /// </summary>
     protected override void OnDispose() => m_catalog.Dispose();
+
     internal void RestoreFromHistory(ReadOnlySpan<byte> document)
     {
         lock (m_sync)
+        {
             m_store.ReplaceDocument(document);
+        }
     }
 
     internal byte[] CaptureDocument()
     {
         lock (m_sync)
+        {
             return m_store.GetDocument();
+        }
     }
 
     internal void ValidateDocument(ReadOnlySpan<byte> document)
     {
         lock (m_sync)
+        {
             m_store.ValidateDocument(document);
+        }
     }
 
     internal void NotifyChanged() => m_events.Emit(new EditorSettingsChangedEvent(this));
+
     private EditorSetting ResolveField(string path)
     {
         string normalized = EditorSettingsPathUtility.Normalize(path);
         if (!m_catalog.snapshot.byPath.TryGetValue(normalized, out EditorSetting? setting))
+        {
             throw new ArgumentException($"No editor setting is registered at '{normalized}'.", nameof(path));
+        }
         if (!setting.hasValue)
+        {
             throw new ArgumentException($"Editor setting '{normalized}' describes a page.", nameof(path));
+        }
         return setting;
     }
 }

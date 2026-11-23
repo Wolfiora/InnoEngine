@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Extensibility.Types;
 
 namespace Inno.Rendering.Shaders;
@@ -19,24 +18,28 @@ public sealed class ShaderSourceFrontendRegistry : TypeRegistry<ShaderSourceFron
     /// <param name="types">
     /// The owner type catalog; it must outlive this registry.
     /// </param>
-    public ShaderSourceFrontendRegistry(TypeCatalog types) : base(types) => m_types = types;
+    public ShaderSourceFrontendRegistry(TypeCatalog types)
+        : base(types)
+        {
+        m_types = types;
+    }
 
     /// <summary>
     /// Gets immutable language identities available in the current generation.
     /// </summary>
-    public IReadOnlyList<string> languageIds
+    public IReadOnlyList<string> languageIDs
     {
         get
         {
             using IDisposable operation = m_types.AcquireOperation("Query shader source languages");
-            return current.languageIds;
+            return current.languageIDs;
         }
     }
 
     /// <summary>
     /// Analyzes source while preventing provider retirement for the complete synchronous operation.
     /// </summary>
-    /// <param name="languageId">
+    /// <param name="languageID">
     /// The exact registered language identity.
     /// </param>
     /// <param name="request">
@@ -49,11 +52,11 @@ public sealed class ShaderSourceFrontendRegistry : TypeRegistry<ShaderSourceFron
     /// The language is not available in the current generation.
     /// </exception>
     public ShaderSourceAnalysis Analyze(
-        string languageId,
+        string languageID,
         ShaderSourceRequest request
     ) {
         using IDisposable operation = m_types.AcquireOperation("Analyze shader source interface");
-        return current.Analyze(languageId, request);
+        return current.Analyze(languageID, request);
     }
 
     /// <summary>
@@ -85,11 +88,13 @@ public sealed class ShaderSourceFrontendRegistry : TypeRegistry<ShaderSourceFron
     /// </returns>
     protected override ShaderSourceFrontendCatalog Build(TypeCacheSnapshot types)
     {
-        var providers = new List<IShaderSourceFrontend>();
+        List<IShaderSourceFrontend> providers = [];
         foreach (Type type in types.GetTypesImplementing<IShaderSourceFrontend>()
-                     .Select(reference => reference.Resolve(types))
-                     .OrderBy(static type => type.FullName, StringComparer.Ordinal))
+            .Select(reference => reference.Resolve(types))
+            .OrderBy(static type => type.FullName, StringComparer.Ordinal)
+        ) {
             providers.Add(CreateExtension<IShaderSourceFrontend>(type));
+        }
         return new ShaderSourceFrontendCatalog(providers);
     }
 

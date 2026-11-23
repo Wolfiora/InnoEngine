@@ -2,9 +2,11 @@ using System;
 using Inno.Core.Settings;
 using Inno.Editor.Settings;
 using Inno.Runtime;
-using Ui = Inno.Editor.ImGui.ImGui;
+
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.GameView;
+
 [ProjectSettingPath("Project/Player/Presentation")]
 internal sealed class GamePresentationSetting : ProjectSettingEditor<GamePresentationSettings>
 {
@@ -12,6 +14,7 @@ internal sealed class GamePresentationSetting : ProjectSettingEditor<GamePresent
     /// Gets the section that groups Player presentation controls.
     /// </summary>
     public override string section => "Display";
+
     /// <summary>
     /// Gets the explanation shared by Game View and deployed Player presentation.
     /// </summary>
@@ -26,21 +29,27 @@ internal sealed class GamePresentationSetting : ProjectSettingEditor<GamePresent
     protected override void OnDraw(GamePresentationSettings setting)
     {
         bool preserve = setting.preserveAspectRatio;
-        if (Ui.Checkbox("Preserve Aspect Ratio", ref preserve))
+        if (Gui.Checkbox("Preserve Aspect Ratio", ref preserve))
+        {
             setting.preserveAspectRatio = preserve;
+        }
         int width = Math.Max(1, setting.referenceWidth);
         int height = Math.Max(1, setting.referenceHeight);
-        Ui.BeginDisabled(!preserve);
+        Gui.BeginDisabled(!preserve);
         try
         {
-            if (Ui.InputInt("Reference Width", ref width, 1, 100, 0))
+            if (Gui.InputInt("Reference Width", ref width, 1, 100, 0))
+            {
                 setting.referenceWidth = Math.Max(1, width);
-            if (Ui.InputInt("Reference Height", ref height, 1, 100, 0))
+            }
+            if (Gui.InputInt("Reference Height", ref height, 1, 100, 0))
+            {
                 setting.referenceHeight = Math.Max(1, height);
+            }
         }
         finally
         {
-            Ui.EndDisabled();
+            Gui.EndDisabled();
         }
     }
 }

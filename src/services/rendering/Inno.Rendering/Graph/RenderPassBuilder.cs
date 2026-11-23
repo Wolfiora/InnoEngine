@@ -19,9 +19,6 @@ public abstract class RenderPassBuilder
         m_pass = pass;
     }
 
-    internal RenderGraphBuilder graph => m_graph;
-    internal RenderPassRecord pass => m_pass;
-
     /// <summary>
     /// Orders this pass before every pass in a target phase.
     /// </summary>
@@ -31,7 +28,7 @@ public abstract class RenderPassBuilder
     /// <returns>
     /// This builder for fluent declarations.
     /// </returns>
-    public RenderPassBuilder Before(RenderPhaseId phase)
+    public RenderPassBuilder Before(RenderPhaseID phase)
     {
         m_graph.EnsurePassMutable(m_pass);
         m_pass.before.Add(phase);
@@ -47,7 +44,7 @@ public abstract class RenderPassBuilder
     /// <returns>
     /// This builder for fluent declarations.
     /// </returns>
-    public RenderPassBuilder After(RenderPhaseId phase)
+    public RenderPassBuilder After(RenderPhaseID phase)
     {
         m_graph.EnsurePassMutable(m_pass);
         m_pass.after.Add(phase);
@@ -70,13 +67,13 @@ public abstract class RenderPassBuilder
     /// <summary>
     /// Opts this pass into worker-thread recording through an isolated backend-neutral command list.
     /// </summary>
+    /// <returns>
+    /// This builder for fluent declarations.
+    /// </returns>
     /// <remarks>
     /// Pass data and code reached by the callback must be safe for worker-thread access. GPU execution
     /// and backend view order remain identical to the compiled graph order.
     /// </remarks>
-    /// <returns>
-    /// This builder for fluent declarations.
-    /// </returns>
     public RenderPassBuilder AllowParallelRecording()
     {
         m_graph.EnsurePassMutable(m_pass);
@@ -95,11 +92,7 @@ public abstract class RenderPassBuilder
     /// </returns>
     public RenderPassBuilder ReadTexture(RenderTextureHandle texture)
     {
-        m_graph.AddUse(
-            m_pass,
-            texture,
-            RenderResourceAccess.Read,
-            RenderResourceUseKind.GenericRead);
+        m_graph.AddUse(m_pass, texture, RenderResourceAccess.Read, RenderResourceUseKind.GenericRead);
         return this;
     }
 
@@ -114,12 +107,10 @@ public abstract class RenderPassBuilder
     /// </returns>
     public RenderPassBuilder ReadBuffer(RenderBufferHandle buffer)
     {
-        m_graph.AddUse(
-            m_pass,
-            buffer,
-            RenderResourceAccess.Read,
-            RenderResourceUseKind.GenericRead);
+        m_graph.AddUse(m_pass, buffer, RenderResourceAccess.Read, RenderResourceUseKind.GenericRead);
         return this;
     }
-}
 
+    internal RenderGraphBuilder graph => m_graph;
+    internal RenderPassRecord pass => m_pass;
+}

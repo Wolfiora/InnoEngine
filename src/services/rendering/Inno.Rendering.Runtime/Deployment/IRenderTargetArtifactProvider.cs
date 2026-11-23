@@ -1,13 +1,14 @@
+using System;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
-using System;
 
 namespace Inno.Rendering.Runtime;
 
 /// <summary>
 /// Resolves immutable, source-free target artifacts for the active rendering device.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("44afaaec-de0d-543a-904d-90a09db07e36")]
+[StableTypeID("44afaaec-de0d-543a-904d-90a09db07e36")]
 public interface IRenderTargetArtifactProvider
 {
     /// <summary>
@@ -74,4 +75,3 @@ public interface IRenderTargetArtifactProvider
         out ReadOnlyMemory<byte> artifact
     );
 }
-

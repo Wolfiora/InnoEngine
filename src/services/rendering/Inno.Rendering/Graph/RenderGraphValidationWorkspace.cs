@@ -5,9 +5,6 @@ namespace Inno.Rendering;
 // Frame-local analysis of the accepted immutable prefix. No callbacks or extension instances are retained.
 internal sealed class RenderGraphValidationWorkspace
 {
-    internal int textureCount;
-    internal int bufferCount;
-    internal int passCount;
     internal readonly Dictionary<RenderResourceKey, int> lastWriters = [];
     internal readonly Dictionary<RenderResourceKey, List<int>> readers = [];
     internal readonly HashSet<RenderResourceKey> initialized = [];
@@ -21,6 +18,9 @@ internal sealed class RenderGraphValidationWorkspace
     internal readonly List<List<int>> dependants = [];
     internal readonly PriorityQueue<int, int> ready = new();
     internal readonly List<int> schedule = [];
+    internal int textureCount;
+    internal int bufferCount;
+    internal int passCount;
 
     internal void Reset()
     {

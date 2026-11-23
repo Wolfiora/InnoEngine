@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Reflection;
 using System.Threading;
 using Inno.Core.IO;
@@ -28,11 +29,16 @@ internal static class Program
         {
             string ownership = ReadProductLock();
             // Product clean must wait until the running Editor has released its deployment.
-            if (!System.IO.File.Exists(ownership))
+            if (!File.Exists(ownership))
+            {
                 FileLease.AcquireAsync(ownership, TimeSpan.FromSeconds(10), cancellation.Token)
-                    .GetAwaiter().GetResult().Dispose();
+                    .GetAwaiter()
+                    .GetResult()
+                    .Dispose();
+            }
             using FileLease reading = FileLease.AcquireSharedAsync(ownership, TimeSpan.FromSeconds(10), cancellation.Token)
-                .GetAwaiter().GetResult();
+                .GetAwaiter()
+                .GetResult();
 #if INNO_HOST_WINDOWS_X64
             return WindowsX64EditorComposition.Run(arguments, cancellation.Token);
 #elif INNO_HOST_MACOS_ARM64
@@ -59,8 +65,12 @@ internal static class Program
     private static string ReadProductLock()
     {
         foreach (AssemblyMetadataAttribute metadata in typeof(Program).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
+        {
             if (metadata.Key == "Inno.Editor.ProductLock" && !string.IsNullOrWhiteSpace(metadata.Value))
+            {
                 return metadata.Value;
+            }
+        }
         throw new InvalidOperationException("The Editor build did not declare its product ownership path.");
     }
 }

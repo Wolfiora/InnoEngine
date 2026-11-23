@@ -8,7 +8,7 @@ namespace Inno.Core.Logging;
 /// <summary>
 /// Writes complete log entries to uniquely named rotating files under the router's delivery policy.
 /// </summary>
-public class FileLogSink : ILogSink, IDisposable
+public sealed class FileLogSink : ILogSink, IDisposable
 {
     /// <summary>
     /// Prefix used for generated log file names.
@@ -16,8 +16,8 @@ public class FileLogSink : ILogSink, IDisposable
     public const string C_LOG_FILE_PREFIX = "log_";
 
     private const string C_LOG_FILE_EXTENSION = ".log";
-    private static readonly UTF8Encoding S_ENCODING = new(encoderShouldEmitUTF8Identifier: false);
-    private static readonly int S_NEWLINE_BYTES = S_ENCODING.GetByteCount(Environment.NewLine);
+    private static readonly UTF8Encoding ENCODING = new(encoderShouldEmitUTF8Identifier: false);
+    private static readonly int NEWLINE_BYTES = ENCODING.GetByteCount(Environment.NewLine);
 
     private readonly string m_logDirectory;
     private readonly long m_maxFileSize;
@@ -82,10 +82,6 @@ public class FileLogSink : ILogSink, IDisposable
     /// <param name="entry">
     /// The immutable entry to persist.
     /// </param>
-    /// <remarks>
-    /// The router owns scheduling and backpressure. Write failures propagate to its sink quarantine.
-    /// Retention cannot remove files locked by another active writer and retries them on later rotation.
-    /// </remarks>
     /// <exception cref="ObjectDisposedException">
     /// The sink has been disposed.
     /// </exception>
@@ -98,17 +94,23 @@ public class FileLogSink : ILogSink, IDisposable
     /// <exception cref="InvalidOperationException">
     /// A previous failed rotation left no writable file.
     /// </exception>
+    /// <remarks>
+    /// The router owns scheduling and backpressure. Write failures propagate to its sink quarantine.
+    /// Retention cannot remove files locked by another active writer and retries them on later rotation.
+    /// </remarks>
     public void Receive(LogEntry entry)
     {
         lock (m_lifecycleSync)
         {
             ObjectDisposedException.ThrowIf(m_disposed, this);
             string line = FormatEntry(entry);
-            int bytes = S_ENCODING.GetByteCount(line) + S_NEWLINE_BYTES;
+            int bytes = ENCODING.GetByteCount(line) + NEWLINE_BYTES;
             if (m_currentSize > 0 && bytes > m_maxFileSize - m_currentSize)
+            {
                 RotateFile();
+            }
             StreamWriter writer = m_writer
-                ?? throw new InvalidOperationException("The file log sink has no writable file after a failed rotation.");
+                                  ?? throw new InvalidOperationException("The file log sink has no writable file after a failed rotation.");
             writer.WriteLine(line);
             writer.Flush();
             m_currentSize += bytes;
@@ -126,7 +128,9 @@ public class FileLogSink : ILogSink, IDisposable
         lock (m_lifecycleSync)
         {
             if (m_disposed)
+            {
                 return;
+            }
             m_disposed = true;
             CloseWriter();
         }
@@ -160,7 +164,8 @@ public class FileLogSink : ILogSink, IDisposable
                     FileAccess.Read,
                     FileShare.None,
                     bufferSize: 1,
-                    FileOptions.DeleteOnClose);
+                    FileOptions.DeleteOnClose
+                );
             }
             catch (IOException)
             {
@@ -173,9 +178,6 @@ public class FileLogSink : ILogSink, IDisposable
         }
     }
 
-    private static string FormatEntry(LogEntry entry)
-        => $"[{entry.time:yyyy-MM-dd HH:mm:ss.fff}] [{entry.domain}/{entry.scope}] [{entry.level}]: {entry.message} ({entry.file}:{entry.line})";
-
     private void OpenWriter()
     {
         string timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmssfffffff");
@@ -186,10 +188,11 @@ public class FileLogSink : ILogSink, IDisposable
             FileAccess.Write,
             FileShare.Read,
             bufferSize: 16 * 1024,
-            FileOptions.SequentialScan);
+            FileOptions.SequentialScan
+        );
         try
         {
-            m_writer = new StreamWriter(stream, S_ENCODING);
+            m_writer = new StreamWriter(stream, ENCODING);
             m_currentSize = 0;
         }
         catch
@@ -205,4 +208,7 @@ public class FileLogSink : ILogSink, IDisposable
         m_writer = null;
         writer?.Dispose();
     }
+
+    private static string FormatEntry(LogEntry entry)
+        => $"[{entry.time:yyyy-MM-dd HH:mm:ss.fff}] [{entry.domain}/{entry.scope}] [{entry.level}]: {entry.message} ({entry.file}:{entry.line})";
 }

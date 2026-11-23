@@ -50,7 +50,8 @@ public sealed class AssetSourceStore
     /// <returns>
     /// Native source bytes, with no canonical asset mutation.
     /// </returns>
-    public byte[] Encode<TAsset>(TAsset asset) where TAsset : AssetObject => NativeAssetSourceSerialization.Export(asset, m_serialization);
+    public byte[] Encode<TAsset>(TAsset asset)
+        where TAsset : AssetObject => NativeAssetSourceSerialization.Export(asset, m_serialization);
 
     /// <summary>
     /// Restores a detached native value using current-generation asset references.
@@ -64,8 +65,9 @@ public sealed class AssetSourceStore
     /// <returns>
     /// A detached value; referenced assets remain canonical read-only inputs.
     /// </returns>
-    public TAsset Decode<TAsset>(ReadOnlySpan<byte> bytes) where TAsset : AssetObject
-        => NativeAssetSourceSerialization.Import<TAsset>(bytes, m_serialization, out _);
+    public TAsset Decode<TAsset>(ReadOnlySpan<byte> bytes)
+        where TAsset : AssetObject
+            => NativeAssetSourceSerialization.Import<TAsset>(bytes, m_serialization, out _);
 
     /// <summary>
     /// Atomically saves bytes after checking the source fingerprint; import is a separate operation.
@@ -90,16 +92,36 @@ public sealed class AssetSourceStore
         ArgumentNullException.ThrowIfNull(bytes);
         AssetSourceMount mount = Mount(path);
         if (mount.isReadOnly)
+        {
             throw new InvalidOperationException("Installed assets are read-only. Copy the asset to the project before editing.");
+        }
         string destination = mount.Resolve(path.localPath);
         bool exists = File.Exists(destination);
         if (expectedHash is null ? exists : !exists || Hash(File.ReadAllBytes(destination)) != expectedHash)
-            throw new IOException("The asset source changed externally. Draft and history are retained; reload or save a project copy explicitly.");
+        {
+            throw new IOException(
+                "The asset source changed externally. Draft and history are retained; reload or save a project copy explicitly."
+            );
+        }
         if (expectedHash is null)
+        {
             AtomicFile.WriteAllBytes(destination, bytes, overwrite: false);
+        }
         else
+        {
             ReplaceExisting(destination, bytes, expectedHash);
+        }
         return Hash(bytes);
+    }
+
+    private AssetSourceMount Mount(AssetPath path)
+    {
+        if (!path.isValid)
+        {
+            throw new ArgumentException("A valid mounted asset path is required.", nameof(path));
+        }
+        return m_assets.sourceMounts.SingleOrDefault(mount => mount.id == path.source)
+               ?? throw new InvalidOperationException($"Asset source mount '{path.source}' is unavailable.");
     }
 
     private static void ReplaceExisting(
@@ -118,53 +140,20 @@ public sealed class AssetSourceStore
             {
                 string conflict = destination + ".external-conflict-" + token;
                 File.Move(replaced, conflict, overwrite: false);
-                throw new IOException($"A concurrent external edit was preserved at '{conflict}'. Resolve both versions before saving again.");
+                throw new IOException(
+                    $"A concurrent external edit was preserved at '{conflict}'. Resolve both versions before saving again."
+                );
             }
             File.Delete(replaced);
         }
         finally
         {
             if (File.Exists(candidate))
+            {
                 File.Delete(candidate);
+            }
         }
     }
 
-    private AssetSourceMount Mount(AssetPath path)
-    {
-        if (!path.isValid)
-            throw new ArgumentException("A valid mounted asset path is required.", nameof(path));
-        return m_assets.sourceMounts.SingleOrDefault(mount => mount.id == path.source)
-            ?? throw new InvalidOperationException($"Asset source mount '{path.source}' is unavailable.");
-    }
-
     private static string Hash(ReadOnlySpan<byte> bytes) => Convert.ToHexString(SHA256.HashData(bytes));
-}
-
-/// <summary>
-/// Contains detached authoring bytes and conflict-detection state.
-/// </summary>
-public sealed class AssetSourceSnapshot
-{
-    private readonly byte[] m_bytes;
-    internal AssetSourceSnapshot(
-        byte[] bytes,
-        string hash,
-        bool readOnly
-    ) {
-        m_bytes = bytes;
-        contentHash = hash;
-        isReadOnly = readOnly;
-    }
-    /// <summary>
-    /// Gets a copy of the captured native source bytes.
-    /// </summary>
-    public byte[] bytes => (byte[])m_bytes.Clone();
-    /// <summary>
-    /// Gets the source fingerprint required by a subsequent save.
-    /// </summary>
-    public string contentHash { get; }
-    /// <summary>
-    /// Gets whether the installation source cannot be edited in place.
-    /// </summary>
-    public bool isReadOnly { get; }
 }

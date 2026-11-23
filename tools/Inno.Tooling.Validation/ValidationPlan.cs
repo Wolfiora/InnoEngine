@@ -4,23 +4,6 @@ using System.Text.Json;
 
 namespace Inno.Tooling.Validation;
 
-internal sealed record ValidationPlanningResult(
-    ValidationPlan? plan,
-    ValidationPreparation? preparation
-);
-
-internal sealed record ValidationPreparation(
-    string status,
-    string kind,
-    string root,
-    string commit,
-    string baseline,
-    string inputIdentity,
-    string reason,
-    string[] owners,
-    Dictionary<string, string> sources
-);
-
 internal sealed record ValidationPlan(
     string root,
     string baseline,
@@ -58,10 +41,29 @@ internal sealed record ValidationPlan(
     /// <summary>
     /// Indicates whether executing a selected check requires backend assemblies or native products.
     /// </summary>
-    public bool backendRequired => nativeRequests is { Length: > 0 } || Array.Exists(checks, static check =>
-        check.exclusion is null && check.context is not null && (check.owner.StartsWith("backends/", StringComparison.Ordinal)
-            || Array.Exists(check.inputs, static input => input.StartsWith("@backends/", StringComparison.Ordinal))));
+    public bool backendRequired
+        => nativeRequests is { Length: > 0 } || Array.Exists(checks, static check => (
+            check.exclusion is null && check.context is not null && (check.owner.StartsWith("backends/", StringComparison.Ordinal)
+        || Array.Exists(check.inputs, static input => input.StartsWith("@backends/", StringComparison.Ordinal)))
+        ));
 }
+
+internal sealed record ValidationPlanningResult(
+    ValidationPlan? plan,
+    ValidationPreparation? preparation
+);
+
+internal sealed record ValidationPreparation(
+    string status,
+    string kind,
+    string root,
+    string commit,
+    string baseline,
+    string inputIdentity,
+    string reason,
+    string[] owners,
+    Dictionary<string, string> sources
+);
 
 internal sealed record BackendPackageReceipt(
     string target,
@@ -89,7 +91,8 @@ internal sealed record ValidationCheck(
     string[]? projects = null,
     ValidationDocumentationCheck? documentation = null,
     string[]? sourceSets = null,
-    ValidationNativeRequest[]? consumedProducts = null
+    ValidationNativeRequest[]? consumedProducts = null,
+    string[]? changedSources = null
 );
 
 internal sealed record ValidationDocumentationBinding(

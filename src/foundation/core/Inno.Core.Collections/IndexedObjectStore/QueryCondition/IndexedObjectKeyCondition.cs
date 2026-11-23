@@ -12,7 +12,9 @@ namespace Inno.Core.Collections;
 /// <typeparam name="TKey">
 /// The indexed key type.
 /// </typeparam>
-public sealed class IndexedObjectKeyCondition<T, TKey> : IIndexedObjectQueryCondition<T> where T : class where TKey : notnull
+public sealed class IndexedObjectKeyCondition<T, TKey> : IIndexedObjectQueryCondition<T>
+    where T : class
+    where TKey : notnull
 {
     private readonly IndexedObjectKey<TKey> m_key;
     private readonly TKey m_value;
@@ -37,12 +39,12 @@ public sealed class IndexedObjectKeyCondition<T, TKey> : IIndexedObjectQueryCond
     /// <summary>
     /// Gets a candidate count required by the implemented contract.
     /// </summary>
-    /// <returns>
-    /// The scalar result calculated from the supplied inputs.
-    /// </returns>
     /// <param name="store">
     /// The store consumed by get candidate count; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
+    /// <returns>
+    /// The scalar result calculated from the supplied inputs.
+    /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int GetCandidateCount(IndexedObjectStore<T> store) => store.GetCountUnsafe(m_key, m_value);
 
@@ -63,7 +65,7 @@ public sealed class IndexedObjectKeyCondition<T, TKey> : IIndexedObjectQueryCond
         IndexedObjectStore<T> store,
         out T item
     ) {
-        if (store.TryGetSingleUnsafe(m_key, m_value, out var found) && found != null)
+        if (store.TryGetSingleUnsafe(m_key, m_value, out T? found) && found is not null)
         {
             item = found;
             return true;
@@ -76,12 +78,12 @@ public sealed class IndexedObjectKeyCondition<T, TKey> : IIndexedObjectQueryCond
     /// <summary>
     /// Gets a set required by the implemented contract.
     /// </summary>
-    /// <returns>
-    /// The validated hash sett? that represents the completed operation.
-    /// </returns>
     /// <param name="store">
     /// The store consumed by get set; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
+    /// <returns>
+    /// The validated hash sett? that represents the completed operation.
+    /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public HashSet<T>? GetSet(IndexedObjectStore<T> store) => store.GetSetUnsafe(m_key, m_value);
 
@@ -91,12 +93,12 @@ public sealed class IndexedObjectKeyCondition<T, TKey> : IIndexedObjectQueryCond
     /// <param name="store">
     /// The store consumed by validate; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
     /// <param name="item">
     /// The stored item associated with the validated handle.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Validate(
         IndexedObjectStore<T> store,

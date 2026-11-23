@@ -39,8 +39,10 @@ public static class Assets
         ArgumentNullException.ThrowIfNull(localPath);
         ArgumentNullException.ThrowIfNull(sourceFile);
         if (!sourceFile.Contains("::", StringComparison.Ordinal))
+        {
             throw new InvalidOperationException("Source-local Asset paths require a compiler-supplied canonical source location.");
-        AssetSourceId source;
+        }
+        AssetSourceID source;
         try
         {
             source = AssetPath.Parse(sourceFile).source;
@@ -69,7 +71,7 @@ public static class Assets
     /// </exception>
     public static TAsset Load<TAsset>(AssetPath path)
         where TAsset : AssetObject
-        => AssetExecutionContext.current.Load<TAsset>(path);
+            => AssetExecutionContext.current.Load<TAsset>(path);
 
     /// <summary>
     /// Loads the canonical asset with a persistent identity in the current session.
@@ -77,7 +79,7 @@ public static class Assets
     /// <typeparam name="TAsset">
     /// The required asset contract.
     /// </typeparam>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The non-empty persistent asset identity.
     /// </param>
     /// <returns>
@@ -86,9 +88,9 @@ public static class Assets
     /// <exception cref="InvalidOperationException">
     /// Thrown when no asset lookup is active, the asset does not exist, or its type is incompatible.
     /// </exception>
-    public static TAsset Load<TAsset>(Guid persistentId)
+    public static TAsset Load<TAsset>(Guid persistentID)
         where TAsset : AssetObject
-        => AssetExecutionContext.current.Load<TAsset>(persistentId);
+            => AssetExecutionContext.current.Load<TAsset>(persistentID);
 
     /// <summary>
     /// Tries to load the canonical asset at a logical catalog path in the current session.
@@ -112,8 +114,7 @@ public static class Assets
     public static bool TryLoad<TAsset>(
         AssetPath path,
         out TAsset? asset
-    )
-        where TAsset : AssetObject
+    ) where TAsset : AssetObject
         => AssetExecutionContext.current.TryLoad(path, out asset);
 
     /// <summary>
@@ -122,7 +123,7 @@ public static class Assets
     /// <typeparam name="TAsset">
     /// The required asset contract.
     /// </typeparam>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The non-empty persistent asset identity.
     /// </param>
     /// <param name="asset">
@@ -136,11 +137,10 @@ public static class Assets
     /// Thrown when no asset lookup is active for the caller.
     /// </exception>
     public static bool TryLoad<TAsset>(
-        Guid persistentId,
+        Guid persistentID,
         out TAsset? asset
-    )
-        where TAsset : AssetObject
-        => AssetExecutionContext.current.TryLoad(persistentId, out asset);
+    ) where TAsset : AssetObject
+        => AssetExecutionContext.current.TryLoad(persistentID, out asset);
 
     /// <summary>
     /// Acquires a canonical asset and explicitly retains it until the returned lease is disposed.
@@ -160,8 +160,7 @@ public static class Assets
     public static ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
         AssetPath path,
         CancellationToken cancellationToken = default
-    )
-        where TAsset : AssetObject
+    ) where TAsset : AssetObject
         => GetResidency().AcquireAsync<TAsset>(path, cancellationToken);
 
     /// <summary>
@@ -170,7 +169,7 @@ public static class Assets
     /// <typeparam name="TAsset">
     /// Required asset contract.
     /// </typeparam>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// Persistent asset identity.
     /// </param>
     /// <param name="cancellationToken">
@@ -180,16 +179,15 @@ public static class Assets
     /// A lease that owns residency for the canonical asset.
     /// </returns>
     public static ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
-        Guid persistentId,
+        Guid persistentID,
         CancellationToken cancellationToken = default
-    )
-        where TAsset : AssetObject
-        => GetResidency().AcquireAsync<TAsset>(persistentId, cancellationToken);
+    ) where TAsset : AssetObject
+        => GetResidency().AcquireAsync<TAsset>(persistentID, cancellationToken);
 
     /// <summary>
     /// Acquires one verified immutable artifact output for an explicit lifetime.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// Persistent identity of the artifact owner.
     /// </param>
     /// <param name="outputName">
@@ -199,13 +197,13 @@ public static class Assets
     /// A lease over verified artifact metadata and bytes.
     /// </returns>
     public static ArtifactLease AcquireArtifact(
-        Guid persistentId,
+        Guid persistentID,
         string outputName
-    )
-        => GetResidency().AcquireArtifact(persistentId, outputName);
+    ) => GetResidency().AcquireArtifact(persistentID, outputName);
 
     private static IAssetResidency GetResidency()
         => AssetExecutionContext.current as IAssetResidency
-            ?? throw new InvalidOperationException(
-                "The current asset lookup does not provide explicit residency ownership.");
+           ?? throw new InvalidOperationException(
+               "The current asset lookup does not provide explicit residency ownership."
+           );
 }

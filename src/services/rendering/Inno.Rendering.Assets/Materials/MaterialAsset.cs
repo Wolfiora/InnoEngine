@@ -1,19 +1,19 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
 /// <summary>
 /// Represents material state keyed by stable shader property identifiers.
 /// </summary>
-[StableTypeId("56f1fdc7-dad9-464a-848f-fcae4c33ecf2")]
-public class MaterialAsset : AssetObject
+[StableTypeID("56f1fdc7-dad9-464a-848f-fcae4c33ecf2")]
+public sealed class MaterialAsset : AssetObject
 {
     [SerializableProperty(PropertyVisibility.Hide)]
     private MaterialPropertyEntry[] m_properties = [];
@@ -34,7 +34,7 @@ public class MaterialAsset : AssetObject
     /// Gets or sets an optional explicitly selected technique.
     /// </summary>
     [SerializableProperty]
-    public ShaderTechniqueId techniqueId { get; set; }
+    public ShaderTechniqueID techniqueId { get; set; }
 
     /// <summary>
     /// Gets persistent material values in stable insertion order.
@@ -61,11 +61,13 @@ public class MaterialAsset : AssetObject
     /// Neutral material value.
     /// </param>
     public void Set(
-        ShaderPropertyId id,
+        ShaderPropertyID id,
         MaterialValue value
     ) {
         if (!id.isValid)
+        {
             throw new ArgumentException("A material property ID must be valid.", nameof(id));
+        }
         int index = Array.FindIndex(m_properties, candidate => candidate.id == id);
         if (index < 0)
         {
@@ -87,16 +89,16 @@ public class MaterialAsset : AssetObject
     {
         ArgumentNullException.ThrowIfNull(properties);
         MaterialPropertyEntry[] candidate = properties.ToArray();
-        var ids = new HashSet<ShaderPropertyId>();
+        var ids = new HashSet<ShaderPropertyID>();
         foreach (MaterialPropertyEntry property in candidate)
         {
             if (!property.id.isValid)
+            {
                 throw new ArgumentException("A material property ID must be valid.", nameof(properties));
+            }
             if (!ids.Add(property.id))
             {
-                throw new ArgumentException(
-                    $"Material property '{property.id}' is duplicated.",
-                    nameof(properties));
+                throw new ArgumentException($"Material property '{property.id}' is duplicated.", nameof(properties));
             }
         }
         m_properties = candidate
@@ -117,7 +119,7 @@ public class MaterialAsset : AssetObject
     /// <see langword="true"/> when the property exists.
     /// </returns>
     public bool TryGet(
-        ShaderPropertyId id,
+        ShaderPropertyID id,
         out MaterialValue value
     ) {
         int index = Array.FindIndex(m_properties, candidate => candidate.id == id);
@@ -139,11 +141,15 @@ public class MaterialAsset : AssetObject
         bool enabled
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(keyword);
-        var values = m_keywords.ToHashSet(StringComparer.Ordinal);
+        HashSet<string> values = m_keywords.ToHashSet(StringComparer.Ordinal);
         if (enabled)
+        {
             values.Add(keyword);
+        }
         else
+        {
             values.Remove(keyword);
+        }
         m_keywords = values.OrderBy(static value => value, StringComparer.Ordinal).ToArray();
     }
 
@@ -205,24 +211,21 @@ public class MaterialAsset : AssetObject
     public bool RemoveMetadata(string key)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
-        int index = Array.FindIndex(m_metadata, entry =>
-            string.Equals(entry.key, key, StringComparison.Ordinal));
+        int index = Array.FindIndex(m_metadata, entry => string.Equals(entry.key, key, StringComparison.Ordinal));
         if (index < 0)
+        {
             return false;
+        }
         var replacement = new MaterialMetadataEntry[m_metadata.Length - 1];
         if (index > 0)
+        {
             Array.Copy(m_metadata, 0, replacement, 0, index);
+        }
         if (index < m_metadata.Length - 1)
         {
-            Array.Copy(
-                m_metadata,
-                index + 1,
-                replacement,
-                index,
-                m_metadata.Length - index - 1);
+            Array.Copy(m_metadata, index + 1, replacement, index, m_metadata.Length - index - 1);
         }
         m_metadata = replacement;
         return true;
     }
 }
-

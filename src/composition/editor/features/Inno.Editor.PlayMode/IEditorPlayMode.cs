@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Logging;
 
 namespace Inno.Editor.PlayMode;
@@ -25,9 +24,9 @@ public interface IEditorPlayMode
     string? lastFailure { get; }
 
     /// <summary>
-    /// Gets the active isolated runtime log session, or <see cref="LogSessionId.none"/> outside a Play Mode request.
+    /// Gets the active isolated runtime log session, or <see cref="LogSessionID.none"/> outside a Play Mode request.
     /// </summary>
-    LogSessionId activeSessionId { get; }
+    LogSessionID activeSessionID { get; }
 
     /// <summary>
     /// Subscribes to committed state transitions through the Core event lifetime.

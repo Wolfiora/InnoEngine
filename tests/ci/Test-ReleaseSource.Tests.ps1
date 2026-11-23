@@ -14,7 +14,7 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [bool]$Accept) {
     & $Change $state
     $accepted = $false
     try {
-        $null = & "$PSScriptRoot/Test-ReleaseSource.ps1" -Repository $state.repository -Run $state.run -Artifacts $state.artifacts `
+        $null = & "$PSScriptRoot/../../tools/ci/Test-ReleaseSource.ps1" -Repository $state.repository -Run $state.run -Artifacts $state.artifacts `
             -Commit $commit -WorkflowId 67 -RunId 45 -AllowPartial:([bool]$state.partial)
         $accepted = $true
     } catch { if ($Accept) { throw } }

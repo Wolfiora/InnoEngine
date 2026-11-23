@@ -1,4 +1,3 @@
-using Inno.Editor.Assets;
 using System;
 using System.IO;
 using System.Linq;
@@ -7,12 +6,14 @@ using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Execution;
 using Inno.Core.Logging;
+using Inno.Editor.Assets;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scripting;
 using Inno.Scripting.Compiler;
 
 namespace Inno.Editor.Assets;
+
 /// <summary>
 /// Owns sample import validation, publication and rollback independently of its progress window.
 /// </summary>
@@ -33,6 +34,7 @@ public sealed class AssetSampleImportModule : EditorModule
     private AssetSampleImportProgress m_progress = new(0, 0f, string.Empty, false);
     private long m_operation;
     private bool m_acceptProgress;
+
     internal AssetSampleImportModule(
         AssetEditingModule assets,
         ScriptCompiler compiler,
@@ -49,14 +51,17 @@ public sealed class AssetSampleImportModule : EditorModule
     /// Defers later modules while the import pins their generation or requires a Host restart.
     /// </summary>
     public override bool blocksFollowingUpdates => isBusy || m_faulted;
+
     /// <summary>
     /// Gets whether an import still owns validation or publication work.
     /// </summary>
     public bool isBusy => !m_faulted && m_import is not null;
+
     /// <summary>
     /// Gets whether the current authoring generation admits a new sample import.
     /// </summary>
-    public bool canImport => !m_faulted && !isBusy && m_scripting.state is EditorScriptCompilationState.Ready or EditorScriptCompilationState.Failed;
+    public bool canImport
+        => !m_faulted && !isBusy && m_scripting.state is EditorScriptCompilationState.Ready or EditorScriptCompilationState.Failed;
 
     /// <summary>
     /// Gets a complete immutable progress snapshot under the existing owner lock.
@@ -66,7 +71,9 @@ public sealed class AssetSampleImportModule : EditorModule
         get
         {
             lock (m_progressLock)
+            {
                 return m_progress;
+            }
         }
     }
 
@@ -82,7 +89,9 @@ public sealed class AssetSampleImportModule : EditorModule
     public void Request(AssetPath source)
     {
         if (!canImport)
+        {
             throw new InvalidOperationException("Sample import requires an idle authoring generation.");
+        }
         m_import = m_assets.pipeline.PrepareSampleImport(source);
         m_canceled = false;
         lock (m_progressLock)
@@ -93,28 +102,17 @@ public sealed class AssetSampleImportModule : EditorModule
     }
 
     /// <summary>
-    /// Requests cancellation without releasing work that has not retired.
-    /// </summary>
-    private void CancelCurrent()
-    {
-        if (m_import is null)
-            return;
-        m_canceled = true;
-        lock (m_progressLock)
-            m_progress = m_progress with { status = "Canceling sample import...", cancellationRequested = true };
-        m_import.Cancel();
-    }
-
-    /// <summary>
     /// Cancels only the import observed by the presentation.
     /// </summary>
-    /// <param name="operationId">
+    /// <param name="operationID">
     /// The current import identity captured by the caller.
     /// </param>
-    public void Cancel(long operationId)
+    public void Cancel(long operationID)
     {
-        if (progress.operationId == operationId)
+        if (progress.operationID == operationID)
+        {
             CancelCurrent();
+        }
     }
 
     /// <summary>
@@ -126,7 +124,9 @@ public sealed class AssetSampleImportModule : EditorModule
     protected override void OnUpdate(EditorContext context)
     {
         if (!isBusy)
+        {
             return;
+        }
         try
         {
             if (m_canceled || m_failure is not null)
@@ -139,25 +139,43 @@ public sealed class AssetSampleImportModule : EditorModule
             if (!m_validating)
             {
                 if (!import.Advance())
+                {
                     return;
+                }
                 m_validating = true;
                 SetProgress(0.2f, "Validating sample scripts...");
                 string physicalSource = Path.Combine(m_assets.pipeline.assetRoot, import.target.localPath);
                 string targetPath = import.target.ToString();
-                long operation = progress.operationId;
+                long operation = progress.operationID;
                 import.BeginValidation(async (
                     sources,
                     cancellationToken
                 ) =>
                 {
-                    ScriptCompilationResult result = await m_compiler.CompileAuthoringGenerationAsync(new ImportProgress(this, operation), cancellationToken, sources).ConfigureAwait(false);
+                    ScriptCompilationResult result = await m_compiler.CompileAuthoringGenerationAsync(
+                        new ImportProgress(this, operation),
+                        sources,
+                        cancellationToken
+                    ).ConfigureAwait(false);
                     if (!result.success)
-                        throw new InvalidOperationException("Sample script preflight failed:" + Environment.NewLine + string.Join(Environment.NewLine, result.diagnostics.Select(static diagnostic => diagnostic.message)));
+                    {
+                        throw new InvalidOperationException(
+                            "Sample script preflight failed:"
+                            + Environment.NewLine
+                            + string.Join(Environment.NewLine, result.diagnostics.Select(static diagnostic => diagnostic.message))
+                        );
+                    }
                     SetProgress(0.85f, "Preparing sample history...", operation);
                     m_historyPayload = await Task.Run(() =>
                     {
                         byte[] archive = AssetSourceArchive.CapturePhysical(physicalSource, isDirectory: true, cancellationToken);
-                        var data = new AssetHistoryData(AssetHistoryOperationKind.CreateAsset, targetPath, string.Empty, isDirectory: true, archive);
+                        var data = new AssetHistoryData(
+                            AssetHistoryOperationKind.CreateAsset,
+                            targetPath,
+                            string.Empty,
+                            isDirectory: true,
+                            archive
+                        );
                         cancellationToken.ThrowIfCancellationRequested();
                         return EditorHistoryPayload.FromBytes(data.Encode());
                     }, cancellationToken).ConfigureAwait(false);
@@ -166,12 +184,17 @@ public sealed class AssetSampleImportModule : EditorModule
             }
 
             if (!import.isValidationComplete)
+            {
                 return;
+            }
             import.Commit(_ =>
             {
                 m_assets.interactions.history.RecordApplied(
                     "Import Sample",
-                    new EditorHistoryChange(AssetHistoryKinds.SourceOperation, m_historyPayload ?? throw new InvalidOperationException("Validated sample history is missing."))
+                    new EditorHistoryChange(
+                        AssetHistoryKinds.C_SOURCE_OPERATION,
+                        m_historyPayload ?? throw new InvalidOperationException("Validated sample history is missing.")
+                    )
                 );
             });
             m_log.Write(LogLevel.Info, "Imported sample to '{0}'.", [import.target]);
@@ -181,7 +204,9 @@ public sealed class AssetSampleImportModule : EditorModule
         catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
         {
             if (m_import?.isFaulted == true)
+            {
                 ReportFault(pending);
+            }
         // The next frame retries retirement while the modal and dependency ownership remain intact.
         }
         catch (Exception failure)
@@ -189,7 +214,9 @@ public sealed class AssetSampleImportModule : EditorModule
             m_failure = failure;
             CancelCurrent();
             if (m_import?.isFaulted == true)
+            {
                 ReportFault(failure);
+            }
         }
     }
 
@@ -209,13 +236,35 @@ public sealed class AssetSampleImportModule : EditorModule
     /// Retries retirement without releasing dependencies still used by background work.
     /// </summary>
     protected override void OnDispose() => RetireImport();
+
+    /// <summary>
+    /// Requests cancellation without releasing work that has not retired.
+    /// </summary>
+    private void CancelCurrent()
+    {
+        if (m_import is null)
+        {
+            return;
+        }
+        m_canceled = true;
+        lock (m_progressLock)
+        {
+            m_progress = m_progress with { status = "Canceling sample import...", cancellationRequested = true };
+        }
+        m_import.Cancel();
+    }
+
     private void RetireImport()
     {
         m_import?.Rollback();
         if (m_failure is not null)
+        {
             m_log.Write(LogLevel.Error, "Sample import failed: {0}", [m_failure]);
+        }
         else if (m_import is not null)
+        {
             m_log.Write(LogLevel.Info, "Sample import was canceled; no copy was published.");
+        }
         ClearImport();
     }
 
@@ -248,12 +297,16 @@ public sealed class AssetSampleImportModule : EditorModule
     private void SetProgress(
         float progress,
         string status,
-        long? operationId = null
+        long? operationID = null
     ) {
         lock (m_progressLock)
         {
-            if (!m_acceptProgress || m_progress.cancellationRequested || (operationId is long expected && expected != m_progress.operationId))
+            if (!m_acceptProgress
+                || m_progress.cancellationRequested
+                || (operationID is long expected && expected != m_progress.operationID)
+            ) {
                 return;
+            }
             m_progress = m_progress with { fraction = progress, status = status };
         }
     }
@@ -263,7 +316,7 @@ public sealed class AssetSampleImportModule : EditorModule
         long operation
     ) : IProgress<ScriptCompilationProgress>
     {
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public void Report(ScriptCompilationProgress value) => owner.SetProgress(0.2f + value.fraction * 0.6f, value.stage, operation);
     }
 }

@@ -1,17 +1,18 @@
+using System;
+using System.Collections.Generic;
 using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
-using System;
-using System.Collections.Generic;
 
 namespace Inno.Rendering.Runtime;
 
 /// <summary>
 /// Supplies one request and frame-scoped services to a render pipeline.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("fe6c1616-212d-521e-b4ab-9e61a72b9c45")]
+[StableTypeID("fe6c1616-212d-521e-b4ab-9e61a72b9c45")]
 public sealed class RenderPipelineContext
 {
     /// <summary>
@@ -142,4 +143,3 @@ public sealed class RenderPipelineContext
     /// </summary>
     public RenderTextureHandle outputTexture { get; }
 }
-

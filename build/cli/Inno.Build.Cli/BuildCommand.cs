@@ -2,19 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Inno.Assets;
-using Inno.Build;
 using Inno.Build.Managed;
 using Inno.Core.Settings;
 
 namespace Inno.Build.Cli;
-
-internal enum BuildCommandKind
-{
-    Game,
-    Plugin,
-    ImportSample,
-    Scripts
-}
 
 internal sealed class BuildCommand
 {
@@ -27,11 +18,13 @@ internal sealed class BuildCommand
         this.kind = kind;
         m_values = values;
         if (kind == BuildCommandKind.Game)
+        {
             _ = Require(values, "target");
-        projectDirectory = Require(values, "project");
-        supportPackRoot = kind == BuildCommandKind.Game
-            ? Require(values, "support-packs")
-            : values.GetValueOrDefault("support-packs", Path.Combine(AppContext.BaseDirectory, "SupportPacks"));
+        }
+        this.projectDirectory = Require(values, "project");
+        this.supportPackRoot = kind == BuildCommandKind.Game
+                               ? Require(values, "support-packs")
+                               : values.GetValueOrDefault("support-packs", Path.Combine(AppContext.BaseDirectory, "SupportPacks"));
     }
 
     internal BuildCommandKind kind { get; }
@@ -42,13 +35,13 @@ internal sealed class BuildCommand
 
     internal string? engineRoot => m_values.ContainsKey("engine-root") ? Require(m_values, "engine-root") : null;
 
-    internal BuildTargetId toolsTarget => new(Require(m_values, "tools-target"));
+    internal BuildTargetID toolsTarget => new(Require(m_values, "tools-target"));
 
     internal string? nativeDependencies => m_values.GetValueOrDefault("native-dependencies");
 
     internal string? dotnetHost => m_values.GetValueOrDefault("dotnet");
 
-    internal BuildTargetId gameTarget => new(Require(m_values, "target"));
+    internal BuildTargetID gameTarget => new(Require(m_values, "target"));
 
     internal string? profilePath => m_values.GetValueOrDefault("profile");
 
@@ -58,10 +51,46 @@ internal sealed class BuildCommand
 
     internal bool generateIdeProjects => m_values.ContainsKey("ide");
 
+    internal GameBuildRequest CreateGameRequest(BuildProfile profile)
+    {
+        ArgumentNullException.ThrowIfNull(profile);
+        if (m_values.TryGetValue("startup-scene", out string? scene))
+        {
+            profile.startupScene = AssetPath.Parse(scene).ToString();
+        }
+        if (m_values.TryGetValue("target", out string? target))
+        {
+            profile.target = new BuildTargetID(target);
+        }
+        if (m_values.TryGetValue("deployment", out string? deployment))
+        {
+            profile.managedDeployment = new ManagedDeploymentID(deployment);
+        }
+        return new GameBuildRequest
+        {
+            profile = profile,
+            outputDirectory = Require(m_values, "output")
+        };
+    }
+
+    internal PluginBuildRequest CreatePluginRequest(ProjectID projectID)
+        => new()
+    {
+        pluginID = projectID.value,
+        displayName = Require(m_values, "display-name"),
+        outputPath = Require(m_values, "output"),
+        dependencies = m_values.TryGetValue("dependencies", out string? dependencyList)
+                       ? dependencyList.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                       : [],
+        includeDependencies = m_values.ContainsKey("include-dependencies")
+    };
+
     internal static BuildCommand Parse(IReadOnlyList<string> args)
     {
         if (args.Count == 0 || args[0] is "help" or "--help" or "-h")
+        {
             throw new ArgumentException(Usage());
+        }
         BuildCommandKind kind = args[0] switch
         {
             "game" => BuildCommandKind.Game,
@@ -75,7 +104,9 @@ internal sealed class BuildCommand
         {
             string argument = args[index];
             if (!argument.StartsWith("--", StringComparison.Ordinal))
+            {
                 throw new ArgumentException($"Unexpected argument '{argument}'.");
+            }
             string key = argument[2..];
             if (key is "include-dependencies" or "ide")
             {
@@ -83,7 +114,9 @@ internal sealed class BuildCommand
                 continue;
             }
             if (++index >= args.Count || args[index].StartsWith("--", StringComparison.Ordinal))
+            {
                 throw new ArgumentException($"Argument '--{key}' requires a value.");
+            }
             values.Add(key, args[index]);
         }
         string[] specific = kind switch
@@ -95,55 +128,42 @@ internal sealed class BuildCommand
             _ => []
         };
         string[] preparation = kind is BuildCommandKind.Game or BuildCommandKind.Plugin
-            ? ["tools-target", "support-packs", "native-dependencies"] : [];
-        var allowed = new HashSet<string>(["engine-root", "dotnet", "project", "output", ..preparation, ..specific], StringComparer.Ordinal);
+                               ? ["tools-target", "support-packs", "native-dependencies"]
+                               : [];
+        var allowed = new HashSet<string>(
+            ["engine-root", "dotnet", "project", "output", ..preparation, ..specific],
+            StringComparer.Ordinal
+        );
         foreach (string key in values.Keys)
+        {
             if (!allowed.Contains(key))
+            {
                 throw new ArgumentException($"Unknown argument '--{key}' for '{args[0]}'.");
+            }
+        }
         return new BuildCommand(kind, values);
     }
-
-    internal GameBuildRequest CreateGameRequest(BuildProfile profile)
-    {
-        ArgumentNullException.ThrowIfNull(profile);
-        if (m_values.TryGetValue("startup-scene", out string? scene))
-            profile.startupScene = AssetPath.Parse(scene).ToString();
-        if (m_values.TryGetValue("target", out string? target))
-            profile.target = new BuildTargetId(target);
-        if (m_values.TryGetValue("deployment", out string? deployment))
-            profile.managedDeployment = new ManagedDeploymentId(deployment);
-        return new GameBuildRequest
-        {
-            profile = profile,
-            outputDirectory = Require(m_values, "output")
-        };
-    }
-
-    internal PluginBuildRequest CreatePluginRequest(ProjectId projectId)
-        => new()
-        {
-            pluginId = projectId.value,
-            displayName = Require(m_values, "display-name"),
-            outputPath = Require(m_values, "output"),
-            dependencies = m_values.TryGetValue("dependencies", out string? dependencyList)
-                ? dependencyList.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-                : Array.Empty<string>(),
-            includeDependencies = m_values.ContainsKey("include-dependencies")
-        };
 
     private static string Require(
         IReadOnlyDictionary<string, string> values,
         string key
-    )
-        => values.TryGetValue(key, out string? value) && !string.IsNullOrWhiteSpace(value)
-            ? value
-            : throw new ArgumentException($"Required argument '--{key}' is missing.");
+    ) => values.TryGetValue(key, out string? value) && !string.IsNullOrWhiteSpace(value)
+         ? value
+         : throw new ArgumentException($"Required argument '--{key}' is missing.");
 
     private static string Usage()
         => "Usage:\n"
-           + "  Project commands accept [--engine-root <checkout>] for an executable outside the source checkout.\n"
-           + "  InnoEngine.Build game --tools-target <native-target> --project <dir> --support-packs <dir> --output <dir> [--profile <BuildProfile.inno>] --target <target> [--deployment <provider-id>] [--startup-scene <scene>]\n"
-           + "  InnoEngine.Build plugin --tools-target <native-target> --project <dir> --output <package.iplugin> --display-name <name> [--dependencies <id,id>] [--include-dependencies]\n"
-           + "  InnoEngine.Build import-sample --project <dir> --source <plugin-id::~Sample> [--dotnet <SDK>]\n"
-           + "  InnoEngine.Build scripts --project <dir> --output <dir> [--dotnet <SDK>] [--ide]";
+        + "  Project commands accept [--engine-root <checkout>] for an executable outside the source checkout.\n"
+        + "  InnoEngine.Build game --tools-target <native-target> --project <dir> --support-packs <dir> --output <dir> [--profile <BuildProfile.inno>] --target <target> [--deployment <provider-id>] [--startup-scene <scene>]\n"
+        + "  InnoEngine.Build plugin --tools-target <native-target> --project <dir> --output <package.iplugin> --display-name <name> [--dependencies <id,id>] [--include-dependencies]\n"
+        + "  InnoEngine.Build import-sample --project <dir> --source <plugin-id::~Sample> [--dotnet <SDK>]\n"
+        + "  InnoEngine.Build scripts --project <dir> --output <dir> [--dotnet <SDK>] [--ide]";
+}
+
+internal enum BuildCommandKind
+{
+    Game,
+    Plugin,
+    ImportSample,
+    Scripts
 }

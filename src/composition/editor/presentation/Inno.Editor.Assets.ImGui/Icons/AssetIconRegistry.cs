@@ -1,22 +1,69 @@
-using Inno.Editor.Assets;
-using Inno.Editor.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Inno.Assets;
-using Inno.Extensibility.Types;
+using Inno.Editor.Assets;
+using Inno.Editor.Core;
 using Inno.Editor.Settings;
+using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Assets.ImGui;
+
 internal sealed class AssetIconRegistry : TypeRegistry<AssetIconRegistry.Snapshot>
 {
     private readonly EditorSettings m_settings;
+
     internal AssetIconRegistry(
         EditorSettings settings,
         TypeCatalog types
     ) : base(types)
     {
-        m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        ArgumentNullException.ThrowIfNull(settings);
+        m_settings = settings;
+    }
+
+    /// <summary>
+    /// Builds a validated result from the current immutable input snapshot.
+    /// </summary>
+    /// <param name="types">
+    /// The active type catalog generation used for extension resolution.
+    /// </param>
+    /// <returns>
+    /// The validated snapshot that represents the completed operation.
+    /// </returns>
+    protected override Snapshot Build(TypeCacheSnapshot types)
+    {
+        List<TypeRegistration> typeRegistrations = [];
+        List<ExtensionRegistration> extensionRegistrations = [];
+        foreach (Type declarationType in types.types.Select(typeRef => typeRef.Resolve(types)).OrderBy(
+            static type => type.Assembly.GetName().Name,
+            StringComparer.Ordinal
+        ).ThenBy(static type => type.FullName, StringComparer.Ordinal)
+        ) {
+            foreach (AssetIconAttribute attribute in declarationType.GetCustomAttributes(
+                typeof(AssetIconAttribute),
+                inherit: false
+            ).Cast<AssetIconAttribute>().OrderBy(
+                static value => value.assetType?.FullName ?? value.extension,
+                StringComparer.Ordinal
+            ).ThenBy(static value => value.priority)
+            ) {
+                if (attribute.assetType is Type assetType)
+                {
+                    ValidateType(attribute, declarationType, assetType, typeRegistrations);
+                    typeRegistrations.Add(
+                        new TypeRegistration(assetType, attribute.useForChildren, attribute.priority, declarationType, attribute.icon)
+                    );
+                }
+                else if (attribute.extension is string extension)
+                {
+                    ValidateExtension(attribute, declarationType, extension, extensionRegistrations);
+                    extensionRegistrations.Add(new ExtensionRegistration(extension, attribute.priority, declarationType, attribute.icon));
+                }
+            }
+        }
+
+        return new Snapshot(typeRegistrations.ToArray(), extensionRegistrations.ToArray());
     }
 
     internal bool TryResolve(
@@ -42,51 +89,6 @@ internal sealed class AssetIconRegistry : TypeRegistry<AssetIconRegistry.Snapsho
         return false;
     }
 
-    /// <summary>
-    /// Builds a validated result from the current immutable input snapshot.
-    /// </summary>
-    /// <param name="types">
-    /// The active type catalog generation used for extension resolution.
-    /// </param>
-    /// <returns>
-    /// The validated snapshot that represents the completed operation.
-    /// </returns>
-    protected override Snapshot Build(TypeCacheSnapshot types)
-    {
-        var typeRegistrations = new List<TypeRegistration>();
-        var extensionRegistrations = new List<ExtensionRegistration>();
-        foreach (Type declarationType in types.types.Select(typeRef => typeRef.Resolve(types)).OrderBy(
-            static type => type.Assembly.GetName().Name,
-            StringComparer.Ordinal
-        ).ThenBy(
-            static type => type.FullName,
-            StringComparer.Ordinal
-        ))
-        {
-            foreach (AssetIconAttribute attribute in declarationType.GetCustomAttributes(
-                typeof(AssetIconAttribute),
-                inherit: false
-            ).Cast<AssetIconAttribute>().OrderBy(
-                static value => value.assetType?.FullName ?? value.extension,
-                StringComparer.Ordinal
-            ).ThenBy(static value => value.priority))
-            {
-                if (attribute.assetType is Type assetType)
-                {
-                    ValidateType(attribute, declarationType, assetType, typeRegistrations);
-                    typeRegistrations.Add(new TypeRegistration(assetType, attribute.useForChildren, attribute.priority, declarationType, attribute.icon));
-                }
-                else if (attribute.extension is string extension)
-                {
-                    ValidateExtension(attribute, declarationType, extension, extensionRegistrations);
-                    extensionRegistrations.Add(new ExtensionRegistration(extension, attribute.priority, declarationType, attribute.icon));
-                }
-            }
-        }
-
-        return new Snapshot(typeRegistrations.ToArray(), extensionRegistrations.ToArray());
-    }
-
     private bool TryResolveType(
         Type? assetType,
         out string icon
@@ -97,8 +99,9 @@ internal sealed class AssetIconRegistry : TypeRegistry<AssetIconRegistry.Snapsho
         {
             foreach (TypeRegistration registration in current.typeRegistrations)
             {
-                if (!EditorTypeSpecificity.TryGet(assetType, registration.assetType, out int distance) || distance > 0 && !registration.useForChildren)
-                {
+                if (!EditorTypeSpecificity.TryGet(assetType, registration.assetType, out int distance)
+                    || distance > 0 && !registration.useForChildren
+                ) {
                     continue;
                 }
 
@@ -122,12 +125,14 @@ internal sealed class AssetIconRegistry : TypeRegistry<AssetIconRegistry.Snapsho
         foreach (ExtensionRegistration registration in current.extensionRegistrations)
         {
             if (!relativePath.EndsWith(registration.extension, StringComparison.OrdinalIgnoreCase))
+            {
                 continue;
+            }
             if (best is null
                 || registration.extension.Length > best.extension.Length
                 || registration.extension.Length == best.extension.Length
-                && registration.priority > best.priority)
-            {
+                   && registration.priority > best.priority
+            ) {
                 best = registration;
             }
         }
@@ -144,12 +149,21 @@ internal sealed class AssetIconRegistry : TypeRegistry<AssetIconRegistry.Snapsho
     ) {
         if (!typeof(AssetObject).IsAssignableFrom(assetType))
         {
-            throw new InvalidOperationException($"Asset icon declaration on '{declarationType.FullName}' targets " + $"'{assetType.FullName}', " + $"which does not derive from '{typeof(AssetObject).FullName}'.");
+            throw new InvalidOperationException(
+                $"Asset icon declaration on '{declarationType.FullName}' targets " + $"'{assetType.FullName}', " + $"which does not derive from '{typeof(AssetObject).FullName}'."
+            );
         }
 
-        if (registrations.Any(value => value.assetType == assetType && value.useForChildren == attribute.useForChildren && value.priority == attribute.priority))
-        {
-            throw new InvalidOperationException($"Asset icon registration for '{assetType.FullName}' conflicts at priority " + $"{attribute.priority}.");
+        if (registrations.Any(
+            value => (
+                value.assetType == assetType
+                && value.useForChildren == attribute.useForChildren
+                && value.priority == attribute.priority
+            )
+        )) {
+            throw new InvalidOperationException(
+                $"Asset icon registration for '{assetType.FullName}' conflicts at priority " + $"{attribute.priority}."
+            );
         }
     }
 
@@ -159,9 +173,12 @@ internal sealed class AssetIconRegistry : TypeRegistry<AssetIconRegistry.Snapsho
         string extension,
         IReadOnlyList<ExtensionRegistration> registrations
     ) {
-        if (registrations.Any(value => string.Equals(value.extension, extension, StringComparison.OrdinalIgnoreCase) && value.priority == attribute.priority))
-        {
-            throw new InvalidOperationException($"Asset icon declaration on '{declarationType.FullName}' for extension '{extension}' " + $"conflicts at priority {attribute.priority}.");
+        if (registrations.Any(
+            value => string.Equals(value.extension, extension, StringComparison.OrdinalIgnoreCase) && value.priority == attribute.priority
+        )) {
+            throw new InvalidOperationException(
+                $"Asset icon declaration on '{declarationType.FullName}' for extension '{extension}' " + $"conflicts at priority {attribute.priority}."
+            );
         }
     }
 
@@ -169,6 +186,7 @@ internal sealed class AssetIconRegistry : TypeRegistry<AssetIconRegistry.Snapsho
         TypeRegistration[] typeRegistrations,
         ExtensionRegistration[] extensionRegistrations
     );
+
     internal sealed record TypeRegistration(
         Type assetType,
         bool useForChildren,
@@ -176,6 +194,7 @@ internal sealed class AssetIconRegistry : TypeRegistry<AssetIconRegistry.Snapsho
         Type declarationType,
         string icon
     );
+
     internal sealed record ExtensionRegistration(
         string extension,
         int priority,

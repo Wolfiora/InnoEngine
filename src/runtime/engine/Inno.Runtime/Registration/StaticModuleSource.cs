@@ -42,30 +42,45 @@ public sealed class StaticModuleSource : IModuleSource
         ArgumentNullException.ThrowIfNull(dependencies);
         ArgumentNullException.ThrowIfNull(assemblies);
         if (assemblies.Any(static assembly => assembly is null || assembly.IsCollectible))
+        {
             throw new ArgumentException("A static module requires noncollectible linked assemblies.", nameof(assemblies));
-        m_contribution = new ModuleCatalogContribution(moduleName, domain, scope, assemblies,
-            assemblies.ToDictionary(static assembly => assembly, _ => scope));
-        upstreamModuleNames = Array.AsReadOnly(dependencies.ToArray());
-        assemblyScopes = new ReadOnlyDictionary<string, AssemblyScope>(
-            assemblies.ToDictionary(static assembly => assembly.GetName().Name!, _ => scope, StringComparer.OrdinalIgnoreCase));
+        }
+        m_contribution = new ModuleCatalogContribution(
+            moduleName,
+            domain,
+            scope,
+            assemblies,
+            assemblies.ToDictionary(static assembly => assembly, _ => scope)
+        );
+        this.upstreamModuleNames = Array.AsReadOnly(dependencies.ToArray());
+        this.assemblyScopes = new ReadOnlyDictionary<string, AssemblyScope>(
+            assemblies.ToDictionary(static assembly => assembly.GetName().Name!, _ => scope, StringComparer.OrdinalIgnoreCase)
+        );
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string moduleName => m_contribution.moduleName;
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public AssemblyDomain domain => m_contribution.domain;
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public AssemblyScope scope => m_contribution.scope;
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public bool collectible => false;
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public IReadOnlyList<string> upstreamModuleNames { get; }
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public IReadOnlyDictionary<string, AssemblyScope> assemblyScopes { get; }
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public IReadOnlyList<string> GetAssemblyNames()
         => m_contribution.assemblies.Select(static assembly => assembly.GetName().Name!).ToArray();
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public ModuleCatalogContribution Prepare(ModuleSourceContext context)
     {
         ArgumentNullException.ThrowIfNull(context);

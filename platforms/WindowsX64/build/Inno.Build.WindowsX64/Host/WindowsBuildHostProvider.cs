@@ -9,11 +9,20 @@ namespace Inno.Build.WindowsX64;
 /// </summary>
 public sealed class WindowsBuildHostProvider : IBuildHostProvider
 {
-    /// <inheritdoc />
-    public BuildHostDescriptor? TryCapture() => !OperatingSystem.IsWindows() ? null
-        : new("Windows", RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant(),
-            new BuildHostServices(new WindowsToolchainWorkspaceProvider(), StringComparer.OrdinalIgnoreCase,
-                ["platforms/WindowsX64/build/Inno.Build.WindowsX64/Host/WindowsBuildHostProvider.cs",
-                    "platforms/WindowsX64/build/Inno.Build.WindowsX64/Host/Workspace/WindowsToolchainWorkspaceProvider.cs",
-                    "platforms/WindowsX64/build/Inno.Build.WindowsX64/Host/Workspace/WindowsToolchainDirectory.cs"], ".exe"));
+    /// <inheritdoc/>
+    public BuildHostDescriptor? TryCapture()
+        => !OperatingSystem.IsWindows()
+           ? null
+           : new BuildHostDescriptor(
+               "Windows",
+               RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant(),
+               new BuildHostServices(
+                   new WindowsToolchainWorkspaceProvider(),
+                   StringComparer.OrdinalIgnoreCase,
+                   ["platforms/WindowsX64/build/Inno.Build.WindowsX64/Host/WindowsBuildHostProvider.cs",
+                       "platforms/WindowsX64/build/Inno.Build.WindowsX64/Host/Workspace/WindowsToolchainWorkspaceProvider.cs",
+                       "platforms/WindowsX64/build/Inno.Build.WindowsX64/Host/Workspace/WindowsToolchainDirectory.cs"],
+                   ".exe"
+               )
+           );
 }

@@ -11,43 +11,24 @@ namespace Inno.Core.Mathematics;
 public struct RectInt : IEquatable<RectInt>
 {
     /// <summary>
-    /// The horizontal or first component.
+    /// The horizontal position of the origin corner.
     /// </summary>
-    public int x, y, width, height;
+    public int x;
 
     /// <summary>
-    /// Gets the scalar measurement or identity associated with the current state.
+    /// The vertical position of the origin corner.
     /// </summary>
-    public int left => x;
-    /// <summary>
-    /// Gets the scalar measurement or identity associated with the current state.
-    /// </summary>
-    public int right => x + width;
-    /// <summary>
-    /// Gets the scalar measurement or identity associated with the current state.
-    /// </summary>
-    public int top => y;
-    /// <summary>
-    /// Gets the scalar measurement or identity associated with the current state.
-    /// </summary>
-    public int bottom => y + height;
+    public int y;
 
     /// <summary>
-    /// Gets the minimum corner of this axis-aligned rectangle.
+    /// The horizontal extent.
     /// </summary>
-    public Vector2Int min => new(x, y);
+    public int width;
+
     /// <summary>
-    /// Gets the maximum corner of this axis-aligned rectangle.
+    /// The vertical extent.
     /// </summary>
-    public Vector2Int max => new(x + width, y + height);
-    /// <summary>
-    /// Gets the width and height derived from the rectangle bounds.
-    /// </summary>
-    public Vector2Int size => new(width, height);
-    /// <summary>
-    /// Gets the midpoint derived from the rectangle bounds.
-    /// </summary>
-    public Vector2Int center => new(x + width / 2, y + height / 2);
+    public int height;
 
     /// <summary>
     /// Creates a validated rect int instance.
@@ -77,6 +58,46 @@ public struct RectInt : IEquatable<RectInt>
     }
 
     /// <summary>
+    /// Gets the scalar measurement or identity associated with the current state.
+    /// </summary>
+    public int left => x;
+
+    /// <summary>
+    /// Gets the scalar measurement or identity associated with the current state.
+    /// </summary>
+    public int right => x + width;
+
+    /// <summary>
+    /// Gets the scalar measurement or identity associated with the current state.
+    /// </summary>
+    public int top => y;
+
+    /// <summary>
+    /// Gets the scalar measurement or identity associated with the current state.
+    /// </summary>
+    public int bottom => y + height;
+
+    /// <summary>
+    /// Gets the minimum corner of this axis-aligned rectangle.
+    /// </summary>
+    public Vector2Int min => new(x, y);
+
+    /// <summary>
+    /// Gets the maximum corner of this axis-aligned rectangle.
+    /// </summary>
+    public Vector2Int max => new(x + width, y + height);
+
+    /// <summary>
+    /// Gets the width and height derived from the rectangle bounds.
+    /// </summary>
+    public Vector2Int size => new(width, height);
+
+    /// <summary>
+    /// Gets the midpoint derived from the rectangle bounds.
+    /// </summary>
+    public Vector2Int center => new(x + width / 2, y + height / 2);
+
+    /// <summary>
     /// Checks if this rectangle overlaps another rectangle.
     /// </summary>
     /// <param name="other">
@@ -86,13 +107,10 @@ public struct RectInt : IEquatable<RectInt>
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Overlaps(RectInt other)
-    {
-        return !(right <= other.left ||
-                 left >= other.right ||
-                 bottom <= other.top ||
-                 top >= other.bottom);
-    }
+    public bool Overlaps(RectInt other) => !(right <= other.left
+                                             || left >= other.right
+                                             || bottom <= other.top
+                                             || top >= other.bottom);
 
     /// <summary>
     /// Checks if this rectangle fully contains another rectangle.
@@ -104,13 +122,22 @@ public struct RectInt : IEquatable<RectInt>
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Contains(RectInt other)
-    {
-        return left <= other.left &&
-               top <= other.top &&
-               right >= other.right &&
-               bottom >= other.bottom;
-    }
+    public bool Contains(RectInt other) => left <= other.left
+                                           && top <= other.top
+                                           && right >= other.right
+                                           && bottom >= other.bottom;
+
+    /// <summary>
+    /// Determines whether current state contains the requested value value.
+    /// </summary>
+    /// <param name="p">
+    /// The p consumed by contains; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool Contains(Vector2Int p) => Contains(p.x, p.y);
 
     /// <summary>
     /// Checks if this rectangle contains a point.
@@ -128,22 +155,46 @@ public struct RectInt : IEquatable<RectInt>
     public bool Contains(
         int px,
         int py
-    ) {
-        return px >= left && px < right &&
-               py >= top && py < bottom;
-    }
+    ) => px >= left && px < right
+         && py >= top && py < bottom;
 
     /// <summary>
-    /// Determines whether current state contains the requested value value.
+    /// Determines whether this value and the supplied value represent the same logical state.
     /// </summary>
-    /// <param name="p">
-    /// The p consumed by contains; ownership remains with the caller unless explicitly stated otherwise.
+    /// <param name="obj">
+    /// The object compared with this value.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Contains(Vector2Int p) => Contains(p.x, p.y);
+    public override bool Equals(object? obj) => obj is RectInt r && Equals(r);
+
+    /// <summary>
+    /// Determines whether this value and the supplied value represent the same logical state.
+    /// </summary>
+    /// <param name="other">
+    /// The strongly typed value compared with this value.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    public bool Equals(RectInt other) => x == other.x && y == other.y && width == other.width && height == other.height;
+
+    /// <summary>
+    /// Computes a hash code consistent with the implemented equality contract.
+    /// </summary>
+    /// <returns>
+    /// The scalar result calculated from the supplied inputs.
+    /// </returns>
+    public override int GetHashCode() => HashCode.Combine(x, y, width, height);
+
+    /// <summary>
+    /// Formats this value as a human-readable component list.
+    /// </summary>
+    /// <returns>
+    /// The validated text representation owned by the caller.
+    /// </returns>
+    public override string ToString() => $"({x}, {y}, {width}, {height})";
 
     /// <summary>
     /// Creates a rectangle from minimum and maximum boundaries; point containment excludes the maximum boundary.
@@ -161,9 +212,7 @@ public struct RectInt : IEquatable<RectInt>
     public static RectInt FromMinMax(
         Vector2Int min,
         Vector2Int max
-    ) {
-        return new RectInt(min.x, min.y, max.x - min.x, max.y - min.y);
-    }
+    ) => new RectInt(min.x, min.y, max.x - min.x, max.y - min.y);
 
     /// <summary>
     /// Returns the smallest axis-aligned rectangle containing both supplied rectangles.
@@ -242,6 +291,7 @@ public struct RectInt : IEquatable<RectInt>
         RectInt a,
         RectInt b
     ) => a.Equals(b);
+
     /// <summary>
     /// Determines whether the supplied values differ under the type's equality tolerance.
     /// </summary>
@@ -343,39 +393,4 @@ public struct RectInt : IEquatable<RectInt>
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator RectInt(Vector4Int v) => new RectInt(v.x, v.y, v.z, v.w);
-
-    /// <summary>
-    /// Determines whether this value and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="obj">
-    /// The object compared with this value.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public override bool Equals(object? obj) => obj is RectInt r && Equals(r);
-    /// <summary>
-    /// Determines whether this value and the supplied value represent the same logical state.
-    /// </summary>
-    /// <param name="other">
-    /// The strongly typed value compared with this value.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public bool Equals(RectInt other) => x == other.x && y == other.y && width == other.width && height == other.height;
-    /// <summary>
-    /// Computes a hash code consistent with the implemented equality contract.
-    /// </summary>
-    /// <returns>
-    /// The scalar result calculated from the supplied inputs.
-    /// </returns>
-    public override int GetHashCode() => HashCode.Combine(x, y, width, height);
-    /// <summary>
-    /// Formats this value as a human-readable component list.
-    /// </summary>
-    /// <returns>
-    /// The validated text representation owned by the caller.
-    /// </returns>
-    public override string ToString() => $"({x}, {y}, {width}, {height})";
 }

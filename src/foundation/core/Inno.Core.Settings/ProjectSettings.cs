@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
-using Inno.Extensibility.Types;
-using Inno.Core.Serialization;
 using Inno.Core.Collections;
 using Inno.Core.IO;
+using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 
 namespace Inno.Core.Settings;
 
@@ -16,11 +15,11 @@ namespace Inno.Core.Settings;
 public sealed class ProjectSettings : IDisposable
 {
     private readonly SettingsDocumentStore<ProjectSettingsDocument> m_documents;
-    private readonly ProjectId m_defaultProjectId;
+    private readonly ProjectID m_defaultProjectID;
     private readonly SerializationRegistry m_serialization;
     private readonly SerializationContext m_serializationContext;
     private readonly ProjectSettingsRegistry m_registry;
-    private readonly Dictionary<ProjectSettingId, ProjectSettingRecord> m_effective = [];
+    private readonly Dictionary<ProjectSettingID, ProjectSettingRecord> m_effective = [];
     private ProjectSettingsDocument m_document;
     private bool m_disposed;
 
@@ -36,14 +35,14 @@ public sealed class ProjectSettings : IDisposable
     /// <param name="serialization">
     /// The serialization registry used for settings documents and contribution payloads.
     /// </param>
-    /// <param name="defaultProjectId">
+    /// <param name="defaultProjectID">
     /// The project namespace used when the document has no authored identity override.
-    /// </param>
-    /// <param name="contributors">
-    /// Dependency-ordered default contributors.
     /// </param>
     /// <param name="serializationContext">
     /// The owner's complete reference resolver context, used for defaults, contributions and returned snapshots.
+    /// </param>
+    /// <param name="contributors">
+    /// Dependency-ordered default contributors.
     /// </param>
     /// <exception cref="ArgumentNullException">
     /// A required service or the owner's serialization context is null.
@@ -52,25 +51,28 @@ public sealed class ProjectSettings : IDisposable
         IByteDocumentStore documentStore,
         TypeCatalog types,
         SerializationRegistry serialization,
-        ProjectId defaultProjectId,
+        ProjectID defaultProjectID,
         SerializationContext serializationContext,
         IReadOnlyList<ProjectSettingsContributor>? contributors = null
     ) {
         ArgumentNullException.ThrowIfNull(documentStore);
         ArgumentNullException.ThrowIfNull(types);
-        if (!defaultProjectId.isValid)
-            throw new ArgumentException("A default Project ID is required.", nameof(defaultProjectId));
+        if (!defaultProjectID.isValid)
+        {
+            throw new ArgumentException("A default Project ID is required.", nameof(defaultProjectID));
+        }
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(serializationContext);
         m_serialization = serialization;
         m_serializationContext = serializationContext;
-        m_defaultProjectId = defaultProjectId;
+        m_defaultProjectID = defaultProjectID;
         m_registry = new ProjectSettingsRegistry(types);
         m_documents = new SettingsDocumentStore<ProjectSettingsDocument>(
             documentStore,
             serialization,
             static () => new ProjectSettingsDocument(),
-            ValidateDocument);
+            ValidateDocument
+        );
         m_document = m_documents.Load();
         Rebuild(contributors ?? [], allowUnresolvedContributions: true);
     }
@@ -93,13 +95,17 @@ public sealed class ProjectSettings : IDisposable
     /// <exception cref="InvalidCastException">
     /// Thrown when the definition does not implement the requested contract.
     /// </exception>
-    public TSetting Get<TSetting>(ProjectSettingId id) where TSetting : class, ISerializable
+    public TSetting Get<TSetting>(ProjectSettingID id)
+        where TSetting : class, ISerializable
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (!TryClone(id, out ISerializable? value) || value is null)
+        {
             throw new KeyNotFoundException($"Project setting '{id}' is not defined.");
+        }
         return value as TSetting ?? throw new InvalidCastException(
-            $"Project setting '{id}' is '{value.GetType().FullName}', not '{typeof(TSetting).FullName}'.");
+            $"Project setting '{id}' is '{value.GetType().FullName}', not '{typeof(TSetting).FullName}'."
+        );
     }
 
     /// <summary>
@@ -118,10 +124,9 @@ public sealed class ProjectSettings : IDisposable
     /// <see langword="true"/> when a compatible definition exists.
     /// </returns>
     public bool TryGet<TSetting>(
-        ProjectSettingId id,
+        ProjectSettingID id,
         out TSetting? setting
-    )
-        where TSetting : class, ISerializable
+    ) where TSetting : class, ISerializable
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (!TryClone(id, out ISerializable? value))
@@ -139,7 +144,7 @@ public sealed class ProjectSettings : IDisposable
     /// <param name="id">
     /// Stable setting identifier.
     /// </param>
-    /// <param name="contributorId">
+    /// <param name="contributorID">
     /// Stable identity of the Plugin being exported.
     /// </param>
     /// <param name="declaredDependencies">
@@ -162,20 +167,22 @@ public sealed class ProjectSettings : IDisposable
     /// permitted by the declared dependency and override ownership.
     /// </exception>
     public bool TryCapture(
-        ProjectSettingId id,
-        string contributorId,
+        ProjectSettingID id,
+        string contributorID,
         IReadOnlySet<string> declaredDependencies,
         IReadOnlySet<string> declaredOverrides,
         IReadOnlyList<ProjectSettingsContributor> contributors,
         out ProjectSettingRecord record
     ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        ArgumentException.ThrowIfNullOrWhiteSpace(contributorId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(contributorID);
         ArgumentNullException.ThrowIfNull(declaredDependencies);
         ArgumentNullException.ThrowIfNull(declaredOverrides);
         ArgumentNullException.ThrowIfNull(contributors);
         if (!declaredOverrides.All(declaredDependencies.Contains))
+        {
             throw new ArgumentException("Every explicit override must identify a direct dependency.", nameof(declaredOverrides));
+        }
         ValidateContributorOrder(contributors);
         ProjectSettingsRegistry.Snapshot registry = m_registry.settings;
         if (!registry.TryGet(id, out ProjectSettingsRegistry.Definition? definition))
@@ -196,16 +203,18 @@ public sealed class ProjectSettings : IDisposable
         }
         ValidateRecord(id, definition, authored);
 
-        if (contributors.Any(contributor => string.Equals(contributor.id, contributorId, StringComparison.Ordinal)))
+        if (contributors.Any(contributor => string.Equals(contributor.id, contributorID, StringComparison.Ordinal)))
         {
             throw new InvalidOperationException(
-                $"Cannot export Plugin '{contributorId}' while a Plugin with the same ID is active.");
+                $"Cannot export Plugin '{contributorID}' while a Plugin with the same ID is active."
+            );
         }
         var prospective = new ProjectSettingsContributor(
-            contributorId,
+            contributorID,
             declaredDependencies,
             declaredOverrides,
-            [authored]);
+            [authored]
+        );
         ProjectSettingsContributor[] validationContributors = [.. contributors, prospective];
         _ = ComposeSetting(id, definition, validationContributors, projectRecord: null);
 
@@ -232,7 +241,7 @@ public sealed class ProjectSettings : IDisposable
     /// <returns>
     /// <see langword="true"/> when a project contribution record exists.
     /// </returns>
-    public bool HasProjectOverride(ProjectSettingId id)
+    public bool HasProjectOverride(ProjectSettingID id)
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         return m_document.overrides.Any(candidate => candidate.id == id);
@@ -251,14 +260,14 @@ public sealed class ProjectSettings : IDisposable
     /// <see langword="true"/> when the setting is defined.
     /// </returns>
     public bool TryClone(
-        ProjectSettingId id,
+        ProjectSettingID id,
         out ISerializable? setting
     ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (!m_effective.TryGetValue(id, out ProjectSettingRecord value)
             || !m_registry.settings.TryGet(id, out ProjectSettingsRegistry.Definition? definition)
-            || definition.stableTypeId != value.stableTypeId)
-        {
+            || definition.stableTypeID != value.stableTypeId
+        ) {
             setting = null;
             return false;
         }
@@ -283,7 +292,7 @@ public sealed class ProjectSettings : IDisposable
     /// <see langword="true"/> when the setting is defined.
     /// </returns>
     public bool TryCloneComposedDefault(
-        ProjectSettingId id,
+        ProjectSettingID id,
         IReadOnlyList<ProjectSettingsContributor> contributors,
         out ISerializable? setting
     ) {
@@ -335,46 +344,41 @@ public sealed class ProjectSettings : IDisposable
                 if (!registry.TryGet(setting.id, out ProjectSettingsRegistry.Definition? definition))
                 {
                     if (!allowUnresolvedContributions)
+                    {
                         throw new InvalidOperationException($"Project setting '{setting.id}' has no active definition.");
+                    }
                     continue;
                 }
                 if (!definition.allowPluginContributions)
                 {
                     throw new InvalidOperationException(
-                        $"Project setting '{setting.id}' does not accept Plugin contributions.");
+                        $"Project setting '{setting.id}' does not accept Plugin contributions."
+                    );
                 }
             }
         }
 
-        var candidate = new Dictionary<ProjectSettingId, ProjectSettingRecord>();
-        foreach ((ProjectSettingId id, ProjectSettingsRegistry.Definition definition) in registry.definitions)
+        var candidate = new Dictionary<ProjectSettingID, ProjectSettingRecord>();
+        foreach ((ProjectSettingID id, ProjectSettingsRegistry.Definition definition) in registry.definitions)
         {
             ProjectSettingRecord? projectRecord = FindRecord(m_document.overrides, id);
             ISerializable value = ComposeSetting(id, definition, contributors, projectRecord);
-            candidate.Add(id, new ProjectSettingRecord(id, definition.stableTypeId,
-                m_serialization.CapturePropertiesData(value, m_serializationContext)));
+            candidate.Add(
+                id,
+                new ProjectSettingRecord(
+                    id,
+                    definition.stableTypeID,
+                    m_serialization.CapturePropertiesData(value, m_serializationContext)
+                )
+            );
         }
 
         m_effective.Clear();
-        foreach ((ProjectSettingId id, ProjectSettingRecord value) in candidate)
+        foreach ((ProjectSettingID id, ProjectSettingRecord value) in candidate)
+        {
             m_effective.Add(id, value);
+        }
     }
-
-    internal ProjectSettingRecord[] CaptureEffective()
-        => m_effective.Values.Select(static record => new ProjectSettingRecord(
-            record.id, record.stableTypeId, record.propertyData)).ToArray();
-
-    internal void RestoreEffective(IEnumerable<ProjectSettingRecord> records)
-    {
-        m_effective.Clear();
-        foreach (ProjectSettingRecord record in records)
-            m_effective.Add(record.id, new ProjectSettingRecord(record.id, record.stableTypeId, record.propertyData));
-    }
-
-    internal IReadOnlyList<ProjectSettingRecord> GetUnavailable(IReadOnlyList<ProjectSettingsContributor> contributors)
-        => Array.AsReadOnly(m_document.overrides.Concat(contributors.SelectMany(static item => item.settings))
-            .Where(record => !m_registry.settings.TryGet(record.id, out _))
-            .Select(static record => new ProjectSettingRecord(record.id, record.stableTypeId, record.propertyData)).ToArray());
 
     /// <summary>
     /// Persists one project-authored semantic contribution and rebuilds the effective value.
@@ -389,15 +393,14 @@ public sealed class ProjectSettings : IDisposable
     /// Dependency-ordered defaults used to rebuild.
     /// </param>
     public void SetProjectOverride(
-        ProjectSettingId id,
+        ProjectSettingID id,
         ISerializable value,
         IReadOnlyList<ProjectSettingsContributor> contributors
-    ) {
-        _ = ApplyProjectOverrides(
-            new Dictionary<ProjectSettingId, ISerializable> { [id] = value },
-            resets: null,
-            contributors);
-    }
+    ) => _ = ApplyProjectOverrides(
+        new Dictionary<ProjectSettingID, ISerializable> { [id] = value },
+        resets: null,
+        contributors
+    );
 
     /// <summary>
     /// Applies multiple project contributions and removals as one atomic document update.
@@ -415,8 +418,8 @@ public sealed class ProjectSettings : IDisposable
     /// <see langword="true"/> when the project document changed.
     /// </returns>
     public bool ApplyProjectOverrides(
-        IReadOnlyDictionary<ProjectSettingId, ISerializable> values,
-        IReadOnlySet<ProjectSettingId>? resets,
+        IReadOnlyDictionary<ProjectSettingID, ISerializable> values,
+        IReadOnlySet<ProjectSettingID>? resets,
         IReadOnlyList<ProjectSettingsContributor> contributors
     ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
@@ -425,25 +428,27 @@ public sealed class ProjectSettings : IDisposable
         ValidateContributorOrder(contributors);
 
         ProjectSettingsRegistry.Snapshot registry = m_registry.settings;
-        var records = m_document.overrides.ToDictionary(static record => record.id);
+        Dictionary<ProjectSettingID, ProjectSettingRecord> records = m_document.overrides.ToDictionary(static record => record.id);
         bool changed = false;
         if (resets is not null)
         {
-            foreach (ProjectSettingId id in resets)
+            foreach (ProjectSettingID id in resets)
+            {
                 changed |= records.Remove(id);
+            }
         }
 
-        foreach ((ProjectSettingId id, ISerializable value) in values)
+        foreach ((ProjectSettingID id, ISerializable value) in values)
         {
             ArgumentNullException.ThrowIfNull(value);
             if (resets?.Contains(id) == true)
-                continue;
-            if (!registry.TryGet(id, out ProjectSettingsRegistry.Definition? definition)
-                || definition.runtimeType != value.GetType())
             {
-                throw new ArgumentException(
-                    $"Value type does not match project setting '{id}'.",
-                    nameof(values));
+                continue;
+            }
+            if (!registry.TryGet(id, out ProjectSettingsRegistry.Definition? definition)
+                || definition.runtimeType != value.GetType()
+            ) {
+                throw new ArgumentException($"Value type does not match project setting '{id}'.", nameof(values));
             }
             ISerializable baseline = ComposeSetting(id, definition, contributors, projectRecord: null);
             if (!TryCreateRecord(id, definition, baseline, value, out ProjectSettingRecord candidate))
@@ -452,13 +457,17 @@ public sealed class ProjectSettings : IDisposable
                 continue;
             }
             if (records.TryGetValue(id, out ProjectSettingRecord current) && RecordsEqual(current, candidate))
+            {
                 continue;
+            }
             records[id] = candidate;
             changed = true;
         }
 
         if (!changed)
+        {
             return false;
+        }
         var candidateDocument = new ProjectSettingsDocument
         {
             overrides = records.Values
@@ -494,50 +503,37 @@ public sealed class ProjectSettings : IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_effective.Clear();
         m_registry.Dispose();
         m_disposed = true;
     }
 
-    private static ProjectSettingRecord? FindRecord(
-        ProjectSettingsContributor contributor,
-        ProjectSettingId id
-    )
-        => FindRecord(contributor.settings, id);
+    internal ProjectSettingRecord[] CaptureEffective()
+        => m_effective.Values.Select(static record => new ProjectSettingRecord(
+            record.id,
+            record.stableTypeId,
+            record.propertyData
+        )).ToArray();
 
-    private static ProjectSettingRecord? FindRecord(
-        IEnumerable<ProjectSettingRecord> records,
-        ProjectSettingId id
-    ) {
-        ProjectSettingRecord? result = null;
+    internal void RestoreEffective(IEnumerable<ProjectSettingRecord> records)
+    {
+        m_effective.Clear();
         foreach (ProjectSettingRecord record in records)
         {
-            if (record.id != id)
-                continue;
-            if (result is not null)
-                throw new InvalidOperationException($"Project setting '{id}' is contributed more than once by one owner.");
-            result = record;
+            m_effective.Add(record.id, new ProjectSettingRecord(record.id, record.stableTypeId, record.propertyData));
         }
-        return result;
     }
 
-    private static IReadOnlySet<string> ExpandContributorClosure(
-        IReadOnlySet<string> directDependencies,
-        IReadOnlyList<ProjectSettingsContributor> contributors
-    ) {
-        var byId = contributors.ToDictionary(static contributor => contributor.id, StringComparer.Ordinal);
-        var result = new HashSet<string>(StringComparer.Ordinal);
-        DependencyGraph<string> graph = CreateContributorGraph(contributors);
-        foreach (string id in directDependencies)
-        {
-            if (!byId.ContainsKey(id))
-                throw new InvalidOperationException($"Declared Plugin dependency '{id}' is not active.");
-            result.Add(id);
-            result.UnionWith(graph.GetDependencies(id, recursive: true));
-        }
-        return result;
-    }
+    internal IReadOnlyList<ProjectSettingRecord> GetUnavailable(IReadOnlyList<ProjectSettingsContributor> contributors)
+        => Array.AsReadOnly(
+            m_document.overrides.Concat(contributors.SelectMany(static item => item.settings))
+                .Where(record => !m_registry.settings.TryGet(record.id, out _))
+                .Select(static record => new ProjectSettingRecord(record.id, record.stableTypeId, record.propertyData))
+                .ToArray()
+        );
 
     internal static void ValidateContributorOrder(IReadOnlyList<ProjectSettingsContributor> contributors)
     {
@@ -552,104 +548,80 @@ public sealed class ProjectSettings : IDisposable
             throw new InvalidOperationException($"Project settings contributors are cyclic. {exception.Message}", exception);
         }
         if (!contributors.Select(static contributor => contributor.id).SequenceEqual(ordered, StringComparer.Ordinal))
+        {
             throw new InvalidOperationException("Project settings contributors are not dependency-ordered.");
-    }
-
-    private static DependencyGraph<string> CreateContributorGraph(IReadOnlyList<ProjectSettingsContributor> contributors)
-    {
-        var graph = new DependencyGraph<string>(StringComparer.Ordinal);
-        var ids = new HashSet<string>(StringComparer.Ordinal);
-        foreach (ProjectSettingsContributor contributor in contributors)
-        {
-            if (!ids.Add(contributor.id))
-                throw new InvalidOperationException($"Settings contributor '{contributor.id}' is declared more than once.");
-            graph.AddNode(contributor.id);
         }
-        foreach (ProjectSettingsContributor contributor in contributors)
-        {
-            foreach (string dependency in contributor.dependencies)
-            {
-                if (!ids.Contains(dependency))
-                {
-                    throw new InvalidOperationException(
-                        $"Settings contributor '{contributor.id}' requires inactive dependency '{dependency}'.");
-                }
-                graph.AddDependency(contributor.id, dependency);
-            }
-        }
-        return graph;
-    }
-
-    private static bool RecordsEqual(
-        ProjectSettingRecord left,
-        ProjectSettingRecord right
-    )
-        => left.id == right.id
-           && left.stableTypeId == right.stableTypeId
-           && (left.propertyData ?? []).AsSpan().SequenceEqual(right.propertyData ?? []);
-
-    private static void ValidateRecord(
-        ProjectSettingId id,
-        ProjectSettingsRegistry.Definition definition,
-        ProjectSettingRecord record
-    ) {
-        if (record.stableTypeId != definition.stableTypeId)
-            throw new InvalidOperationException($"Project setting '{id}' has an incompatible stable type.");
-        if (record.propertyData is null || record.propertyData.Length == 0)
-            throw new InvalidOperationException($"Project setting '{id}' contains an empty contribution payload.");
     }
 
     private ISerializable ComposeSetting(
-        ProjectSettingId id,
+        ProjectSettingID id,
         ProjectSettingsRegistry.Definition definition,
         IReadOnlyList<ProjectSettingsContributor> contributors,
         ProjectSettingRecord? projectRecord
     ) {
         if (definition.composer is null)
+        {
             return ComposeReplacement(id, definition, contributors, projectRecord);
+        }
 
-        var entries = new List<ProjectSettingCompositionEntry>();
+        List<ProjectSettingCompositionEntry> entries = [];
         foreach (ProjectSettingsContributor contributor in contributors)
         {
             ProjectSettingRecord? record = FindRecord(contributor, id);
             if (record is not ProjectSettingRecord contribution)
+            {
                 continue;
+            }
             ValidateRecord(id, definition, contribution);
-            entries.Add(new ProjectSettingCompositionEntry(
-                new ProjectSettingContributionContext(
-                    contributor.id,
-                    ProjectSettingContributionSource.Plugin,
-                    contributor.dependencies.ToHashSet(StringComparer.Ordinal),
-                    contributor.overrides.ToHashSet(StringComparer.Ordinal)),
-                contribution.propertyData));
+            entries.Add(
+                new ProjectSettingCompositionEntry(
+                    new ProjectSettingContributionContext(
+                        contributor.id,
+                        ProjectSettingContributionSource.Plugin,
+                        contributor.dependencies.ToHashSet(StringComparer.Ordinal),
+                        contributor.overrides.ToHashSet(StringComparer.Ordinal)
+                    ),
+                    contribution.propertyData
+                )
+            );
         }
         if (projectRecord is ProjectSettingRecord project)
         {
             ValidateRecord(id, definition, project);
-            entries.Add(new ProjectSettingCompositionEntry(
-                new ProjectSettingContributionContext(
-                    "project",
-                    ProjectSettingContributionSource.Project,
-                    new HashSet<string>(StringComparer.Ordinal),
-                    new HashSet<string>(StringComparer.Ordinal)),
-                project.propertyData));
+            entries.Add(
+                new ProjectSettingCompositionEntry(
+                    new ProjectSettingContributionContext(
+                        "project",
+                        ProjectSettingContributionSource.Project,
+                        new HashSet<string>(StringComparer.Ordinal),
+                        new HashSet<string>(StringComparer.Ordinal)
+                    ),
+                    project.propertyData
+                )
+            );
         }
-        return definition.composer.Compose(m_serialization, m_serializationContext,
-            CreateHostDefault(id, definition), entries);
+        return definition.composer.Compose(
+            m_serialization,
+            m_serializationContext,
+            CreateHostDefault(id, definition),
+            entries
+        );
     }
 
     private ISerializable CreateHostDefault(
-        ProjectSettingId id,
+        ProjectSettingID id,
         ProjectSettingsRegistry.Definition definition
     ) {
         ISerializable value = definition.Create();
-        if (id == ProjectIdentitySettings.settingId && value is ProjectIdentitySettings identity)
-            identity.projectId = m_defaultProjectId.value;
+        if (id == ProjectIdentitySettings.settingID && value is ProjectIdentitySettings identity)
+        {
+            identity.projectId = m_defaultProjectID.value;
+        }
         return value;
     }
 
     private ISerializable ComposeReplacement(
-        ProjectSettingId id,
+        ProjectSettingID id,
         ProjectSettingsRegistry.Definition definition,
         IReadOnlyList<ProjectSettingsContributor> contributors,
         ProjectSettingRecord? projectRecord
@@ -660,14 +632,17 @@ public sealed class ProjectSettings : IDisposable
         {
             ProjectSettingRecord? record = FindRecord(contributor, id);
             if (record is not ProjectSettingRecord contribution)
+            {
                 continue;
+            }
             ValidateRecord(id, definition, contribution);
             if (owner != "host"
                 && (!contributor.dependencies.Contains(owner, StringComparer.Ordinal)
-                    || !contributor.overrides.Contains(owner, StringComparer.Ordinal)))
-            {
+                    || !contributor.overrides.Contains(owner, StringComparer.Ordinal))
+            ) {
                 throw new InvalidOperationException(
-                    $"Settings contributors '{owner}' and '{contributor.id}' conflict on '{id}'.");
+                    $"Settings contributors '{owner}' and '{contributor.id}' conflict on '{id}'."
+                );
             }
             owner = contributor.id;
             selected = contribution;
@@ -680,19 +655,23 @@ public sealed class ProjectSettings : IDisposable
 
         ISerializable result = CreateHostDefault(id, definition);
         if (selected is ProjectSettingRecord value)
+        {
             _ = m_serialization.RestorePropertiesData(result, value.propertyData, context: m_serializationContext);
+        }
         return result;
     }
 
     private bool TryCreateRecord(
-        ProjectSettingId id,
+        ProjectSettingID id,
         ProjectSettingsRegistry.Definition definition,
         ISerializable baseline,
         ISerializable value,
         out ProjectSettingRecord record
     ) {
         if (definition.runtimeType != baseline.GetType() || definition.runtimeType != value.GetType())
+        {
             throw new ArgumentException($"Value type does not match project setting '{id}'.", nameof(value));
+        }
 
         byte[] payload;
         if (definition.composer is null)
@@ -710,15 +689,8 @@ public sealed class ProjectSettings : IDisposable
             record = default;
             return false;
         }
-        record = new ProjectSettingRecord(id, definition.stableTypeId, payload);
+        record = new ProjectSettingRecord(id, definition.stableTypeID, payload);
         return true;
-    }
-
-    private static void ValidateDocument(ProjectSettingsDocument document)
-    {
-        ArgumentNullException.ThrowIfNull(document);
-        if (document.overrides is null)
-            throw new InvalidDataException("A project Settings document requires an override collection.");
     }
 
     private void ReplaceDocument(
@@ -740,6 +712,112 @@ public sealed class ProjectSettings : IDisposable
             m_documents.Restore(previousBytes);
             Rebuild(contributors);
             throw;
+        }
+    }
+
+    private static ProjectSettingRecord? FindRecord(
+        ProjectSettingsContributor contributor,
+        ProjectSettingID id
+    ) => FindRecord(contributor.settings, id);
+
+    private static ProjectSettingRecord? FindRecord(
+        IEnumerable<ProjectSettingRecord> records,
+        ProjectSettingID id
+    ) {
+        ProjectSettingRecord? result = null;
+        foreach (ProjectSettingRecord record in records)
+        {
+            if (record.id != id)
+            {
+                continue;
+            }
+            if (result is not null)
+            {
+                throw new InvalidOperationException($"Project setting '{id}' is contributed more than once by one owner.");
+            }
+            result = record;
+        }
+        return result;
+    }
+
+    private static IReadOnlySet<string> ExpandContributorClosure(
+        IReadOnlySet<string> directDependencies,
+        IReadOnlyList<ProjectSettingsContributor> contributors
+    ) {
+        Dictionary<string, ProjectSettingsContributor> byID = contributors.ToDictionary(
+            static contributor => contributor.id,
+            StringComparer.Ordinal
+        );
+        var result = new HashSet<string>(StringComparer.Ordinal);
+        DependencyGraph<string> graph = CreateContributorGraph(contributors);
+        foreach (string id in directDependencies)
+        {
+            if (!byID.ContainsKey(id))
+            {
+                throw new InvalidOperationException($"Declared Plugin dependency '{id}' is not active.");
+            }
+            result.Add(id);
+            result.UnionWith(graph.GetDependencies(id, recursive: true));
+        }
+        return result;
+    }
+
+    private static DependencyGraph<string> CreateContributorGraph(IReadOnlyList<ProjectSettingsContributor> contributors)
+    {
+        var graph = new DependencyGraph<string>(StringComparer.Ordinal);
+        var ids = new HashSet<string>(StringComparer.Ordinal);
+        foreach (ProjectSettingsContributor contributor in contributors)
+        {
+            if (!ids.Add(contributor.id))
+            {
+                throw new InvalidOperationException($"Settings contributor '{contributor.id}' is declared more than once.");
+            }
+            graph.AddNode(contributor.id);
+        }
+        foreach (ProjectSettingsContributor contributor in contributors)
+        {
+            foreach (string dependency in contributor.dependencies)
+            {
+                if (!ids.Contains(dependency))
+                {
+                    throw new InvalidOperationException(
+                        $"Settings contributor '{contributor.id}' requires inactive dependency '{dependency}'."
+                    );
+                }
+                graph.AddDependency(contributor.id, dependency);
+            }
+        }
+        return graph;
+    }
+
+    private static bool RecordsEqual(
+        ProjectSettingRecord left,
+        ProjectSettingRecord right
+    ) => left.id == right.id
+         && left.stableTypeId == right.stableTypeId
+         && (left.propertyData ?? []).AsSpan().SequenceEqual(right.propertyData ?? []);
+
+    private static void ValidateRecord(
+        ProjectSettingID id,
+        ProjectSettingsRegistry.Definition definition,
+        ProjectSettingRecord record
+    ) {
+        if (record.stableTypeId != definition.stableTypeID)
+        {
+            throw new InvalidOperationException($"Project setting '{id}' has an incompatible stable type.");
+        }
+        if (record.propertyData is null || record.propertyData.Length == 0)
+        {
+            throw new InvalidOperationException($"Project setting '{id}' contains an empty contribution payload.");
+        }
+    }
+
+    private static void ValidateDocument(ProjectSettingsDocument document)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        if (document.overrides is null)
+        {
+            throw new InvalidDataException("A project Settings document requires an override collection.");
         }
     }
 }

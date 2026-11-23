@@ -22,15 +22,21 @@ public readonly struct AssetArtifactKey : IEquatable<AssetArtifactKey>
     public AssetArtifactKey(string value)
     {
         string normalized = string.IsNullOrWhiteSpace(value)
-            ? string.Empty
-            : value.Trim().ToUpperInvariant();
+                            ? string.Empty
+                            : value.Trim().ToUpperInvariant();
         if (normalized.Length != 0)
         {
             if (normalized.Length != C_SHA256_HEX_LENGTH)
+            {
                 throw new ArgumentException("An artifact key must be a complete SHA-256 hexadecimal fingerprint.", nameof(value));
+            }
             foreach (char digit in normalized)
+            {
                 if (digit is not (>= '0' and <= '9') and not (>= 'A' and <= 'F'))
+                {
                     throw new ArgumentException("An artifact key cannot contain non-hexadecimal characters.", nameof(value));
+                }
+            }
         }
         m_value = normalized;
     }
@@ -53,23 +59,23 @@ public readonly struct AssetArtifactKey : IEquatable<AssetArtifactKey>
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
-    /// </returns>
     /// <param name="other">
     /// The value to compare with this instance.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
+    /// </returns>
     public bool Equals(AssetArtifactKey other) => string.Equals(value, other.value, StringComparison.Ordinal);
 
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
-    /// </returns>
     /// <param name="obj">
     /// The object to compare with this instance.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
+    /// </returns>
     public override bool Equals(object? obj) => obj is AssetArtifactKey other && Equals(other);
 
     /// <summary>

@@ -11,7 +11,7 @@ namespace Inno.Build.Toolchains;
 /// </summary>
 public static class NativeToolchainPreparation
 {
-    private static readonly string[] AmbientCompilerVariables =
+    private static readonly string[] AMBIENT_COMPILER_VARIABLES =
     [
         "CL", "_CL_", "LINK", "_LINK_", "CFLAGS", "CXXFLAGS", "CPPFLAGS", "LDFLAGS",
         "CPATH", "C_INCLUDE_PATH", "CPLUS_INCLUDE_PATH", "LIBRARY_PATH",
@@ -24,14 +24,18 @@ public static class NativeToolchainPreparation
     /// <returns>
     /// A caller-owned dictionary to populate with explicitly selected SDK variables.
     /// </returns>
-    public static Dictionary<string, string> CreateEnvironment() => AmbientCompilerVariables.ToDictionary(
-        static variable => variable, static _ => string.Empty, StringComparer.OrdinalIgnoreCase);
+    public static Dictionary<string, string> CreateEnvironment()
+        => AMBIENT_COMPILER_VARIABLES.ToDictionary(
+            static variable => variable,
+            static _ => string.Empty,
+            StringComparer.OrdinalIgnoreCase
+        );
 
     /// <summary>
     /// Validates and freezes a provider's complete tool selection before product staging,
     /// including CMake data from its physical installation rather than a shared command prefix.
     /// </summary>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The explicit requested target.
     /// </param>
     /// <param name="host">
@@ -49,11 +53,11 @@ public static class NativeToolchainPreparation
     /// <param name="cmakeArguments">
     /// Ordered target configuration arguments.
     /// </param>
-    /// <param name="multiConfiguration">
-    /// Whether configuration is chosen during build.
-    /// </param>
     /// <param name="linkPlan">
     /// The sole source of target library formats and linker capabilities.
+    /// </param>
+    /// <param name="multiConfiguration">
+    /// Whether configuration is chosen during build.
     /// </param>
     /// <param name="compilerInputs">
     /// The selected SDK parser inputs, or null for a selection without parsing capability.
@@ -68,7 +72,7 @@ public static class NativeToolchainPreparation
     /// A selected CMake executable alias cannot be resolved to its installation.
     /// </exception>
     public static NativeToolchainSelection Freeze(
-        string targetId,
+        string targetID,
         BuildHostDescriptor host,
         IReadOnlyDictionary<string, string> tools,
         IReadOnlyDictionary<string, string> environment,
@@ -84,13 +88,28 @@ public static class NativeToolchainPreparation
             string physicalCMake = new PhysicalPathResolver().Resolve(cmake);
             string modules = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(physicalCMake)!, "..", "share"));
             if (Directory.Exists(modules))
+            {
                 complete.Add(modules);
+            }
         }
         complete.AddRange(tools.Values);
         foreach (string input in complete)
+        {
             if (!File.Exists(input) && !Directory.Exists(input))
+            {
                 throw new FileNotFoundException("A selected native toolchain input is unavailable.", input);
-        return new(targetId, host, tools, environment, complete, cmakeArguments,
-            linkPlan, multiConfiguration, compilerInputs);
+            }
+        }
+        return new(
+            targetID,
+            host,
+            tools,
+            environment,
+            complete,
+            cmakeArguments,
+            linkPlan,
+            multiConfiguration,
+            compilerInputs
+        );
     }
 }

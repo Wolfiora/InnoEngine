@@ -1,22 +1,21 @@
-using Inno.Extensibility.Reload;
 using System;
-using Inno.References;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Extensibility.Modules;
 using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
+using Inno.Extensibility.Types;
+using Inno.References;
 using Inno.Runtime;
 using Inno.Scene;
 using Inno.Scene.Components;
@@ -93,30 +92,21 @@ internal sealed partial class EditorSceneWorkspace :
         LogRouter logs,
         IEditorSelectionCoordinator? selection = null
     ) {
-        m_runtimeSession = runtimeSession ?? throw new ArgumentNullException(nameof(runtimeSession));
-        m_assets = assets ?? throw new ArgumentNullException(nameof(assets));
-        m_types = types ?? throw new ArgumentNullException(nameof(types));
-        m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
-        m_reloads = reloads ?? throw new ArgumentNullException(nameof(reloads));
+        ArgumentNullException.ThrowIfNull(runtimeSession);
+        ArgumentNullException.ThrowIfNull(assets);
+        ArgumentNullException.ThrowIfNull(types);
+        ArgumentNullException.ThrowIfNull(serialization);
+        ArgumentNullException.ThrowIfNull(reloads);
+        m_runtimeSession = runtimeSession;
+        m_assets = assets;
+        m_types = types;
+        m_serialization = serialization;
+        m_reloads = reloads;
         ArgumentNullException.ThrowIfNull(logs);
         m_log = logs.CreateLogger<EditorSceneWorkspace>();
         m_selection = selection;
         m_sceneStateDiagnostics = new SceneStateDiagnosticTracker(runtimeSession.scenes, types);
     }
-
-    internal SceneWorld world => m_playModeSession?.runtimeWorld ?? m_runtimeSession.scenes;
-
-    internal IDisposable EnterPresentationScope() => (m_playModeSession?.runtimeSession ?? m_runtimeSession).EnterExecutionScope();
-
-    internal SerializationRegistry serialization => m_serialization;
-
-    internal IAssetReferenceResolver assets => m_assets;
-
-    internal TypeCatalog types => m_types;
-
-    internal TSceneObject? Find<TSceneObject>(Guid persistentId)
-        where TSceneObject : IdentityObject
-        => world.Find<TSceneObject>(persistentId);
 
     /// <summary>
     /// Gets all scenes currently available to editor features.
@@ -146,19 +136,23 @@ internal sealed partial class EditorSceneWorkspace :
     public bool CanEdit(GameScene scene)
     {
         ArgumentNullException.ThrowIfNull(scene);
-        if (m_isPreparingPlayMode || scene.isDestroyed || !scene.isLoaded ||
-            !world.loadedScenes.Any(candidate => ReferenceEquals(candidate, scene)))
+        if (m_isPreparingPlayMode || scene.isDestroyed || !scene.isLoaded
+            || !world.loadedScenes.Any(candidate => ReferenceEquals(candidate, scene))
+        ) {
             return false;
+        }
         if (m_playModeSession is PlayModeLease playModeSession)
         {
-            if (!playModeSession.TryGetSnapshot(scene.identity.persistentId, out SceneDocumentSnapshot snapshot))
+            if (!playModeSession.TryGetSnapshot(scene.identity.persistentID, out SceneDocumentSnapshot snapshot))
+            {
                 return true;
+            }
             return string.IsNullOrEmpty(snapshot.sourcePath)
-                || AssetPath.Parse(snapshot.sourcePath).source == AssetSourceId.project;
+                   || AssetPath.Parse(snapshot.sourcePath).source == AssetSourceID.project;
         }
-        return !m_documents.TryGetValue(scene.identity.persistentId, out SceneDocument? document)
-            || string.IsNullOrEmpty(document.sourcePath)
-            || AssetPath.Parse(document.sourcePath).source == AssetSourceId.project;
+        return !m_documents.TryGetValue(scene.identity.persistentID, out SceneDocument? document)
+               || string.IsNullOrEmpty(document.sourcePath)
+               || AssetPath.Parse(document.sourcePath).source == AssetSourceID.project;
     }
 
     /// <summary>
@@ -175,9 +169,9 @@ internal sealed partial class EditorSceneWorkspace :
             .Where(static scene => !scene.isDestroyed)
             .ToArray();
         GameScene? activeScene = presentedWorld.activeScene;
-        if (activeScene is { isDestroyed: true } ||
-            activeScene is not null && !scenes.Contains(activeScene))
-        {
+        if (activeScene is { isDestroyed: true }
+            || activeScene is not null && !scenes.Contains(activeScene)
+        ) {
             activeScene = null;
         }
         return SceneContentSource.CreateScope(scenes, activeScene);
@@ -196,100 +190,15 @@ internal sealed partial class EditorSceneWorkspace :
         world.SetActiveScene(scene);
     }
 
-    internal void DisposeUnattached()
-    {
-        m_playModeSession?.Dispose();
-        ((IDisposable)this).Dispose();
-    }
+    void IEditorReloadParticipant.RefreshDiagnostics() => m_sceneStateDiagnostics.Reconcile(force: true);
 
-    /// <summary>
-    /// Creates and loads a uniquely named unsaved scene alongside the currently loaded scenes.
-    /// </summary>
-    /// <returns>
-    /// The newly created active scene.
-    /// </returns>
-    internal GameScene CreateScene()
-    {
-        using IDisposable scope = EnterPresentationScope();
-        string name = CreateUniqueSceneName(world.loadedScenes);
-        GameScene scene = world.LoadNewSceneAdditive(name);
-        if (canPersist)
-        {
-            m_documents.Add(
-                scene.identity.persistentId,
-                new SceneDocument(scene, string.Empty, Guid.Empty, []));
-        }
-        return scene;
-    }
+    internal SceneWorld world => m_playModeSession?.runtimeWorld ?? m_runtimeSession.scenes;
 
-    /// <summary>
-    /// Applies queued asset path changes to loaded scene documents and prefab instances.
-    /// This method must be called from the editor main thread.
-    /// </summary>
-    internal void Refresh()
-    {
-        SynchronizeReplacedScenes();
-        ApplyPendingSourceChanges();
+    internal SerializationRegistry serialization => m_serialization;
 
-        var synchronizedScenes = new HashSet<Guid>();
-        foreach (SceneDocument document in m_documents.Values)
-        {
-            if (document.scene.isDestroyed)
-                continue;
-            Guid sceneId = document.scene.identity.persistentId;
-            synchronizedScenes.Add(sceneId);
-            try
-            {
-                SynchronizeSource(document.scene, document);
-            }
-            catch (Exception exception)
-            {
-                document.isDirty = true;
-                if (m_diagnostics.PublishSynchronizationFailure(document.scene, exception))
-                    m_log.Write(LogLevel.Error, "Scene document synchronization failed: {0}", [exception]);
-            }
-        }
-        m_diagnostics.RetainSynchronizationTargets(synchronizedScenes);
-        m_sceneStateDiagnostics.Reconcile();
-    }
+    internal IAssetReferenceResolver assets => m_assets;
 
-    /// <summary>
-    /// Closes a loaded scene and removes its editor document state without deleting its source asset.
-    /// </summary>
-    /// <param name="scene">
-    /// Loaded scene to close.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the scene was loaded and closed.
-    /// </returns>
-    internal bool CloseScene(GameScene scene)
-    {
-        ArgumentNullException.ThrowIfNull(scene);
-        if (scene.isDestroyed)
-            return false;
-        using IDisposable scope = EnterPresentationScope();
-        Guid sceneId = scene.identity.persistentId;
-        bool closed = world.UnloadScene(scene);
-        if (closed && canPersist)
-        {
-            m_documents.Remove(sceneId);
-            m_diagnostics.ResolveSynchronization(sceneId);
-            m_diagnostics.ResolveDirtyCheck(sceneId);
-        }
-        return closed;
-    }
-
-    /// <summary>
-    /// Removes all tracked document state.
-    /// </summary>
-    internal void Clear()
-    {
-        m_documents.Clear();
-        m_diagnostics.RetainSynchronizationTargets(new HashSet<Guid>());
-        while (m_sourceChanges.TryDequeue(out _))
-        {
-        }
-    }
+    internal TypeCatalog types => m_types;
 
     /// <summary>
     /// Attaches the workspace to Asset Database changes and ensures an editable scene exists.
@@ -300,13 +209,11 @@ internal sealed partial class EditorSceneWorkspace :
     protected override void OnStart(EditorContext context)
     {
         if (m_isAttached)
+        {
             return;
-        m_assets.Changed += OnAssetDatabaseChanged;
-        m_reloadIntegration = SceneReloadIntegration.Acquire(
-            m_runtimeSession,
-            m_serialization,
-            m_assets,
-            m_reloads);
+        }
+        m_assets.changed += OnAssetDatabaseChanged;
+        m_reloadIntegration = SceneReloadIntegration.Acquire(m_runtimeSession, m_serialization, m_assets, m_reloads);
         m_reloadRegistration = m_reloads.Register(this);
         m_isAttached = true;
         m_sceneStateDiagnostics.Reconcile(force: true);
@@ -338,14 +245,16 @@ internal sealed partial class EditorSceneWorkspace :
     protected override void OnStop(EditorContext context)
     {
         if (!m_isAttached)
+        {
             return;
+        }
         try
         {
             m_playModeSession?.Dispose();
         }
         finally
         {
-            m_assets.Changed -= OnAssetDatabaseChanged;
+            m_assets.changed -= OnAssetDatabaseChanged;
             m_reloadRegistration?.Dispose();
             m_reloadRegistration = null;
             m_runtimeSession.scenes.UnloadAllScenes();
@@ -369,14 +278,119 @@ internal sealed partial class EditorSceneWorkspace :
         m_diagnostics.Dispose();
     }
 
-    void IEditorReloadParticipant.RefreshDiagnostics()
-        => m_sceneStateDiagnostics.Reconcile(force: true);
+    internal IDisposable EnterPresentationScope() => (m_playModeSession?.runtimeSession ?? m_runtimeSession).EnterExecutionScope();
+
+    internal TSceneObject? Find<TSceneObject>(Guid persistentID)
+        where TSceneObject : IdentityObject
+            => world.Find<TSceneObject>(persistentID);
+
+    internal void DisposeUnattached()
+    {
+        m_playModeSession?.Dispose();
+        ((IDisposable)this).Dispose();
+    }
+
+    /// <summary>
+    /// Creates and loads a uniquely named unsaved scene alongside the currently loaded scenes.
+    /// </summary>
+    /// <returns>
+    /// The newly created active scene.
+    /// </returns>
+    internal GameScene CreateScene()
+    {
+        using IDisposable scope = EnterPresentationScope();
+        string name = CreateUniqueSceneName(world.loadedScenes);
+        GameScene scene = world.LoadNewSceneAdditive(name);
+        if (canPersist)
+        {
+            m_documents.Add(scene.identity.persistentID, new SceneDocument(scene, string.Empty, Guid.Empty, []));
+        }
+        return scene;
+    }
+
+    /// <summary>
+    /// Applies queued asset path changes to loaded scene documents and prefab instances.
+    /// This method must be called from the editor main thread.
+    /// </summary>
+    internal void Refresh()
+    {
+        SynchronizeReplacedScenes();
+        ApplyPendingSourceChanges();
+
+        var synchronizedScenes = new HashSet<Guid>();
+        foreach (SceneDocument document in m_documents.Values)
+        {
+            if (document.scene.isDestroyed)
+            {
+                continue;
+            }
+            Guid sceneID = document.scene.identity.persistentID;
+            synchronizedScenes.Add(sceneID);
+            try
+            {
+                SynchronizeSource(document.scene, document);
+            }
+            catch (Exception exception)
+            {
+                document.isDirty = true;
+                if (m_diagnostics.PublishSynchronizationFailure(document.scene, exception))
+                {
+                    m_log.Write(LogLevel.Error, "Scene document synchronization failed: {0}", [exception]);
+                }
+            }
+        }
+        m_diagnostics.RetainSynchronizationTargets(synchronizedScenes);
+        m_sceneStateDiagnostics.Reconcile();
+    }
+
+    /// <summary>
+    /// Closes a loaded scene and removes its editor document state without deleting its source asset.
+    /// </summary>
+    /// <param name="scene">
+    /// Loaded scene to close.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the scene was loaded and closed.
+    /// </returns>
+    internal bool CloseScene(GameScene scene)
+    {
+        ArgumentNullException.ThrowIfNull(scene);
+        if (scene.isDestroyed)
+        {
+            return false;
+        }
+        using IDisposable scope = EnterPresentationScope();
+        Guid sceneID = scene.identity.persistentID;
+        bool closed = world.UnloadScene(scene);
+        if (closed && canPersist)
+        {
+            m_documents.Remove(sceneID);
+            m_diagnostics.ResolveSynchronization(sceneID);
+            m_diagnostics.ResolveDirtyCheck(sceneID);
+        }
+        return closed;
+    }
+
+    /// <summary>
+    /// Removes all tracked document state.
+    /// </summary>
+    internal void Clear()
+    {
+        m_documents.Clear();
+        m_diagnostics.RetainSynchronizationTargets(new HashSet<Guid>());
+        while (m_sourceChanges.TryDequeue(out _))
+        {
+        }
+    }
 
     internal void EnsureEditable(GameScene scene)
     {
         if (!CanEdit(scene))
+        {
             throw new InvalidOperationException(
-                "The scene is not editable in the current presentation or belongs to a read-only source.");
+                "The scene is not editable in the current presentation or belongs to a read-only source."
+            );
+        }
     }
 
     private void EnsurePresentedScene(GameScene scene)
@@ -385,9 +399,12 @@ internal sealed partial class EditorSceneWorkspace :
         for (int i = 0; i < presentedScenes.Count; i++)
         {
             if (ReferenceEquals(presentedScenes[i], scene))
+            {
                 return;
+            }
         }
         throw new InvalidOperationException(
-            "The scene is not owned by the Editor's active Edit or Play presentation session.");
+            "The scene is not owned by the Editor's active Edit or Play presentation session."
+        );
     }
 }

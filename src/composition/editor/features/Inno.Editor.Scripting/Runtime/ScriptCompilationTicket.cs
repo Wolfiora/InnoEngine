@@ -1,6 +1,5 @@
 using System;
 using System.Threading;
-
 using Inno.Scripting.Compiler;
 
 namespace Inno.Editor.Scripting;
@@ -12,10 +11,10 @@ internal sealed class ScriptCompilationTicket : IScriptCompilationTicket
     private int m_state;
 
     internal ScriptCompilationTicket(
-        long requestId,
+        long requestID,
         string status
     ) {
-        this.requestId = requestId;
+        this.requestID = requestID;
         m_status = status;
         m_state = (int)ScriptCompilationTicketState.Queued;
     }
@@ -23,7 +22,7 @@ internal sealed class ScriptCompilationTicket : IScriptCompilationTicket
     /// <summary>
     /// Gets the scalar measurement or identity associated with the current state.
     /// </summary>
-    public long requestId { get; }
+    public long requestID { get; }
 
     /// <summary>
     /// Gets the current lifecycle state observed by callers.
@@ -45,23 +44,21 @@ internal sealed class ScriptCompilationTicket : IScriptCompilationTicket
     /// </summary>
     public bool isCompleted
         => state is ScriptCompilationTicketState.Succeeded
-            or ScriptCompilationTicketState.Failed
-            or ScriptCompilationTicketState.Canceled
-            or ScriptCompilationTicketState.Superseded;
+           or ScriptCompilationTicketState.Failed
+           or ScriptCompilationTicketState.Canceled
+           or ScriptCompilationTicketState.Superseded;
 
     internal void MarkCompiling(string status) => Transition(ScriptCompilationTicketState.Compiling, status, result: null);
 
     internal void MarkSucceeded(
         ScriptCompilationResult result,
         string status
-    )
-        => Transition(ScriptCompilationTicketState.Succeeded, status, result);
+    ) => Transition(ScriptCompilationTicketState.Succeeded, status, result);
 
     internal void MarkFailed(
         ScriptCompilationResult? result,
         string status
-    )
-        => Transition(ScriptCompilationTicketState.Failed, status, result);
+    ) => Transition(ScriptCompilationTicketState.Failed, status, result);
 
     internal void MarkCanceled(string status) => Transition(ScriptCompilationTicketState.Canceled, status, result: null);
 
@@ -69,7 +66,8 @@ internal sealed class ScriptCompilationTicket : IScriptCompilationTicket
         => Transition(
             ScriptCompilationTicketState.Superseded,
             "A newer script compilation request replaced this ticket.",
-            result: null);
+            result: null
+        );
 
     private void Transition(
         ScriptCompilationTicketState state,
@@ -81,12 +79,14 @@ internal sealed class ScriptCompilationTicket : IScriptCompilationTicket
         if (current is ScriptCompilationTicketState.Succeeded
             or ScriptCompilationTicketState.Failed
             or ScriptCompilationTicketState.Canceled
-            or ScriptCompilationTicketState.Superseded)
-        {
+            or ScriptCompilationTicketState.Superseded
+        ) {
             return;
         }
         if (result is not null)
+        {
             Volatile.Write(ref m_result, result);
+        }
         Volatile.Write(ref m_status, status);
         Volatile.Write(ref m_state, (int)state);
     }

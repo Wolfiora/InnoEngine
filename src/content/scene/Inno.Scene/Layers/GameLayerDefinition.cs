@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Settings;
 
 namespace Inno.Scene.Layers;
@@ -12,7 +11,7 @@ public sealed class GameLayerDefinition
     /// <summary>
     /// Creates an immutable layer definition.
     /// </summary>
-    /// <param name="localId">
+    /// <param name="localID">
     /// The stable project-independent identity.
     /// </param>
     /// <param name="layer">
@@ -22,13 +21,15 @@ public sealed class GameLayerDefinition
     /// The non-empty display and lookup name.
     /// </param>
     public GameLayerDefinition(
-        ProjectLocalId localId,
+        ProjectLocalID localID,
         GameLayer layer,
         string name
     ) {
-        if (string.IsNullOrEmpty(localId.value))
-            throw new ArgumentException("A layer definition requires a valid local identity.", nameof(localId));
-        this.localId = localId;
+        if (string.IsNullOrEmpty(localID.value))
+        {
+            throw new ArgumentException("A layer definition requires a valid local identity.", nameof(localID));
+        }
+        this.localID = localID;
         this.layer = layer;
         this.name = GameLayerCatalog.NormalizeName(name);
     }
@@ -36,7 +37,7 @@ public sealed class GameLayerDefinition
     /// <summary>
     /// Gets the stable project-independent identity.
     /// </summary>
-    public ProjectLocalId localId { get; }
+    public ProjectLocalID localID { get; }
 
     /// <summary>
     /// Gets the layer slot represented by this definition.
@@ -51,11 +52,11 @@ public sealed class GameLayerDefinition
     /// <summary>
     /// Resolves the complete identity under a project namespace.
     /// </summary>
-    /// <param name="projectId">
+    /// <param name="projectID">
     /// The current project namespace.
     /// </param>
     /// <returns>
     /// The canonical project-scoped layer identity.
     /// </returns>
-    public GameLayerId GetId(ProjectId projectId) => new(projectId, localId);
+    public GameLayerID GetID(ProjectID projectID) => new(projectID, localID);
 }

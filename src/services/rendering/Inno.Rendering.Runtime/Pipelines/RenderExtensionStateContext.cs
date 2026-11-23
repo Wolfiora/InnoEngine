@@ -1,15 +1,16 @@
+using System;
 using Inno.Assets;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
-using System;
 
 namespace Inno.Rendering.Runtime;
 
 /// <summary>
 /// Restores neutral render settings through the canonical asset's actual owner and pinned references.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("ad67f148-af5b-5383-ac2d-55a34e305e96")]
+[StableTypeID("ad67f148-af5b-5383-ac2d-55a34e305e96")]
 public sealed class RenderExtensionStateContext
 {
     private readonly AssetObject m_owner;
@@ -23,7 +24,11 @@ public sealed class RenderExtensionStateContext
     /// <remarks>
     /// It must not outlive the asset generation. Authoring captures use the asset system's property snapshots.
     /// </remarks>
-    public RenderExtensionStateContext(AssetObject owner) => m_owner = owner ?? throw new ArgumentNullException(nameof(owner));
+    public RenderExtensionStateContext(AssetObject owner)
+    {
+        ArgumentNullException.ThrowIfNull(owner);
+        m_owner = owner;
+    }
 
     /// <summary>
     /// Restores a matching settings contract with this owner's asset references.
@@ -46,4 +51,3 @@ public sealed class RenderExtensionStateContext
         m_owner.RestoreProperties(state.stableTypeId, state.propertyData, target);
     }
 }
-

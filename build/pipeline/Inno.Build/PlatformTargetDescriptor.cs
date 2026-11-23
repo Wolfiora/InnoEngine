@@ -32,7 +32,7 @@ public sealed class PlatformTargetDescriptor
     /// An identity or required target fact is unassigned.
     /// </exception>
     public PlatformTargetDescriptor(
-        BuildTargetId id,
+        BuildTargetID id,
         string platform,
         string architecture,
         string abi,
@@ -55,7 +55,7 @@ public sealed class PlatformTargetDescriptor
     /// <summary>
     /// Gets the stable publication target identity.
     /// </summary>
-    public BuildTargetId id { get; }
+    public BuildTargetID id { get; }
 
     /// <summary>
     /// Gets the owning platform package.

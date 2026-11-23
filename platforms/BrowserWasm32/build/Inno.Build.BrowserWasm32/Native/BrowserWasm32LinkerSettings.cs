@@ -13,6 +13,5 @@ public static class BrowserWasm32LinkerSettings
     /// <returns>
     /// The immutable target linker plan.
     /// </returns>
-    public static NativeLinkPlan Create()
-        => new(staticLibraryExtension: ".a");
+    public static NativeLinkPlan Create() => new(staticLibraryExtension: ".a");
 }

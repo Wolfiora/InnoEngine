@@ -1,19 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.ExceptionServices;
 using System.Linq;
-
-using Inno.Extensibility.Types;
+using System.Runtime.ExceptionServices;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Types;
 using Inno.Scene;
 using Inno.Scene.Components;
 using Inno.Scene.Layers;
 
 namespace Inno.Editor.Scene;
 
-sealed partial class SceneEdits
+public sealed partial class SceneEdits
 {
     /// <summary>
     /// Moves a loaded scene to a hierarchy index and records the two integer positions.
@@ -48,15 +47,17 @@ sealed partial class SceneEdits
             throw;
         }
         if (beforeIndex == afterIndex)
+        {
             return;
-        var data = new SceneOrderHistoryData(scene.identity.persistentId, beforeIndex, afterIndex);
+        }
+        var data = new SceneOrderHistoryData(scene.identity.persistentID, beforeIndex, afterIndex);
         RecordWithRollback(
             () => m_interactions.history.RecordApplied(
                 historyName,
-                new EditorHistoryChange(
-                    SceneHistoryKinds.Order,
-                    EditorHistoryPayload.FromBytes(data.Encode()))),
-            () => m_workspace.world.SetSceneIndex(scene, beforeIndex));
+                new EditorHistoryChange(SceneHistoryKinds.C_ORDER, EditorHistoryPayload.FromBytes(data.Encode()))
+            ),
+            () => m_workspace.world.SetSceneIndex(scene, beforeIndex)
+        );
     }
 
     /// <summary>
@@ -88,12 +89,14 @@ sealed partial class SceneEdits
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
         m_workspace.EnsureEditable(gameObject.scene);
-        GameObject[] affected = (relatedObjects ?? Array.Empty<GameObject>())
+        GameObject[] affected = (relatedObjects ?? [])
             .Prepend(gameObject)
-            .DistinctBy(static candidate => candidate.identity.persistentId)
+            .DistinctBy(static candidate => candidate.identity.persistentID)
             .ToArray();
         foreach (GameObject affectedObject in affected)
+        {
             m_workspace.EnsureEditable(affectedObject.scene);
+        }
         SceneObjectPlacement[] before = CapturePlacements(affected);
         SceneObjectPlacement[] after;
         try
@@ -107,15 +110,45 @@ sealed partial class SceneEdits
             throw;
         }
         if (before.SequenceEqual(after))
+        {
             return false;
-        var data = new SceneHierarchyHistoryData(
-            before,
-            after,
-            gameObject.identity.persistentId);
+        }
+        var data = new SceneHierarchyHistoryData(before, after, gameObject.identity.persistentID);
         RecordWithRollback(
-            () => Record(historyName, SceneHistoryKinds.Hierarchy, data.Encode()),
-            () => RestorePlacements(before));
+            () => Record(historyName, SceneHistoryKinds.C_HIERARCHY, data.Encode()),
+            () => RestorePlacements(before)
+        );
         return true;
+    }
+
+    private void RestorePlacements(IReadOnlyList<SceneObjectPlacement> placements)
+    {
+        for (int i = 0; i < placements.Count; i++)
+        {
+            SceneObjectPlacement placement = placements[i];
+            GameObject gameObject = m_workspace.Find<GameObject>(placement.objectID)
+                                    ?? throw new InvalidOperationException($"GameObject '{placement.objectID}' is unavailable.");
+            GameScene destination = m_workspace.Find<GameScene>(placement.sceneID)
+                                    ?? throw new InvalidOperationException($"Scene '{placement.sceneID}' is unavailable.");
+            if (!ReferenceEquals(gameObject.scene, destination))
+            {
+                m_workspace.world.MoveGameObjectToScene(gameObject, destination);
+            }
+        }
+        for (int i = 0; i < placements.Count; i++)
+        {
+            SceneObjectPlacement placement = placements[i];
+            GameObject gameObject = m_workspace.Find<GameObject>(placement.objectID)!;
+            Transform? parent = placement.parentID is Guid parentID
+                                ? m_workspace.Find<GameObject>(parentID)?.transform
+                                : null;
+            gameObject.transform.SetParent(parent);
+        }
+        foreach (SceneObjectPlacement placement in placements.OrderBy(static value => value.siblingIndex))
+        {
+            m_workspace.Find<GameObject>(placement.objectID)!
+                .transform.SetSiblingIndex(placement.siblingIndex);
+        }
     }
 
     private static SceneObjectPlacement[] CapturePlacements(IReadOnlyList<GameObject> gameObjects)
@@ -125,40 +158,12 @@ sealed partial class SceneEdits
         {
             GameObject gameObject = gameObjects[i];
             placements[i] = new SceneObjectPlacement(
-                gameObject.scene.identity.persistentId,
-                gameObject.identity.persistentId,
-                gameObject.transform.parent?.gameObject.identity.persistentId,
-                gameObject.transform.siblingIndex);
+                gameObject.scene.identity.persistentID,
+                gameObject.identity.persistentID,
+                gameObject.transform.parent?.gameObject.identity.persistentID,
+                gameObject.transform.siblingIndex
+            );
         }
         return placements;
     }
-
-    private void RestorePlacements(IReadOnlyList<SceneObjectPlacement> placements)
-    {
-        for (int i = 0; i < placements.Count; i++)
-        {
-            SceneObjectPlacement placement = placements[i];
-            GameObject gameObject = m_workspace.Find<GameObject>(placement.objectId)
-                ?? throw new InvalidOperationException($"GameObject '{placement.objectId}' is unavailable.");
-            GameScene destination = m_workspace.Find<GameScene>(placement.sceneId)
-                ?? throw new InvalidOperationException($"Scene '{placement.sceneId}' is unavailable.");
-            if (!ReferenceEquals(gameObject.scene, destination))
-                m_workspace.world.MoveGameObjectToScene(gameObject, destination);
-        }
-        for (int i = 0; i < placements.Count; i++)
-        {
-            SceneObjectPlacement placement = placements[i];
-            GameObject gameObject = m_workspace.Find<GameObject>(placement.objectId)!;
-            Transform? parent = placement.parentId is Guid parentId
-                ? m_workspace.Find<GameObject>(parentId)?.transform
-                : null;
-            gameObject.transform.SetParent(parent);
-        }
-        foreach (SceneObjectPlacement placement in placements.OrderBy(static value => value.siblingIndex))
-        {
-            m_workspace.Find<GameObject>(placement.objectId)!
-                .transform.SetSiblingIndex(placement.siblingIndex);
-        }
-    }
-
 }

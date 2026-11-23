@@ -4,12 +4,11 @@ using System.Linq;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Graphs;
-using Inno.Editor.Interactions;
 using Inno.Editor.Assets;
-using Inno.Editor.Assets.ImGui;
-using Inno.Rendering.Shaders;
+using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Panel.ShaderEditor;
+
 [EditorAction("shader/create-asset", "panel/asset.file-browser")]
 internal sealed class CreateShaderAsset(
     ShaderEditorDocuments documents,
@@ -28,7 +27,9 @@ internal sealed class CreateShaderAsset(
     protected override EditorActionState Query(EditorActionContext<string, string> context)
     {
         AssetPath path = AssetPath.Parse(context.target);
-        return documents.assets.sourceMounts.Any(mount => mount.id == path.source && !mount.isReadOnly) ? EditorActionState.enabled : EditorActionState.disabled;
+        return documents.assets.sourceMounts.Any(mount => mount.id == path.source && !mount.isReadOnly)
+               ? EditorActionState.enabled
+               : EditorActionState.disabled;
     }
 
     /// <summary>
@@ -43,7 +44,9 @@ internal sealed class CreateShaderAsset(
         AssetSourceMount mount = documents.assets.sourceMounts.Single(mount => mount.id == parent.source);
         string prefix = parent.localPath.TrimEnd('/');
         if (prefix.Length != 0)
+        {
             prefix += "/";
+        }
         int index = 0;
         AssetPath path;
         do
@@ -60,30 +63,5 @@ internal sealed class CreateShaderAsset(
         _ = context.interactions.For("panel/asset.file-browser", created).Select();
         _ = context.interactions.For("panel/asset.file-browser", created).Execute("file-browser/rename");
         context.interactions.OpenPanel("rendering.shader-editor");
-    }
-}
-
-[EditorMenuSource("panel/asset.file-browser")]
-internal sealed class ShaderTemplateMenu(ShaderEditorDocuments documents) : EditorMenuSource
-{
-    /// <summary>
-    /// Builds a validated result from the current immutable input snapshot.
-    /// </summary>
-    /// <param name="context">
-    /// The operation scope that provides state, services, and ownership boundaries.
-    /// </param>
-    /// <param name="builder">
-    /// The builder consumed by build; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    public override void Build(
-        EditorMenuContext context,
-        EditorMenuBuilder builder
-    ) {
-        if (documents.templates is null)
-            return;
-        builder.AddGroup("Create/Rendering", order: 200, separatorBefore: true);
-        builder.AddGroup("Create/Rendering/Shaders", order: 0);
-        foreach (ShaderGraphTemplateInfo template in documents.templates.templates)
-            builder.Add("Create/Rendering/Shaders/" + template.displayName, "shader/create-asset", argument: template.id, order: 0);
     }
 }

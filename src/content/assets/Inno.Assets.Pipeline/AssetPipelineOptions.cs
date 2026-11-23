@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Assets.Pipeline;
 
 namespace Inno.Assets.Pipeline;
@@ -75,9 +74,13 @@ public readonly struct AssetPipelineOptions
         string libraryRoot
     ) {
         if (string.IsNullOrWhiteSpace(assetRoot))
+        {
             throw new ArgumentException("Asset root is required.", nameof(assetRoot));
+        }
         if (string.IsNullOrWhiteSpace(libraryRoot))
+        {
             throw new ArgumentException("Library root is required.", nameof(libraryRoot));
+        }
 
         return new AssetPipelineOptions
         {
@@ -87,7 +90,7 @@ public readonly struct AssetPipelineOptions
             enableFileSystemWatcher = true,
             fileWatcherFlushDelayMs = 80,
             sourcePolicy = AssetSourcePolicy.defaultPolicy,
-            sourceMounts = [new AssetSourceMount(Inno.Assets.AssetSourceId.project, assetRoot, isReadOnly: false)],
+            sourceMounts = [new AssetSourceMount(AssetSourceID.project, assetRoot, isReadOnly: false)],
             cacheOptions = AssetCacheOptions.CreateDefault()
         };
     }

@@ -20,7 +20,9 @@ internal sealed class DocumentationScriptReferences
         string? editorPath
     ) {
         if (editorPath is not null && runtimePath is null)
+        {
             throw new ArgumentException("The Editor script reference requires a Runtime script reference.");
+        }
         (m_runtime, m_runtimeIdentity) = Read(runtimePath, "Inno.ScriptApi.Runtime");
         (m_editor, m_editorIdentity) = Read(editorPath, "Inno.ScriptApi.Editor");
     }
@@ -28,7 +30,11 @@ internal sealed class DocumentationScriptReferences
     internal IReadOnlyList<MetadataReference> GetReferences(bool editor)
     {
         if (m_runtime is null || (editor && m_editor is null))
-            throw new InvalidOperationException("Logical script examples require explicit current Inno.ScriptApi.Runtime references and, for Editor scripts, Inno.ScriptApi.Editor references.");
+        {
+            throw new InvalidOperationException(
+                "Logical script examples require explicit current Inno.ScriptApi.Runtime references and, for Editor scripts, Inno.ScriptApi.Editor references."
+            );
+        }
         return editor ? [m_runtime, m_editor!] : [m_runtime];
     }
 
@@ -37,11 +43,16 @@ internal sealed class DocumentationScriptReferences
         var identities = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["Inno.ScriptApi.Runtime"] = m_runtimeIdentity
-                ?? throw new InvalidOperationException("The Runtime script reference is unavailable.")
+                                         ?? throw new InvalidOperationException("The Runtime script reference is unavailable.")
         };
         if (editor)
-            identities.Add("Inno.ScriptApi.Editor", m_editorIdentity
-                ?? throw new InvalidOperationException("The Editor script reference is unavailable."));
+        {
+            identities.Add(
+                "Inno.ScriptApi.Editor",
+                m_editorIdentity
+                ?? throw new InvalidOperationException("The Editor script reference is unavailable.")
+            );
+        }
         return identities;
     }
 
@@ -50,16 +61,22 @@ internal sealed class DocumentationScriptReferences
         string expectedName
     ) {
         if (path is null)
+        {
             return (null, null);
+        }
         string absolute = Path.GetFullPath(path);
         byte[] bytes = File.ReadAllBytes(absolute);
         using var stream = new MemoryStream(bytes, writable: false);
         using var pe = new PEReader(stream);
         if (!pe.HasMetadata)
+        {
             throw new InvalidDataException($"The script reference is not a managed assembly: {absolute}");
+        }
         MetadataReader metadata = pe.GetMetadataReader();
         if (!metadata.IsAssembly || metadata.GetString(metadata.GetAssemblyDefinition().Name) != expectedName)
+        {
             throw new InvalidDataException($"Expected the {expectedName} logical script reference: {absolute}");
+        }
         // Compilation and evidence use the same frozen bytes, even if the source file changes later.
         return (MetadataReference.CreateFromImage(bytes, filePath: absolute),
             Convert.ToHexStringLower(SHA256.HashData(bytes)));

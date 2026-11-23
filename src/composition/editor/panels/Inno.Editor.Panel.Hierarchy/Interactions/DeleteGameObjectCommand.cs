@@ -1,14 +1,15 @@
 using System.Collections.Generic;
 using System.Linq;
+using Inno.Core.Input;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
-using Inno.Core.Input;
 using Inno.Scene;
 
 namespace Inno.Editor.Panel.Hierarchy;
-[EditorAction(HierarchyInteractionIds.C_DELETE_GAME_OBJECT, priority: 100)]
-[EditorMenu(HierarchyInteractionIds.C_AREA, "Delete", order: 300)]
-[EditorShortcut(HierarchyInteractionIds.C_AREA, KeyCode.Delete)]
+
+[EditorAction(HierarchyInteractionIDs.C_DELETE_GAME_OBJECT, priority: 100)]
+[EditorMenu(HierarchyInteractionIDs.C_AREA, "Delete", order: 300)]
+[EditorShortcut(HierarchyInteractionIDs.C_AREA, KeyCode.Delete)]
 internal sealed class DeleteGameObjectCommand(SceneEdits edits) : EditorAction<GameObject>
 {
     /// <summary>
@@ -23,14 +24,16 @@ internal sealed class DeleteGameObjectCommand(SceneEdits edits) : EditorAction<G
     protected override EditorActionState Query(EditorActionContext<GameObject> context)
     {
         if (!context.target.isRuntimeValid)
+        {
             return EditorActionState.hidden;
+        }
         GameObject[] targets = Targets(context);
         return targets.Length != 0
-            && targets.All(edits.CanEdit) ? EditorActionState.enabled : new EditorActionState(
-            isVisible: true,
-            isEnabled: false,
-            unavailableReason: "Every selected object must belong to an editable scene."
-        );
+               && targets.All(edits.CanEdit) ? EditorActionState.enabled : new EditorActionState(
+                   isVisible: true,
+                   isEnabled: false,
+                   unavailableReason: "Every selected object must belong to an editable scene."
+               );
     }
 
     /// <summary>
@@ -48,8 +51,10 @@ internal sealed class DeleteGameObjectCommand(SceneEdits edits) : EditorAction<G
     private static GameObject[] Targets(EditorActionContext<GameObject> context)
     {
         if (!context.interactions.selection.Contains(context.target))
+        {
             return[context.target];
-        var values = new List<GameObject>();
+        }
+        List<GameObject> values = [];
         context.interactions.selection.CopyTargets(values);
         return values.Count == context.interactions.selection.count ? values.ToArray() : [];
     }

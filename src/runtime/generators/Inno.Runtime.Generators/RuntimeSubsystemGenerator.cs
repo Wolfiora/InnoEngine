@@ -14,8 +14,14 @@ namespace Inno.Runtime.Generators;
 [Generator]
 public sealed class RuntimeSubsystemGenerator : IIncrementalGenerator
 {
-    private static readonly DiagnosticDescriptor S_INVALID = new("INNORUN001", "Invalid subsystem composition",
-        "{0}", "Architecture", DiagnosticSeverity.Error, true);
+    private static readonly DiagnosticDescriptor INVALID = new(
+        "INNORUN001",
+        "Invalid subsystem composition",
+        "{0}",
+        "Architecture",
+        DiagnosticSeverity.Error,
+        true
+    );
 
     /// <summary>
     /// Registers incremental discovery of composition methods and catalog declarations.
@@ -25,7 +31,7 @@ public sealed class RuntimeSubsystemGenerator : IIncrementalGenerator
     /// </param>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var registrations = context.SyntaxProvider.ForAttributeWithMetadataName(
+        IncrementalValueProvider<ImmutableArray<Registration>> registrations = context.SyntaxProvider.ForAttributeWithMetadataName(
             "Inno.Runtime.Contracts.RuntimeSubsystemRegistrationAttribute",
             static (
                 node,
@@ -34,9 +40,12 @@ public sealed class RuntimeSubsystemGenerator : IIncrementalGenerator
             static (
                 entry,
                 _
-            ) => new Registration((IMethodSymbol)entry.TargetSymbol,
-                entry.Attributes[0].ConstructorArguments[0].Value as string ?? string.Empty)).Collect();
-        var catalogs = context.SyntaxProvider.ForAttributeWithMetadataName(
+            ) => new Registration(
+                (IMethodSymbol)entry.TargetSymbol,
+                entry.Attributes[0].ConstructorArguments[0].Value as string ?? string.Empty
+            )
+        ).Collect();
+        IncrementalValueProvider<ImmutableArray<IMethodSymbol>> catalogs = context.SyntaxProvider.ForAttributeWithMetadataName(
             "Inno.Runtime.Contracts.RuntimeSubsystemCatalogAttribute",
             static (
                 node,
@@ -45,12 +54,15 @@ public sealed class RuntimeSubsystemGenerator : IIncrementalGenerator
             static (
                 entry,
                 _
-            ) => (IMethodSymbol)entry.TargetSymbol).Collect();
-        context.RegisterSourceOutput(catalogs.Combine(registrations),
+            ) => (IMethodSymbol)entry.TargetSymbol
+        ).Collect();
+        context.RegisterSourceOutput(
+            catalogs.Combine(registrations),
             static (
                 output,
                 data
-            ) => Generate(output, data.Left, data.Right));
+            ) => Generate(output, data.Left, data.Right)
+        );
     }
 
     private static void Generate(
@@ -61,30 +73,50 @@ public sealed class RuntimeSubsystemGenerator : IIncrementalGenerator
         foreach (Registration registration in registrations)
         {
             if (!IsFactory(registration.method) || string.IsNullOrWhiteSpace(registration.id))
-                Report(output, registration.method, "A subsystem declaration must be an accessible static method taking one composition parameter and returning IRuntimeSubsystemFactory with a non-empty ID.");
+            {
+                Report(
+                    output,
+                    registration.method,
+                    "A subsystem declaration must be an accessible static method taking one composition parameter and returning IRuntimeSubsystemFactory with a non-empty ID."
+                );
+            }
         }
         foreach (IMethodSymbol catalog in catalogs)
         {
-            if (!catalog.IsStatic || catalog.IsGenericMethod || catalog.Parameters.Length != 1 ||
-                catalog.Parameters[0].RefKind != RefKind.None || catalog.Parameters[0].IsParams ||
-                catalog.ContainingType.ContainingType is not null || catalog.ContainingType.Arity != 0 ||
-                !catalog.ContainingType.IsStatic || catalog.ContainingNamespace.IsGlobalNamespace ||
-                catalog.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal) ||
-                !catalog.IsPartialDefinition || catalog.ReturnType.ToDisplayString() !=
-                "System.Collections.Generic.IReadOnlyList<Inno.Runtime.Contracts.IRuntimeSubsystemFactory>")
-            {
-                Report(output, catalog, "A catalog must be a static partial method on a non-nested partial class, take one composition parameter and return IReadOnlyList<IRuntimeSubsystemFactory>.");
+            if (!catalog.IsStatic || catalog.IsGenericMethod || catalog.Parameters.Length != 1
+                || catalog.Parameters[0].RefKind != RefKind.None || catalog.Parameters[0].IsParams
+                || catalog.ContainingType.ContainingType is not null || catalog.ContainingType.Arity != 0
+                || !catalog.ContainingType.IsStatic || catalog.ContainingNamespace.IsGlobalNamespace
+                || catalog.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal)
+                || !catalog.IsPartialDefinition
+                || catalog.ReturnType.ToDisplayString()
+                   != "System.Collections.Generic.IReadOnlyList<Inno.Runtime.Contracts.IRuntimeSubsystemFactory>"
+            ) {
+                Report(
+                    output,
+                    catalog,
+                    "A catalog must be a static partial method on a non-nested partial class, take one composition parameter and return IReadOnlyList<IRuntimeSubsystemFactory>."
+                );
                 continue;
             }
-            Registration[] matches = registrations.Where(registration => IsFactory(registration.method) &&
-                SymbolEqualityComparer.Default.Equals(registration.method.Parameters[0].Type, catalog.Parameters[0].Type))
-                .OrderBy(static registration => registration.id, StringComparer.Ordinal).ToArray();
-            var duplicate = matches.GroupBy(static registration => registration.id, StringComparer.Ordinal)
+            Registration[] matches = registrations
+                .Where(registration => (
+                    IsFactory(registration.method)
+                    && SymbolEqualityComparer.Default.Equals(registration.method.Parameters[0].Type, catalog.Parameters[0].Type)
+                ))
+                .OrderBy(static registration => registration.id, StringComparer.Ordinal)
+                .ToArray();
+            IGrouping<string, Registration> duplicate = matches.GroupBy(static registration => registration.id, StringComparer.Ordinal)
                 .FirstOrDefault(static group => group.Count() > 1);
             if (matches.Length == 0 || duplicate is not null)
             {
-                Report(output, catalog, duplicate is null ? "A subsystem catalog has no declarations." :
-                    $"Subsystem ID '{duplicate.Key}' is duplicated in this composition.");
+                Report(
+                    output,
+                    catalog,
+                    duplicate is null
+                    ? "A subsystem catalog has no declarations."
+                    : $"Subsystem ID '{duplicate.Key}' is duplicated in this composition."
+                );
                 continue;
             }
             string typeName = Escape(catalog.ContainingType.Name);
@@ -94,34 +126,65 @@ public sealed class RuntimeSubsystemGenerator : IIncrementalGenerator
             string parameterType = catalog.Parameters[0].Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
             string parameterName = Escape(catalog.Parameters[0].Name);
             var code = new StringBuilder("// <auto-generated/>\n#nullable enable\n");
-            code.Append("namespace ").Append(ns).Append(";\n").Append(typeAccess).Append(" static partial class ")
-                .Append(typeName).Append("\n{\n    ").Append(access)
-                .Append(" static partial global::System.Collections.Generic.IReadOnlyList<global::Inno.Runtime.Contracts.IRuntimeSubsystemFactory> ")
-                .Append(Escape(catalog.Name)).Append('(').Append(parameterType).Append(' ').Append(parameterName).Append(")\n    {\n")
-                .Append("        global::System.ArgumentNullException.ThrowIfNull(").Append(parameterName).Append(");\n")
+            code.Append("namespace ")
+                .Append(ns)
+                .Append(";\n")
+                .Append(typeAccess)
+                .Append(" static partial class ")
+                .Append(typeName)
+                .Append("\n{\n    ")
+                .Append(access)
+                .Append(
+                    " static partial global::System.Collections.Generic.IReadOnlyList<global::Inno.Runtime.Contracts.IRuntimeSubsystemFactory> "
+                )
+                .Append(Escape(catalog.Name))
+                .Append('(')
+                .Append(parameterType)
+                .Append(' ')
+                .Append(parameterName)
+                .Append(")\n    {\n")
+                .Append("        global::System.ArgumentNullException.ThrowIfNull(")
+                .Append(parameterName)
+                .Append(");\n")
                 .Append("        var factories = new global::Inno.Runtime.Contracts.IRuntimeSubsystemFactory[]\n        {\n");
             foreach (Registration match in matches)
-                code.Append("            ").Append(match.method.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
-                    .Append('.').Append(Escape(match.method.Name)).Append('(').Append(parameterName).Append("),\n");
+            {
+                code.Append("            ")
+                    .Append(match.method.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))
+                    .Append('.')
+                    .Append(Escape(match.method.Name))
+                    .Append('(')
+                    .Append(parameterName)
+                    .Append("),\n");
+            }
             code.Append("        };\n");
             for (int index = 0; index < matches.Length; index++)
             {
-                string id = Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(matches[index].id, true);
-                code.Append("        if (factories[").Append(index).Append("].descriptor.id.value != ").Append(id)
-                    .Append(")\n            throw new global::System.InvalidOperationException(\"A subsystem declaration disagrees with its factory descriptor.\");\n");
+                string id = SymbolDisplay.FormatLiteral(matches[index].id, true);
+                code.Append("        if (factories[")
+                    .Append(index)
+                    .Append("].descriptor.id.value != ")
+                    .Append(id)
+                    .Append(
+                        ")\n            throw new global::System.InvalidOperationException(\"A subsystem declaration disagrees with its factory descriptor.\");\n"
+                    );
             }
             code.Append("        return global::System.Array.AsReadOnly(factories);\n    }\n}\n");
-            output.AddSource(ns + "." + catalog.ContainingType.Name + "." + catalog.Name + "." +
-                catalogs.IndexOf(catalog) + ".g.cs", code.ToString());
+            output.AddSource(
+                ns + "." + catalog.ContainingType.Name + "." + catalog.Name + "."
+                + catalogs.IndexOf(catalog) + ".g.cs",
+                code.ToString()
+            );
         }
     }
 
-    private static bool IsFactory(IMethodSymbol method) => method.IsStatic && !method.IsGenericMethod &&
-        method.ContainingType.Arity == 0 && method.ContainingType.ContainingType is null &&
-        method.ContainingType.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal &&
-        method.Parameters.Length == 1 && method.Parameters[0].RefKind == RefKind.None && !method.Parameters[0].IsParams &&
-        method.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal &&
-        method.ReturnType.ToDisplayString() == "Inno.Runtime.Contracts.IRuntimeSubsystemFactory";
+    private static bool IsFactory(IMethodSymbol method)
+        => method.IsStatic && !method.IsGenericMethod
+           && method.ContainingType.Arity == 0 && method.ContainingType.ContainingType is null
+           && method.ContainingType.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal
+           && method.Parameters.Length == 1 && method.Parameters[0].RefKind == RefKind.None && !method.Parameters[0].IsParams
+           && method.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal
+           && method.ReturnType.ToDisplayString() == "Inno.Runtime.Contracts.IRuntimeSubsystemFactory";
 
     private static string Escape(string name) => SyntaxFacts.GetKeywordKind(name) == SyntaxKind.None ? name : "@" + name;
 
@@ -129,8 +192,7 @@ public sealed class RuntimeSubsystemGenerator : IIncrementalGenerator
         SourceProductionContext context,
         IMethodSymbol method,
         string message
-    )
-        => context.ReportDiagnostic(Diagnostic.Create(S_INVALID, method.Locations.FirstOrDefault(), message));
+    ) => context.ReportDiagnostic(Diagnostic.Create(INVALID, method.Locations.FirstOrDefault(), message));
 
     private sealed class Registration(
         IMethodSymbol method,

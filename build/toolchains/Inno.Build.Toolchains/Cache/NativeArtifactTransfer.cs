@@ -23,11 +23,11 @@ public static class NativeArtifactTransfer
     /// <param name="archivePath">
     /// The explicit transport file, atomically replaced after complete export.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels copying before the completed archive replaces its previous version.
-    /// </param>
     /// <param name="selectedArtifacts">
     /// Optional exact artifact paths relative to the artifacts root. Every selected generation must be exported.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels copying before the completed archive replaces its previous version.
     /// </param>
     /// <returns>
     /// The number of verified generations exported.
@@ -41,8 +41,8 @@ public static class NativeArtifactTransfer
     public static async Task<int> ExportAsync(
         string engineRoot,
         string archivePath,
-        CancellationToken cancellationToken = default,
-        IReadOnlySet<string>? selectedArtifacts = null
+        IReadOnlySet<string>? selectedArtifacts = null,
+        CancellationToken cancellationToken = default
     ) {
         string root = Path.GetFullPath(engineRoot);
         string destination = PathBoundary.RequireUnlinkedPath(root, Path.GetFullPath(archivePath));
@@ -54,31 +54,51 @@ public static class NativeArtifactTransfer
             using (var stream = new FileStream(candidate, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None))
             {
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
-                foreach (BuildCacheOwnerDescriptor owner in BuildCacheOwnerCatalog.ReadOwners(root, cancellationToken)
-                    .Where(static owner => owner.id is "native" or "bindings"))
                 {
+                foreach (BuildCacheOwnerDescriptor owner in BuildCacheOwnerCatalog.ReadOwners(root, cancellationToken)
+                    .Where(static owner => owner.id is "native" or "bindings")
+                ) {
                     if (owner.directory != Path.Combine(root, "artifacts", owner.id))
-                        throw new InvalidDataException("Native transfer encountered a foreign publisher registration.");
-                    if (selectedArtifacts is not null && !selectedArtifacts.Any(path => path.StartsWith(owner.id + "/", StringComparison.Ordinal)))
-                        continue;
-                    using FileLease activity = await new BuildCachePublisher(owner.directory, BuildCacheArtifactRole.ImmutableArtifact)
-                        .AcquireUseAsync(cancellationToken).ConfigureAwait(false);
-                    foreach (BuildCacheArtifactDescriptor artifact in owner.ReadArtifacts(cancellationToken)
-                        .Where(static artifact => artifact.role == BuildCacheArtifactRole.ImmutableArtifact).OrderBy(static artifact => artifact.directory, StringComparer.Ordinal))
                     {
+                        throw new InvalidDataException("Native transfer encountered a foreign publisher registration.");
+                    }
+                    if (selectedArtifacts is not null
+                        && !selectedArtifacts.Any(path => path.StartsWith(owner.id + "/", StringComparison.Ordinal))
+                    ) {
+                        continue;
+                    }
+                    using FileLease activity = await new BuildCachePublisher(owner.directory, BuildCacheArtifactRole.ImmutableArtifact)
+                        .AcquireUseAsync(cancellationToken)
+                        .ConfigureAwait(false);
+                    foreach (BuildCacheArtifactDescriptor artifact in owner.ReadArtifacts(cancellationToken)
+                        .Where(static artifact => artifact.role == BuildCacheArtifactRole.ImmutableArtifact)
+                        .OrderBy(static artifact => artifact.directory, StringComparer.Ordinal)
+                    ) {
                         string relative = Path.GetRelativePath(Path.Combine(root, "artifacts"), artifact.directory).Replace('\\', '/');
                         if (selectedArtifacts is not null && !selectedArtifacts.Contains(relative))
+                        {
                             continue;
+                        }
                         string[] parts = RequireArtifactPath(relative);
-                        using BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(artifact.directory, owner.directory,
-                            parts[3], OutputRoots(parts[0]), cancellationToken).ConfigureAwait(false);
+                        using BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(
+                            artifact.directory,
+                            owner.directory,
+                            parts[3],
+                            OutputRoots(parts[0]),
+                            cancellationToken: cancellationToken
+                        ).ConfigureAwait(false);
                         foreach (string file in PathBoundary.EnumerateFiles(artifact.directory).Order(StringComparer.Ordinal))
                         {
                             cancellationToken.ThrowIfCancellationRequested();
-                            ZipArchiveEntry entry = zip.CreateEntry(relative + "/" + Path.GetRelativePath(artifact.directory, file).Replace('\\', '/'), CompressionLevel.Fastest);
+                            ZipArchiveEntry entry = zip.CreateEntry(
+                                relative + "/" + Path.GetRelativePath(artifact.directory, file).Replace('\\', '/'),
+                                CompressionLevel.Fastest
+                            );
                             entry.LastWriteTime = new DateTimeOffset(1980, 1, 1, 0, 0, 0, TimeSpan.Zero);
                             if (!OperatingSystem.IsWindows())
+                            {
                                 entry.ExternalAttributes = ((int)File.GetUnixFileMode(file) | 0x8000) << 16;
+                            }
                             using Stream output = entry.Open();
                             using FileStream input = File.OpenRead(file);
                             await input.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
@@ -86,12 +106,17 @@ public static class NativeArtifactTransfer
                         count++;
                     }
                 }
+                }
                 stream.Flush(flushToDisk: true);
             }
             if (selectedArtifacts is not null && count != selectedArtifacts.Count)
+            {
                 throw new InvalidDataException("Native export did not find every selected registered generation.");
+            }
             if (count == 0)
+            {
                 throw new InvalidDataException("No registered immutable native generations are available for export.");
+            }
             cancellationToken.ThrowIfCancellationRequested();
             AtomicFile.Install(candidate, destination);
             return count;
@@ -99,7 +124,9 @@ public static class NativeArtifactTransfer
         finally
         {
             if (File.Exists(candidate))
+            {
                 File.Delete(candidate);
+            }
         }
     }
 
@@ -131,23 +158,33 @@ public static class NativeArtifactTransfer
     ) {
         string root = Path.GetFullPath(engineRoot);
         string stagingRoot = Path.Combine(root, "artifacts", "native-transfer");
-        BuildCacheOwnerCatalog.Register(root, stagingRoot, "native-transfer", BuildCacheArtifactRole.ProcessWorkingDirectory, cancellationToken);
+        BuildCacheOwnerCatalog.Register(
+            root,
+            stagingRoot,
+            "native-transfer",
+            BuildCacheArtifactRole.ProcessWorkingDirectory,
+            cancellationToken
+        );
         using ProcessOwnedDirectory staging = await ProcessOwnedDirectory.CreateAsync(stagingRoot, cancellationToken).ConfigureAwait(false);
         var artifacts = new HashSet<string>(StringComparer.Ordinal);
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         using (ZipArchive zip = ZipFile.OpenRead(archivePath))
         {
             long expanded = 0;
-            if (zip.Entries.Count == 0 || zip.Entries.Count > 200000)
+            if (zip.Entries.Count == 0 || zip.Entries.Count > 200_000)
+            {
                 throw new InvalidDataException("Native transfer contains an empty or excessive file inventory.");
+            }
             foreach (ZipArchiveEntry entry in zip.Entries)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 string[] parts = entry.FullName.Split('/');
                 if (parts.Length < 5 || parts.Any(static part => part is "" or "." or ".." || part.Contains('\\') || part.Contains(':'))
-                    || !names.Add(entry.FullName) || ((entry.ExternalAttributes >> 16) & 0xf000) is not (0 or 0x8000)
-                    || (expanded = checked(expanded + entry.Length)) > 32L * 1024 * 1024 * 1024)
+                    || !names.Add(entry.FullName) || ((entry.ExternalAttributes >> 16) & 0xF000) is not (0 or 0x8000)
+                    || (expanded = checked(expanded + entry.Length)) > 32L * 1024 * 1024 * 1024
+                ) {
                     throw new InvalidDataException("Native transfer contains an invalid, linked, duplicate or excessive entry.");
+                }
                 string artifact = string.Join('/', parts.Take(4));
                 _ = RequireArtifactPath(artifact);
                 artifacts.Add(artifact);
@@ -155,9 +192,13 @@ public static class NativeArtifactTransfer
                 Directory.CreateDirectory(Path.GetDirectoryName(output)!);
                 using (Stream input = entry.Open())
                 using (var destination = new FileStream(output, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                {
                     await input.CopyToAsync(destination, cancellationToken).ConfigureAwait(false);
+                }
                 if (!OperatingSystem.IsWindows() && entry.ExternalAttributes != 0)
-                    File.SetUnixFileMode(output, (UnixFileMode)((entry.ExternalAttributes >> 16) & 0x1ff));
+                {
+                    File.SetUnixFileMode(output, (UnixFileMode)((entry.ExternalAttributes >> 16) & 0x1FF));
+                }
             }
         }
         foreach (string artifact in artifacts)
@@ -165,7 +206,9 @@ public static class NativeArtifactTransfer
             cancellationToken.ThrowIfCancellationRequested();
             string[] parts = RequireArtifactPath(artifact);
             if (!BuildArtifactManifest.IsComplete(PathBoundary.Resolve(staging.directory, artifact), parts[3], OutputRoots(parts[0])))
+            {
                 throw new InvalidDataException("Native transfer failed exact manifest and payload verification: " + artifact);
+            }
         }
         int imported = 0;
         foreach (string artifact in artifacts.Order(StringComparer.Ordinal))
@@ -175,12 +218,21 @@ public static class NativeArtifactTransfer
             // An existing generation is never replaced by transport, including while a consumer reads it.
             // Its actual publisher remains responsible for completeness, repair and adoption.
             if (Directory.Exists(destination))
+            {
                 continue;
-            using CoordinatedFileLease writing = await CoordinatedFileLease.AcquireAsync(Path.Combine(root, "artifacts", parts[0], "owner.lock"),
-                destination + ".read.lock", TimeSpan.FromSeconds(30), shared: false, cancellationToken: cancellationToken).ConfigureAwait(false);
+            }
+            using CoordinatedFileLease writing = await CoordinatedFileLease.AcquireAsync(
+                Path.Combine(root, "artifacts", parts[0], "owner.lock"),
+                destination + ".read.lock",
+                TimeSpan.FromSeconds(30),
+                shared: false,
+                cancellationToken: cancellationToken
+            ).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
             if (Directory.Exists(destination))
+            {
                 continue;
+            }
             Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
             Directory.Move(PathBoundary.Resolve(staging.directory, artifact), destination);
             imported++;
@@ -191,10 +243,14 @@ public static class NativeArtifactTransfer
     private static string[] RequireArtifactPath(string relative)
     {
         string[] parts = relative.Split('/');
-        if (parts.Length != 4 || parts[0] is not ("native" or "bindings") || parts.Any(static part =>
-                part is "" or "." or ".." || part.Any(static character => !char.IsAsciiLetterOrDigit(character) && character is not ('-' or '_' or '.')))
-            || parts[3].Length != 64 || parts[3].Any(static character => !char.IsAsciiHexDigitLower(character)))
+        if (parts.Length != 4 || parts[0] is not ("native" or "bindings") || parts.Any(static part => (
+            part is "" or "." or ".."
+            || part.Any(static character => !char.IsAsciiLetterOrDigit(character) && character is not ('-' or '_' or '.'))
+        ))
+            || parts[3].Length != 64 || parts[3].Any(static character => !char.IsAsciiHexDigitLower(character))
+        ) {
             throw new InvalidDataException("Native transfer has an invalid publisher or content identity: " + relative);
+        }
         return parts;
     }
 

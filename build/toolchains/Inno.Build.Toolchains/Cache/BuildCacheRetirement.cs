@@ -17,30 +17,37 @@ internal static class BuildCacheRetirement
         IReadOnlyList<BuildCacheOwnerDescriptor> owners,
         BuildCachePolicy policy,
         IReadOnlyList<BuildCacheArtifactDescriptor> candidates,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
-        var retired = new List<string>();
-        var skipped = new HashSet<string>(BuildCacheInventory.pathComparer);
-        var failures = new Dictionary<string, string>(BuildCacheInventory.pathComparer);
-        var ownerLeases = new List<FileLease>();
-        var artifactLeases = new Dictionary<string, FileLease>(BuildCacheInventory.pathComparer);
-        var proposed = candidates.ToDictionary(static entry => entry.directory, BuildCacheInventory.pathComparer);
+        List<string> retired = [];
+        var skipped = new HashSet<string>(BuildCacheInventory.PATH_COMPARER);
+        var failures = new Dictionary<string, string>(BuildCacheInventory.PATH_COMPARER);
+        List<FileLease> ownerLeases = [];
+        var artifactLeases = new Dictionary<string, FileLease>(BuildCacheInventory.PATH_COMPARER);
+        Dictionary<string, BuildCacheArtifactDescriptor> proposed = candidates.ToDictionary(
+            static entry => entry.directory,
+            BuildCacheInventory.PATH_COMPARER
+        );
         long reclaimed = 0;
         Stopwatch elapsed = Stopwatch.StartNew();
         bool limited = false;
-        using var bounded = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
+        using CancellationTokenSource bounded = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         bounded.CancelAfter(policy.timeBudget);
         try
         {
             foreach (BuildCacheOwnerDescriptor owner in owners.OrderBy(static entry => entry.coordinationPath, StringComparer.Ordinal))
             {
-                cancellation.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 if (elapsed.Elapsed >= policy.timeBudget)
+                {
                     return new([], proposed.Keys, failures, 0, true);
+                }
                 try
                 {
                     BuildCacheCleanupPlan.RequireChild(owner.directory, owner.coordinationPath);
-                    ownerLeases.Add(await FileLease.AcquireAsync(owner.coordinationPath, TimeSpan.Zero, cancellation).ConfigureAwait(false));
+                    ownerLeases.Add(
+                        await FileLease.AcquireAsync(owner.coordinationPath, TimeSpan.Zero, cancellationToken).ConfigureAwait(false)
+                    );
                 }
                 catch (TimeoutException)
                 {
@@ -50,18 +57,28 @@ internal static class BuildCacheRetirement
             }
             BuildCacheInventory fresh = BuildCacheInventory.Read(workspace, owners, bounded.Token);
             HashSet<string> protectedPaths = fresh.Protect(fresh.roots);
-            protectedPaths.UnionWith(fresh.Protect(fresh.artifacts.Keys.Except(proposed.Keys, BuildCacheInventory.pathComparer)));
-            var active = new List<string>();
-            foreach (string path in fresh.artifacts.Keys.Where(path => proposed.ContainsKey(path) && !protectedPaths.Contains(path)).Order(StringComparer.Ordinal))
-            {
-                cancellation.ThrowIfCancellationRequested();
+            protectedPaths.UnionWith(fresh.Protect(fresh.artifacts.Keys.Except(proposed.Keys, BuildCacheInventory.PATH_COMPARER)));
+            List<string> active = [];
+            foreach (string path in fresh.artifacts.Keys
+                .Where(path => proposed.ContainsKey(path) && !protectedPaths.Contains(path))
+                .Order(StringComparer.Ordinal)
+            ) {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (elapsed.Elapsed >= policy.timeBudget)
+                {
                     return new([], proposed.Keys, failures, 0, true);
+                }
                 try
                 {
                     BuildCacheCleanupPlan.RequireChild(fresh.artifacts[path].owner.directory, path);
-                    artifactLeases.Add(path, await FileLease.AcquireAsync(fresh.artifacts[path].artifact.leasePath,
-                        TimeSpan.Zero, cancellation).ConfigureAwait(false));
+                    artifactLeases.Add(
+                        path,
+                        await FileLease.AcquireAsync(
+                            fresh.artifacts[path].artifact.leasePath,
+                            TimeSpan.Zero,
+                            cancellationToken
+                        ).ConfigureAwait(false)
+                    );
                 }
                 catch (TimeoutException)
                 {
@@ -76,24 +93,28 @@ internal static class BuildCacheRetirement
             protectedPaths.UnionWith(fresh.Protect(active));
             // An active parent keeps its dependencies available to the original owner.
             foreach (string path in protectedPaths)
+            {
                 if (artifactLeases.Remove(path, out FileLease? lease))
+                {
                     lease.Dispose();
+                }
+            }
             foreach (string path in fresh.retirementOrder.Where(proposed.ContainsKey))
             {
-                cancellation.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 if (elapsed.Elapsed >= policy.timeBudget)
                 {
                     limited = true;
                     break;
                 }
-                var current = fresh.artifacts[path];
+                (BuildCacheOwnerDescriptor owner, BuildCacheArtifactDescriptor artifact) current = fresh.artifacts[path];
                 BuildCacheArtifactDescriptor original = proposed[path];
                 if (protectedPaths.Contains(path) || !artifactLeases.ContainsKey(path)
                     || original.bytes != current.artifact.bytes || original.lastUseUtc != current.artifact.lastUseUtc
-                    || original.targetId != current.artifact.targetId || original.role != current.artifact.role
-                    || !BuildCacheInventory.pathComparer.Equals(original.leasePath, current.artifact.leasePath)
-                    || !original.dependencies.SequenceEqual(current.artifact.dependencies, BuildCacheInventory.pathComparer))
-                {
+                    || original.targetID != current.artifact.targetID || original.role != current.artifact.role
+                    || !BuildCacheInventory.PATH_COMPARER.Equals(original.leasePath, current.artifact.leasePath)
+                    || !original.dependencies.SequenceEqual(current.artifact.dependencies, BuildCacheInventory.PATH_COMPARER)
+                ) {
                     skipped.Add(path);
                     continue;
                 }
@@ -120,39 +141,51 @@ internal static class BuildCacheRetirement
             }
             // Close leaf handles before unlinking them, while every owner gate remains exclusive.
             foreach (FileLease lease in artifactLeases.Values)
+            {
                 lease.Dispose();
+            }
             artifactLeases.Clear();
             foreach (BuildCacheOwnerDescriptor owner in owners.OrderBy(static owner => owner.coordinationPath, StringComparer.Ordinal))
             {
                 bounded.Token.ThrowIfCancellationRequested();
-                try { owner.RetireMetadata(bounded.Token); }
+                try
+                {
+                    owner.RetireMetadata(bounded.Token);
+                }
                 catch (Exception failure) when (failure is IOException or UnauthorizedAccessException or TimeoutException
-                    or InvalidDataException or JsonException)
+                                                or InvalidDataException or JsonException)
                 {
                     // Payload retirement has already committed. Keep invalid metadata and report
                     // the failure without losing completed work or another owner's cleanup result.
                     failures[owner.directory] = failure.Message;
                 }
             }
-            try { BuildCacheInventoryProgress.PruneRetired(workspace, owners, bounded.Token); }
+            try
+            {
+                BuildCacheInventoryProgress.PruneRetired(workspace, owners, bounded.Token);
+            }
             catch (Exception failure) when (failure is IOException or UnauthorizedAccessException or TimeoutException
-                or InvalidDataException or JsonException)
+                                            or InvalidDataException or JsonException)
             {
                 failures[Path.Combine(workspace, "artifacts", "cache-owners", "inventory")] = failure.Message;
             }
-            skipped.UnionWith(proposed.Keys.Except(retired, BuildCacheInventory.pathComparer));
+            skipped.UnionWith(proposed.Keys.Except(retired, BuildCacheInventory.PATH_COMPARER));
             return new(retired, skipped, failures, reclaimed, limited);
         }
-        catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            return new(retired, proposed.Keys.Except(retired, BuildCacheInventory.pathComparer), failures, reclaimed, true);
+            return new(retired, proposed.Keys.Except(retired, BuildCacheInventory.PATH_COMPARER), failures, reclaimed, true);
         }
         finally
         {
             foreach (FileLease lease in artifactLeases.Values.Reverse())
+            {
                 lease.Dispose();
+            }
             for (int index = ownerLeases.Count - 1; index >= 0; index--)
+            {
                 ownerLeases[index].Dispose();
+            }
         }
     }
 }

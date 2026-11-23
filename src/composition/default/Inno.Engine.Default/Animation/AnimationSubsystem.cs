@@ -10,9 +10,12 @@ internal static class AnimationSubsystem
     internal static IRuntimeSubsystemFactory Create(EngineSessionComposition context)
         => new AnimationRuntimeFactory(owner =>
         {
-            var reporter = owner.resources.Own(owner.diagnostics.CreateReporter(
-                new DiagnosticSource($"inno.animation.bindings.{owner.identities.domainId}", "Animation")));
-            var bindings = owner.resources.Own(new AnimationBindingRuntime(owner.types, reporter));
+            DiagnosticReporter reporter = owner.resources.Own(
+                owner.diagnostics.CreateReporter(
+                    new DiagnosticSource($"inno.animation.bindings.{owner.identities.domainID}", "Animation")
+                )
+            );
+            AnimationBindingRuntime bindings = owner.resources.Own(new AnimationBindingRuntime(owner.types, reporter));
             return new AnimationRuntime(owner.events, bindings);
         });
 }

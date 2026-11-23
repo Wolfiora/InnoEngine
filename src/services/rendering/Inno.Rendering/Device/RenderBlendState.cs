@@ -1,8 +1,107 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Inno.Rendering;
+
+/// <summary>
+/// Describes independent color and alpha blending without backend-native flags.
+/// </summary>
+public struct RenderBlendState
+{
+    /// <summary>
+    /// Gets the disabled opaque blend state.
+    /// </summary>
+    public static RenderBlendState opaque
+        => new()
+    {
+        enabled = false,
+        colorSource = RenderBlendFactor.One,
+        colorDestination = RenderBlendFactor.Zero,
+        alphaSource = RenderBlendFactor.One,
+        alphaDestination = RenderBlendFactor.Zero
+    };
+
+    /// <summary>
+    /// Gets conventional straight-alpha blending.
+    /// </summary>
+    public static RenderBlendState alpha
+        => new()
+    {
+        enabled = true,
+        colorSource = RenderBlendFactor.SourceAlpha,
+        colorDestination = RenderBlendFactor.InverseSourceAlpha,
+        alphaSource = RenderBlendFactor.One,
+        alphaDestination = RenderBlendFactor.InverseSourceAlpha
+    };
+
+    /// <summary>
+    /// Gets additive source-alpha blending.
+    /// </summary>
+    public static RenderBlendState additive
+        => new()
+    {
+        enabled = true,
+        colorSource = RenderBlendFactor.SourceAlpha,
+        colorDestination = RenderBlendFactor.One,
+        alphaSource = RenderBlendFactor.One,
+        alphaDestination = RenderBlendFactor.One
+    };
+
+    /// <summary>
+    /// Gets conventional premultiplied-alpha blending.
+    /// </summary>
+    public static RenderBlendState premultiplied
+        => new()
+    {
+        enabled = true,
+        colorSource = RenderBlendFactor.One,
+        colorDestination = RenderBlendFactor.InverseSourceAlpha,
+        alphaSource = RenderBlendFactor.One,
+        alphaDestination = RenderBlendFactor.InverseSourceAlpha
+    };
+
+    /// <summary>
+    /// Gets or sets whether blending is enabled.
+    /// </summary>
+    public bool enabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets the source multiplier for RGB channels.
+    /// </summary>
+    public RenderBlendFactor colorSource { get; set; }
+
+    /// <summary>
+    /// Gets or sets the destination multiplier for RGB channels.
+    /// </summary>
+    public RenderBlendFactor colorDestination { get; set; }
+
+    /// <summary>
+    /// Gets or sets the RGB combination equation.
+    /// </summary>
+    public RenderBlendEquation colorEquation { get; set; }
+
+    /// <summary>
+    /// Gets or sets the source multiplier for alpha.
+    /// </summary>
+    public RenderBlendFactor alphaSource { get; set; }
+
+    /// <summary>
+    /// Gets or sets the destination multiplier for alpha.
+    /// </summary>
+    public RenderBlendFactor alphaDestination { get; set; }
+
+    /// <summary>
+    /// Gets or sets the alpha combination equation.
+    /// </summary>
+    public RenderBlendEquation alphaEquation { get; set; }
+
+    /// <summary>
+    /// Gets or sets the packed RGBA8 constant used by constant blend factors.
+    /// </summary>
+    public uint constantRgba { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether alpha-to-coverage is enabled.
+    /// </summary>
+    public bool alphaToCoverage { get; set; }
+}
 
 /// <summary>
 /// Selects one source or destination blend multiplier.
@@ -89,103 +188,3 @@ public enum RenderBlendEquation
     /// </summary>
     Maximum
 }
-
-/// <summary>
-/// Describes independent color and alpha blending without backend-native flags.
-/// </summary>
-public struct RenderBlendState
-{
-    /// <summary>
-    /// Gets the disabled opaque blend state.
-    /// </summary>
-    public static RenderBlendState opaque => new()
-    {
-        enabled = false,
-        colorSource = RenderBlendFactor.One,
-        colorDestination = RenderBlendFactor.Zero,
-        alphaSource = RenderBlendFactor.One,
-        alphaDestination = RenderBlendFactor.Zero
-    };
-
-    /// <summary>
-    /// Gets conventional straight-alpha blending.
-    /// </summary>
-    public static RenderBlendState alpha => new()
-    {
-        enabled = true,
-        colorSource = RenderBlendFactor.SourceAlpha,
-        colorDestination = RenderBlendFactor.InverseSourceAlpha,
-        alphaSource = RenderBlendFactor.One,
-        alphaDestination = RenderBlendFactor.InverseSourceAlpha
-    };
-
-    /// <summary>
-    /// Gets additive source-alpha blending.
-    /// </summary>
-    public static RenderBlendState additive => new()
-    {
-        enabled = true,
-        colorSource = RenderBlendFactor.SourceAlpha,
-        colorDestination = RenderBlendFactor.One,
-        alphaSource = RenderBlendFactor.One,
-        alphaDestination = RenderBlendFactor.One
-    };
-
-    /// <summary>
-    /// Gets conventional premultiplied-alpha blending.
-    /// </summary>
-    public static RenderBlendState premultiplied => new()
-    {
-        enabled = true,
-        colorSource = RenderBlendFactor.One,
-        colorDestination = RenderBlendFactor.InverseSourceAlpha,
-        alphaSource = RenderBlendFactor.One,
-        alphaDestination = RenderBlendFactor.InverseSourceAlpha
-    };
-
-    /// <summary>
-    /// Gets or sets whether blending is enabled.
-    /// </summary>
-    public bool enabled { get; set; }
-
-    /// <summary>
-    /// Gets or sets the source multiplier for RGB channels.
-    /// </summary>
-    public RenderBlendFactor colorSource { get; set; }
-
-    /// <summary>
-    /// Gets or sets the destination multiplier for RGB channels.
-    /// </summary>
-    public RenderBlendFactor colorDestination { get; set; }
-
-    /// <summary>
-    /// Gets or sets the RGB combination equation.
-    /// </summary>
-    public RenderBlendEquation colorEquation { get; set; }
-
-    /// <summary>
-    /// Gets or sets the source multiplier for alpha.
-    /// </summary>
-    public RenderBlendFactor alphaSource { get; set; }
-
-    /// <summary>
-    /// Gets or sets the destination multiplier for alpha.
-    /// </summary>
-    public RenderBlendFactor alphaDestination { get; set; }
-
-    /// <summary>
-    /// Gets or sets the alpha combination equation.
-    /// </summary>
-    public RenderBlendEquation alphaEquation { get; set; }
-
-    /// <summary>
-    /// Gets or sets the packed RGBA8 constant used by constant blend factors.
-    /// </summary>
-    public uint constantRgba { get; set; }
-
-    /// <summary>
-    /// Gets or sets whether alpha-to-coverage is enabled.
-    /// </summary>
-    public bool alphaToCoverage { get; set; }
-}
-

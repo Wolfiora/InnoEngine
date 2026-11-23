@@ -1,15 +1,16 @@
-using Inno.Core.Input;
-using Inno.Core.Mathematics;
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
+using Inno.Core.Input;
+using Inno.Core.Mathematics;
+using Inno.Extensibility.Types;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Runtime;
 
 /// <summary>
 /// Frame-local input located in the output viewport's physical pixels.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("0fe2e29e-4826-5e41-9ebd-a3110e673b5e")]
+[StableTypeID("0fe2e29e-4826-5e41-9ebd-a3110e673b5e")]
 public sealed class RenderOutputInput
 {
     /// <summary>
@@ -57,62 +58,84 @@ public sealed class RenderOutputInput
         IReadOnlyList<string> textInput,
         bool interactionEnabled = true
     ) {
+        ArgumentNullException.ThrowIfNull(keysPressed);
+        ArgumentNullException.ThrowIfNull(keysReleased);
+        ArgumentNullException.ThrowIfNull(buttonsPressed);
+        ArgumentNullException.ThrowIfNull(buttonsReleased);
+        ArgumentNullException.ThrowIfNull(textInput);
         this.pointerPosition = pointerPosition;
         this.pointerInside = pointerInside;
         this.scrollDelta = scrollDelta;
         this.modifiers = modifiers;
-        this.keysPressed = keysPressed ?? throw new ArgumentNullException(nameof(keysPressed));
-        this.keysReleased = keysReleased ?? throw new ArgumentNullException(nameof(keysReleased));
-        this.buttonsPressed = buttonsPressed ?? throw new ArgumentNullException(nameof(buttonsPressed));
-        this.buttonsReleased = buttonsReleased ?? throw new ArgumentNullException(nameof(buttonsReleased));
-        this.textInput = textInput ?? throw new ArgumentNullException(nameof(textInput));
+        this.keysPressed = keysPressed;
+        this.keysReleased = keysReleased;
+        this.buttonsPressed = buttonsPressed;
+        this.buttonsReleased = buttonsReleased;
+        this.textInput = textInput;
         this.interactionEnabled = interactionEnabled;
     }
 
     /// <summary>
     /// Gets a snapshot with no active input.
     /// </summary>
-    public static RenderOutputInput empty { get; } = new(default, false, default,
-        KeyModifier.None, [], [], [], [], []);
+    public static RenderOutputInput empty { get; } = new(default, false, default, KeyModifier.None, [], [], [], [], []);
 
     /// <summary>
     /// Gets a snapshot that clears gameplay interaction while retaining the rendered output.
     /// </summary>
-    public static RenderOutputInput suspended { get; } = new(default, false, default,
-        KeyModifier.None, [], [], [], [], [], interactionEnabled: false);
+    public static RenderOutputInput suspended { get; } = new(
+        default,
+        false,
+        default,
+        KeyModifier.None,
+        [],
+        [],
+        [],
+        [],
+        [],
+        interactionEnabled: false
+    );
 
     /// <summary>
     /// Gets viewport-local pointer coordinates.
     /// </summary>
     public Vector2 pointerPosition { get; }
+
     /// <summary>
     /// Gets whether the pointer is inside this output.
     /// </summary>
     public bool pointerInside { get; }
+
     /// <summary>
     /// Gets wheel movement.
     /// </summary>
     public Vector2 scrollDelta { get; }
+
     /// <summary>
     /// Gets active keyboard modifiers.
     /// </summary>
     public KeyModifier modifiers { get; }
+
     /// <summary>
     /// Gets keys pressed this frame.
     /// </summary>
     public IReadOnlyCollection<KeyCode> keysPressed { get; }
+
     /// <summary>
     /// Gets keys released this frame.
     /// </summary>
     public IReadOnlyCollection<KeyCode> keysReleased { get; }
+
     /// <summary>
     /// Gets buttons pressed this frame.
     /// </summary>
     public IReadOnlyCollection<MouseButton> buttonsPressed { get; }
+
     /// <summary>
     /// Gets buttons released this frame.
     /// </summary>
     public IReadOnlyCollection<MouseButton> buttonsReleased { get; }
+
     /// <summary>
     /// Gets ordered text commits.
     /// </summary>
@@ -123,4 +146,3 @@ public sealed class RenderOutputInput
     /// </summary>
     public bool interactionEnabled { get; }
 }
-

@@ -1,12 +1,12 @@
+using System;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Panel.Inspector;
 
-[EditorDrop(InspectorInteractionIds.C_ASSET_REFERENCE_AREA, priority: 100)]
-internal sealed class AssetReferenceDropHandler(AssetPipeline assets)
-    : EditorDrop<AssetFileEntry, AssetReferenceDropTarget>
+[EditorDrop(InspectorInteractionIDs.C_ASSET_REFERENCE_AREA, priority: 100)]
+internal sealed class AssetReferenceDropHandler(AssetPipeline assets) : EditorDrop<AssetFileEntry, AssetReferenceDropTarget>
 {
     /// <summary>
     /// Evaluates whether the requested change can be applied to the current generation.
@@ -19,12 +19,12 @@ internal sealed class AssetReferenceDropHandler(AssetPipeline assets)
     /// </returns>
     protected override EditorDropStatus Query(EditorDropContext<AssetFileEntry, AssetReferenceDropTarget> context)
     {
-        if (!assets.TryGetPersistentId(context.source.assetPath, out System.Guid persistentId) ||
-            persistentId == System.Guid.Empty ||
-            !assets.TryGetAssetType(context.source.assetPath, out System.Type? assetType) ||
-            assetType is null ||
-            !context.target.expectedType.IsAssignableFrom(assetType))
-        {
+        if (!assets.TryGetPersistentID(context.source.assetPath, out Guid persistentID)
+            || persistentID == Guid.Empty
+            || !assets.TryGetAssetType(context.source.assetPath, out Type? assetType)
+            || assetType is null
+            || !context.target.expectedType.IsAssignableFrom(assetType)
+        ) {
             return EditorDropStatus.rejected;
         }
         return EditorDropStatus.Accept();
@@ -42,10 +42,14 @@ internal sealed class AssetReferenceDropHandler(AssetPipeline assets)
     protected override EditorDropResult Drop(EditorDropContext<AssetFileEntry, AssetReferenceDropTarget> context)
     {
         if (!Query(context).canDrop)
+        {
             return EditorDropResult.rejected;
-        if (!assets.TryGetPersistentId(context.source.assetPath, out System.Guid persistentId))
+        }
+        if (!assets.TryGetPersistentID(context.source.assetPath, out Guid persistentID))
+        {
             return EditorDropResult.rejected;
-        context.target.Assign(persistentId);
+        }
+        context.target.Assign(persistentID);
         return EditorDropResult.Accepted();
     }
 }

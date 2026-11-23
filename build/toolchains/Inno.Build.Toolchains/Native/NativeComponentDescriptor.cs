@@ -39,17 +39,25 @@ public sealed class NativeComponentDescriptor
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         if (id is "." or "..")
+        {
             throw new ArgumentException("A component identity must be a portable path segment.", nameof(id));
+        }
         foreach (char character in id)
+        {
             if (!char.IsAsciiLetterOrDigit(character) && character is not ('-' or '_' or '.'))
+            {
                 throw new ArgumentException("A component identity must be a portable path segment.", nameof(id));
+            }
+        }
         this.id = id;
         this.nativeProject = ValidateProject(nativeProject);
         this.toolchainProject = ValidateProject(toolchainProject);
         this.staticBuild = staticBuild;
         if (bindingDefinition is not null && (bindingDefinition.StartsWith('/') || bindingDefinition.Contains(':')
-            || bindingDefinition.Split('/').Any(static segment => segment is "" or "." or "..")))
+                                              || bindingDefinition.Split('/').Any(static segment => segment is "" or "." or ".."))
+        ) {
             throw new ArgumentException("A binding definition must remain within its checkout.", nameof(bindingDefinition));
+        }
         this.bindingDefinition = bindingDefinition;
     }
 
@@ -106,7 +114,9 @@ public sealed class NativeComponentDescriptor
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(engineRoot);
         if (!Path.IsPathFullyQualified(engineRoot))
+        {
             throw new ArgumentException("The operation checkout must be absolute.", nameof(engineRoot));
+        }
         return Path.GetDirectoryName(Path.GetFullPath(project, engineRoot))!;
     }
 
@@ -115,10 +125,16 @@ public sealed class NativeComponentDescriptor
         ArgumentException.ThrowIfNullOrWhiteSpace(project);
         string portable = project.Replace('\\', '/');
         if (portable.StartsWith('/') || portable.Contains(':') || !portable.EndsWith(".csproj", StringComparison.Ordinal))
+        {
             throw new ArgumentException("A component owner must be a checkout-relative project file.", nameof(project));
+        }
         foreach (string segment in portable.Split('/'))
+        {
             if (segment is "" or "." or "..")
+            {
                 throw new ArgumentException("A component owner cannot escape its checkout.", nameof(project));
+            }
+        }
         return portable;
     }
 }

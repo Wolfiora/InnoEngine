@@ -1,10 +1,7 @@
-using Inno.Scripting.Api;
 using Inno.Editor.Scene;
+using Inno.Scripting.Api;
 
-[assembly: ScriptingApiNamespace(
-    "InnoEditor.Scene",
-    "Inno.Editor.Scene",
-    ScriptingApiScope.Editor)]
+[assembly: ScriptingApiNamespace("InnoEditor.Scene", "Inno.Editor.Scene", ScriptingApiScope.Editor)]
 
 [assembly: ScriptingApiExport(typeof(IEditorSceneWorkspace), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(SceneEdits), ScriptingApiScope.Editor)]

@@ -9,16 +9,6 @@ namespace Inno.Scene.Layers;
 public readonly struct GameLayerMask : IEquatable<GameLayerMask>
 {
     /// <summary>
-    /// Gets a mask containing no layers.
-    /// </summary>
-    public static GameLayerMask none { get; } = new(0u);
-
-    /// <summary>
-    /// Gets a mask containing every supported layer.
-    /// </summary>
-    public static GameLayerMask everything { get; } = new(uint.MaxValue);
-
-    /// <summary>
     /// Creates a mask from its raw thirty-two-bit representation.
     /// </summary>
     /// <param name="value">
@@ -30,9 +20,90 @@ public readonly struct GameLayerMask : IEquatable<GameLayerMask>
     }
 
     /// <summary>
+    /// Gets a mask containing no layers.
+    /// </summary>
+    public static GameLayerMask none { get; } = new(0u);
+
+    /// <summary>
+    /// Gets a mask containing every supported layer.
+    /// </summary>
+    public static GameLayerMask everything { get; } = new(uint.MaxValue);
+
+    /// <summary>
     /// Gets the raw thirty-two-bit mask value.
     /// </summary>
     public uint value { get; }
+
+    /// <summary>
+    /// Determines whether the supplied layer is contained in this mask.
+    /// </summary>
+    /// <param name="layer">
+    /// The layer consumed by contains; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the layer bit is enabled.
+    /// </returns>
+    public bool Contains(GameLayer layer) => (value & (1u << layer.index)) != 0u;
+
+    /// <summary>
+    /// Returns a mask with the supplied layer enabled.
+    /// </summary>
+    /// <param name="layer">
+    /// The layer consumed by with; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <returns>
+    /// The updated immutable mask.
+    /// </returns>
+    public GameLayerMask With(GameLayer layer) => new(value | (1u << layer.index));
+
+    /// <summary>
+    /// Returns a mask with the supplied layer disabled.
+    /// </summary>
+    /// <param name="layer">
+    /// The layer consumed by without; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <returns>
+    /// The updated immutable mask.
+    /// </returns>
+    public GameLayerMask Without(GameLayer layer) => new(value & ~(1u << layer.index));
+
+    /// <summary>
+    /// Determines whether another mask contains the same layer bits.
+    /// </summary>
+    /// <param name="other">
+    /// The mask to compare with this value.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both masks contain the same bits.
+    /// </returns>
+    public bool Equals(GameLayerMask other) => value == other.value;
+
+    /// <summary>
+    /// Determines whether this instance and the supplied value represent the same logical state.
+    /// </summary>
+    /// <param name="obj">
+    /// The object to compare with this instance.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
+    /// </returns>
+    public override bool Equals(object? obj) => obj is GameLayerMask other && Equals(other);
+
+    /// <summary>
+    /// Computes a hash code from the fields that participate in logical equality.
+    /// </summary>
+    /// <returns>
+    /// A hash code consistent with the implemented equality contract.
+    /// </returns>
+    public override int GetHashCode() => value.GetHashCode();
+
+    /// <summary>
+    /// Formats this value as a human-readable representation.
+    /// </summary>
+    /// <returns>
+    /// The human-readable representation of this value.
+    /// </returns>
+    public override string ToString() => $"0x{value:X8}";
 
     /// <summary>
     /// Creates a mask containing the supplied layers.
@@ -51,80 +122,11 @@ public readonly struct GameLayerMask : IEquatable<GameLayerMask>
         ArgumentNullException.ThrowIfNull(layers);
         uint bits = 0u;
         foreach (GameLayer layer in layers)
+        {
             bits |= 1u << layer.index;
+        }
         return new GameLayerMask(bits);
     }
-
-    /// <summary>
-    /// Determines whether the supplied layer is contained in this mask.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when the layer bit is enabled.
-    /// </returns>
-    /// <param name="layer">
-    /// The layer consumed by contains; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    public bool Contains(GameLayer layer) => (value & (1u << layer.index)) != 0u;
-
-    /// <summary>
-    /// Returns a mask with the supplied layer enabled.
-    /// </summary>
-    /// <returns>
-    /// The updated immutable mask.
-    /// </returns>
-    /// <param name="layer">
-    /// The layer consumed by with; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    public GameLayerMask With(GameLayer layer) => new(value | (1u << layer.index));
-
-    /// <summary>
-    /// Returns a mask with the supplied layer disabled.
-    /// </summary>
-    /// <returns>
-    /// The updated immutable mask.
-    /// </returns>
-    /// <param name="layer">
-    /// The layer consumed by without; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    public GameLayerMask Without(GameLayer layer) => new(value & ~(1u << layer.index));
-
-    /// <summary>
-    /// Determines whether another mask contains the same layer bits.
-    /// </summary>
-    /// <param name="other">
-    /// The mask to compare with this value.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when both masks contain the same bits.
-    /// </returns>
-    public bool Equals(GameLayerMask other) => value == other.value;
-
-    /// <summary>
-    /// Determines whether this instance and the supplied value represent the same logical state.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
-    /// </returns>
-    /// <param name="obj">
-    /// The object to compare with this instance.
-    /// </param>
-    public override bool Equals(object? obj) => obj is GameLayerMask other && Equals(other);
-
-    /// <summary>
-    /// Computes a hash code from the fields that participate in logical equality.
-    /// </summary>
-    /// <returns>
-    /// A hash code consistent with the implemented equality contract.
-    /// </returns>
-    public override int GetHashCode() => value.GetHashCode();
-
-    /// <summary>
-    /// Formats this value as a human-readable representation.
-    /// </summary>
-    /// <returns>
-    /// The human-readable representation of this value.
-    /// </returns>
-    public override string ToString() => $"0x{value:X8}";
 
     /// <summary>
     /// Combines the enabled bits from two masks.

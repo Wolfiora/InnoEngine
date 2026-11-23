@@ -1,7 +1,12 @@
+using System;
 using System.Numerics;
+using BGCS.Runtime;
+using Inno.Native.ImGui;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Copies presentation values and creates frame-bounded drawing borrows.
 /// </summary>
@@ -13,10 +18,10 @@ public static unsafe partial class ImGui
     /// <returns>
     /// Value metrics valid independently from the native style pointer.
     /// </returns>
-    public static EditorUiLayout GetLayout()
+    public static EditorUILayout GetLayout()
     {
-        EditorUiSession.current.EnsureDrawing();
-        return new EditorUiLayout(NativeImGui.Raw.GetStyle());
+        EditorUISession.current.EnsureDrawing();
+        return new EditorUILayout(NativeImGui.Raw.GetStyle());
     }
 
     /// <summary>
@@ -25,10 +30,10 @@ public static unsafe partial class ImGui
     /// <returns>
     /// A neutral value snapshot; no pointer or callback is retained.
     /// </returns>
-    public static EditorUiInput GetInput()
+    public static EditorUIInput GetInput()
     {
-        EditorUiSession.current.EnsureDrawing();
-        return new EditorUiInput(NativeImGui.Raw.GetIO());
+        EditorUISession.current.EnsureDrawing();
+        return new EditorUIInput(NativeImGui.Raw.GetIO());
     }
 
     /// <summary>
@@ -42,7 +47,7 @@ public static unsafe partial class ImGui
     /// </returns>
     public static Vector4 GetStyleColorValue(ImGuiCol color)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return FromNative(NativeImGui.Raw.GetStyle()->Colors[(int)color]);
     }
 
@@ -54,8 +59,8 @@ public static unsafe partial class ImGui
     /// </returns>
     public static (uint id, Vector2 position) GetViewport()
     {
-        EditorUiSession.current.EnsureDrawing();
-        var viewport = NativeImGui.Raw.GetWindowViewport();
+        EditorUISession.current.EnsureDrawing();
+        ImGuiViewport* viewport = NativeImGui.Raw.GetWindowViewport();
         return (viewport->ID, FromNative(viewport->Pos));
     }
 
@@ -70,10 +75,12 @@ public static unsafe partial class ImGui
     /// </exception>
     public static (float minimumX, float maximumX, float rowMinimum, float rowMaximum) GetTableBounds()
     {
-        _ = EditorUiSession.current.RequireDrawingFrame();
-        var table = NativeImGui.Raw.GetCurrentTable();
+        _ = EditorUISession.current.RequireDrawingFrame();
+        ImGuiTable* table = NativeImGui.Raw.GetCurrentTable();
         if (table is null)
-            throw new System.InvalidOperationException("A table row layout requires an active table.");
+        {
+            throw new InvalidOperationException("A table row layout requires an active table.");
+        }
         return (table->OuterRect.Min.X, table->OuterRect.Max.X, table->RowPosY1, table->RowPosY2);
     }
 
@@ -88,8 +95,8 @@ public static unsafe partial class ImGui
     /// </exception>
     public static (float minimumX, float maximumX, Vector2 workMaximum, Vector2 padding) GetWindowBounds()
     {
-        _ = EditorUiSession.current.RequireDrawingFrame();
-        var window = NativeImGui.Raw.GetCurrentWindow();
+        _ = EditorUISession.current.RequireDrawingFrame();
+        ImGuiWindow* window = NativeImGui.Raw.GetCurrentWindow();
         return (window->InnerRect.Min.X, window->InnerRect.Max.X, FromNative(window->WorkRect.Max), FromNative(window->WindowPadding));
     }
 
@@ -104,8 +111,8 @@ public static unsafe partial class ImGui
     /// </exception>
     public static (Vector2 minimum, Vector2 maximum) GetClipBounds()
     {
-        _ = EditorUiSession.current.RequireDrawingFrame();
-        var clip = NativeImGui.Raw.GetCurrentWindow()->ClipRect;
+        _ = EditorUISession.current.RequireDrawingFrame();
+        ImRect clip = NativeImGui.Raw.GetCurrentWindow()->ClipRect;
         return (FromNative(clip.Min), FromNative(clip.Max));
     }
 
@@ -115,7 +122,8 @@ public static unsafe partial class ImGui
     /// <returns>
     /// A value that rejects use after a window, frame, context or session change.
     /// </returns>
-    public static EditorDrawList GetDrawList() => new(EditorUiSession.current);
+    public static EditorDrawList GetDrawList() => new(EditorUISession.current);
+
     /// <summary>
     /// Checks the active payload's logical protocol without exposing its native buffer.
     /// </summary>
@@ -127,11 +135,13 @@ public static unsafe partial class ImGui
     /// </returns>
     public static bool HasDragPayload(string protocol)
     {
-        EditorUiSession.current.EnsureDrawing();
-        var payload = NativeImGui.Raw.GetDragDropPayload();
+        EditorUISession.current.EnsureDrawing();
+        ImGuiPayload* payload = NativeImGui.Raw.GetDragDropPayload();
         if (payload is null)
+        {
             return false;
-        using var text = BGCS.Runtime.Utf8Codec.EncodeNullTerminated(protocol, allowsNull: false);
+        }
+        using NativeStringLease text = Utf8Codec.EncodeNullTerminated(protocol, allowsNull: false);
         return NativeImGui.Raw.IsDataType(payload, (sbyte*)text.pointer) != 0;
     }
 
@@ -151,7 +161,7 @@ public static unsafe partial class ImGui
         string text,
         float scale
     ) {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return NativeImGui.CalcTextSize(text) * scale;
     }
 }

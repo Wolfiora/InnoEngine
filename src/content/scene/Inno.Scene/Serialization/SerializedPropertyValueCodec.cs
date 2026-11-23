@@ -13,9 +13,11 @@ internal static class SerializedPropertyValueCodec
     ) {
         ArgumentNullException.ThrowIfNull(componentType);
         ArgumentNullException.ThrowIfNull(context);
-        const PropertyVisibility persistent = PropertyVisibility.Serialize | PropertyVisibility.Deserialize;
-        return context.GetRequired<SerializationRegistry>().GetMetadata(componentType).members
-            .Where(static member => (member.visibility & persistent) == persistent).ToArray();
+        const PropertyVisibility C_PERSISTENT = PropertyVisibility.Serialize | PropertyVisibility.Deserialize;
+        return context.GetRequired<SerializationRegistry>()
+            .GetMetadata(componentType).members
+            .Where(static member => (member.visibility & C_PERSISTENT) == C_PERSISTENT)
+            .ToArray();
     }
 
     internal static byte[] Encode(
@@ -31,7 +33,9 @@ internal static class SerializedPropertyValueCodec
         object? value = member.GetValue(component);
         SerializationRegistry serialization = context.GetRequired<SerializationRegistry>();
         using (references.Enter())
+        {
             return serialization.Encode(writer => writer.Write("value", value, member.type), context);
+        }
     }
 
     internal static void Decode(

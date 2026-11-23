@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Logging;
 
 namespace Inno.Editor.Diagnostics;
@@ -14,7 +13,7 @@ public sealed class EditorConsoleOccurrence
         EditorConsoleEntryKind kind,
         LogLevel level,
         string source,
-        string sourceId,
+        string sourceID,
         string code,
         string category,
         string message,
@@ -23,13 +22,13 @@ public sealed class EditorConsoleOccurrence
         int line,
         int column,
         string stackTrace,
-        LogSessionId sessionId
+        LogSessionID sessionID
     ) {
         this.sequence = sequence;
         this.kind = kind;
         this.level = level;
         this.source = source;
-        this.sourceId = sourceId;
+        this.sourceID = sourceID;
         this.code = code;
         this.category = category;
         this.message = message;
@@ -38,7 +37,7 @@ public sealed class EditorConsoleOccurrence
         this.line = line;
         this.column = column;
         this.stackTrace = stackTrace;
-        this.sessionId = sessionId;
+        this.sessionID = sessionID;
     }
 
     /// <summary>
@@ -64,7 +63,7 @@ public sealed class EditorConsoleOccurrence
     /// <summary>
     /// Gets the stable diagnostic producer identifier, or an empty string for log entries.
     /// </summary>
-    public string sourceId { get; }
+    public string sourceID { get; }
 
     /// <summary>
     /// Gets the diagnostic code, or an empty string for uncoded entries.
@@ -114,5 +113,5 @@ public sealed class EditorConsoleOccurrence
     /// <summary>
     /// Gets the isolated runtime session that emitted this occurrence.
     /// </summary>
-    public LogSessionId sessionId { get; }
+    public LogSessionID sessionID { get; }
 }

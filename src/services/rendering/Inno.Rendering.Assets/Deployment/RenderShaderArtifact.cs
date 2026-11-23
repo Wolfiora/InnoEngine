@@ -1,15 +1,16 @@
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using Inno.Extensibility.Types;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
 /// <summary>
 /// Contains one immutable, source-free shader artifact ready for runtime GPU resource creation.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("43b40c10-c10b-5e97-b662-9bf9b4c9e34e")]
+[StableTypeID("43b40c10-c10b-5e97-b662-9bf9b4c9e34e")]
 public sealed class RenderShaderArtifact
 {
     private readonly byte[] m_definitionData;
@@ -33,12 +34,12 @@ public sealed class RenderShaderArtifact
     /// <param name="passes">
     /// Every source-free pass available to the runtime shader definition.
     /// </param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when a required identity is empty, no pass exists, or pass names are duplicated.
-    /// </exception>
     /// <param name="definitionData">
     /// Native-serialized material, keyword, technique and pass contract captured with these programs; contains stable asset references only.
     /// </param>
+    /// <exception cref="ArgumentException">
+    /// Thrown when a required identity is empty, no pass exists, or pass names are duplicated.
+    /// </exception>
     public RenderShaderArtifact(
         string shaderName,
         string targetKey,
@@ -53,18 +54,24 @@ public sealed class RenderShaderArtifact
         ArgumentNullException.ThrowIfNull(passes);
         RenderShaderPassArtifact[] passSnapshot = passes.ToArray();
         if (passSnapshot.Length == 0)
+        {
             throw new ArgumentException("A deployed shader artifact must contain at least one pass.", nameof(passes));
+        }
         if (passSnapshot.Select(static pass => pass.name).Distinct(StringComparer.Ordinal).Count() != passSnapshot.Length)
+        {
             throw new ArgumentException("A deployed shader artifact cannot repeat a pass name.", nameof(passes));
+        }
         this.shaderName = shaderName;
         this.targetKey = targetKey;
         this.variant = variant;
         this.shaderInterface = RenderShaderPassArtifact.CloneInterface(shaderInterface);
         m_passes = Array.AsReadOnly(passSnapshot);
         if (definitionData.IsEmpty)
+        {
             throw new ArgumentException("A shader publication requires its captured runtime contract.", nameof(definitionData));
+        }
         m_definitionData = definitionData.ToArray();
-        contentHash = Convert.ToHexString(SHA256.HashData(RenderShaderArtifactCodec.Encode(this)));
+        this.contentHash = Convert.ToHexString(SHA256.HashData(RenderShaderArtifactCodec.Encode(this)));
     }
 
     /// <summary>
@@ -102,4 +109,3 @@ public sealed class RenderShaderArtifact
     /// </summary>
     public IReadOnlyList<RenderShaderPassArtifact> passes => m_passes;
 }
-

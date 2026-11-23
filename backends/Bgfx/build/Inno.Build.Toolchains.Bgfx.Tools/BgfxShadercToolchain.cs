@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Rendering.Assets;
 using Inno.Rendering;
+using Inno.Rendering.Assets;
 using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Build.Toolchains.Bgfx.Tools;
@@ -73,35 +73,33 @@ public sealed partial class BgfxShadercToolchain : IShaderCompilerToolchain
         {
             throw new ArgumentException(
                 $"Shader target '{target.profileKey}' does not belong to this BGFX toolchain.",
-                nameof(target));
+                nameof(target)
+            );
         }
 
         string temporaryDirectory = Path.Combine(
             Path.GetTempPath(),
             "InnoEngine",
             "Shaderc",
-            Guid.NewGuid().ToString("N"));
+            Guid.NewGuid().ToString("N")
+        );
         Directory.CreateDirectory(temporaryDirectory);
         try
         {
             string sourcePath = Path.Combine(temporaryDirectory, "stage.sc");
             string outputPath = Path.Combine(temporaryDirectory, "stage.bin");
             string bgfxShaderInclude = ResolveBgfxShaderInclude();
-            File.Copy(
-                bgfxShaderInclude,
-                Path.Combine(temporaryDirectory, "bgfx_shader.sh"),
-                overwrite: true);
+            File.Copy(bgfxShaderInclude, Path.Combine(temporaryDirectory, "bgfx_shader.sh"), overwrite: true);
             File.Copy(
                 Path.Combine(
                     Path.GetDirectoryName(bgfxShaderInclude)
-                        ?? throw new InvalidOperationException("BGFX shader include has no parent directory."),
-                    "bgfx_compute.sh"),
+                    ?? throw new InvalidOperationException("BGFX shader include has no parent directory."),
+                    "bgfx_compute.sh"
+                ),
                 Path.Combine(temporaryDirectory, "bgfx_compute.sh"),
-                overwrite: true);
-            await File.WriteAllTextAsync(
-                sourcePath,
-                source,
-                cancellationToken).ConfigureAwait(false);
+                overwrite: true
+            );
+            await File.WriteAllTextAsync(sourcePath, source, cancellationToken).ConfigureAwait(false);
 
             List<string> arguments =
             [
@@ -121,10 +119,7 @@ public sealed partial class BgfxShadercToolchain : IShaderCompilerToolchain
             if (stage != ShaderStage.Compute && varying is not null)
             {
                 string varyingPath = Path.Combine(temporaryDirectory, "varying.def.sc");
-                await File.WriteAllTextAsync(
-                    varyingPath,
-                    varying,
-                    cancellationToken).ConfigureAwait(false);
+                await File.WriteAllTextAsync(varyingPath, varying, cancellationToken).ConfigureAwait(false);
                 arguments.Add("--varyingdef");
                 arguments.Add(varyingPath);
             }
@@ -142,40 +137,41 @@ public sealed partial class BgfxShadercToolchain : IShaderCompilerToolchain
             }
 
             if (target.debugInformation)
+            {
                 arguments.Add("--debug");
+            }
             arguments.Add("--keepcomments");
 
             ToolRunResult result = await m_tools.RunAsync(
                 BgfxTool.Shaderc,
                 arguments,
                 temporaryDirectory,
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken
+            ).ConfigureAwait(false);
             byte[]? bytes = result.succeeded && File.Exists(outputPath)
-                ? await File.ReadAllBytesAsync(outputPath, cancellationToken).ConfigureAwait(false)
-                : null;
-            return new BgfxShadercResult(
-                bytes,
-                result.exitCode,
-                result.standardOutput,
-                result.standardError);
+                            ? await File.ReadAllBytesAsync(outputPath, cancellationToken).ConfigureAwait(false)
+                            : null;
+            return new BgfxShadercResult(bytes, result.exitCode, result.standardOutput, result.standardError);
         }
         finally
         {
             if (Directory.Exists(temporaryDirectory))
+            {
                 Directory.Delete(temporaryDirectory, recursive: true);
+            }
         }
     }
 
+    private string ResolveBgfxShaderInclude() => m_tools.ResolveShaderInclude("bgfx_shader.sh");
+
     private static string ToShadercStage(ShaderStage stage)
         => stage switch
-        {
-            ShaderStage.Vertex => "vertex",
-            ShaderStage.Fragment => "fragment",
-            ShaderStage.Compute => "compute",
-            _ => throw new ArgumentOutOfRangeException(nameof(stage), stage, "A single shader stage is required.")
-        };
-
-    private string ResolveBgfxShaderInclude() => m_tools.ResolveShaderInclude("bgfx_shader.sh");
+    {
+        ShaderStage.Vertex => "vertex",
+        ShaderStage.Fragment => "fragment",
+        ShaderStage.Compute => "compute",
+        _ => throw new ArgumentOutOfRangeException(nameof(stage), stage, "A single shader stage is required.")
+    };
 }
 
 internal sealed record BgfxShadercResult(

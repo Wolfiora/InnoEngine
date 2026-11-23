@@ -1,13 +1,14 @@
-using System.Threading.Tasks;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Inno.Native.ImGui;
+using System.Threading.Tasks;
 using Inno.Adapter.Presentation.ImGui;
 using Inno.Adapter.Rendering.Bgfx;
+using Inno.Native.ImGui;
 using Inno.Rendering;
+
 using ImGuiNative = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Adapter.Presentation.ImGui;
@@ -22,22 +23,26 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     private const int C_INITIAL_VERTEX_CAPACITY = 4096;
     private const int C_INITIAL_INDEX_CAPACITY = 8192;
 
-    private static readonly RenderBindingId S_TEXTURE_BINDING = new("s_tex");
-    private static readonly RenderBindingId S_OUTPUT_ENCODING = new("outputEncoding");
-    private static readonly byte[] S_LINEAR_OUTPUT = new byte[16];
-    private static readonly byte[] S_ENCODED_OUTPUT = CreateOutputEncoding();
-    private static readonly RenderPhaseId S_USER_INTERFACE_PHASE = new("inno.imgui.compose");
-    private static readonly RenderClearColor S_PRESENTATION_CLEAR_COLOR = new(
+    private static readonly RenderBindingID TEXTURE_BINDING = new("s_tex");
+    private static readonly RenderBindingID OUTPUT_ENCODING = new("outputEncoding");
+    private static readonly byte[] LINEAR_OUTPUT = new byte[16];
+    private static readonly byte[] ENCODED_OUTPUT = CreateOutputEncoding();
+    private static readonly RenderPhaseID USER_INTERFACE_PHASE = new("inno.imgui.compose");
+
+    private static readonly RenderClearColor PRESENTATION_CLEAR_COLOR = new(
         SrgbToLinear(0.08f),
         SrgbToLinear(0.08f),
         SrgbToLinear(0.09f),
-        1f);
-    private static readonly RenderVertexLayout S_VERTEX_LAYOUT = new(
-    [
-        new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float2),
-        new RenderVertexAttribute(RenderVertexSemantic.TextureCoordinate0, RenderVertexFormat.Float2),
-        new RenderVertexAttribute(RenderVertexSemantic.Color0, RenderVertexFormat.UInt8Normalized4)
-    ]);
+        1f
+    );
+
+    private static readonly RenderVertexLayout VERTEX_LAYOUT = new(
+        [
+            new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float2),
+            new RenderVertexAttribute(RenderVertexSemantic.TextureCoordinate0, RenderVertexFormat.Float2),
+            new RenderVertexAttribute(RenderVertexSemantic.Color0, RenderVertexFormat.UInt8Normalized4)
+        ]
+    );
 
     private readonly object m_sync = new();
     private readonly IRenderDevice m_device;
@@ -85,14 +90,14 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         ValidatePipelineDescriptor(pipelineDescriptor);
         m_device = device;
         m_bgfxDevice = device as BgfxDevice
-            ?? throw new NotSupportedException("The BGFX ImGui renderer requires an Inno.Adapter.Rendering.Bgfx device.");
+                       ?? throw new NotSupportedException("The BGFX ImGui renderer requires an Inno.Adapter.Rendering.Bgfx device.");
         m_pendingPipelineDescriptor = pipelineDescriptor;
     }
 
     /// <summary>
     /// Gets the exact interleaved vertex layout required by the built-in ImGui shaders.
     /// </summary>
-    public static RenderVertexLayout vertexLayout => S_VERTEX_LAYOUT;
+    public static RenderVertexLayout vertexLayout => VERTEX_LAYOUT;
 
     /// <summary>
     /// Gets the last recoverable shader replacement error while the last-good pipeline remains active.
@@ -104,7 +109,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     /// </summary>
     public bool supportsViewports => m_bgfxDevice.supportsAdditionalSurfaces;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool supportsVertexOffsets => true;
 
     /// <summary>
@@ -177,7 +182,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     /// <param name="drawData">
     /// The draw data consumed by render main; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void RenderMain(IntPtr drawData)
+    public void RenderMain(nint drawData)
     {
         lock (m_sync)
         {
@@ -209,8 +214,10 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         lock (m_sync)
         {
             if (m_mainPacket is not null
-                && (m_mainPacket.pixelWidth != pixelWidth || m_mainPacket.pixelHeight != pixelHeight))
+                && (m_mainPacket.pixelWidth != pixelWidth || m_mainPacket.pixelHeight != pixelHeight)
+            ) {
                 m_mainPacket = null;
+            }
         }
     }
 
@@ -226,9 +233,9 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         lock (m_sync)
         {
             ObjectDisposedException.ThrowIf(m_disposeRequested, this);
-            if (!m_viewports.TryAdd(target.viewportId, new ViewportState(target)))
+            if (!m_viewports.TryAdd(target.viewportID, new ViewportState(target)))
             {
-                throw new ArgumentException($"Viewport {target.viewportId} is already registered.", nameof(target));
+                throw new ArgumentException($"Viewport {target.viewportID} is already registered.", nameof(target));
             }
         }
     }
@@ -244,7 +251,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         ArgumentNullException.ThrowIfNull(target);
         lock (m_sync)
         {
-            if (m_viewports.TryGetValue(target.viewportId, out ViewportState? state))
+            if (m_viewports.TryGetValue(target.viewportID, out ViewportState? state))
             {
                 state.target = target;
                 state.resizePending = true;
@@ -263,18 +270,18 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     /// </param>
     public void RenderViewport(
         PlatformImGuiViewportTarget target,
-        IntPtr drawData
+        nint drawData
     ) {
         ArgumentNullException.ThrowIfNull(target);
         lock (m_sync)
         {
-            if (m_disposeRequested || !m_viewports.TryGetValue(target.viewportId, out ViewportState? state))
+            if (m_disposeRequested || !m_viewports.TryGetValue(target.viewportID, out ViewportState? state))
             {
                 return;
             }
 
             state.target = target;
-            state.packet = CaptureDrawData(drawData, target.viewportId, state.surface);
+            state.packet = CaptureDrawData(drawData, target.viewportID, state.surface);
         }
     }
 
@@ -284,10 +291,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-    public void PresentViewport(PlatformImGuiViewportTarget target)
-    {
-        ArgumentNullException.ThrowIfNull(target);
-    }
+    public void PresentViewport(PlatformImGuiViewportTarget target) => ArgumentNullException.ThrowIfNull(target);
 
     /// <summary>
     /// Destroys the auxiliary viewport and releases its rendering resources.
@@ -298,24 +302,25 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     /// <returns>
     /// Completion of render-thread window release, or an already completed task for an unallocated viewport.
     /// </returns>
-    public Task RetireViewport(PlatformImGuiViewportTarget target)
+    public Task RetireViewportAsync(PlatformImGuiViewportTarget target)
     {
         ArgumentNullException.ThrowIfNull(target);
         lock (m_sync)
         {
-            if (m_viewports.TryGetValue(target.viewportId, out ViewportState? state))
+            if (m_viewports.TryGetValue(target.viewportID, out ViewportState? state))
             {
                 Task retirement = state.surface.isValid
-                    ? m_bgfxDevice.RetireWindowSurface(state.surface) : Task.CompletedTask;
-                m_viewports.Remove(target.viewportId);
-                m_framePackets = m_framePackets.Where(packet => packet.viewportId != target.viewportId).ToArray();
+                                  ? m_bgfxDevice.RetireWindowSurfaceAsync(state.surface)
+                                  : Task.CompletedTask;
+                m_viewports.Remove(target.viewportID);
+                m_framePackets = m_framePackets.Where(packet => packet.viewportID != target.viewportID).ToArray();
                 return retirement;
             }
         }
         return Task.CompletedTask;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void DrainViewportRetirements() => m_bgfxDevice.DrainWindowSurfaceRetirements();
 
     /// <summary>
@@ -353,7 +358,9 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
                 }
             }
             if (needsOutputTransfer)
+            {
                 PreparePresentationQuad();
+            }
             PrepareTextures();
             PrepareDrawPackets();
         }
@@ -383,39 +390,65 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
 
             foreach (PreparedPacket packet in m_framePackets)
             {
-                if (packet.viewportId == 0 && !m_device.primaryPresentationSize.HasValue)
+                if (packet.viewportID == 0 && !m_device.primaryPresentationSize.HasValue)
+                {
                     continue;
-                string name = packet.viewportId == 0 ? "ImGui/Main" : $"ImGui/Viewport/{packet.viewportId}";
+                }
+                string name = packet.viewportID == 0 ? "ImGui/Main" : $"ImGui/Viewport/{packet.viewportID}";
                 bool needsOutputTransfer = packet.surface.isValid
-                    ? !m_bgfxDevice.WindowSurfaceIsSrgb(packet.surface)
-                    : !m_bgfxDevice.backbufferIsSrgb;
-                RasterPassBuilder pass = graph.AddRasterPass(name, S_USER_INTERFACE_PHASE, packet, ExecutePacket);
+                                           ? !m_bgfxDevice.WindowSurfaceIsSrgb(packet.surface)
+                                           : !m_bgfxDevice.backbufferIsSrgb;
+                RasterPassBuilder pass = graph.AddRasterPass(name, USER_INTERFACE_PHASE, packet, ExecutePacket);
                 pass.SetViewTransform(Identity(), Orthographic(packet.displayPosition, packet.displaySize));
                 if (needsOutputTransfer)
                 {
-                    RenderTextureHandle composed = graph.CreateTexture($"{name}/LinearComposition",
-                        new RenderTextureDescriptor(packet.pixelWidth, packet.pixelHeight,
+                    RenderTextureHandle composed = graph.CreateTexture(
+                        $"{name}/LinearComposition",
+                        new RenderTextureDescriptor(
+                            packet.pixelWidth,
+                            packet.pixelHeight,
                             RenderTextureFormat.RGBA8Srgb,
-                            RenderTextureUsage.ColorAttachment | RenderTextureUsage.Sampled));
-                    pass.UseColorAttachment(composed, 0, RenderLoadAction.Clear, RenderStoreAction.Store,
-                        S_PRESENTATION_CLEAR_COLOR);
-                    var presentation = new PresentationPacket(packet.surface, composed,
-                        packet.pixelWidth, packet.pixelHeight, packet.pipeline,
-                        m_presentationVertices, m_presentationIndices);
-                    RasterPassBuilder output = graph.AddRasterPass($"{name}/Present", S_USER_INTERFACE_PHASE,
-                        presentation, ExecutePresentationPacket);
+                            RenderTextureUsage.ColorAttachment | RenderTextureUsage.Sampled
+                        )
+                    );
+                    pass.UseColorAttachment(
+                        composed,
+                        0,
+                        RenderLoadAction.Clear,
+                        RenderStoreAction.Store,
+                        PRESENTATION_CLEAR_COLOR
+                    );
+                    var presentation = new PresentationPacket(
+                        packet.surface,
+                        composed,
+                        packet.pixelWidth,
+                        packet.pixelHeight,
+                        packet.pipeline,
+                        m_presentationVertices,
+                        m_presentationIndices
+                    );
+                    RasterPassBuilder output = graph.AddRasterPass(
+                        $"{name}/Present",
+                        USER_INTERFACE_PHASE,
+                        presentation,
+                        ExecutePresentationPacket
+                    );
                     output.SetViewTransform(Identity(), Identity())
                         .ClearPresentationTarget(default)
                         .HasSideEffect();
                     output.ReadTexture(composed);
                     if (packet.surface.isValid)
+                    {
                         output.UseSurface(packet.surface);
+                    }
                 }
                 else
                 {
-                    pass.ClearPresentationTarget(S_PRESENTATION_CLEAR_COLOR).HasSideEffect();
+                    pass.ClearPresentationTarget(PRESENTATION_CLEAR_COLOR).HasSideEffect();
                     if (packet.surface.isValid)
+                    {
                         pass.UseSurface(packet.surface);
+                    }
                 }
             }
         }
@@ -429,8 +462,10 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         lock (m_sync)
         {
             m_disposeRequested = true;
-            foreach (uint viewportId in m_viewports.Keys.ToArray())
-                _ = RetireViewport(m_viewports[viewportId].target);
+            foreach (uint viewportID in m_viewports.Keys.ToArray())
+            {
+                _ = RetireViewportAsync(m_viewports[viewportID].target);
+            }
             m_mainPacket = null;
             m_framePackets = [];
         }
@@ -448,7 +483,8 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         {
             GraphicsPipelineHandle candidate = m_device.CreateGraphicsPipeline(
                 m_pendingPipelineDescriptor,
-                "ImGui Pipeline");
+                "ImGui Pipeline"
+            );
             GraphicsPipelineHandle previous = m_pipeline;
             m_pipeline = candidate;
             m_pendingPipelineDescriptor = null;
@@ -468,28 +504,37 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     private void PreparePresentationQuad()
     {
         if (m_presentationVertices.isValid)
+        {
             return;
+        }
         PersistentBufferHandle vertices = default;
         PersistentBufferHandle indices = default;
         try
         {
             vertices = m_device.CreateBuffer(
-                new PersistentBufferDescriptor(new RenderBufferDescriptor(4, C_VERTEX_STRIDE, RenderBufferUsage.Vertex), S_VERTEX_LAYOUT),
+                new PersistentBufferDescriptor(new RenderBufferDescriptor(4, C_VERTEX_STRIDE, RenderBufferUsage.Vertex), VERTEX_LAYOUT),
                 CreatePresentationVertices(m_device.capabilities.originBottomLeft),
-                "ImGui Presentation Vertices");
+                "ImGui Presentation Vertices"
+            );
             indices = m_device.CreateBuffer(
                 new PersistentBufferDescriptor(
                     new RenderBufferDescriptor(6, C_INDEX_STRIDE, RenderBufferUsage.Index),
-                    indexFormat: RenderIndexFormat.UInt16),
+                    indexFormat: RenderIndexFormat.UInt16
+                ),
                 [0, 0, 1, 0, 2, 0, 0, 0, 2, 0, 3, 0],
-                "ImGui Presentation Indices");
+                "ImGui Presentation Indices"
+            );
         }
         catch
         {
             if (indices.isValid)
+            {
                 m_device.DestroyBuffer(indices);
+            }
             if (vertices.isValid)
+            {
                 m_device.DestroyBuffer(vertices);
+            }
             throw;
         }
         m_presentationVertices = vertices;
@@ -506,7 +551,8 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
                     state.target.nativeHandles,
                     state.target.width,
                     state.target.height,
-                    $"ImGui Viewport {state.target.viewportId}");
+                    $"ImGui Viewport {state.target.viewportID}"
+                );
                 state.resizePending = false;
             }
             else if (state.resizePending)
@@ -539,15 +585,16 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             PersistentTextureHandle texture;
             if (m_ownedTextures.TryGetValue(token, out OwnedTexture? current)
                 && current.width == upload.width
-                && current.height == upload.height)
-            {
+                && current.height == upload.height
+            ) {
                 texture = current.handle;
             }
             else
             {
                 texture = m_device.CreateTexture(
                     new RenderTextureDescriptor(upload.width, upload.height, RenderTextureFormat.RGBA8, RenderTextureUsage.Sampled),
-                    $"ImGui Texture {token}");
+                    $"ImGui Texture {token}"
+                );
                 if (current is not null)
                 {
                     m_device.DestroyTexture(current.handle);
@@ -572,7 +619,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             m_mainPacket = null;
         }
 
-        foreach (ViewportState state in m_viewports.Values.OrderBy(static value => value.target.viewportId))
+        foreach (ViewportState state in m_viewports.Values.OrderBy(static value => value.target.viewportID))
         {
             if (state.packet is not null)
             {
@@ -590,8 +637,8 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         }
 
         EnsureDynamicBuffers(vertexCount, indexCount);
-        byte[] vertices = new byte[checked(vertexCount * C_VERTEX_STRIDE)];
-        byte[] indices = new byte[checked(indexCount * C_INDEX_STRIDE)];
+        var vertices = new byte[checked(vertexCount * C_VERTEX_STRIDE)];
+        var indices = new byte[checked(indexCount * C_INDEX_STRIDE)];
         List<PreparedPacket> prepared = [];
         int vertexBase = 0;
         int indexBase = 0;
@@ -604,29 +651,35 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             {
                 if (m_textures.TryGetValue(command.textureToken, out PersistentTextureHandle texture))
                 {
-                    commands.Add(new PreparedDrawCommand(
-                        command.clipX,
-                        command.clipY,
-                        command.clipWidth,
-                        command.clipHeight,
-                        vertexBase + command.firstVertex,
-                        indexBase + command.firstIndex,
-                        command.indexCount,
-                        texture));
+                    commands.Add(
+                        new PreparedDrawCommand(
+                            command.clipX,
+                            command.clipY,
+                            command.clipWidth,
+                            command.clipHeight,
+                            vertexBase + command.firstVertex,
+                            indexBase + command.firstIndex,
+                            command.indexCount,
+                            texture
+                        )
+                    );
                 }
             }
 
-            prepared.Add(new PreparedPacket(
-                packet.viewportId,
-                packet.surface,
-                packet.displayPosition,
-                packet.displaySize,
-                packet.pixelWidth,
-                packet.pixelHeight,
-                commands,
-                m_pipeline,
-                m_vertexBuffer,
-                m_indexBuffer));
+            prepared.Add(
+                new PreparedPacket(
+                    packet.viewportID,
+                    packet.surface,
+                    packet.displayPosition,
+                    packet.displaySize,
+                    packet.pixelWidth,
+                    packet.pixelHeight,
+                    commands,
+                    m_pipeline,
+                    m_vertexBuffer,
+                    m_indexBuffer
+                )
+            );
             vertexBase += packet.vertices.Length / C_VERTEX_STRIDE;
             indexBase += packet.indices.Length / C_INDEX_STRIDE;
         }
@@ -646,9 +699,11 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             PersistentBufferHandle replacement = m_device.CreateBuffer(
                 new PersistentBufferDescriptor(
                     new RenderBufferDescriptor(capacity, C_VERTEX_STRIDE, RenderBufferUsage.Vertex | RenderBufferUsage.Dynamic),
-                    S_VERTEX_LAYOUT),
-                ReadOnlySpan<byte>.Empty,
-                "ImGui Vertices");
+                    VERTEX_LAYOUT
+                ),
+                [],
+                "ImGui Vertices"
+            );
             if (m_vertexBuffer.isValid)
             {
                 m_device.DestroyBuffer(m_vertexBuffer);
@@ -664,9 +719,11 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             PersistentBufferHandle replacement = m_device.CreateBuffer(
                 new PersistentBufferDescriptor(
                     new RenderBufferDescriptor(capacity, C_INDEX_STRIDE, RenderBufferUsage.Index | RenderBufferUsage.Dynamic),
-                    indexFormat: RenderIndexFormat.UInt16),
-                ReadOnlySpan<byte>.Empty,
-                "ImGui Indices");
+                    indexFormat: RenderIndexFormat.UInt16
+                ),
+                [],
+                "ImGui Indices"
+            );
             if (m_indexBuffer.isValid)
             {
                 m_device.DestroyBuffer(m_indexBuffer);
@@ -678,33 +735,35 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     }
 
     private DrawPacket? CaptureDrawData(
-        IntPtr address,
-        uint viewportId,
+        nint address,
+        uint viewportID,
         RenderSurfaceHandle surface
     ) {
-        if (address == IntPtr.Zero)
+        if (address == nint.Zero)
         {
             return null;
         }
 
-        var drawData = (ImDrawData*)address;
+        ImDrawData* drawData = (ImDrawData*)address;
         if (drawData->Valid == 0 || drawData->TotalVtxCount <= 0 || drawData->TotalIdxCount <= 0)
         {
             return null;
         }
 
-        Vector2 clipScale = new(drawData->FramebufferScale.X, drawData->FramebufferScale.Y);
+        var clipScale = new Vector2(drawData->FramebufferScale.X, drawData->FramebufferScale.Y);
         int pixelWidth = checked((int)MathF.Round(drawData->DisplaySize.X * clipScale.X));
         int pixelHeight = checked((int)MathF.Round(drawData->DisplaySize.Y * clipScale.Y));
         if (pixelWidth <= 0 || pixelHeight <= 0)
+        {
             return null;
+        }
         ProcessTextureRequests(drawData);
-        byte[] vertices = new byte[checked(drawData->TotalVtxCount * C_VERTEX_STRIDE)];
-        byte[] indices = new byte[checked(drawData->TotalIdxCount * C_INDEX_STRIDE)];
+        var vertices = new byte[checked(drawData->TotalVtxCount * C_VERTEX_STRIDE)];
+        var indices = new byte[checked(drawData->TotalIdxCount * C_INDEX_STRIDE)];
         List<CapturedDrawCommand> commands = [];
         int vertexBase = 0;
         int indexBase = 0;
-        Vector2 clipOffset = new(drawData->DisplayPos.X, drawData->DisplayPos.Y);
+        var clipOffset = new Vector2(drawData->DisplayPos.X, drawData->DisplayPos.Y);
         for (int listIndex = 0; listIndex < drawData->CmdListsCount; listIndex++)
         {
             ImDrawList* drawList = drawData->CmdLists.Data[listIndex];
@@ -718,7 +777,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             for (int commandIndex = 0; commandIndex < drawList->CmdBuffer.Size; commandIndex++)
             {
                 ImDrawCmd command = drawList->CmdBuffer.Data[commandIndex];
-                if (command.UserCallback != null || command.ElemCount == 0)
+                if (command.UserCallback is not null || command.ElemCount == 0)
                 {
                     continue;
                 }
@@ -733,15 +792,18 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
                     continue;
                 }
 
-                commands.Add(new CapturedDrawCommand(
-                    clipX,
-                    clipY,
-                    clipRight - clipX,
-                    clipBottom - clipY,
-                    checked(vertexBase + (int)command.VtxOffset),
-                    checked(indexBase + (int)command.IdxOffset),
-                    checked((int)command.ElemCount),
-                    ImGuiNative.Raw.GetTexID(&command)));
+                commands.Add(
+                    new CapturedDrawCommand(
+                        clipX,
+                        clipY,
+                        clipRight - clipX,
+                        clipBottom - clipY,
+                        checked(vertexBase + (int)command.VtxOffset),
+                        checked(indexBase + (int)command.IdxOffset),
+                        checked((int)command.ElemCount),
+                        ImGuiNative.Raw.GetTexID(&command)
+                    )
+                );
             }
 
             vertexBase += listVertexCount;
@@ -749,7 +811,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         }
 
         return new DrawPacket(
-            viewportId,
+            viewportID,
             surface,
             new Vector2(drawData->DisplayPos.X, drawData->DisplayPos.Y),
             new Vector2(drawData->DisplaySize.X, drawData->DisplaySize.Y),
@@ -757,12 +819,13 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             pixelHeight,
             vertices,
             indices,
-            commands);
+            commands
+        );
     }
 
     private void ProcessTextureRequests(ImDrawData* drawData)
     {
-        var textures = drawData->Textures;
+        ImVectorImTextureDataPtr* textures = drawData->Textures;
         if (textures is null)
         {
             return;
@@ -771,7 +834,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         for (int index = 0; index < textures->Size; index++)
         {
             ImTextureData* textureData = textures->Data[index];
-            if (textureData == null)
+            if (textureData is null)
             {
                 continue;
             }
@@ -793,8 +856,8 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             if (textureData->Status is not (ImTextureStatus.WantCreate or ImTextureStatus.WantUpdates)
                 || textureData->Pixels is null
                 || textureData->Width <= 0
-                || textureData->Height <= 0)
-            {
+                || textureData->Height <= 0
+            ) {
                 continue;
             }
 
@@ -808,72 +871,10 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             m_pendingTextureUploads[token] = new TextureUpload(
                 textureData->Width,
                 textureData->Height,
-                CopyTexturePixels(textureData));
+                CopyTexturePixels(textureData)
+            );
             ImGuiNative.Raw.SetStatus(textureData, ImTextureStatus.Ok);
         }
-    }
-
-    private static byte[] CopyTexturePixels(ImTextureData* textureData)
-    {
-        int sourcePitch = ImGuiNative.Raw.GetPitch(textureData);
-        if (textureData->Format == ImTextureFormat.Rgba32)
-        {
-            int rowBytes = checked(textureData->Width * 4);
-            byte[] result = new byte[checked(rowBytes * textureData->Height)];
-            for (int y = 0; y < textureData->Height; y++)
-            {
-                new ReadOnlySpan<byte>(textureData->Pixels + (y * sourcePitch), rowBytes)
-                    .CopyTo(result.AsSpan(y * rowBytes, rowBytes));
-            }
-
-            return result;
-        }
-
-        byte[] expanded = new byte[checked(textureData->Width * textureData->Height * 4)];
-        for (int y = 0; y < textureData->Height; y++)
-        {
-            byte* source = textureData->Pixels + (y * sourcePitch);
-            for (int x = 0; x < textureData->Width; x++)
-            {
-                int destination = ((y * textureData->Width) + x) * 4;
-                expanded[destination] = 255;
-                expanded[destination + 1] = 255;
-                expanded[destination + 2] = 255;
-                expanded[destination + 3] = source[x];
-            }
-        }
-
-        return expanded;
-    }
-
-    private static void ExecutePacket(
-        PreparedPacket packet,
-        RenderPassContext context
-    ) {
-        context.commands.BindGraphicsPipeline(packet.pipeline);
-        context.commands.SetUniform(S_OUTPUT_ENCODING, S_LINEAR_OUTPUT);
-        foreach (PreparedDrawCommand command in packet.commands)
-        {
-            context.commands.SetScissor(command.clipX, command.clipY, command.clipWidth, command.clipHeight);
-            context.commands.BindVertexBuffer(packet.vertexBuffer, command.firstVertex);
-            context.commands.BindIndexBuffer(packet.indexBuffer, command.firstIndex);
-            context.commands.BindTexture(S_TEXTURE_BINDING, command.texture);
-            context.commands.DrawIndexed(command.indexCount);
-        }
-    }
-
-    private static void ExecutePresentationPacket(
-        PresentationPacket packet,
-        RenderPassContext context
-    ) {
-        context.commands.SetViewport(0, 0, packet.width, packet.height);
-        context.commands.SetScissor(0, 0, packet.width, packet.height);
-        context.commands.BindGraphicsPipeline(packet.pipeline);
-        context.commands.SetUniform(S_OUTPUT_ENCODING, S_ENCODED_OUTPUT);
-        context.commands.BindVertexBuffer(packet.vertices);
-        context.commands.BindIndexBuffer(packet.indices);
-        context.commands.BindTexture(S_TEXTURE_BINDING, packet.source);
-        context.commands.DrawIndexed(6);
     }
 
     private void ReleaseDeviceResources()
@@ -894,9 +895,13 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         }
 
         if (m_presentationIndices.isValid)
+        {
             m_device.DestroyBuffer(m_presentationIndices);
+        }
         if (m_presentationVertices.isValid)
+        {
             m_device.DestroyBuffer(m_presentationVertices);
+        }
 
         if (m_pipeline.isValid)
         {
@@ -922,22 +927,91 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         return m_nextTextureToken++;
     }
 
+    private static byte[] CopyTexturePixels(ImTextureData* textureData)
+    {
+        int sourcePitch = ImGuiNative.Raw.GetPitch(textureData);
+        if (textureData->Format == ImTextureFormat.Rgba32)
+        {
+            int rowBytes = checked(textureData->Width * 4);
+            var result = new byte[checked(rowBytes * textureData->Height)];
+            for (int y = 0; y < textureData->Height; y++)
+            {
+                new ReadOnlySpan<byte>(textureData->Pixels + (y * sourcePitch), rowBytes)
+                    .CopyTo(result.AsSpan(y * rowBytes, rowBytes));
+            }
+
+            return result;
+        }
+
+        var expanded = new byte[checked(textureData->Width * textureData->Height * 4)];
+        for (int y = 0; y < textureData->Height; y++)
+        {
+            byte* source = textureData->Pixels + (y * sourcePitch);
+            for (int x = 0; x < textureData->Width; x++)
+            {
+                int destination = ((y * textureData->Width) + x) * 4;
+                expanded[destination] = 255;
+                expanded[destination + 1] = 255;
+                expanded[destination + 2] = 255;
+                expanded[destination + 3] = source[x];
+            }
+        }
+
+        return expanded;
+    }
+
+    private static void ExecutePacket(
+        PreparedPacket packet,
+        RenderPassContext context
+    ) {
+        context.commands.BindGraphicsPipeline(packet.pipeline);
+        context.commands.SetUniform(OUTPUT_ENCODING, LINEAR_OUTPUT);
+        foreach (PreparedDrawCommand command in packet.commands)
+        {
+            context.commands.SetScissor(command.clipX, command.clipY, command.clipWidth, command.clipHeight);
+            context.commands.BindVertexBuffer(packet.vertexBuffer, command.firstVertex);
+            context.commands.BindIndexBuffer(packet.indexBuffer, command.firstIndex);
+            context.commands.BindTexture(TEXTURE_BINDING, command.texture);
+            context.commands.DrawIndexed(command.indexCount);
+        }
+    }
+
+    private static void ExecutePresentationPacket(
+        PresentationPacket packet,
+        RenderPassContext context
+    ) {
+        context.commands.SetViewport(0, 0, packet.width, packet.height);
+        context.commands.SetScissor(0, 0, packet.width, packet.height);
+        context.commands.BindGraphicsPipeline(packet.pipeline);
+        context.commands.SetUniform(OUTPUT_ENCODING, ENCODED_OUTPUT);
+        context.commands.BindVertexBuffer(packet.vertices);
+        context.commands.BindIndexBuffer(packet.indices);
+        context.commands.BindTexture(TEXTURE_BINDING, packet.source);
+        context.commands.DrawIndexed(6);
+    }
+
     private static void ValidatePipelineDescriptor(GraphicsPipelineDescriptor descriptor)
     {
-        if (descriptor.vertexLayout is null || !descriptor.vertexLayout.Equals(S_VERTEX_LAYOUT))
+        if (descriptor.vertexLayout is null || !descriptor.vertexLayout.Equals(VERTEX_LAYOUT))
         {
             throw new ArgumentException("ImGui pipeline vertex layout must be Position2, UV2, ColorRGBA8.", nameof(descriptor));
         }
 
         RenderShaderBindingDescriptor? texture = descriptor.bindings.SingleOrDefault(
-            static value => value.id == S_TEXTURE_BINDING);
+            static value => value.id == TEXTURE_BINDING
+        );
         if (texture is null || texture.kind != RenderShaderBindingKind.Texture || texture.slot != 0)
+        {
             throw new ArgumentException("ImGui pipeline must declare texture binding 's_tex' at slot zero.", nameof(descriptor));
+        }
         RenderShaderBindingDescriptor? outputEncoding = descriptor.bindings.SingleOrDefault(
-            static value => value.id == S_OUTPUT_ENCODING);
+            static value => value.id == OUTPUT_ENCODING
+        );
         if (descriptor.bindings.Count != 2 || outputEncoding is null
-            || outputEncoding.kind != RenderShaderBindingKind.Uniform)
+            || outputEncoding.kind != RenderShaderBindingKind.Uniform
+        ) {
             throw new ArgumentException("ImGui pipeline must declare its outputEncoding render-pass uniform.", nameof(descriptor));
+        }
     }
 
     private static int GrowCapacity(
@@ -955,14 +1029,14 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
 
     private static byte[] CreateOutputEncoding()
     {
-        byte[] data = new byte[16];
+        var data = new byte[16];
         BinaryPrimitives.WriteSingleLittleEndian(data, 1f);
         return data;
     }
 
     private static byte[] CreatePresentationVertices(bool originBottomLeft)
     {
-        byte[] data = new byte[4 * C_VERTEX_STRIDE];
+        var data = new byte[4 * C_VERTEX_STRIDE];
         float top = originBottomLeft ? 1f : 0f;
         float bottom = originBottomLeft ? 0f : 1f;
         WriteVertex(0, -1f, 1f, 0f, top);
@@ -989,12 +1063,11 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
 
     private static float SrgbToLinear(float value)
         => value <= 0.04045f
-            ? value / 12.92f
-            : MathF.Pow((value + 0.055f) / 1.055f, 2.4f);
+           ? value / 12.92f
+           : MathF.Pow((value + 0.055f) / 1.055f, 2.4f);
 
     private static float[] Identity()
-        =>
-        [
+        => [
             1f, 0f, 0f, 0f,
             0f, 1f, 0f, 0f,
             0f, 0f, 1f, 0f,
@@ -1011,10 +1084,22 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         float bottom = position.Y + size.Y;
         return
         [
-            2f / (right - left), 0f, 0f, 0f,
-            0f, 2f / (top - bottom), 0f, 0f,
-            0f, 0f, 1f, 0f,
-            (right + left) / (left - right), (top + bottom) / (bottom - top), 0f, 1f
+            2f / (right - left),
+            0f,
+            0f,
+            0f,
+            0f,
+            2f / (top - bottom),
+            0f,
+            0f,
+            0f,
+            0f,
+            1f,
+            0f,
+            (right + left) / (left - right),
+            (top + bottom) / (bottom - top),
+            0f,
+            1f
         ];
     }
 
@@ -1026,19 +1111,26 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         /// <param name="target">
         /// The existing target that receives the validated result.
         /// </param>
-        public ViewportState(PlatformImGuiViewportTarget target) => this.target = target;
+        public ViewportState(PlatformImGuiViewportTarget target)
+        {
+            this.target = target;
+        }
+
         /// <summary>
         /// Gets the platform viewport whose render resources are tracked by this state.
         /// </summary>
         public PlatformImGuiViewportTarget target { get; set; }
+
         /// <summary>
         /// Gets the presentation surface targeted by this render pass.
         /// </summary>
         public RenderSurfaceHandle surface { get; set; }
+
         /// <summary>
         /// Gets the most recently prepared immutable draw packet, or null before preparation.
         /// </summary>
         public DrawPacket? packet { get; set; }
+
         /// <summary>
         /// Gets whether the caller-visible condition represented by this property is satisfied.
         /// </summary>
@@ -1050,11 +1142,13 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         int width,
         int height
     );
+
     private sealed record TextureUpload(
         int width,
         int height,
         byte[] pixels
     );
+
     private sealed record CapturedDrawCommand(
         int clipX,
         int clipY,
@@ -1078,7 +1172,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     );
 
     private sealed record DrawPacket(
-        uint viewportId,
+        uint viewportID,
         RenderSurfaceHandle initialSurface,
         Vector2 displayPosition,
         Vector2 displaySize,
@@ -1095,7 +1189,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     }
 
     private sealed record PreparedPacket(
-        uint viewportId,
+        uint viewportID,
         RenderSurfaceHandle surface,
         Vector2 displayPosition,
         Vector2 displaySize,

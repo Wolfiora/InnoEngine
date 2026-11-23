@@ -16,7 +16,7 @@ public sealed class EditorHistoryPayload : IDisposable
     private EditorHistoryPayload(byte[] bytes)
     {
         m_inlineBytes = bytes;
-        length = bytes.LongLength;
+        this.length = bytes.LongLength;
     }
 
     private EditorHistoryPayload(
@@ -39,21 +39,6 @@ public sealed class EditorHistoryPayload : IDisposable
     /// </summary>
     public bool isStoredOnDisk => m_path is not null;
 
-    internal long residentSize => m_inlineBytes?.LongLength ?? 0L;
-
-    internal long diskSize => m_path is null ? 0L : length;
-
-    /// <summary>
-    /// Creates an immutable history payload by copying the supplied bytes.
-    /// </summary>
-    /// <param name="bytes">
-    /// The neutral bytes to retain for future Undo and Redo transitions.
-    /// </param>
-    /// <returns>
-    /// A new independently owned payload.
-    /// </returns>
-    public static EditorHistoryPayload FromBytes(ReadOnlySpan<byte> bytes) => new(bytes.ToArray());
-
     /// <summary>
     /// Reads the complete immutable payload into a newly allocated byte array.
     /// </summary>
@@ -67,9 +52,46 @@ public sealed class EditorHistoryPayload : IDisposable
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_inlineBytes is not null)
+        {
             return (byte[])m_inlineBytes.Clone();
+        }
         return File.ReadAllBytes(m_path!);
     }
+
+    /// <summary>
+    /// Releases the resident or temporary disk storage owned by this payload.
+    /// </summary>
+    public void Dispose()
+    {
+        if (m_disposed)
+        {
+            return;
+        }
+        m_disposed = true;
+        if (m_store is not null && m_path is not null)
+        {
+            m_store.Release(m_path);
+        }
+        m_inlineBytes = null;
+        m_store = null;
+        m_path = null;
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Creates an immutable history payload by copying the supplied bytes.
+    /// </summary>
+    /// <param name="bytes">
+    /// The neutral bytes to retain for future Undo and Redo transitions.
+    /// </param>
+    /// <returns>
+    /// A new independently owned payload.
+    /// </returns>
+    public static EditorHistoryPayload FromBytes(ReadOnlySpan<byte> bytes) => new(bytes.ToArray());
+
+    internal long residentSize => m_inlineBytes?.LongLength ?? 0L;
+
+    internal long diskSize => m_path is null ? 0L : length;
 
     internal EditorHistoryPayload Retain(
         EditorHistoryBlobStore store,
@@ -79,24 +101,10 @@ public sealed class EditorHistoryPayload : IDisposable
         ObjectDisposedException.ThrowIf(m_disposed, this);
         byte[] bytes = ReadBytes();
         if (!canStoreOnDisk || bytes.Length < inlinePayloadThreshold)
+        {
             return new EditorHistoryPayload(bytes);
+        }
         string path = store.Retain(bytes);
         return new EditorHistoryPayload(store, path, bytes.LongLength);
-    }
-
-    /// <summary>
-    /// Releases the resident or temporary disk storage owned by this payload.
-    /// </summary>
-    public void Dispose()
-    {
-        if (m_disposed)
-            return;
-        m_disposed = true;
-        if (m_store is not null && m_path is not null)
-            m_store.Release(m_path);
-        m_inlineBytes = null;
-        m_store = null;
-        m_path = null;
-        GC.SuppressFinalize(this);
     }
 }

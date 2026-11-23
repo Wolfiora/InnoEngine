@@ -1,46 +1,13 @@
-using Inno.Assets;
-using Inno.Core.Mathematics;
-using Inno.Core.Serialization;
-using Inno.Extensibility.Types;
-using Inno.Rendering;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using Inno.Core.Mathematics;
+using Inno.Extensibility.Types;
 
 namespace Inno.Rendering.Assets;
 
 /// <summary>
-/// Identifies the neutral value stored by a material property.
-/// </summary>
-[Inno.Extensibility.Types.StableTypeId("a9af9e77-9a97-5f66-82a0-d720ac5604dc")]
-public enum MaterialValueKind
-{
-    /// <summary>
-    /// Scalar floating-point value.
-    /// </summary>
-    Float,
-    /// <summary>
-    /// Four-component vector value.
-    /// </summary>
-    Vector,
-    /// <summary>
-    /// Linear color value.
-    /// </summary>
-    Color,
-    /// <summary>
-    /// Four-by-four matrix value.
-    /// </summary>
-    Matrix,
-    /// <summary>
-    /// Texture asset reference.
-    /// </summary>
-    Texture
-}
-
-/// <summary>
 /// Stores one native-serializable material value without a GPU binding.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("dc64bc3e-f26f-55e0-bffe-99e98bd95b4f")]
+[StableTypeID("dc64bc3e-f26f-55e0-bffe-99e98bd95b4f")]
 public struct MaterialValue
 {
     private MaterialValue(
@@ -150,7 +117,35 @@ public struct MaterialValue
             default,
             default,
             value,
-            sampler ?? RenderSamplerState.linearClamp);
+            sampler ?? RenderSamplerState.linearClamp
+        );
     }
 }
 
+/// <summary>
+/// Identifies the neutral value stored by a material property.
+/// </summary>
+[StableTypeID("a9af9e77-9a97-5f66-82a0-d720ac5604dc")]
+public enum MaterialValueKind
+{
+    /// <summary>
+    /// Scalar floating-point value.
+    /// </summary>
+    Float,
+    /// <summary>
+    /// Four-component vector value.
+    /// </summary>
+    Vector,
+    /// <summary>
+    /// Linear color value.
+    /// </summary>
+    Color,
+    /// <summary>
+    /// Four-by-four matrix value.
+    /// </summary>
+    Matrix,
+    /// <summary>
+    /// Texture asset reference.
+    /// </summary>
+    Texture
+}

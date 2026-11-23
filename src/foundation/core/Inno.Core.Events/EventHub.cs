@@ -16,7 +16,7 @@ public sealed class EventHub : IDisposable
 {
     private readonly WeakReference<EventDispatcher> m_dispatcherRef;
     private readonly object m_gate = new();
-    private HubState m_state = HubState.Empty;
+    private HubState m_state = HubState.EMPTY;
     private long m_nextListenerOrder;
     private int m_disposed;
     private int m_attached = 1;
@@ -70,8 +70,6 @@ public sealed class EventHub : IDisposable
         }
     }
 
-    internal long sequence { get; }
-
     /// <summary>
     /// Subscribes a listener for the specified event type.
     /// </summary>
@@ -91,8 +89,7 @@ public sealed class EventHub : IDisposable
     public IDisposable Listen<TEvent>(
         Action<TEvent> handler,
         int priority = 0
-    )
-        where TEvent : Event
+    ) where TEvent : Event
     {
         ThrowIfInvalid();
         ArgumentNullException.ThrowIfNull(handler);
@@ -106,9 +103,9 @@ public sealed class EventHub : IDisposable
             listenerOrder = m_nextListenerOrder++;
 
             Action<Event> invoker = e => handler((TEvent)e);
-            Listener listener = new(invoker, priority, listenerOrder);
+            var listener = new Listener(invoker, priority, listenerOrder);
 
-            Dictionary<Type, Listener[]> nextBuckets = new(Volatile.Read(ref m_state).buckets);
+            var nextBuckets = new Dictionary<Type, Listener[]>(Volatile.Read(ref m_state).buckets);
             Listener[] existing = nextBuckets.TryGetValue(eventType, out Listener[]? items) ? items : [];
             nextBuckets[eventType] = ListenerBucket.InsertSorted(existing, listener);
             Volatile.Write(ref m_state, new HubState(nextBuckets));
@@ -136,13 +133,12 @@ public sealed class EventHub : IDisposable
     public IDisposable ListenOnce<TEvent>(
         Action<TEvent> handler,
         int priority = 0
-    )
-        where TEvent : Event
+    ) where TEvent : Event
     {
         ThrowIfInvalid();
         ArgumentNullException.ThrowIfNull(handler);
 
-        OneShotSubscription<TEvent> oneShot = new(handler);
+        var oneShot = new OneShotSubscription<TEvent>(handler);
         IDisposable subscription = Listen<TEvent>(oneShot.Invoke, priority);
         oneShot.Bind(subscription);
         return oneShot;
@@ -151,13 +147,13 @@ public sealed class EventHub : IDisposable
     /// <summary>
     /// Immediately dispatches an event inside this hub only.
     /// </summary>
+    /// <param name="e">
+    /// The event instance to dispatch locally.
+    /// </param>
     /// <remarks>
     /// This does not route through the dispatcher hub chain.
     /// Only listeners registered on this hub are invoked.
     /// </remarks>
-    /// <param name="e">
-    /// The event instance to dispatch locally.
-    /// </param>
     public void Announce(Event e)
     {
         ThrowIfInvalid();
@@ -179,7 +175,7 @@ public sealed class EventHub : IDisposable
 
         lock (m_gate)
         {
-            Volatile.Write(ref m_state, HubState.Empty);
+            Volatile.Write(ref m_state, HubState.EMPTY);
         }
 
         if (m_dispatcherRef.TryGetTarget(out EventDispatcher? dispatcher))
@@ -187,6 +183,8 @@ public sealed class EventHub : IDisposable
             dispatcher.RemoveHub(this);
         }
     }
+
+    internal long sequence { get; }
 
     internal void Dispatch(Event e)
     {
@@ -246,7 +244,7 @@ public sealed class EventHub : IDisposable
                 return;
             }
 
-            Dictionary<Type, Listener[]> nextBuckets = new(Volatile.Read(ref m_state).buckets);
+            var nextBuckets = new Dictionary<Type, Listener[]>(Volatile.Read(ref m_state).buckets);
             if (!nextBuckets.TryGetValue(eventType, out Listener[]? existing))
             {
                 return;
@@ -311,6 +309,7 @@ public sealed class EventHub : IDisposable
         /// Gets the scalar measurement or identity associated with the current state.
         /// </summary>
         public int priority { get; } = priority;
+
         /// <summary>
         /// Gets the scalar measurement or identity associated with the current state.
         /// </summary>
@@ -413,7 +412,7 @@ public sealed class EventHub : IDisposable
             Listener[] source,
             Listener listener
         ) {
-            Listener[] result = new Listener[source.Length + 1];
+            var result = new Listener[source.Length + 1];
             int index = 0;
             while (index < source.Length)
             {
@@ -484,7 +483,7 @@ public sealed class EventHub : IDisposable
                 return [];
             }
 
-            Listener[] result = new Listener[source.Length - 1];
+            var result = new Listener[source.Length - 1];
             if (index > 0)
             {
                 Array.Copy(source, 0, result, 0, index);
@@ -504,7 +503,8 @@ public sealed class EventHub : IDisposable
         /// <summary>
         /// The empty value used as part of this type's public representation.
         /// </summary>
-        public static readonly HubState Empty = new(new Dictionary<Type, Listener[]>());
+        public static readonly HubState EMPTY = new([]);
+
         /// <summary>
         /// Gets the immutable listener buckets captured for one dispatch operation.
         /// </summary>

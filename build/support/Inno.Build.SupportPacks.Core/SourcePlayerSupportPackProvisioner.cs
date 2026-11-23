@@ -23,9 +23,6 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
     /// <param name="engineRoot">
     /// The directory containing InnoEngine.sln and the Player project.
     /// </param>
-    /// <exception cref="DirectoryNotFoundException">
-    /// The directory is not an engine checkout.
-    /// </exception>
     /// <param name="publisher">
     /// The publisher containing the host-selected platform sources.
     /// </param>
@@ -38,6 +35,9 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
     /// <param name="nativeDependencies">
     /// An absolute dependency selection disabling third-party production, or null for local source preparation.
     /// </param>
+    /// <exception cref="DirectoryNotFoundException">
+    /// The directory is not an engine checkout.
+    /// </exception>
     public SourcePlayerSupportPackProvisioner(
         string engineRoot,
         PlayerSupportPackPublisher publisher,
@@ -49,7 +49,9 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
         ArgumentNullException.ThrowIfNull(reportDiagnostic);
         m_reportDiagnostic = reportDiagnostic;
         if (nativeDependencies is not null && !Path.IsPathFullyQualified(nativeDependencies))
+        {
             throw new ArgumentException("A native dependency selection must be absolute.", nameof(nativeDependencies));
+        }
         m_nativeDependencies = nativeDependencies;
         ArgumentException.ThrowIfNullOrWhiteSpace(dotnetHost);
         m_publisher = publisher;
@@ -57,55 +59,9 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
         ArgumentException.ThrowIfNullOrWhiteSpace(engineRoot);
         m_engineRoot = Path.GetFullPath(engineRoot);
         if (!IsEngineRoot(m_engineRoot))
-            throw new DirectoryNotFoundException($"Engine source checkout '{m_engineRoot}' is unavailable.");
-    }
-
-    /// <summary>
-    /// Finds the checkout that owns the running Editor or build command.
-    /// </summary>
-    /// <param name="startDirectory">
-    /// The host binary directory from which to search upward.
-    /// </param>
-    /// <returns>
-    /// A source provisioner, or null when the host is a source-independent distribution.
-    /// </returns>
-    /// <exception cref="DirectoryNotFoundException">
-    /// An explicit <c>INNO_ENGINE_ROOT</c> does not identify a complete engine checkout.
-    /// </exception>
-    /// <param name="publisher">
-    /// The publisher containing the host-selected platform sources.
-    /// </param>
-    /// <param name="dotnetHost">
-    /// The SDK executable explicitly selected by the host.
-    /// </param>
-    /// <param name="reportDiagnostic">
-    /// The borrowed host reporter, retained only by the returned provisioner.
-    /// </param>
-    /// <param name="nativeDependencies">
-    /// The explicit consume-only selection retained by the returned provisioner, or null for local source preparation.
-    /// </param>
-    public static SourcePlayerSupportPackProvisioner? TryCreateForHost(
-        string startDirectory,
-        PlayerSupportPackPublisher publisher,
-        string dotnetHost,
-        Action<string> reportDiagnostic,
-        string? nativeDependencies = null
-    ) {
-        ArgumentNullException.ThrowIfNull(publisher);
-        ArgumentNullException.ThrowIfNull(reportDiagnostic);
-        ArgumentException.ThrowIfNullOrWhiteSpace(startDirectory);
-        ArgumentException.ThrowIfNullOrWhiteSpace(dotnetHost);
-        string? configured = Environment.GetEnvironmentVariable("INNO_ENGINE_ROOT");
-        if (!string.IsNullOrWhiteSpace(configured))
-            return new SourcePlayerSupportPackProvisioner(configured, publisher, dotnetHost, reportDiagnostic, nativeDependencies);
-        for (DirectoryInfo? directory = new(Path.GetFullPath(startDirectory));
-             directory is not null;
-             directory = directory.Parent)
         {
-            if (IsEngineRoot(directory.FullName))
-                return new SourcePlayerSupportPackProvisioner(directory.FullName, publisher, dotnetHost, reportDiagnostic, nativeDependencies);
+            throw new DirectoryNotFoundException($"Engine source checkout '{m_engineRoot}' is unavailable.");
         }
-        return null;
     }
 
     /// <summary>
@@ -124,7 +80,7 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
     /// An operation that completes after the target Pack has been installed and verified.
     /// </returns>
     public async ValueTask ProvisionAsync(
-        BuildTargetId target,
+        BuildTargetID target,
         string supportPackRoot,
         CancellationToken cancellationToken = default
     ) {
@@ -133,14 +89,76 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
             supportPackRoot,
             target,
             m_dotnetHost,
-            cancellationToken,
-            m_nativeDependencies).ConfigureAwait(false);
+            m_nativeDependencies,
+            cancellationToken
+        ).ConfigureAwait(false);
         foreach (string diagnostic in installed.diagnostics)
+        {
             m_reportDiagnostic(diagnostic);
+        }
+    }
+
+    /// <summary>
+    /// Finds the checkout that owns the running Editor or build command.
+    /// </summary>
+    /// <param name="startDirectory">
+    /// The host binary directory from which to search upward.
+    /// </param>
+    /// <param name="publisher">
+    /// The publisher containing the host-selected platform sources.
+    /// </param>
+    /// <param name="dotnetHost">
+    /// The SDK executable explicitly selected by the host.
+    /// </param>
+    /// <param name="reportDiagnostic">
+    /// The borrowed host reporter, retained only by the returned provisioner.
+    /// </param>
+    /// <param name="nativeDependencies">
+    /// The explicit consume-only selection retained by the returned provisioner, or null for local source preparation.
+    /// </param>
+    /// <returns>
+    /// A source provisioner, or null when the host is a source-independent distribution.
+    /// </returns>
+    /// <exception cref="DirectoryNotFoundException">
+    /// An explicit <c>INNO_ENGINE_ROOT</c> does not identify a complete engine checkout.
+    /// </exception>
+    public static SourcePlayerSupportPackProvisioner? TryCreateForHost(
+        string startDirectory,
+        PlayerSupportPackPublisher publisher,
+        string dotnetHost,
+        Action<string> reportDiagnostic,
+        string? nativeDependencies = null
+    ) {
+        ArgumentNullException.ThrowIfNull(publisher);
+        ArgumentNullException.ThrowIfNull(reportDiagnostic);
+        ArgumentException.ThrowIfNullOrWhiteSpace(startDirectory);
+        ArgumentException.ThrowIfNullOrWhiteSpace(dotnetHost);
+        string? configured = Environment.GetEnvironmentVariable("INNO_ENGINE_ROOT");
+        if (!string.IsNullOrWhiteSpace(configured))
+        {
+            return new SourcePlayerSupportPackProvisioner(configured, publisher, dotnetHost, reportDiagnostic, nativeDependencies);
+        }
+        for (DirectoryInfo? directory = new(Path.GetFullPath(startDirectory));
+             directory is not null;
+             directory = directory.Parent
+        ) {
+            if (IsEngineRoot(directory.FullName))
+            {
+                return new SourcePlayerSupportPackProvisioner(
+                    directory.FullName,
+                    publisher,
+                    dotnetHost,
+                    reportDiagnostic,
+                    nativeDependencies
+                );
+            }
+        }
+        return null;
     }
 
     private static bool IsEngineRoot(string path)
-        => File.Exists(Path.Combine(path, "InnoEngine.sln")) &&
-           File.Exists(Path.Combine(path, "build", "distributions", "Inno.Build.Distribution.Standard", "Inno.Build.Distribution.Standard.csproj"));
-
+        => File.Exists(Path.Combine(path, "InnoEngine.sln"))
+           && File.Exists(
+               Path.Combine(path, "build", "distributions", "Inno.Build.Distribution.Standard", "Inno.Build.Distribution.Standard.csproj")
+           );
 }

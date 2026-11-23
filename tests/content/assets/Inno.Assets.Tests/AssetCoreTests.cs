@@ -1,0 +1,174 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Xunit;
+using Inno.Assets;
+using Inno.Core.Execution;
+using Inno.Extensibility.Types;
+using Inno.References;
+
+namespace Inno.Assets.Tests;
+
+public sealed class AssetCoreTests
+{
+    [Fact]
+    public void ReferenceBridgeDoesNotConvertAnUnfinishedRetirementIntoMissing()
+    {
+        IReferenceResolver resolver = new PendingResolver();
+        Assert.Throws<RetirementPendingException>(() => resolver.Resolve(
+            new ReferenceDescriptor(AssetReferenceProtocol.id, Guid.NewGuid(), Guid.Empty)
+        ));
+    }
+
+    [Fact]
+    public void AssetDependencyUsesPersistentIdentityForEquality()
+    {
+        Guid persistentID = Guid.NewGuid();
+        var first = new AssetDependency(persistentID, new TypeRef(Guid.NewGuid()), "A/first.txt");
+        var second = new AssetDependency(persistentID, new TypeRef(Guid.NewGuid()), "B/second.txt");
+
+        Assert.Equal(first, second);
+        Assert.Equal(first.GetHashCode(), second.GetHashCode());
+    }
+
+    [Fact]
+    public void AssetObjectDefaultRuntimeStateIsDetachedAndEmpty()
+    {
+        var asset = new TextAsset();
+
+        Assert.Equal(nameof(TextAsset), asset.name);
+        Assert.Equal(AssetPath.Project(string.Empty), asset.assetPath);
+        Assert.False(asset.isMissing);
+        Assert.Equal(0, asset.contentVersion);
+        Assert.True(asset.runtimePayload.IsEmpty);
+    }
+
+    [Fact]
+    public void AssetDependencyIsAnImmutableValueContract()
+    {
+        PropertyInfo[] properties = typeof(AssetDependency).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+
+        Assert.All(properties, static property => Assert.Null(property.SetMethod));
+        Assert.True(typeof(AssetDependency).IsValueType);
+    }
+
+    [Fact]
+    public void AssetObjectPublicSurfaceDoesNotExposeSourceHashDependenciesOrSetters()
+    {
+        string[] propertyNames = typeof(AssetObject)
+            .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+            .Select(static property => property.Name)
+            .ToArray();
+
+        Assert.DoesNotContain("sourceHash", propertyNames);
+        Assert.DoesNotContain("dependencies", propertyNames);
+        Assert.Null(typeof(AssetObject).GetProperty("sourcePath"));
+        Assert.Null(typeof(AssetReferenceInfo).GetProperty("sourcePath"));
+        Assert.NotNull(typeof(AssetReferenceInfo).GetProperty(nameof(AssetReferenceInfo.assetPath)));
+        Assert.Null(typeof(AssetObject).GetProperty(nameof(AssetObject.contentVersion))!.SetMethod);
+        Assert.Null(typeof(AssetObject).GetProperty(nameof(AssetObject.runtimePayload))!.SetMethod);
+    }
+
+    [Fact]
+    public void ArtifactKeyNormalizesAndComparesHexadecimalValues()
+    {
+        var lower = new AssetArtifactKey("  " + new string('a', 64) + "  ");
+        var upper = new AssetArtifactKey(new string('A', 64));
+
+        Assert.Equal(new string('A', 64), lower.value);
+        Assert.Equal(lower, upper);
+        Assert.False(lower.isEmpty);
+        Assert.True(AssetArtifactKey.empty.isEmpty);
+    }
+
+    [Fact]
+    public void ArtifactKeyRejectsIncompleteFingerprintsAndPathSyntax()
+    {
+        Assert.Throws<ArgumentException>(() => new AssetArtifactKey("ABCD"));
+        Assert.Throws<ArgumentException>(() => new AssetArtifactKey(new string('G', 64)));
+        Assert.Throws<ArgumentException>(() => new AssetArtifactKey("../" + new string('A', 61)));
+        Assert.Throws<ArgumentException>(() => new AssetArtifactKey("C:" + new string('A', 62)));
+        Assert.True(new AssetArtifactKey(string.Empty).isEmpty);
+    }
+
+    [Fact]
+    public void DefaultArtifactKeyHasTheSameValueAndEqualityAsAnExplicitEmptyKey()
+    {
+        AssetArtifactKey unassigned = default;
+        var empty = new AssetArtifactKey(string.Empty);
+        Assert.Equal(string.Empty, unassigned.value);
+        Assert.Equal(empty, unassigned);
+        Assert.True(empty == unassigned);
+        Assert.False(empty != unassigned);
+        Assert.Equal(empty.GetHashCode(), unassigned.GetHashCode());
+        Assert.Single(new HashSet<AssetArtifactKey> { unassigned, empty });
+    }
+
+    [Fact]
+    public void RuntimeContentSummaryOwnsItsFrozenSourceInventory()
+    {
+        List<AssetSourceID> sources = [AssetSourceID.project];
+        var summary = new AssetRuntimeContentInfo(sources, 2, 1, 4);
+        sources[0] = new AssetSourceID("replacement");
+        sources.Clear();
+        Assert.Equal(AssetSourceID.project, Assert.Single(summary.sources));
+        Assert.Throws<NotSupportedException>(() => ((IList<AssetSourceID>)summary.sources).Clear());
+        Assert.Throws<ArgumentNullException>(() => new AssetRuntimeContentInfo(null!, 0, 0, 0));
+    }
+
+    [Fact]
+    public void AssetInfoExposesAnImmutableCatalogSnapshot()
+    {
+        Guid id = Guid.NewGuid();
+        var info = new AssetInfo(
+            id,
+            AssetPath.Project("Scripts/Player.cs"),
+            AssetSourceKind.File,
+            AssetImportStatus.Imported,
+            "inno.editor.csharp-script",
+            Guid.NewGuid(),
+            new AssetArtifactKey(new string('A', 64)),
+            new AssetArtifactKey(new string('B', 64)),
+            new[] { "diagnostic" }
+        );
+
+        Assert.Equal(id, info.persistentID);
+        Assert.Equal(AssetSourceKind.File, info.sourceKind);
+        Assert.Equal(AssetImportStatus.Imported, info.status);
+        Assert.All(
+            typeof(AssetInfo).GetProperties(BindingFlags.Instance | BindingFlags.Public),
+            static property => Assert.Null(property.SetMethod)
+        );
+    }
+
+    [Fact]
+    public void ChangeSetPreservesMoveIdentityAndRevision()
+    {
+        Guid id = Guid.NewGuid();
+        var change = new AssetChange(
+            AssetChangeKind.Moved,
+            id,
+            AssetPath.Project("B/value.txt"),
+            AssetPath.Project("A/value.txt")
+        );
+        var set = new AssetChangeSet(42, new List<AssetChange> { change });
+
+        Assert.Equal(42, set.revision);
+        Assert.False(set.isEmpty);
+        Assert.Equal(id, set.changes[0].persistentID);
+        Assert.Equal(AssetPath.Project("A/value.txt"), set.changes[0].previousAssetPath);
+        Assert.Equal(AssetPath.Project("B/value.txt"), set.changes[0].assetPath);
+    }
+
+    private sealed class PendingResolver : IAssetReferenceResolver
+    {
+        public AssetObject Resolve(
+            Guid persistentID,
+            Guid stableTypeID,
+            string lastKnownPath,
+            Type expectedType,
+            string propertyPath
+        ) => throw new RetirementPendingException("The asset generation is still retiring.");
+    }
+}

@@ -35,30 +35,47 @@ internal sealed class NativeInputReadCache
     internal StringComparer pathComparer => OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
 
     internal byte[] GetFrozenHash(string path)
-        => m_hashes.TryGetValue(m_physicalPaths.Resolve(path), out byte[]? hash) ? hash
-            : throw new InvalidOperationException($"Native input '{path}' was not frozen by this operation's recipe.");
+        => m_hashes.TryGetValue(m_physicalPaths.Resolve(path), out byte[]? hash)
+           ? hash
+           : throw new InvalidOperationException($"Native input '{path}' was not frozen by this operation's recipe.");
 
     internal NativeInputSnapshot CaptureRecordedInputs(string engineRoot)
-        => new(m_readingPaths.Select(entry => new NativeInputSnapshot.Entry(
-            NativeBuildInput.FromPath(engineRoot, entry.Key).logicalPath, entry.Key, m_hashes[entry.Value])));
+        => new(
+            m_readingPaths.Select(entry => new NativeInputSnapshot.Entry(
+                NativeBuildInput.FromPath(engineRoot, entry.Key).logicalPath,
+                entry.Key,
+                m_hashes[entry.Value]
+            ))
+        );
 
     internal string[][] CaptureRootMembership()
         => m_roots.OrderBy(static pair => pair.Key, pathComparer)
-            .Select(pair => new[] { pair.Key }.Concat(pair.Value.Select(static entry => entry.relative).Order(StringComparer.Ordinal)).ToArray()).ToArray();
+            .Select(
+                pair => new[] { pair.Key }.Concat(pair.Value.Select(static entry => entry.relative).Order(StringComparer.Ordinal)).ToArray()
+            )
+            .ToArray();
 
     internal IReadOnlyList<(string relative, string physical)> Enumerate(
         string path,
         CancellationToken cancellationToken
     ) {
         if (m_roots.TryGetValue(path, out IReadOnlyList<(string relative, string physical)>? cached))
+        {
             return cached;
+        }
         List<(string relative, string physical)> files = [];
         if (File.Exists(path))
+        {
             files.Add((string.Empty, path));
+        }
         else if (Directory.Exists(path))
+        {
             EnumerateDirectory(path, string.Empty, files, new HashSet<string>(pathComparer), cancellationToken);
+        }
         else
+        {
             throw new FileNotFoundException("A declared native build input is unavailable.", path);
+        }
         cached = files.AsReadOnly();
         m_roots.Add(path, cached);
         return cached;
@@ -69,7 +86,7 @@ internal sealed class NativeInputReadCache
         CancellationToken cancellationToken
     ) {
         var physicalPaths = new string[paths.Count];
-        var pending = new List<string>();
+        List<string> pending = [];
         var unique = new HashSet<string>(pathComparer);
         for (int index = 0; index < paths.Count; index++)
         {
@@ -79,9 +96,13 @@ internal sealed class NativeInputReadCache
             m_readingPaths[readingPath] = physical;
             physicalPaths[index] = physical;
             if (m_hashes.ContainsKey(physical) || !unique.Add(physical))
+            {
                 m_state.RecordReuse(m_phase);
+            }
             else
+            {
                 pending.Add(physical);
+            }
         }
         var hashes = new byte[pending.Count][];
         var bytes = new long[pending.Count];
@@ -90,26 +111,36 @@ internal sealed class NativeInputReadCache
         try
         {
             if (pending.Count == 1)
+            {
                 Read(0);
+            }
             else if (pending.Count > 1)
-                Parallel.For(0, pending.Count, new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4),
-                    CancellationToken = cancellationToken
-                }, (
-                    index,
-                    loop
-                ) => {
-                    try
+            {
+                Parallel.For(
+                    0,
+                    pending.Count,
+                    new ParallelOptions
                     {
-                        Read(index);
-                    }
-                    catch (Exception exception)
+                        MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4),
+                        CancellationToken = cancellationToken
+                    },
+                    (
+                        index,
+                        loop
+                    ) =>
                     {
-                        Interlocked.CompareExchange(ref failure, ExceptionDispatchInfo.Capture(exception), null);
-                        loop.Stop();
+                        try
+                        {
+                            Read(index);
+                        }
+                        catch (Exception exception)
+                        {
+                            Interlocked.CompareExchange(ref failure, ExceptionDispatchInfo.Capture(exception), null);
+                            loop.Stop();
+                        }
                     }
-                });
+                );
+            }
             failure?.Throw();
             cancellationToken.ThrowIfCancellationRequested();
         }
@@ -117,12 +148,18 @@ internal sealed class NativeInputReadCache
         {
             // Initial capture holds the state gate. Workers only read bytes; record after all workers drain.
             for (int index = 0; index < pending.Count; index++)
+            {
                 if (opened[index])
+                {
                     m_state.RecordHash(bytes[index], m_phase);
+                }
+            }
         }
         // Publish this batch only after every read succeeds; failed/canceled batches never become frozen inputs.
         for (int index = 0; index < pending.Count; index++)
+        {
             m_hashes.Add(pending[index], hashes[index]);
+        }
         return physicalPaths.Select(path => m_hashes[path]).ToArray();
 
         void Read(int index)
@@ -149,6 +186,7 @@ internal sealed class NativeInputReadCache
             }
         }
     }
+
     private void EnumerateDirectory(
         string directory,
         string relativeRoot,
@@ -159,20 +197,26 @@ internal sealed class NativeInputReadCache
         cancellationToken.ThrowIfCancellationRequested();
         string physicalRoot = m_physicalPaths.Resolve(directory);
         if (!ancestors.Add(physicalRoot))
+        {
             throw new IOException($"A native input contains a directory link cycle at '{directory}'.");
+        }
         try
         {
             foreach (string file in Directory.EnumerateFiles(physicalRoot))
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 if (Path.GetFileName(file) != ".git")
+                {
                     files.Add((relativeRoot + Path.GetFileName(file), Path.Combine(directory, Path.GetFileName(file))));
+                }
             }
             foreach (string child in Directory.EnumerateDirectories(physicalRoot))
             {
                 string name = Path.GetFileName(child);
                 if (name is ".git" or ".build" or "bin" or "obj" or "__pycache__")
+                {
                     continue;
+                }
                 EnumerateDirectory(Path.Combine(directory, name), relativeRoot + name + "/", files, ancestors, cancellationToken);
             }
         }

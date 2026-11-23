@@ -5,12 +5,12 @@ namespace Inno.Audio.Runtime;
 
 internal sealed class ArtifactAudioClipSource(ArtifactLease artifact) : IAudioClipSource
 {
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string contentHash => artifact.info.contentHash;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public long length => artifact.info.length;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public Stream OpenRead() => artifact.OpenRead();
 }

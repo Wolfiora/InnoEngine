@@ -1,0 +1,45 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Inno.Core.Mathematics;
+using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
+using Inno.Scripting.Api;
+
+namespace Inno.Rendering;
+
+/// <summary>
+/// Identifies a material property using a stable serialized string.
+/// </summary>
+public record struct ShaderPropertyID
+{
+    /// <summary>
+    /// Creates a stable shader property identifier.
+    /// </summary>
+    /// <param name="value">
+    /// Stable manifest property identifier.
+    /// </param>
+    public ShaderPropertyID(string value)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(value);
+        this.value = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the stable manifest property identifier.
+    /// </summary>
+    public string value { get; set; }
+
+    /// <summary>
+    /// Gets whether this identifier has a usable value.
+    /// </summary>
+    public readonly bool isValid => !string.IsNullOrWhiteSpace(value);
+
+    /// <summary>
+    /// Formats this value as a human-readable representation.
+    /// </summary>
+    /// <returns>
+    /// The human-readable representation of this value.
+    /// </returns>
+    public override readonly string ToString() => value ?? string.Empty;
+}

@@ -58,9 +58,9 @@ public abstract class SerializationConverter<T> : SerializationConverter
     public virtual void Restore(
         SerializationReader reader,
         T target
-    )
-        => throw new NotSupportedException(
-            $"Serialization converter '{GetType().FullName}' does not support restoring existing '{typeof(T).FullName}' values.");
+    ) => throw new NotSupportedException(
+        $"Serialization converter '{GetType().FullName}' does not support restoring existing '{typeof(T).FullName}' values."
+    );
 
     /// <summary>
     /// Optionally declares every input to a snapshot capture without writing data.

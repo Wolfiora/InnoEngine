@@ -12,7 +12,7 @@ public interface IRenderingAuthoringBackendFactory
     /// <summary>
     /// Gets the runtime backend identities supported by this authoring composition.
     /// </summary>
-    IReadOnlyList<RenderingBackendId> supportedBackends { get; }
+    IReadOnlyList<RenderingBackendID> supportedBackends { get; }
 
     /// <summary>
     /// Creates the shader compiler toolchain paired with the selected rendering backend.
@@ -23,7 +23,7 @@ public interface IRenderingAuthoringBackendFactory
     /// <returns>
     /// A target compiler compatible with devices created for the same backend.
     /// </returns>
-    IShaderCompilerToolchain CreateShaderCompilerToolchain(RenderingBackendId backend);
+    IShaderCompilerToolchain CreateShaderCompilerToolchain(RenderingBackendID backend);
 
     /// <summary>
     /// Creates the texture compiler paired with the selected rendering backend.
@@ -34,5 +34,5 @@ public interface IRenderingAuthoringBackendFactory
     /// <returns>
     /// A texture target compiler compatible with devices created for the same backend.
     /// </returns>
-    ITextureTargetCompiler CreateTextureTargetCompiler(RenderingBackendId backend);
+    ITextureTargetCompiler CreateTextureTargetCompiler(RenderingBackendID backend);
 }

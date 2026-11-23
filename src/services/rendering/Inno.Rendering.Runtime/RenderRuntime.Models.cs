@@ -1,20 +1,20 @@
-using Inno.References;
-using Inno.Runtime.Contracts;
-using Inno.Core.Diagnostics;
-using Inno.Core.Execution;
-using Inno.Core.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Inno.Extensibility.Types;
-using Inno.Rendering;
-using Inno.Input;
+using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
+using Inno.Core.Identity;
 using Inno.Core.Mathematics;
+using Inno.Extensibility.Types;
+using Inno.Input;
+using Inno.References;
+using Inno.Rendering;
 using Inno.Rendering.Assets;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Rendering.Runtime;
 
-sealed partial class RenderRuntime
+public sealed partial class RenderRuntime
 {
     /// <summary>
     /// Sets the explicit model composition route for the primary output at a frame boundary.
@@ -26,7 +26,9 @@ sealed partial class RenderRuntime
     {
         EnsureActive();
         if (m_frameOpen)
+        {
             throw new InvalidOperationException("Output routes can only change at a frame boundary.");
+        }
         m_primaryRoute = route;
     }
 
@@ -41,9 +43,10 @@ sealed partial class RenderRuntime
     {
         EnsureActive();
         if (m_frameOpen)
+        {
             throw new InvalidOperationException("Primary output ownership can only change at a frame boundary.");
+        }
         m_primaryModelOutputEnabled = enabled;
-
     }
 
     private void CollectModels(RenderOutputSession session)
@@ -56,13 +59,20 @@ sealed partial class RenderRuntime
                 try
                 {
                     if (entry.model.CanRender(session))
+                    {
                         applicable.Add(entry);
+                    }
                 }
                 catch (Exception exception)
                 {
-                    PublishFrameIssue(new Diagnostic("RENDER_MODEL_ACCEPT_FAILED",
-                        $"Render model '{entry.id}' failed to inspect output content: {exception}",
-                        DiagnosticSeverity.Error, entry.id));
+                    PublishFrameIssue(
+                        new Diagnostic(
+                            "RENDER_MODEL_ACCEPT_FAILED",
+                            $"Render model '{entry.id}' failed to inspect output content: {exception}",
+                            DiagnosticSeverity.Error,
+                            entry.id
+                        )
+                    );
                 }
             }
             if (applicable.Count == 0)
@@ -84,7 +94,7 @@ sealed partial class RenderRuntime
                     int match = -1;
                     for (int candidate = 0; candidate < applicable.Count; candidate++)
                     {
-                        if (applicable[candidate].id == layer.modelId)
+                        if (applicable[candidate].id == layer.modelID)
                         {
                             match = candidate;
                             break;
@@ -100,12 +110,16 @@ sealed partial class RenderRuntime
             }
             else if (applicable.Count > 1)
             {
-                PublishModelDiagnostic("Multiple rendering models accept the primary output; configure a RenderOutputRoute: "
-                    + string.Join(", ", applicable.Select(static entry => entry.id)));
+                PublishModelDiagnostic(
+                    "Multiple rendering models accept the primary output; configure a RenderOutputRoute: "
+                    + string.Join(", ", applicable.Select(static entry => entry.id))
+                );
                 return;
             }
             if (route is null)
+            {
                 ordered.AddRange(applicable);
+            }
 
             List<RenderRequest> requests = m_scratch.modelRequests;
             RenderTextureFormat? format = null;
@@ -115,8 +129,8 @@ sealed partial class RenderRuntime
                 try
                 {
                     RenderOutputSession modelSession = route is null
-                        ? session
-                        : session.ForLayer(route.layers[index]);
+                                                       ? session
+                                                       : session.ForLayer(route.layers[index]);
                     RenderModelOutput model = entry.model.Build(modelSession);
                     if (format is RenderTextureFormat selected && selected != model.targetFormat)
                     {
@@ -124,22 +138,45 @@ sealed partial class RenderRuntime
                         return;
                     }
                     format ??= model.targetFormat;
-                    requests.Add(new RenderRequest(model.name, RenderTarget.backbuffer, session.viewport,
-                        model.pipeline, model.data, 1000 + index));
+                    requests.Add(
+                        new RenderRequest(
+                            model.name,
+                            RenderTarget.backbuffer,
+                            session.viewport,
+                            model.pipeline,
+                            model.data,
+                            1000 + index
+                        )
+                    );
                 }
                 catch (Exception exception)
                 {
-                    PublishFrameIssue(new Diagnostic("RENDER_MODEL_BUILD_FAILED",
-                        $"Render model '{entry.id}' failed to build output: {exception}",
-                        DiagnosticSeverity.Error, entry.id));
+                    PublishFrameIssue(
+                        new Diagnostic(
+                            "RENDER_MODEL_BUILD_FAILED",
+                            $"Render model '{entry.id}' failed to build output: {exception}",
+                            DiagnosticSeverity.Error,
+                            entry.id
+                        )
+                    );
                     return;
                 }
             }
             if (requests.Count == 1 && m_device.primaryPresentationEncodesSrgb)
+            {
                 Submit(requests[0]);
+            }
             else
-                SubmitComposition($"Output:{session.id}", RenderTarget.backbuffer,
-                    session.viewport, format!.Value, requests, priority: 1000);
+            {
+                SubmitComposition(
+                    $"Output:{session.id}",
+                    RenderTarget.backbuffer,
+                    session.viewport,
+                    format!.Value,
+                    requests,
+                    priority: 1000
+                );
+            }
         }
         finally
         {
@@ -148,5 +185,4 @@ sealed partial class RenderRuntime
             m_scratch.modelRequests.Clear();
         }
     }
-
 }

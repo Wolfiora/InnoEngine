@@ -6,21 +6,6 @@ using System.Linq;
 namespace Inno.Build.Toolchains;
 
 /// <summary>
-/// Selects the publication owner of generated sources.
-/// </summary>
-public enum NativeBindingOutputMode
-{
-    /// <summary>
-    /// Replaces the component's authored host source and bridge outputs together.
-    /// </summary>
-    HostSource,
-    /// <summary>
-    /// Publishes immutable target outputs under the component's generation fingerprint.
-    /// </summary>
-    TargetArtifacts
-}
-
-/// <summary>
 /// Freezes the complete binding request before ownership waits or candidate creation.
 /// </summary>
 public sealed class NativeBindingGenerationRequest
@@ -31,7 +16,7 @@ public sealed class NativeBindingGenerationRequest
     /// <param name="components">
     /// The component owners, each declaring one binding definition.
     /// </param>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// The target identity selecting a declared configuration; host output uses the host definition.
     /// </param>
     /// <param name="outputMode">
@@ -51,51 +36,68 @@ public sealed class NativeBindingGenerationRequest
     /// </exception>
     public NativeBindingGenerationRequest(
         IEnumerable<NativeComponentDescriptor> components,
-        string targetId,
+        string targetID,
         NativeBindingOutputMode outputMode,
         bool checkOnly = false,
         IReadOnlyDictionary<string, string>? expectedFingerprints = null,
         IReadOnlyDictionary<string, NativeComponentBuildOptions>? componentOptions = null
     ) {
         ArgumentNullException.ThrowIfNull(components);
-        ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
-        if (!Enum.IsDefined(outputMode) || targetId is "." or ".."
-            || targetId.Any(static character => !char.IsAsciiLetterOrDigit(character)
-                && character is not ('-' or '_' or '.')))
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetID);
+        if (!Enum.IsDefined(outputMode) || targetID is "." or ".."
+            || targetID.Any(static character => (
+                !char.IsAsciiLetterOrDigit(character)
+                && character is not ('-' or '_' or '.')
+            ))
+        ) {
             throw new ArgumentException("Binding requests require a portable target and a supported output mode.");
+        }
         NativeComponentDescriptor[] owners = components.ToArray();
         if (owners.Any(static owner => owner is null || owner.bindingDefinition is null)
-            || owners.Select(static owner => owner.nativeProject).Distinct(StringComparer.Ordinal).Count() != owners.Length)
+            || owners.Select(static owner => owner.nativeProject).Distinct(StringComparer.Ordinal).Count() != owners.Length
+        ) {
             throw new ArgumentException("Binding owners must be distinct and declare their sole definition.", nameof(components));
+        }
         this.components = Array.AsReadOnly(owners);
-        this.targetId = targetId;
+        this.targetID = targetID;
         this.outputMode = outputMode;
         this.checkOnly = checkOnly;
-        Dictionary<string, string> expected = new(expectedFingerprints ?? new Dictionary<string, string>(), StringComparer.Ordinal);
-        if (expected.Any(pair => !owners.Any(owner => owner.nativeProject == pair.Key)
-            || string.IsNullOrWhiteSpace(pair.Value)))
+        var expected = new Dictionary<string, string>(expectedFingerprints ?? new Dictionary<string, string>(), StringComparer.Ordinal);
+        if (expected.Any(pair => (
+            !owners.Any(owner => owner.nativeProject == pair.Key)
+            || string.IsNullOrWhiteSpace(pair.Value)
+        ))) {
             throw new ArgumentException("An expected identity must belong to the requested binding closure.", nameof(expectedFingerprints));
+        }
         this.expectedFingerprints = new ReadOnlyDictionary<string, string>(expected);
         this.componentOptions = new ReadOnlyDictionary<string, NativeComponentBuildOptions>(
-            new Dictionary<string, NativeComponentBuildOptions>(componentOptions ?? new Dictionary<string, NativeComponentBuildOptions>(), StringComparer.Ordinal));
+            new Dictionary<string, NativeComponentBuildOptions>(
+                componentOptions ?? new Dictionary<string, NativeComponentBuildOptions>(),
+                StringComparer.Ordinal
+            )
+        );
     }
 
     /// <summary>
     /// Gets the immutable component closure owned by this request.
     /// </summary>
     public IReadOnlyList<NativeComponentDescriptor> components { get; }
+
     /// <summary>
     /// Gets the explicit configuration target, independent of the build execution host.
     /// </summary>
-    public string targetId { get; }
+    public string targetID { get; }
+
     /// <summary>
     /// Gets the selected output ownership policy.
     /// </summary>
     public NativeBindingOutputMode outputMode { get; }
+
     /// <summary>
     /// Gets whether publication is forbidden and current output must match fresh generation.
     /// </summary>
     public bool checkOnly { get; }
+
     /// <summary>
     /// Gets the expected identities which must match before any candidate is generated.
     /// </summary>
@@ -105,4 +107,19 @@ public sealed class NativeBindingGenerationRequest
     /// Gets explicit component binding and linkage choices.
     /// </summary>
     public IReadOnlyDictionary<string, NativeComponentBuildOptions> componentOptions { get; }
+}
+
+/// <summary>
+/// Selects the publication owner of generated sources.
+/// </summary>
+public enum NativeBindingOutputMode
+{
+    /// <summary>
+    /// Replaces the component's authored host source and bridge outputs together.
+    /// </summary>
+    HostSource,
+    /// <summary>
+    /// Publishes immutable target outputs under the component's generation fingerprint.
+    /// </summary>
+    TargetArtifacts
 }

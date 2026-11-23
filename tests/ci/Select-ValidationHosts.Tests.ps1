@@ -5,9 +5,10 @@ $hostsToRun = @([pscustomobject]@{runner='required';fast=$true},[pscustomobject]
 $change = "M`ttests/Feature/Test.cs"
 $routingFixture = [IO.Path]::GetTempFileName()
 $originalId = $env:GITHUB_REPOSITORY_ID
+$failingGit = ''
 function git {
-    $global:LASTEXITCODE = 0
-    if ($args -contains 'diff') { $change }
+    $global:LASTEXITCODE = if ($failingGit -and $args -contains $failingGit) { 128 } else { 0 }
+    if ($args -contains 'diff' -and !$LASTEXITCODE) { $change }
 }
 function Invoke-RestMethod($Headers,$Uri) {
     if ($Uri.Contains('/workflows/')) {
@@ -19,7 +20,7 @@ function Invoke-RestMethod($Headers,$Uri) {
 }
 function Invoke-WebRequest($Headers,$Uri,$OutFile) { [IO.File]::Copy($routingFixture,$OutFile,$true) }
 function Check([int]$Expected) {
-    $selected = @(& "$PSScriptRoot/Select-ValidationHosts.ps1" -Baseline $baseline -Candidate $candidate -Hosts $hostsToRun -DefaultBranch master)
+    $selected = @(& "$PSScriptRoot/../../tools/ci/Select-ValidationHosts.ps1" -Baseline $baseline -Candidate $candidate -Hosts $hostsToRun -DefaultBranch master)
     if ($selected.Count -ne $Expected -or $selected[0].runner -cne 'required') { throw "Unexpected route for $change." }
 }
 try {
@@ -28,12 +29,12 @@ try {
     $zip = [IO.Compression.ZipArchive]::new($stream,[IO.Compression.ZipArchiveMode]::Create)
     try {
         $writer = [IO.StreamWriter]::new($zip.CreateEntry('host-routing.json').Open())
-        try { $writer.Write((ConvertTo-Json @{commit=$baseline;hosts=@{conditional=@('tests/Feature/Test.cs','tests/ci/Invoke-ValidationGate.ps1')}} -Depth 5)) }
+        try { $writer.Write((ConvertTo-Json @{commit=$baseline;hosts=@{conditional=@('tests/Feature/Test.cs','tools/ci/Invoke-ValidationGate.ps1')}} -Depth 5)) }
         finally { $writer.Dispose() }
     } finally { $zip.Dispose(); $stream.Dispose() }
     $digest = 'sha256:'+(Get-FileHash -LiteralPath $routingFixture).Hash.ToLowerInvariant()
     Check 1
-    $change = "M`ttests/ci/Invoke-ValidationGate.ps1"
+    $change = "M`ttools/ci/Invoke-ValidationGate.ps1"
     Check 1
     $change = "M`t.github/workflows/engine-ci.yml"
     Check 2
@@ -46,4 +47,9 @@ try {
     Check 2
     $env:GITHUB_REPOSITORY_ID = '8'
     Check 2
+    # A stale pull-request base is absent from the shallow checkout; the step must still succeed with every host.
+    foreach ($failingGit in @('merge-base', 'diff')) {
+        Check 2
+        if ($LASTEXITCODE) { throw "A handled git $failingGit failure leaked exit code $LASTEXITCODE." }
+    }
 } finally { [IO.File]::Delete($routingFixture); $env:GITHUB_REPOSITORY_ID = $originalId }

@@ -11,7 +11,7 @@ public sealed class AssetInfo
     /// <summary>
     /// Creates an asset information snapshot.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// Persistent identity assigned to the source asset.
     /// </param>
     /// <param name="assetPath">
@@ -23,10 +23,10 @@ public sealed class AssetInfo
     /// <param name="status">
     /// Current import status.
     /// </param>
-    /// <param name="importerId">
+    /// <param name="importerID">
     /// Stable importer identifier, or an empty value when none applies.
     /// </param>
-    /// <param name="stableAssetTypeId">
+    /// <param name="stableAssetTypeID">
     /// Stable imported asset type identity.
     /// </param>
     /// <param name="artifactKey">
@@ -42,33 +42,35 @@ public sealed class AssetInfo
     /// Thrown when <paramref name="assetPath"/> is invalid.
     /// </exception>
     public AssetInfo(
-        Guid persistentId,
+        Guid persistentID,
         AssetPath assetPath,
         AssetSourceKind sourceKind,
         AssetImportStatus status,
-        string importerId,
-        Guid stableAssetTypeId,
+        string importerID,
+        Guid stableAssetTypeID,
         AssetArtifactKey artifactKey,
         AssetArtifactKey lastSuccessfulArtifactKey,
         IReadOnlyList<string>? diagnostics = null
     ) {
-        this.persistentId = persistentId;
+        this.persistentID = persistentID;
         if (!assetPath.isValid)
+        {
             throw new ArgumentException("An asset information snapshot requires a valid path.", nameof(assetPath));
+        }
         this.assetPath = assetPath;
         this.sourceKind = sourceKind;
         this.status = status;
-        this.importerId = importerId ?? string.Empty;
-        this.stableAssetTypeId = stableAssetTypeId;
+        this.importerID = importerID ?? string.Empty;
+        this.stableAssetTypeID = stableAssetTypeID;
         this.artifactKey = artifactKey;
         this.lastSuccessfulArtifactKey = lastSuccessfulArtifactKey;
-        this.diagnostics = diagnostics ?? Array.Empty<string>();
+        this.diagnostics = diagnostics ?? [];
     }
 
     /// <summary>
     /// Gets the persistent asset identity.
     /// </summary>
-    public Guid persistentId { get; }
+    public Guid persistentID { get; }
 
     /// <summary>
     /// Gets the current isolated source path.
@@ -88,12 +90,12 @@ public sealed class AssetInfo
     /// <summary>
     /// Gets the selected importer identifier.
     /// </summary>
-    public string importerId { get; }
+    public string importerID { get; }
 
     /// <summary>
     /// Gets the stable imported asset type identity.
     /// </summary>
-    public Guid stableAssetTypeId { get; }
+    public Guid stableAssetTypeID { get; }
 
     /// <summary>
     /// Gets the current committed artifact key.

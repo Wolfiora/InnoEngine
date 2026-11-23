@@ -8,8 +8,8 @@ namespace Inno.Rendering;
 /// </summary>
 public sealed class RenderGraphNameScope : IDisposable
 {
-    private RenderGraphBuilder? m_graph;
     private readonly long m_id;
+    private RenderGraphBuilder? m_graph;
 
     internal RenderGraphNameScope(
         RenderGraphBuilder graph,
@@ -26,9 +26,10 @@ public sealed class RenderGraphNameScope : IDisposable
     {
         RenderGraphBuilder? graph = m_graph;
         if (graph is null)
+        {
             return;
+        }
         graph.EndNameScope(m_id);
         m_graph = null;
     }
 }
-

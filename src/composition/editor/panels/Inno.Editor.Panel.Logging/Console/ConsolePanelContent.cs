@@ -2,47 +2,56 @@ using System;
 using System.Numerics;
 using Inno.Core.Logging;
 using Inno.Editor.ImGui;
-using Ui = Inno.Editor.ImGui.ImGui;
+
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Logging;
+
 internal sealed class ConsolePanelContent
 {
-    private const string C_ICON_BUG = ImGuiIcon.Bug;
-    private const string C_ICON_INFO = ImGuiIcon.CircleInfo;
-    private const string C_ICON_WARN = ImGuiIcon.TriangleExclamation;
-    private const string C_ICON_ERROR = ImGuiIcon.CircleXmark;
-    private const string C_ICON_FATAL = ImGuiIcon.SkullCrossbones;
-    private const string C_ICON_DEFAULT = ImGuiIcon.FileLines;
+    private const string C_ICON_BUG = ImGuiIcon.C_BUG;
+    private const string C_ICON_INFO = ImGuiIcon.C_CIRCLE_INFO;
+    private const string C_ICON_WARN = ImGuiIcon.C_TRIANGLE_EXCLAMATION;
+    private const string C_ICON_ERROR = ImGuiIcon.C_CIRCLE_XMARK;
+    private const string C_ICON_FATAL = ImGuiIcon.C_SKULL_CROSSBONES;
+    private const string C_ICON_DEFAULT = ImGuiIcon.C_FILE_LINES;
+
     internal void DrawDisabledHint(string text)
     {
-        Ui.BeginDisabled(true);
-        Ui.Text(text);
-        Ui.EndDisabled();
+        Gui.BeginDisabled(true);
+        Gui.Text(text);
+        Gui.EndDisabled();
     }
 
     internal (Vector4 color, string icon) GetLevelVisual(LogLevel level)
+        => level switch
     {
-        return level switch
-        {
-            LogLevel.Debug => (ConsoleStyle.debug, C_ICON_BUG),
-            LogLevel.Info => (ConsoleStyle.info, C_ICON_INFO),
-            LogLevel.Warn => (ConsoleStyle.warning, C_ICON_WARN),
-            LogLevel.Error => (ConsoleStyle.error, C_ICON_ERROR),
-            LogLevel.Fatal => (ConsoleStyle.fatal, C_ICON_FATAL),
-            _ => (EditorPalette.text, C_ICON_DEFAULT)};
-    }
+        LogLevel.Debug => (ConsoleStyle.debug, C_ICON_BUG),
+        LogLevel.Info => (ConsoleStyle.info, C_ICON_INFO),
+        LogLevel.Warn => (ConsoleStyle.warning, C_ICON_WARN),
+        LogLevel.Error => (ConsoleStyle.error, C_ICON_ERROR),
+        LogLevel.Fatal => (ConsoleStyle.fatal, C_ICON_FATAL),
+        _ => (EditorPalette.text, C_ICON_DEFAULT)
+    };
 
     internal Vector4 GetCollapsedBgColor() => ConsoleStyle.collapsedCard;
+
     internal Vector4 GetCollapsedBorderColor() => ConsoleStyle.collapsedBorder;
+
     internal Vector4 GetExpandedBgColor(Vector4 levelColor) => ConsoleStyle.GetExpandedCard(levelColor);
+
     internal string GetFirstLine(string text)
     {
         if (string.IsNullOrEmpty(text))
+        {
             return string.Empty;
+        }
         for (int i = 0; i < text.Length; i++)
         {
             if (text[i] is '\n' or '\r')
+            {
                 return text[..i];
+            }
         }
 
         return text;
@@ -52,28 +61,40 @@ internal sealed class ConsolePanelContent
         string text,
         float maxWidth
     ) {
-        const string c_ellipsis = "...";
+        const string C_ELLIPSIS = "...";
         if (string.IsNullOrEmpty(text))
+        {
             return string.Empty;
+        }
         if (maxWidth <= 1f)
-            return c_ellipsis;
-        if (Ui.MeasureText(text).X <= maxWidth)
+        {
+            return C_ELLIPSIS;
+        }
+        if (Gui.MeasureText(text).X <= maxWidth)
+        {
             return text;
-        float ellipsisWidth = Ui.MeasureText(c_ellipsis).X;
+        }
+        float ellipsisWidth = Gui.MeasureText(C_ELLIPSIS).X;
         if (ellipsisWidth >= maxWidth)
-            return c_ellipsis;
+        {
+            return C_ELLIPSIS;
+        }
         float maxTextWidth = maxWidth - ellipsisWidth;
         int low = 0;
         int high = text.Length;
         while (low < high)
         {
             int middle = (low + high + 1) / 2;
-            if (Ui.MeasureText(text[..middle]).X <= maxTextWidth)
+            if (Gui.MeasureText(text[..middle]).X <= maxTextWidth)
+            {
                 low = middle;
+            }
             else
+            {
                 high = middle - 1;
+            }
         }
 
-        return low <= 0 ? c_ellipsis : text[..low] + c_ellipsis;
+        return low <= 0 ? C_ELLIPSIS : text[..low] + C_ELLIPSIS;
     }
 }

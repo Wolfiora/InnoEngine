@@ -10,8 +10,7 @@ internal static partial class BinarySerializationFormat
     private const string C_MAGIC = "INNO-BINARY-CURRENT";
     private const int C_MAX_COLLECTION_COUNT = 16_777_216;
 
-    internal static byte[] Encode(SerializationNode root)
-        => Encode(root, includeMagic: true);
+    internal static byte[] Encode(SerializationNode root) => Encode(root, includeMagic: true);
 
     internal static void WriteTo(
         Stream destination,
@@ -31,11 +30,15 @@ internal static partial class BinarySerializationFormat
             using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: true);
             string magic = reader.ReadString();
             if (!string.Equals(magic, C_MAGIC, StringComparison.Ordinal))
+            {
                 throw new InvalidDataException($"Invalid serialization magic '{magic}'.");
+            }
 
             SerializationNode root = ReadNode(reader, "$");
             if (stream.Position != stream.Length)
+            {
                 throw new InvalidDataException("Serialization payload at '$' contains trailing data.");
+            }
             return root;
         }
         catch (InvalidDataException)
@@ -86,7 +89,9 @@ internal static partial class BinarySerializationFormat
                 writer.Write((byte)NodeKind.Array);
                 writer.Write(array.values.Count);
                 for (int i = 0; i < array.values.Count; i++)
+                {
                     WriteNode(writer, array.values[i]);
+                }
                 return;
             case MapSerializationNode map:
                 writer.Write((byte)NodeKind.Map);
@@ -143,19 +148,58 @@ internal static partial class BinarySerializationFormat
     ) {
         switch (value)
         {
-            case bool typed: writer.Write((byte)NodeKind.Boolean); writer.Write(typed); return;
-            case byte typed: writer.Write((byte)NodeKind.Byte); writer.Write(typed); return;
-            case sbyte typed: writer.Write((byte)NodeKind.SByte); writer.Write(typed); return;
-            case short typed: writer.Write((byte)NodeKind.Int16); writer.Write(typed); return;
-            case ushort typed: writer.Write((byte)NodeKind.UInt16); writer.Write(typed); return;
-            case int typed: writer.Write((byte)NodeKind.Int32); writer.Write(typed); return;
-            case uint typed: writer.Write((byte)NodeKind.UInt32); writer.Write(typed); return;
-            case long typed: writer.Write((byte)NodeKind.Int64); writer.Write(typed); return;
-            case ulong typed: writer.Write((byte)NodeKind.UInt64); writer.Write(typed); return;
-            case float typed: writer.Write((byte)NodeKind.Single); writer.Write(typed); return;
-            case double typed: writer.Write((byte)NodeKind.Double); writer.Write(typed); return;
-            case decimal typed: writer.Write((byte)NodeKind.Decimal); writer.Write(typed); return;
-            case string typed: writer.Write((byte)NodeKind.String); writer.Write(typed); return;
+            case bool typed:
+                writer.Write((byte)NodeKind.Boolean);
+                writer.Write(typed);
+                return;
+            case byte typed:
+                writer.Write((byte)NodeKind.Byte);
+                writer.Write(typed);
+                return;
+            case sbyte typed:
+                writer.Write((byte)NodeKind.SByte);
+                writer.Write(typed);
+                return;
+            case short typed:
+                writer.Write((byte)NodeKind.Int16);
+                writer.Write(typed);
+                return;
+            case ushort typed:
+                writer.Write((byte)NodeKind.UInt16);
+                writer.Write(typed);
+                return;
+            case int typed:
+                writer.Write((byte)NodeKind.Int32);
+                writer.Write(typed);
+                return;
+            case uint typed:
+                writer.Write((byte)NodeKind.UInt32);
+                writer.Write(typed);
+                return;
+            case long typed:
+                writer.Write((byte)NodeKind.Int64);
+                writer.Write(typed);
+                return;
+            case ulong typed:
+                writer.Write((byte)NodeKind.UInt64);
+                writer.Write(typed);
+                return;
+            case float typed:
+                writer.Write((byte)NodeKind.Single);
+                writer.Write(typed);
+                return;
+            case double typed:
+                writer.Write((byte)NodeKind.Double);
+                writer.Write(typed);
+                return;
+            case decimal typed:
+                writer.Write((byte)NodeKind.Decimal);
+                writer.Write(typed);
+                return;
+            case string typed:
+                writer.Write((byte)NodeKind.String);
+                writer.Write(typed);
+                return;
             case Guid typed:
                 Span<byte> bytes = stackalloc byte[16];
                 _ = typed.TryWriteBytes(bytes);
@@ -178,7 +222,9 @@ internal static partial class BinarySerializationFormat
             string name = reader.ReadString();
             string memberPath = AppendPath(path, name);
             if (!node.values.TryAdd(name, ReadNode(reader, memberPath)))
+            {
                 throw new InvalidDataException($"Serialization object at '{path}' contains duplicate key '{name}'.");
+            }
         }
         return node;
     }
@@ -191,7 +237,9 @@ internal static partial class BinarySerializationFormat
         var node = new ArraySerializationNode();
         node.values.Capacity = count;
         for (int i = 0; i < count; i++)
+        {
             node.values.Add(ReadNode(reader, $"{path}[{i}]"));
+        }
         return node;
     }
 
@@ -204,9 +252,12 @@ internal static partial class BinarySerializationFormat
         node.values.Capacity = count;
         for (int i = 0; i < count; i++)
         {
-            node.values.Add(new KeyValuePair<SerializationNode, SerializationNode>(
-                ReadNode(reader, $"{path}[{i}].key"),
-                ReadNode(reader, $"{path}[{i}].value")));
+            node.values.Add(
+                new KeyValuePair<SerializationNode, SerializationNode>(
+                    ReadNode(reader, $"{path}[{i}].key"),
+                    ReadNode(reader, $"{path}[{i}].value")
+                )
+            );
         }
         return node;
     }
@@ -218,7 +269,9 @@ internal static partial class BinarySerializationFormat
         int count = ReadCount(reader, "binary byte", path);
         byte[] bytes = reader.ReadBytes(count);
         if (bytes.Length != count)
+        {
             throw new InvalidDataException($"Serialization binary value at '{path}' is truncated.");
+        }
         return bytes;
     }
 
@@ -228,7 +281,9 @@ internal static partial class BinarySerializationFormat
     ) {
         byte[] bytes = reader.ReadBytes(16);
         if (bytes.Length != 16)
+        {
             throw new InvalidDataException($"Serialization Guid value at '{path}' is truncated.");
+        }
         return new Guid(bytes);
     }
 
@@ -239,7 +294,9 @@ internal static partial class BinarySerializationFormat
     ) {
         int count = reader.ReadInt32();
         if (count < 0 || count > C_MAX_COLLECTION_COUNT)
+        {
             throw new InvalidDataException($"Invalid serialization {kind} count {count} at '{path}'.");
+        }
         return count;
     }
 
@@ -248,8 +305,7 @@ internal static partial class BinarySerializationFormat
         string name
     ) => path == "$" ? $"$.{name}" : $"{path}.{name}";
 
-    private static byte[] EncodeNode(SerializationNode node)
-        => Encode(node, includeMagic: false);
+    private static byte[] EncodeNode(SerializationNode node) => Encode(node, includeMagic: false);
 
     private static byte[] Encode(
         SerializationNode node,
@@ -261,11 +317,15 @@ internal static partial class BinarySerializationFormat
         using var stream = new MemoryStream(data, writable: true);
         using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
         if (includeMagic)
+        {
             writer.Write(C_MAGIC);
+        }
         WriteNode(writer, node, useObjectCache);
         writer.Flush();
         if (stream.Position != length)
+        {
             throw new InvalidDataException("The serialization encoder did not fill its calculated output size.");
+        }
         return data;
     }
 
@@ -278,7 +338,9 @@ internal static partial class BinarySerializationFormat
         {
             int comparison = left[i].CompareTo(right[i]);
             if (comparison != 0)
+            {
                 return comparison;
+            }
         }
         return left.Length.CompareTo(right.Length);
     }

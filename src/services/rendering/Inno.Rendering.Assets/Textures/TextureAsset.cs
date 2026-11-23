@@ -1,29 +1,28 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Scripting.Api;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
 /// <summary>
 /// Represents imported texture content without owning a GPU handle.
 /// </summary>
-[StableTypeId("e174b6eb-f79a-470f-a460-84f88ab49d0e")]
+[StableTypeID("e174b6eb-f79a-470f-a460-84f88ab49d0e")]
 public sealed class TextureAsset : AssetObject, IRenderTextureArtifactSource
 {
-    private static readonly RenderTextureArtifactSlot[] S_linearTextureArtifacts =
+    private static readonly RenderTextureArtifactSlot[] LINEAR_TEXTURE_ARTIFACTS =
         [new RenderTextureArtifactSlot("main", "source", TextureColorSpace.Linear)];
-    private static readonly RenderTextureArtifactSlot[] S_sRgbTextureArtifacts =
+
+    private static readonly RenderTextureArtifactSlot[] RGB_TEXTURE_ARTIFACTS =
         [new RenderTextureArtifactSlot("main", "source", TextureColorSpace.Srgb)];
 
-    internal TextureAsset()
-    {
-    }
+    internal TextureAsset() {}
 
     /// <summary>
     /// Creates an immutable imported texture description.
@@ -90,8 +89,8 @@ public sealed class TextureAsset : AssetObject, IRenderTextureArtifactSource
     /// </summary>
     public IReadOnlyList<RenderTextureArtifactSlot> textureArtifacts
         => colorSpace == TextureColorSpace.Srgb
-            ? S_sRgbTextureArtifacts
-            : S_linearTextureArtifacts;
+           ? RGB_TEXTURE_ARTIFACTS
+           : LINEAR_TEXTURE_ARTIFACTS;
 
     /// <summary>
     /// Creates a stable reference to this texture's current imported content.
@@ -104,10 +103,11 @@ public sealed class TextureAsset : AssetObject, IRenderTextureArtifactSource
     /// </exception>
     public RenderTextureArtifactReference GetTextureArtifactReference()
     {
-        Guid id = identity.persistentId;
+        Guid id = identity.persistentID;
         if (id == Guid.Empty)
+        {
             throw new InvalidOperationException("Texture must have a persistent asset identity.");
+        }
         return new RenderTextureArtifactReference(id, contentVersion, textureArtifacts[0]);
     }
 }
-

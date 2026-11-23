@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets.Pipeline;
 using Inno.UI;
 using Inno.UI.Assets;
@@ -12,7 +11,7 @@ namespace Inno.Adapter.UI.RmlUi.Authoring;
 /// Maps the conventional .rml extension to explicit RML and RmlUi identities.
 /// </summary>
 [AssetImporter("inno.ui.rml-document")]
-public sealed class RmlUiDocumentImporter : AssetImporter<UiDocumentAsset>
+public sealed class RmlUiDocumentImporter : AssetImporter<UIDocumentAsset>
 {
     /// <summary>
     /// Gets the normalized source extensions accepted by this importer.
@@ -36,13 +35,13 @@ public sealed class RmlUiDocumentImporter : AssetImporter<UiDocumentAsset>
     /// </returns>
     protected override ValueTask ImportAsync(
         AssetImportContext context,
-        AssetImportWriter<UiDocumentAsset> output,
+        AssetImportWriter<UIDocumentAsset> output,
         CancellationToken cancellationToken
-    )
-        => UiDocumentImportPipeline.ImportAsync(
-            context,
-            output,
-            RmlUiIdentifiers.documentLanguage,
-            RmlUiIdentifiers.backend.value,
-            cancellationToken);
+    ) => UIDocumentImportPipeline.ImportAsync(
+        context,
+        output,
+        RmlUiIdentifiers.documentLanguage,
+        RmlUiIdentifiers.backend.value,
+        cancellationToken
+    );
 }

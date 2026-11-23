@@ -56,12 +56,16 @@ public sealed class AssemblyReloadContext
     /// <exception cref="InvalidOperationException">
     /// Thrown when no participant supplied the requested context or the reload has completed.
     /// </exception>
-    public TContext GetContext<TContext>() where TContext : class
+    public TContext GetContext<TContext>()
+        where TContext : class
     {
         if (TryGetContext(out TContext? context))
+        {
             return context!;
+        }
         throw new InvalidOperationException(
-            $"No assembly catalog participant supplied context '{typeof(TContext).FullName}'.");
+            $"No assembly catalog participant supplied context '{typeof(TContext).FullName}'."
+        );
     }
 
     /// <summary>
@@ -76,18 +80,22 @@ public sealed class AssemblyReloadContext
     /// <returns>
     /// <see langword="true"/> when exactly one matching context exists.
     /// </returns>
-    public bool TryGetContext<TContext>(out TContext? context) where TContext : class
+    public bool TryGetContext<TContext>(out TContext? context)
+        where TContext : class
     {
         IReadOnlyList<object> contexts = m_participantContexts ?? throw CreateCompletedException();
         context = null;
         foreach (object candidate in contexts)
         {
             if (candidate is not TContext match)
+            {
                 continue;
+            }
             if (context is not null)
             {
                 throw new InvalidOperationException(
-                    $"Multiple assembly catalog participants supplied context '{typeof(TContext).FullName}'.");
+                    $"Multiple assembly catalog participants supplied context '{typeof(TContext).FullName}'."
+                );
             }
             context = match;
         }

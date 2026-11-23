@@ -32,7 +32,7 @@ public static class NativeDllLoader
     public static string FindNativeLibrary(string libraryName)
     {
         ValidateFileName(libraryName, nameof(libraryName));
-        string nativeRoot = Path.Combine(S_OUTPUT_ROOT, NativeDllConstants.NATIVE_DIR_NAME);
+        string nativeRoot = Path.Combine(S_OUTPUT_ROOT, NativeDllConstants.C_NATIVE_DIR_NAME);
         return ReadIndex(nativeRoot).ResolveLibrary(nativeRoot, libraryName);
     }
 
@@ -57,7 +57,7 @@ public static class NativeDllLoader
     public static string FindNativeFile(string fileName)
     {
         ValidateFileName(fileName, nameof(fileName));
-        string nativeRoot = Path.Combine(S_OUTPUT_ROOT, NativeDllConstants.NATIVE_DIR_NAME);
+        string nativeRoot = Path.Combine(S_OUTPUT_ROOT, NativeDllConstants.C_NATIVE_DIR_NAME);
         return ReadIndex(nativeRoot).ResolveFile(nativeRoot, fileName);
     }
 
@@ -65,12 +65,20 @@ public static class NativeDllLoader
     {
         string path = Path.Combine(nativeRoot, NativeDeploymentIndex.C_FILE_NAME);
         if (!File.Exists(path))
-            throw new FileNotFoundException("The product has no explicit native deployment index. Prepare the product before starting it.", path);
+        {
+            throw new FileNotFoundException(
+                "The product has no explicit native deployment index. Prepare the product before starting it.",
+                path
+            );
+        }
         return NativeDeploymentIndex.Decode(File.ReadAllBytes(path));
     }
 
-    [UnconditionalSuppressMessage("SingleFile", "IL3000",
-        Justification = "Assembly-local outputs serve isolated hosts; an empty bundled assembly location explicitly selects the application directory.")]
+    [UnconditionalSuppressMessage(
+        "SingleFile",
+        "IL3000",
+        Justification = "Assembly-local outputs serve isolated hosts; an empty bundled assembly location explicitly selects the application directory."
+    )]
     private static string ResolveOutputRoot()
     {
         string location = typeof(NativeDllLoader).Assembly.Location;
@@ -83,8 +91,9 @@ public static class NativeDllLoader
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(fileName, parameterName);
         if (fileName is "." or ".." || fileName != Path.GetFileName(fileName)
-            || fileName.IndexOfAny(['*', '?', '/', '\\']) >= 0)
+            || fileName.IndexOfAny(['*', '?', '/', '\\']) >= 0
+        ) {
             throw new ArgumentException("Native discovery requires an exact file name.", parameterName);
+        }
     }
-
 }

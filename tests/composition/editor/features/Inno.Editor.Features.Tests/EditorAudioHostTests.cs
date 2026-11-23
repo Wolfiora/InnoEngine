@@ -1,0 +1,165 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Assets;
+using Inno.Audio;
+using Inno.Audio.Runtime;
+using Inno.Core.Logging;
+using Inno.Editor.Audio;
+using Inno.Runtime;
+using Inno.Runtime.Contracts;
+
+using RuntimeAudio = Inno.Audio.Audio;
+
+namespace Inno.Editor.Features.Tests;
+
+public sealed class EditorAudioHostTests : IDisposable
+{
+    private readonly FakeArtifactLookup m_artifacts = new();
+    private readonly EngineHost m_engine;
+    private readonly string m_root;
+
+    public EditorAudioHostTests()
+    {
+        m_root = Path.Combine(Path.GetTempPath(), "InnoEditorAudioTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(m_root);
+        m_engine = new EngineHostBuilder()
+            .UseMetadataSources(
+                new DotNetAssemblyCatalogSource(typeof(EditorAudioHostTests).Assembly),
+                new ReflectionTypeCatalogSource(),
+                new ReflectionSerializationMetadataSource()
+            )
+            .Build();
+    }
+
+    public void Dispose()
+    {
+        m_engine.Dispose();
+        if (Directory.Exists(m_root))
+        {
+            Directory.Delete(m_root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void EditAndPlaySessionsOwnIndependentExecutionScopesAndLifetimes()
+    {
+        using var host = new EditorAudioHost(
+            m_engine.types,
+            m_artifacts,
+            m_engine.diagnostics,
+            deviceFactory: static () => new MutedAudioDevice()
+        );
+        using RuntimeSession edit = m_engine.CreateSession(CreateOptions(host, RuntimeSessionKind.Edit, "edit"));
+        using (host.EnterExecutionScope(edit))
+        {
+            Assert.Equal(AudioDeviceState.Muted, RuntimeAudio.deviceState);
+        }
+
+        using (RuntimeSession play = m_engine.CreateSession(CreateOptions(host, RuntimeSessionKind.Play, "play")))
+        {
+            using (host.EnterExecutionScope(play))
+            {
+                Assert.Equal(AudioDeviceState.Muted, RuntimeAudio.deviceState);
+            }
+            play.Tick(0.016f);
+        }
+
+        using (host.EnterExecutionScope(edit))
+        {
+            Assert.Equal(AudioDeviceState.Muted, RuntimeAudio.deviceState);
+        }
+        edit.Tick(0.016f);
+    }
+
+    [Fact]
+    public void PreviewUsesTheRealAudioServiceAndRejectsPlaySessionPreview()
+    {
+        using var host = new EditorAudioHost(
+            m_engine.types,
+            m_artifacts,
+            m_engine.diagnostics,
+            deviceFactory: static () => new MutedAudioDevice()
+        );
+        using RuntimeSession edit = m_engine.CreateSession(
+            CreateOptions(host, RuntimeSessionKind.Edit, "preview-edit")
+        );
+        using RuntimeSession play = m_engine.CreateSession(
+            CreateOptions(host, RuntimeSessionKind.Play, "preview-play")
+        );
+        AudioClipAsset clip = CreateClip();
+
+        AudioVoiceHandle voice = host.PlayPreview(edit, clip);
+        Assert.True(voice.isValid);
+        edit.Tick(0f);
+        Assert.True(host.StopPreview(edit, voice));
+        Assert.Throws<ArgumentException>(() => host.PlayPreview(play, clip));
+    }
+
+    private RuntimeSessionOptions CreateOptions(
+        IEditorAudioHost host,
+        RuntimeSessionKind kind,
+        string name
+    ) => new()
+    {
+        kind = kind,
+        applicationID = name,
+        createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(m_root, "Persistent", name), "Logs")),
+        jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
+        createSubsystems = owner => [host.CreateRuntimeSubsystemFactory(owner)]
+    };
+
+    private AudioClipAsset CreateClip()
+    {
+        var clip = new AudioClipAsset();
+        byte[] payload = AudioClipMetadataCodec.Encode(new AudioClipMetadata(AudioCodecID.wav, 1, 48_000, 480_000, 128));
+        new AssetRuntimeOwner().Initialize(
+            clip,
+            AssetPath.Project("Audio/Preview.wav"),
+            "TEST",
+            payload,
+            isMissing: false,
+            version: 1
+        );
+        string path = Path.Combine(m_root, "preview.wav");
+        File.WriteAllBytes(path, new byte[128]);
+        m_artifacts.Add(clip.identity.persistentID, path);
+        return clip;
+    }
+
+    private sealed class FakeArtifactLookup : IAssetArtifactLookup
+    {
+        private readonly ArtifactRetention m_retention = new();
+        private readonly Dictionary<Guid, (AssetArtifactInfo info, string path)> m_artifacts = [];
+
+        public ArtifactLease AcquireArtifact(
+            Guid persistentID,
+            string outputName
+        ) => m_retention.Retain(m_artifacts[persistentID].info, () => File.OpenRead(m_artifacts[persistentID].path));
+
+        public bool TryGetArtifact(
+            Guid persistentID,
+            string outputName,
+            out AssetArtifactInfo? artifact
+        ) {
+            if (outputName == "audio-data" && m_artifacts.TryGetValue(persistentID, out (AssetArtifactInfo info, string path) found))
+            {
+                artifact = found.info;
+                return true;
+            }
+            artifact = null;
+            return false;
+        }
+
+        internal void Add(
+            Guid id,
+            string path
+        ) => m_artifacts.Add(
+            id,
+            (new AssetArtifactInfo(new AssetArtifactKey(new string('A', 64)), "audio-data", "TEST", 128), path)
+        );
+    }
+}

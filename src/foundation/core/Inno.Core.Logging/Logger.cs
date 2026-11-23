@@ -42,18 +42,18 @@ public sealed class Logger
     /// <param name="arguments">
     /// Optional composite-format arguments.
     /// </param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="message"/> is empty.
-    /// </exception>
-    /// <exception cref="ObjectDisposedException">
-    /// Thrown after the owning router has been disposed.
-    /// </exception>
     /// <param name="filePath">
     /// Source file supplied by the caller information attribute.
     /// </param>
     /// <param name="lineNumber">
     /// Source line supplied by the caller information attribute.
     /// </param>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="message"/> is empty.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// Thrown after the owning router has been disposed.
+    /// </exception>
     public void Write(
         LogLevel level,
         string message,
@@ -63,19 +63,24 @@ public sealed class Logger
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(message);
         if (!m_router.IsEnabled(level))
+        {
             return;
+        }
         string rendered = arguments is null || arguments.Count == 0
-            ? message
-            : string.Format(message, arguments.ToArray());
-        m_router.Dispatch(new LogEntry(
-            level,
-            m_domain,
-            m_scope,
-            m_category,
-            rendered,
-            string.IsNullOrWhiteSpace(filePath) ? "Unknown" : Path.GetFullPath(filePath),
-            lineNumber,
-            new StackTrace(1, true).ToString(),
-            LogSessionContext.current));
+                          ? message
+                          : string.Format(message, arguments.ToArray());
+        m_router.Dispatch(
+            new LogEntry(
+                level,
+                m_domain,
+                m_scope,
+                m_category,
+                rendered,
+                string.IsNullOrWhiteSpace(filePath) ? "Unknown" : Path.GetFullPath(filePath),
+                lineNumber,
+                new StackTrace(1, true).ToString(),
+                LogSessionContext.current
+            )
+        );
     }
 }

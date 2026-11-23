@@ -50,11 +50,23 @@ public static class DocumentationCommand
     ) {
         ArgumentNullException.ThrowIfNull(arguments);
         if (arguments.Length > 0 && arguments[0] is "api-package" or "api-import")
+        {
             return await DocumentationApiPackage.ExecuteAsync(arguments[0], arguments[1..], cancellationToken).ConfigureAwait(false);
+        }
         if (arguments.Length > 0 && arguments[0] is "api-plan" or "api-check" or "api-sync")
-            return await DocumentationApiSynchronization.ExecuteAsync(arguments[0], arguments[1..], cancellationToken).ConfigureAwait(false);
+        {
+            return await DocumentationApiSynchronization.ExecuteAsync(
+                arguments[0],
+                arguments[1..],
+                cancellationToken
+            ).ConfigureAwait(false);
+        }
         if (arguments.Length == 0 || arguments[0] is not ("index" or "search" or "read" or "symbol" or "resource" or "status" or "catalog"))
-            throw new ArgumentException("Usage: docs <index|search|read|symbol|resource|status|catalog> --engine-root ROOT [--cache-root PATH] [--format text|json]. Index requires --docs-root CHECKOUT; reads require a prepared snapshot.");
+        {
+            throw new ArgumentException(
+                "Usage: docs <index|search|read|symbol|resource|status|catalog> --engine-root ROOT [--cache-root PATH] [--format text|json]. Index requires --docs-root CHECKOUT; reads require a prepared snapshot."
+            );
+        }
         string operation = arguments[0];
         string[] specific = operation switch
         {
@@ -69,45 +81,81 @@ public static class DocumentationCommand
         for (int index = 1; index < arguments.Length; index += 2)
         {
             string key = arguments[index];
-            if ((key is not ("--engine-root" or "--cache-root" or "--format" or "--snapshot" or "--source-tree" or "--evidence-file" or "--evidence-sha256") && Array.IndexOf(specific, key) < 0)
-                || index + 1 >= arguments.Length || !options.TryAdd(key, arguments[index + 1]))
+            if ((key is not ("--engine-root"
+                             or "--cache-root"
+                             or "--format"
+                             or "--snapshot"
+                             or "--source-tree"
+                             or "--evidence-file"
+                             or "--evidence-sha256")
+                 && Array.IndexOf(specific, key) < 0)
+                || index + 1 >= arguments.Length || !options.TryAdd(key, arguments[index + 1])
+            ) {
                 throw new ArgumentException("Unknown, duplicate or incomplete documentation option: " + key);
+            }
         }
         string format = options.GetValueOrDefault("--format", "text");
         if (format is not ("text" or "json"))
+        {
             throw new ArgumentException("Documentation format must be text or json.");
+        }
         string root = Path.GetFullPath(options.GetValueOrDefault("--engine-root", Directory.GetCurrentDirectory()));
         string cache = Path.GetFullPath(options.GetValueOrDefault("--cache-root", Path.Combine(root, "artifacts", "documentation-query")));
         bool evidence = options.ContainsKey("--evidence-file");
         if (evidence != options.ContainsKey("--evidence-sha256") || operation == "index" && evidence)
-            throw new ArgumentException("Source evidence requires both a certificate file and independently trusted SHA-256 on a prepared-snapshot read.");
+        {
+            throw new ArgumentException(
+                "Source evidence requires both a certificate file and independently trusted SHA-256 on a prepared-snapshot read."
+            );
+        }
         DocumentationResult result;
         if (operation == "index")
         {
             if (options.ContainsKey("--snapshot") || options.ContainsKey("--source-tree"))
+            {
                 throw new ArgumentException("Index establishes its binding from engine.lock.json; snapshot selectors apply only to reads.");
+            }
             result = await DocumentationStore.IndexAsync(root, Required("--docs-root"), cache, cancellationToken).ConfigureAwait(false);
         }
         else
         {
             DocumentationEvidence? sourceEvidence = evidence
-                ? await DocumentationEvidence.ReadAsync(Required("--evidence-file"), Required("--evidence-sha256"), cancellationToken).ConfigureAwait(false)
-                : null;
-            using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, options.GetValueOrDefault("--snapshot"),
-                options.GetValueOrDefault("--source-tree"), cancellationToken, sourceEvidence).ConfigureAwait(false);
+                                                    ? await DocumentationEvidence.ReadAsync(
+                                                        Required("--evidence-file"),
+                                                        Required("--evidence-sha256"),
+                                                        cancellationToken
+                                                    ).ConfigureAwait(false)
+                                                    : null;
+            using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(
+                cache,
+                options.GetValueOrDefault("--snapshot"),
+                options.GetValueOrDefault("--source-tree"),
+                sourceEvidence,
+                cancellationToken
+            ).ConfigureAwait(false);
             if (operation == "catalog")
             {
                 DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync(cancellationToken).ConfigureAwait(false);
                 if (format == "json")
+                {
                     Console.WriteLine(JsonSerializer.Serialize(catalog, DocumentationStore.json));
+                }
                 else
                 {
-                    Console.WriteLine($"Snapshot: {catalog.snapshot}; content: {catalog.contentIdentity}; source API: {catalog.sourceApiStatus}");
+                    Console.WriteLine(
+                        $"Snapshot: {catalog.snapshot}; content: {catalog.contentIdentity}; source API: {catalog.sourceApiStatus}"
+                    );
                     foreach (DocumentationPageInfo page in catalog.pages)
+                    {
                         Console.WriteLine($"{page.id}: {page.path} ({page.kind}; {page.sections.Count} sections)");
-                    foreach (var project in catalog.projects)
+                    }
+                    foreach (KeyValuePair<string, string?> project in catalog.projects)
+                    {
                         if (project.Value is null)
+                        {
                             Console.WriteLine("Missing project entry: " + project.Key);
+                        }
+                    }
                 }
                 return 0;
             }
@@ -118,13 +166,24 @@ public static class DocumentationCommand
                 "resource" => Required("--uri"),
                 _ => options.GetValueOrDefault("--page")
             };
-            result = await snapshot.QueryAsync(new(operation, value, options.GetValueOrDefault("--project"),
-                options.GetValueOrDefault("--surface"), options.GetValueOrDefault("--section"),
-                int.Parse(options.GetValueOrDefault("--offset", "0"), CultureInfo.InvariantCulture),
-                int.Parse(options.GetValueOrDefault("--limit", "5"), CultureInfo.InvariantCulture), options.GetValueOrDefault("--scope")), cancellationToken).ConfigureAwait(false);
+            result = await snapshot.QueryAsync(
+                new DocumentationRequest(
+                    operation,
+                    value,
+                    options.GetValueOrDefault("--project"),
+                    options.GetValueOrDefault("--surface"),
+                    options.GetValueOrDefault("--section"),
+                    int.Parse(options.GetValueOrDefault("--offset", "0"), CultureInfo.InvariantCulture),
+                    int.Parse(options.GetValueOrDefault("--limit", "5"), CultureInfo.InvariantCulture),
+                    options.GetValueOrDefault("--scope")
+                ),
+                cancellationToken
+            ).ConfigureAwait(false);
         }
         if (format == "json")
+        {
             Console.WriteLine(JsonSerializer.Serialize(result, DocumentationStore.json));
+        }
         else
         {
             Console.WriteLine($"{result.status}; snapshot: {result.snapshot}; source API: {result.sourceApiStatus}");
@@ -135,14 +194,22 @@ public static class DocumentationCommand
                 Console.WriteLine(hit.text);
             }
             foreach (DocumentationContinuation next in result.continuations)
-                Console.WriteLine($"Continue: docs read --page {next.pageId}" + (next.section is null ? "" : " --section " + next.section)
-                    + $" --offset {next.offset} — {next.reason}");
+            {
+                Console.WriteLine(
+                    $"Continue: docs read --page {next.pageId}" + (next.section is null ? string.Empty : " --section " + next.section)
+                    + $" --offset {next.offset} — {next.reason}"
+                );
+            }
             if (result.nextRequest is not null)
+            {
                 Console.WriteLine("Next request: " + JsonSerializer.Serialize(result.nextRequest, DocumentationStore.json));
+            }
         }
         return result.status is "Missing" or "Ambiguous" or "Mismatched" ? 2 : 0;
 
-        string Required(string option) => options.TryGetValue(option, out string? value) && !string.IsNullOrWhiteSpace(value)
-            ? value : throw new ArgumentException("Missing documentation option: " + option);
+        string Required(string option)
+            => options.TryGetValue(option, out string? value) && !string.IsNullOrWhiteSpace(value)
+               ? value
+               : throw new ArgumentException("Missing documentation option: " + option);
     }
 }

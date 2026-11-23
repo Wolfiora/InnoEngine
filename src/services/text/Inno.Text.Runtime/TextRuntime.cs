@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-
 using Inno.Assets;
 using Inno.Runtime;
 using Inno.Runtime.Contracts;
@@ -31,17 +30,11 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
         ITextBackend backend,
         IAssetArtifactLookup artifacts
     ) {
-        m_backend = backend ?? throw new ArgumentNullException(nameof(backend));
-        m_artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
+        ArgumentNullException.ThrowIfNull(backend);
+        ArgumentNullException.ThrowIfNull(artifacts);
+        m_backend = backend;
+        m_artifacts = artifacts;
     }
-
-    /// <summary>
-    /// Binds the script-facing text facade for the complete runtime frame.
-    /// </summary>
-    /// <param name="frame">
-    /// The current runtime frame.
-    /// </param>
-    protected override void OnBeginFrame(RuntimeFrame frame) => OwnFrameScope(EnterExecutionScope());
 
     /// <summary>
     /// Binds this runtime to the current asynchronous execution context.
@@ -95,7 +88,7 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
     /// <param name="faceIndex">
     /// The zero-based collection face index.
     /// </param>
-    /// <param name="glyphId">
+    /// <param name="glyphID">
     /// The font-specific glyph identifier.
     /// </param>
     /// <param name="fontSize">
@@ -107,15 +100,25 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
     public GlyphBitmap Rasterize(
         FontAsset font,
         int faceIndex,
-        uint glyphId,
+        uint glyphID,
         float fontSize
     ) {
         ArgumentNullException.ThrowIfNull(font);
         if (!float.IsFinite(fontSize) || fontSize <= 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(fontSize));
+        }
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        return m_backend.Rasterize(GetOrLoad(font, faceIndex).handle, glyphId, fontSize);
+        return m_backend.Rasterize(GetOrLoad(font, faceIndex).handle, glyphID, fontSize);
     }
+
+    /// <summary>
+    /// Binds the script-facing text facade for the complete runtime frame.
+    /// </summary>
+    /// <param name="frame">
+    /// The current runtime frame.
+    /// </param>
+    protected override void OnBeginFrame(RuntimeFrame frame) => OwnFrameScope(EnterExecutionScope());
 
     /// <summary>
     /// Releases every native face and retained immutable artifact before the backend.
@@ -123,7 +126,9 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
     protected override void OnStop()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_disposed = true;
         List<Exception> failures = [];
         foreach (LoadedFont font in m_fonts.Values)
@@ -155,7 +160,9 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
             failures.Add(exception);
         }
         if (failures.Count > 0)
+        {
             throw new AggregateException("Text runtime retirement failed.", failures);
+        }
     }
 
     private LoadedFont GetOrLoad(
@@ -163,22 +170,30 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
         int faceIndex
     ) {
         FontMetadata metadata = font.metadata
-            ?? throw new InvalidOperationException("The font has no imported runtime metadata.");
+                                ?? throw new InvalidOperationException("The font has no imported runtime metadata.");
         if (font.isMissing)
+        {
             throw new InvalidOperationException("The font asset is missing.");
+        }
         if ((uint)faceIndex >= (uint)metadata.faceCount)
+        {
             throw new ArgumentOutOfRangeException(nameof(faceIndex));
-        var key = new FontKey(font.identity.persistentId, font.contentVersion, faceIndex);
+        }
+        var key = new FontKey(font.identity.persistentID, font.contentVersion, faceIndex);
         if (m_fonts.TryGetValue(key, out LoadedFont? loaded))
+        {
             return loaded;
+        }
 
-        ArtifactLease artifact = m_artifacts.AcquireArtifact(font.identity.persistentId, "font-data");
+        ArtifactLease artifact = m_artifacts.AcquireArtifact(font.identity.persistentID, "font-data");
         try
         {
             byte[] bytes = artifact.ReadAllBytes();
             TextFontHandle handle = m_backend.LoadFont(bytes, faceIndex);
             if (!handle.isValid)
+            {
                 throw new InvalidOperationException("The text backend rejected the imported font face.");
+            }
             loaded = new LoadedFont(handle, artifact);
             m_fonts.Add(key, loaded);
             return loaded;
@@ -191,7 +206,7 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
     }
 
     private readonly record struct FontKey(
-        Guid persistentId,
+        Guid persistentID,
         long version,
         int faceIndex
     );

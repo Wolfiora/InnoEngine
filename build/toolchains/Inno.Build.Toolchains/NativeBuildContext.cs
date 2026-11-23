@@ -1,7 +1,8 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Threading;
 using Inno.Core.IO;
 
 namespace Inno.Build.Toolchains;
@@ -12,17 +13,22 @@ namespace Inno.Build.Toolchains;
 /// </summary>
 public sealed class NativeBuildContext
 {
+    private static readonly ReadOnlyDictionary<string, NativeBindingGenerationDescriptor> NO_BINDINGS = new(
+        new Dictionary<string, NativeBindingGenerationDescriptor>()
+    );
+
     private readonly NativeBuildInputState m_inputState;
+    private readonly string? m_buildOwner;
+    private readonly string? m_targetID;
+    private readonly string? m_fingerprint;
+    private readonly string? m_toolDirectory;
     private INativeBindingGenerator? m_bindingGenerator;
     private NativeInputVerificationScope? m_verification;
     private NativeComponentDescriptor? m_component;
     private NativeComponentBuildOptions? m_componentOptions;
-    private readonly string? m_buildOwner;
-    private readonly string? m_targetId;
-    private readonly string? m_fingerprint;
-    private readonly string? m_toolDirectory;
-    private IReadOnlyDictionary<string, NativeBindingGenerationDescriptor> m_bindings =
-        new ReadOnlyDictionary<string, NativeBindingGenerationDescriptor>(new Dictionary<string, NativeBindingGenerationDescriptor>());
+
+    private IReadOnlyDictionary<string, NativeBindingGenerationDescriptor> m_bindings = NO_BINDINGS;
+
     /// <summary>
     /// Creates a build context without consulting the tool assembly's checkout.
     /// </summary>
@@ -44,7 +50,43 @@ public sealed class NativeBuildContext
     public NativeBuildContext(
         string engineRoot,
         string configuration
-    ) : this(ResolveRoot(engineRoot, configuration), configuration, new NativeBuildInputState()) { }
+    ) : this(ResolveRoot(engineRoot, configuration), configuration, new NativeBuildInputState()) {}
+
+    private NativeBuildContext(
+        NativeBuildContext origin,
+        NativeToolchainSelection toolchain
+    ) : this(origin.engineRoot, origin.configuration, origin.m_inputState)
+    {
+        this.sourcePreparation = origin.sourcePreparation;
+        m_bindingGenerator = origin.m_bindingGenerator;
+        m_verification = origin.m_verification;
+        m_component = origin.m_component;
+        m_componentOptions = origin.m_componentOptions;
+        this.toolchain = toolchain;
+        m_bindings = origin.m_bindings;
+        m_buildOwner = origin.m_buildOwner;
+        m_targetID = origin.m_targetID;
+        m_fingerprint = origin.m_fingerprint;
+        m_toolDirectory = origin.m_toolDirectory;
+    }
+
+    private NativeBuildContext(
+        NativeBuildContext origin,
+        string? toolDirectory
+    ) : this(origin.engineRoot, origin.configuration, origin.m_inputState)
+    {
+        this.sourcePreparation = origin.sourcePreparation;
+        m_bindingGenerator = origin.m_bindingGenerator;
+        m_verification = origin.m_verification;
+        m_component = origin.m_component;
+        m_componentOptions = origin.m_componentOptions;
+        m_buildOwner = origin.m_buildOwner;
+        m_targetID = origin.m_targetID;
+        m_fingerprint = origin.m_fingerprint;
+        this.toolchain = origin.toolchain;
+        m_toolDirectory = toolDirectory;
+        m_bindings = origin.m_bindings;
+    }
 
     private NativeBuildContext(
         string engineRoot,
@@ -54,52 +96,20 @@ public sealed class NativeBuildContext
         ToolchainEnvironment.ValidateConfiguration(configuration);
         this.engineRoot = engineRoot;
         if (!File.Exists(Path.Combine(this.engineRoot, ToolchainLayout.C_REPOSITORY_MARKER_FILE)))
+        {
             throw new DirectoryNotFoundException($"Engine checkout is unavailable at '{this.engineRoot}'.");
+        }
         this.configuration = configuration;
         m_inputState = inputState;
     }
 
     private NativeBuildContext(
         NativeBuildContext origin,
-        string buildOwner,
-        string targetId,
-        string fingerprint
-    ) : this(origin.engineRoot, origin.configuration, origin.m_inputState) {
-        sourcePreparation = origin.sourcePreparation;
-        m_bindingGenerator = origin.m_bindingGenerator;
-        m_verification = origin.m_verification;
-        m_component = origin.m_component;
-        m_componentOptions = origin.m_componentOptions;
-        m_buildOwner = buildOwner;
-        m_targetId = targetId;
-        m_fingerprint = fingerprint;
-        toolchain = origin.toolchain;
-        m_bindings = origin.m_bindings;
-    }
-
-    private NativeBuildContext(
-        NativeBuildContext origin,
-        NativeToolchainSelection toolchain
-    ) : this(origin.engineRoot, origin.configuration, origin.m_inputState) {
-        sourcePreparation = origin.sourcePreparation;
-        m_bindingGenerator = origin.m_bindingGenerator;
-        m_verification = origin.m_verification;
-        m_component = origin.m_component;
-        m_componentOptions = origin.m_componentOptions;
-        this.toolchain = toolchain;
-        m_bindings = origin.m_bindings;
-        m_buildOwner = origin.m_buildOwner;
-        m_targetId = origin.m_targetId;
-        m_fingerprint = origin.m_fingerprint;
-        m_toolDirectory = origin.m_toolDirectory;
-    }
-
-    private NativeBuildContext(
-        NativeBuildContext origin,
         string configuration,
         NativeToolchainSelection? toolchain
-    ) : this(origin.engineRoot, configuration, origin.m_inputState) {
-        sourcePreparation = origin.sourcePreparation;
+    ) : this(origin.engineRoot, configuration, origin.m_inputState)
+    {
+        this.sourcePreparation = origin.sourcePreparation;
         m_bindingGenerator = origin.m_bindingGenerator;
         m_verification = origin.m_verification;
         m_component = origin.m_component;
@@ -107,40 +117,42 @@ public sealed class NativeBuildContext
         this.toolchain = toolchain;
         m_bindings = origin.m_bindings;
     }
-
 
     private NativeBuildContext(
         NativeBuildContext origin,
         NativeComponentDescriptor component,
         NativeComponentBuildOptions options
-    ) : this(origin.engineRoot, origin.configuration, origin.m_inputState) {
-        sourcePreparation = origin.sourcePreparation;
+    ) : this(origin.engineRoot, origin.configuration, origin.m_inputState)
+    {
+        this.sourcePreparation = origin.sourcePreparation;
         m_bindingGenerator = origin.m_bindingGenerator;
         m_verification = origin.m_verification;
         m_component = component;
         m_componentOptions = options;
         m_buildOwner = origin.m_buildOwner;
-        m_targetId = origin.m_targetId;
+        m_targetID = origin.m_targetID;
         m_fingerprint = origin.m_fingerprint;
         m_toolDirectory = origin.m_toolDirectory;
-        toolchain = origin.toolchain;
+        this.toolchain = origin.toolchain;
         m_bindings = origin.m_bindings;
     }
 
     private NativeBuildContext(
         NativeBuildContext origin,
-        string? toolDirectory
-    ) : this(origin.engineRoot, origin.configuration, origin.m_inputState) {
-        sourcePreparation = origin.sourcePreparation;
+        string buildOwner,
+        string targetID,
+        string fingerprint
+    ) : this(origin.engineRoot, origin.configuration, origin.m_inputState)
+    {
+        this.sourcePreparation = origin.sourcePreparation;
         m_bindingGenerator = origin.m_bindingGenerator;
         m_verification = origin.m_verification;
         m_component = origin.m_component;
         m_componentOptions = origin.m_componentOptions;
-        m_buildOwner = origin.m_buildOwner;
-        m_targetId = origin.m_targetId;
-        m_fingerprint = origin.m_fingerprint;
-        toolchain = origin.toolchain;
-        m_toolDirectory = toolDirectory;
+        m_buildOwner = buildOwner;
+        m_targetID = targetID;
+        m_fingerprint = fingerprint;
+        this.toolchain = origin.toolchain;
         m_bindings = origin.m_bindings;
     }
 
@@ -159,6 +171,11 @@ public sealed class NativeBuildContext
     /// Browser toolchains resolve their own workload-specific SDK independently.
     /// </summary>
     public NativeToolchainSelection? toolchain { get; }
+
+    /// <summary>
+    /// Gets actual hashing and native execution work accumulated by this operation and its scoped contexts.
+    /// </summary>
+    public NativeBuildStatistics statistics => m_inputState.statistics;
 
     /// <summary>
     /// Resolves native intermediates under the owning toolchain project in this checkout.
@@ -183,25 +200,20 @@ public sealed class NativeBuildContext
         string projectRoot = component.GetToolchainRoot(engineRoot);
         string projectName = Path.GetFileNameWithoutExtension(component.toolchainProject);
         if (!File.Exists(Path.Combine(projectRoot, projectName + ".csproj")))
+        {
             throw new InvalidOperationException($"Native build owner '{projectName}' is unavailable in '{engineRoot}'.");
+        }
         string root = Path.Combine(projectRoot, "obj", "native");
         if (m_buildOwner is null)
+        {
             return root;
+        }
         if (component.toolchainProject != m_buildOwner)
+        {
             throw new InvalidOperationException($"The native operation belongs to '{m_buildOwner}', not '{projectName}'.");
-        return m_toolDirectory ?? Path.Combine(root, m_targetId!, m_fingerprint!);
+        }
+        return m_toolDirectory ?? Path.Combine(root, m_targetID!, m_fingerprint!);
     }
-
-    /// <summary>
-    /// Gets actual hashing and native execution work accumulated by this operation and its scoped contexts.
-    /// </summary>
-    public NativeBuildStatistics statistics => m_inputState.statistics;
-
-    internal NativeBuildInputState inputState => m_inputState;
-
-    internal IReadOnlyDictionary<string, NativeBindingGenerationDescriptor> selectedBindings => m_bindings;
-
-    internal NativeCMakeSource.Preparation? sourcePreparation { get; private set; }
 
     /// <summary>
     /// Records one complete binding batch executed by the borrowed provider.
@@ -225,12 +237,6 @@ public sealed class NativeBuildContext
     /// Records a managed SDK process owned by generator extension preparation.
     /// </summary>
     public void RecordManagedProcess() => m_inputState.RecordManagedProcess();
-
-    internal NativeBuildContext WithIdentity(
-        NativeComponentDescriptor owner,
-        string targetId,
-        string fingerprint
-    ) => new(this, owner.toolchainProject, targetId, fingerprint);
 
     /// <summary>
     /// Attaches a provider's immutable tool selection while preserving this operation's input ownership.
@@ -264,7 +270,6 @@ public sealed class NativeBuildContext
     /// </exception>
     public NativeBuildContext WithConfiguration(string configuration) => new(this, configuration, toolchain);
 
-
     /// <summary>
     /// Requires an explicit selection before a component can build or start a native tool.
     /// </summary>
@@ -274,8 +279,9 @@ public sealed class NativeBuildContext
     /// <exception cref="InvalidOperationException">
     /// Composition has not resolved a toolchain.
     /// </exception>
-    public NativeToolchainSelection RequireToolchain() => toolchain
-        ?? throw new InvalidOperationException("Native composition must provide an explicit target toolchain before building.");
+    public NativeToolchainSelection RequireToolchain()
+        => toolchain
+           ?? throw new InvalidOperationException("Native composition must provide an explicit target toolchain before building.");
 
     /// <summary>
     /// Scopes one component's explicit product configuration without changing the frozen SDK.
@@ -317,8 +323,9 @@ public sealed class NativeBuildContext
     {
         ArgumentNullException.ThrowIfNull(component);
         return m_component?.nativeProject == component.nativeProject
-            && m_component.toolchainProject == component.toolchainProject && m_componentOptions is not null
-            ? m_componentOptions : throw new InvalidOperationException("The native component requires explicit product configuration.");
+               && m_component.toolchainProject == component.toolchainProject && m_componentOptions is not null
+               ? m_componentOptions
+               : throw new InvalidOperationException("The native component requires explicit product configuration.");
     }
 
     /// <summary>
@@ -353,9 +360,10 @@ public sealed class NativeBuildContext
     /// <exception cref="ObjectDisposedException">
     /// The caller released the borrowed binding result before this operation finished.
     /// </exception>
-    public NativeBindingGenerationDescriptor RequireBindings(NativeComponentDescriptor component) =>
-        m_bindings.TryGetValue(component.nativeProject, out NativeBindingGenerationDescriptor? generation)
-            ? generation : throw new InvalidOperationException($"No target binding generation was prepared for '{component.nativeProject}'.");
+    public NativeBindingGenerationDescriptor RequireBindings(NativeComponentDescriptor component)
+        => m_bindings.TryGetValue(component.nativeProject, out NativeBindingGenerationDescriptor? generation)
+           ? generation
+           : throw new InvalidOperationException($"No target binding generation was prepared for '{component.nativeProject}'.");
 
     /// <summary>
     /// Borrows a generator while preserving this operation's input and tool ownership.
@@ -383,8 +391,9 @@ public sealed class NativeBuildContext
     /// <exception cref="InvalidOperationException">
     /// Composition has not supplied a binding generator.
     /// </exception>
-    public INativeBindingGenerator RequireBindingGenerator() => m_bindingGenerator
-        ?? throw new InvalidOperationException("Native composition must provide a binding generator.");
+    public INativeBindingGenerator RequireBindingGenerator()
+        => m_bindingGenerator
+           ?? throw new InvalidOperationException("Native composition must provide a binding generator.");
 
     /// <summary>
     /// Starts a fresh verification phase whose reads can be shared only within this derived context.
@@ -406,11 +415,23 @@ public sealed class NativeBuildContext
         return scoped;
     }
 
+    internal NativeBuildInputState inputState => m_inputState;
+
+    internal IReadOnlyDictionary<string, NativeBindingGenerationDescriptor> selectedBindings => m_bindings;
+
+    internal NativeCMakeSource.Preparation? sourcePreparation { get; private set; }
+
+    internal NativeBuildContext WithIdentity(
+        NativeComponentDescriptor owner,
+        string targetID,
+        string fingerprint
+    ) => new(this, owner.toolchainProject, targetID, fingerprint);
+
     internal NativeInputSnapshot CaptureInputs(
         IEnumerable<NativeBuildInput> inputs,
-        System.Threading.CancellationToken cancellationToken
+        CancellationToken cancellationToken
     ) => m_verification?.Capture(inputs, cancellationToken)
-        ?? m_inputState.CaptureInitial(inputs, cancellationToken);
+         ?? m_inputState.CaptureInitial(inputs, cancellationToken);
 
     internal NativeBuildContext WithToolDirectory(string toolDirectory) => new(this, toolDirectory);
 
@@ -429,7 +450,9 @@ public sealed class NativeBuildContext
         ToolchainEnvironment.ValidateConfiguration(configuration);
         string root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(engineRoot));
         if (!File.Exists(Path.Combine(root, ToolchainLayout.C_REPOSITORY_MARKER_FILE)))
+        {
             throw new DirectoryNotFoundException($"Engine checkout is unavailable at '{root}'.");
+        }
         return new PhysicalPathResolver().Resolve(root);
     }
 }

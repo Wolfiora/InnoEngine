@@ -79,10 +79,10 @@ internal sealed class WorkStealingDeque<T>
 
     private void GrowNoLock()
     {
-        var oldBuffer = m_buffer;
+        T[] oldBuffer = m_buffer;
         var newBuffer = new T[oldBuffer.Length * 2];
-        var count = CountNoLock();
-        for (var i = 0; i < count; i++)
+        int count = CountNoLock();
+        for (int i = 0; i < count; i++)
         {
             newBuffer[i] = oldBuffer[(m_head + i) % oldBuffer.Length];
         }

@@ -19,13 +19,14 @@ public sealed class BgfxRenderingBackendProvider : RenderingBackendProvider
     /// <exception cref="ArgumentNullException">
     /// The integration is null.
     /// </exception>
-    public BgfxRenderingBackendProvider(IBgfxSurfaceIntegration surfaceIntegration) : base(RenderingBackendId.bgfx)
+    public BgfxRenderingBackendProvider(IBgfxSurfaceIntegration surfaceIntegration)
+        : base(RenderingBackendID.bgfx)
     {
         ArgumentNullException.ThrowIfNull(surfaceIntegration);
         m_surfaceIntegration = surfaceIntegration;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override IRenderDevice CreateDevice(RenderingBackendOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -40,7 +41,7 @@ public sealed class BgfxRenderingBackendProvider : RenderingBackendProvider
         });
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider()
         => new BgfxCompositionProgramProvider();
 }

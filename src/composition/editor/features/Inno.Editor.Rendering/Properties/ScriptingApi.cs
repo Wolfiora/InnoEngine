@@ -1,19 +1,16 @@
-using Inno.Scripting.Api;
 using Inno.Editor.Rendering;
+using Inno.Scripting.Api;
 
-[assembly: ScriptingApiNamespace(
-    "InnoEditor.Rendering",
-    "Inno.Editor.Rendering",
-    ScriptingApiScope.Editor)]
+[assembly: ScriptingApiNamespace("InnoEditor.Rendering", "Inno.Editor.Rendering", ScriptingApiScope.Editor)]
 
-[assembly: ScriptingApiExport(typeof(EditorViewportKindId), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(EditorViewportKindID), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(PipelineDocuments), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorViewportContributorExtensionAttribute), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorViewportContext), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorViewportProjection), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorViewportNavigationMode), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorViewportNavigationCapabilities), ScriptingApiScope.Editor)]
-[assembly: ScriptingApiExport(typeof(EditorViewportNavigationProfileId), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(EditorViewportNavigationProfileID), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorViewportFocusBounds), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorViewportNavigationProfile), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorViewportNavigationState), ScriptingApiScope.Editor)]

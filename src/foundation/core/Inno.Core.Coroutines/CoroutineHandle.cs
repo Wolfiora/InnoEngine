@@ -41,10 +41,8 @@ public readonly struct CoroutineHandle
     }
 
     internal bool IsOwnedBy(CoroutineScheduler scheduler)
-    {
-        return m_id > 0
-               && m_schedulerRef is not null
-               && m_schedulerRef.TryGetTarget(out CoroutineScheduler? target)
-               && ReferenceEquals(target, scheduler);
-    }
+        => m_id > 0
+           && m_schedulerRef is not null
+           && m_schedulerRef.TryGetTarget(out CoroutineScheduler? target)
+           && ReferenceEquals(target, scheduler);
 }

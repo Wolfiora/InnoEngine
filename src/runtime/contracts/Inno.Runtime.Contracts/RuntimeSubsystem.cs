@@ -25,24 +25,22 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
     public bool isStarted => m_started && !m_disposed && !m_stopping;
 
     /// <summary>
-    /// Gets resources and cancellation owned exclusively by this subsystem.
-    /// </summary>
-    protected LifetimeScope lifetime => m_lifetime;
-    /// <summary>
     /// Acquires session resources after every dependency has attached.
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// The subsystem is already started.
+    /// </exception>
     /// <remarks>
     /// The caller must own this instance before attachment. Failed attachment stops admission but leaves partial
     /// resources with that owner, which must drive Dispose through any pending retirement.
     /// </remarks>
-    /// <exception cref="InvalidOperationException">
-    /// The subsystem is already started.
-    /// </exception>
     public void Attach()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_started)
+        {
             throw new InvalidOperationException("A subsystem cannot be attached to multiple owners.");
+        }
         m_ownerThread = Environment.CurrentManagedThreadId;
         m_started = true;
         try
@@ -56,6 +54,7 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
             throw;
         }
     }
+
     /// <summary>
     /// Begins one frame before event dispatch and simulation.
     /// </summary>
@@ -66,7 +65,9 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
     {
         EnsureStarted();
         if (m_frameOpen)
+        {
             throw new InvalidOperationException("A subsystem frame is already open.");
+        }
         m_frameOpen = true;
         try
         {
@@ -85,6 +86,7 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
             throw;
         }
     }
+
     /// <summary>
     /// Advances one deterministic simulation step.
     /// </summary>
@@ -96,6 +98,7 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
         EnsureFrame();
         OnFixedUpdate(frame);
     }
+
     /// <summary>
     /// Advances variable simulation state.
     /// </summary>
@@ -107,6 +110,7 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
         EnsureFrame();
         OnUpdate(frame);
     }
+
     /// <summary>
     /// Advances state that depends on completed variable simulation.
     /// </summary>
@@ -118,6 +122,7 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
         EnsureFrame();
         OnLateUpdate(frame);
     }
+
     /// <summary>
     /// Prepares frame output after simulation has completed.
     /// </summary>
@@ -129,6 +134,7 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
         EnsureFrame();
         OnPrepareOutput(frame);
     }
+
     /// <summary>
     /// Produces frame output owned by this subsystem.
     /// </summary>
@@ -140,6 +146,7 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
         EnsureFrame();
         OnProduceOutput(frame);
     }
+
     /// <summary>
     /// Finalizes frame output even when rendering fails.
     /// </summary>
@@ -151,6 +158,7 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
         EnsureFrame();
         OnCompleteOutput(frame);
     }
+
     /// <summary>
     /// Ends one frame and releases frame-scoped state.
     /// </summary>
@@ -160,20 +168,26 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
     public void EndFrame(RuntimeFrame frame)
     {
         if (!m_frameOpen)
+        {
             return;
+        }
         EnsureThread();
         List<Exception> failures = [];
         TryRelease(() => OnEndFrame(frame), failures);
         for (int index = m_frameScopes.Count - 1; index >= 0; index--)
+        {
             TryRelease(m_frameScopes[index].Dispose, failures);
+        }
         m_frameScopes.Clear();
         m_frameOpen = false;
         ThrowFailures(failures);
     }
+
     /// <summary>
     /// Releases attached session resources before dependencies detach.
     /// </summary>
     public void Detach() => Dispose();
+
     /// <summary>
     /// Releases this owner's registrations and resources exactly once.
     /// </summary>
@@ -186,13 +200,19 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         EnsureThread();
         m_stopping = true;
         TryRelease(() => EndFrame(default), m_retirementFailures);
         TryRelease(m_lifetime.Cancel, m_retirementFailures);
         if (!m_lifetime.isQuiescent)
-            throw new RetirementPendingException("Subsystem retirement is pending: tracked work must finish before domain resources can be released.");
+        {
+            throw new RetirementPendingException(
+                "Subsystem retirement is pending: tracked work must finish before domain resources can be released."
+            );
+        }
         if (!m_stopCompleted)
         {
             TryRetire(OnStop);
@@ -203,8 +223,15 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
         Exception[] failures = m_retirementFailures.ToArray();
         m_retirementFailures.Clear();
         if (failures.Length > 0)
+        {
             throw new AggregateException("Subsystem retirement failed after all cleanup stages were attempted.", failures);
+        }
     }
+
+    /// <summary>
+    /// Gets resources and cancellation owned exclusively by this subsystem.
+    /// </summary>
+    protected LifetimeScope lifetime => m_lifetime;
 
     /// <summary>
     /// Registers a binding that must close even when a frame hook fails.
@@ -225,101 +252,108 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
     /// <summary>
     /// Acquires resources after dependencies have started.
     /// </summary>
-    protected virtual void OnStart() { }
+    protected virtual void OnStart() {}
+
     /// <summary>
     /// Captures snapshots and binds service façades.
     /// </summary>
     /// <param name="frame">
     /// The variable frame timing.
     /// </param>
-    protected virtual void OnBeginFrame(RuntimeFrame frame) { }
+    protected virtual void OnBeginFrame(RuntimeFrame frame) {}
+
     /// <summary>
     /// Advances one deterministic fixed step.
     /// </summary>
     /// <param name="frame">
     /// The fixed-step timing.
     /// </param>
-    protected virtual void OnFixedUpdate(RuntimeFixedFrame frame) { }
+    protected virtual void OnFixedUpdate(RuntimeFixedFrame frame) {}
+
     /// <summary>
     /// Advances domain state on the variable clock.
     /// </summary>
     /// <param name="frame">
     /// The variable frame timing.
     /// </param>
-    protected virtual void OnUpdate(RuntimeFrame frame) { }
+    protected virtual void OnUpdate(RuntimeFrame frame) {}
+
     /// <summary>
     /// Updates state that depends on completed simulation.
     /// </summary>
     /// <param name="frame">
     /// The variable frame timing.
     /// </param>
-    protected virtual void OnLateUpdate(RuntimeFrame frame) { }
+    protected virtual void OnLateUpdate(RuntimeFrame frame) {}
+
     /// <summary>
     /// Opens resources required for this frame's output.
     /// </summary>
     /// <param name="frame">
     /// The variable frame timing.
     /// </param>
-    protected virtual void OnPrepareOutput(RuntimeFrame frame) { }
+    protected virtual void OnPrepareOutput(RuntimeFrame frame) {}
+
     /// <summary>
     /// Collects output commands without executing managed code on a native realtime callback.
     /// </summary>
     /// <param name="frame">
     /// The variable frame timing.
     /// </param>
-    protected virtual void OnProduceOutput(RuntimeFrame frame) { }
+    protected virtual void OnProduceOutput(RuntimeFrame frame) {}
+
     /// <summary>
     /// Submits output and closes output-specific temporary resources.
     /// </summary>
     /// <param name="frame">
     /// The variable frame timing.
     /// </param>
-    protected virtual void OnCompleteOutput(RuntimeFrame frame) { }
+    protected virtual void OnCompleteOutput(RuntimeFrame frame) {}
+
     /// <summary>
     /// Finalizes control-thread frame state before execution bindings are revoked.
     /// </summary>
     /// <param name="frame">
     /// The frame being closed.
     /// </param>
-    protected virtual void OnEndFrame(RuntimeFrame frame) { }
+    protected virtual void OnEndFrame(RuntimeFrame frame) {}
+
     /// <summary>
     /// Releases domain resources, including allocations made before attachment.
     /// </summary>
-    protected virtual void OnStop() { }
+    protected virtual void OnStop() {}
 
     private void EnsureStarted()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_stopping)
+        {
             throw new InvalidOperationException("The subsystem is retiring and cannot accept new work.");
+        }
         EnsureThread();
         if (!m_started)
+        {
             throw new InvalidOperationException("The subsystem has not been attached.");
+        }
     }
+
     private void EnsureFrame()
     {
         EnsureStarted();
         if (!m_frameOpen)
+        {
             throw new InvalidOperationException("No subsystem frame is active.");
+        }
     }
+
     private void EnsureThread()
     {
         if (m_ownerThread != 0 && m_ownerThread != Environment.CurrentManagedThreadId)
+        {
             throw new InvalidOperationException("Subsystem lifecycle operations require the owner thread.");
-    }
-    private static void TryRelease(
-        Action release,
-        List<Exception> failures
-    ) {
-        try
-        {
-            release();
-        }
-        catch (Exception exception)
-        {
-            failures.Add(exception);
         }
     }
+
     private void TryRetire(Action release)
     {
         try
@@ -335,9 +369,26 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
             m_retirementFailures.Add(exception);
         }
     }
+
+    private static void TryRelease(
+        Action release,
+        List<Exception> failures
+    ) {
+        try
+        {
+            release();
+        }
+        catch (Exception exception)
+        {
+            failures.Add(exception);
+        }
+    }
+
     private static void ThrowFailures(List<Exception> failures)
     {
         if (failures.Count > 0)
+        {
             throw new AggregateException("Subsystem retirement failed after all cleanup stages were attempted.", failures);
+        }
     }
 }

@@ -1,9 +1,8 @@
 using System;
-
 using Inno.Assets;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Core.Serialization.Converters;
+using Inno.Extensibility.Types;
 
 namespace Inno.Assets;
 
@@ -28,26 +27,31 @@ internal sealed class AssetObjectConverter : SerializationConverter<AssetObject>
     ) {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(value);
-        Guid persistentId = value.identity.persistentId;
-        if (persistentId == Guid.Empty)
+        Guid persistentID = value.identity.persistentID;
+        if (persistentID == Guid.Empty)
+        {
             throw new InvalidOperationException($"Asset '{value.GetType().FullName}' has no persistent identity at '{writer.path}'.");
+        }
         TypeCacheSnapshot types = writer.typeSnapshot;
         if (!types.TryGetTypeRef(value.GetType(), out TypeRef typeRef))
         {
             throw new InvalidOperationException(
-                $"Asset type '{value.GetType().FullName}' requires a StableTypeId at '{writer.path}'.");
+                $"Asset type '{value.GetType().FullName}' requires a StableTypeID at '{writer.path}'."
+            );
         }
 
-        bool hasDependencies = writer.context.TryGet(out AssetDependencyCollection? dependencies) &&
-                               dependencies is not null;
+        bool hasDependencies = writer.context.TryGet(out AssetDependencyCollection? dependencies)
+                               && dependencies is not null;
         string lastKnownPath = !hasDependencies || dependencies!.includeLastKnownPaths
-            ? value.assetPath.ToString()
-            : string.Empty;
-        writer.Write(C_PERSISTENT_ID, persistentId);
-        writer.Write(C_STABLE_TYPE_ID, typeRef.stableId);
+                               ? value.assetPath.ToString()
+                               : string.Empty;
+        writer.Write(C_PERSISTENT_ID, persistentID);
+        writer.Write(C_STABLE_TYPE_ID, typeRef.stableID);
         writer.Write(C_LAST_KNOWN_PATH, lastKnownPath);
         if (hasDependencies)
-            dependencies!.Add(new AssetDependency(persistentId, typeRef, lastKnownPath));
+        {
+            dependencies!.Add(new AssetDependency(persistentID, typeRef, lastKnownPath));
+        }
     }
 
     /// <summary>
@@ -67,6 +71,7 @@ internal sealed class AssetObjectConverter : SerializationConverter<AssetObject>
             reader.Read<Guid>(C_STABLE_TYPE_ID),
             reader.Read<string>(C_LAST_KNOWN_PATH),
             reader.valueType,
-            reader.path);
+            reader.path
+        );
     }
 }

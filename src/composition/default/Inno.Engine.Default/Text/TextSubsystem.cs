@@ -9,5 +9,6 @@ internal static class TextSubsystem
     internal static IRuntimeSubsystemFactory Create(EngineSessionComposition context)
         => new TextRuntimeFactory(_ => new TextRuntime(
             context.adapters.text.CreateBackend(context.selection.text),
-            context.artifacts));
+            context.artifacts
+        ));
 }

@@ -1,7 +1,6 @@
-using Inno.Runtime.Contracts;
 using System;
-
 using Inno.Runtime;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Rendering.Runtime;
 
@@ -20,16 +19,18 @@ public sealed class RenderRuntimeFactory : IRuntimeSubsystemFactory
     /// </param>
     public RenderRuntimeFactory(Func<RuntimeSubsystemContext, RenderRuntime> runtimeFactory)
     {
-        m_runtimeFactory = runtimeFactory ?? throw new ArgumentNullException(nameof(runtimeFactory));
+        ArgumentNullException.ThrowIfNull(runtimeFactory);
+        m_runtimeFactory = runtimeFactory;
     }
 
     /// <summary>
     /// Gets stable ordering metadata that places rendering after simulation features.
     /// </summary>
     public RuntimeSubsystemDescriptor descriptor { get; } = new(
-        new RuntimeSubsystemId("inno.runtime.rendering"),
+        new RuntimeSubsystemID("inno.runtime.rendering"),
         order: 1000,
-        lifetime: RuntimeSubsystemLifetime.Host);
+        lifetime: RuntimeSubsystemLifetime.Host
+    );
 
     /// <summary>
     /// Creates a rendering feature over a newly allocated runtime layer.
@@ -44,7 +45,7 @@ public sealed class RenderRuntimeFactory : IRuntimeSubsystemFactory
     {
         ArgumentNullException.ThrowIfNull(context);
         RenderRuntime runtime = m_runtimeFactory(context)
-            ?? throw new InvalidOperationException("The rendering runtime factory returned null.");
+                                ?? throw new InvalidOperationException("The rendering runtime factory returned null.");
         return runtime;
     }
 }

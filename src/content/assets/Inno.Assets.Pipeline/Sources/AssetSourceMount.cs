@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Frozen;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Inno.Assets;
@@ -29,18 +29,20 @@ public sealed class AssetSourceMount
     /// Other read-only sources this source may reference.
     /// </param>
     public AssetSourceMount(
-        AssetSourceId id,
+        AssetSourceID id,
         string rootPath,
         bool isReadOnly,
-        IEnumerable<AssetSourceId>? dependencies = null
+        IEnumerable<AssetSourceID>? dependencies = null
     ) {
         if (!id.isValid)
+        {
             throw new ArgumentException("An asset source ID must be valid.", nameof(id));
+        }
         ArgumentException.ThrowIfNullOrWhiteSpace(rootPath);
         this.id = id;
         this.rootPath = Path.GetFullPath(rootPath);
         this.isReadOnly = isReadOnly;
-        dependencySourceIds = (dependencies ?? [])
+        this.dependencySourceIDs = (dependencies ?? [])
             .Where(dependency => dependency.isValid && dependency != id)
             .ToFrozenSet();
     }
@@ -48,7 +50,7 @@ public sealed class AssetSourceMount
     /// <summary>
     /// Gets the stable source identity.
     /// </summary>
-    public AssetSourceId id { get; }
+    public AssetSourceID id { get; }
 
     /// <summary>
     /// Gets the controlled physical source root.
@@ -63,7 +65,7 @@ public sealed class AssetSourceMount
     /// <summary>
     /// Gets explicitly declared cross-source dependencies.
     /// </summary>
-    public IReadOnlySet<AssetSourceId> dependencySourceIds { get; }
+    public IReadOnlySet<AssetSourceID> dependencySourceIDs { get; }
 
     /// <summary>
     /// Resolves a source-local path and rejects physical root escape.
@@ -76,7 +78,7 @@ public sealed class AssetSourceMount
     /// </returns>
     public string Resolve(string localPath)
     {
-        AssetPath path = new(id, localPath);
+        var path = new AssetPath(id, localPath);
         try
         {
             return PathBoundary.Resolve(rootPath, path.localPath);

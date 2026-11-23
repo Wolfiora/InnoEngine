@@ -4,124 +4,209 @@ using System.Collections.Generic;
 namespace Inno.Rendering;
 
 /// <summary>
-/// Identifies the graphics API family selected by the host without exposing a backend-native enum.
-/// Pipelines use this value only for capability-aware choices and target artifact selection;
-/// it does not require separate pipeline or shader source implementations.
+/// Provides an immutable capability snapshot for one device generation.
 /// </summary>
-public readonly record struct GraphicsApi : IComparable<GraphicsApi>
+public sealed class GraphicsCapabilities
 {
-    /// <summary>
-    /// Headless validation backend.
-    /// </summary>
-    public static GraphicsApi Noop { get; } = new("Noop");
-    /// <summary>
-    /// Direct3D 11 renderer.
-    /// </summary>
-    public static GraphicsApi Direct3D11 { get; } = new("Direct3D11");
-    /// <summary>
-    /// Direct3D 12 renderer.
-    /// </summary>
-    public static GraphicsApi Direct3D12 { get; } = new("Direct3D12");
-    /// <summary>
-    /// Apple Metal renderer.
-    /// </summary>
-    public static GraphicsApi Metal { get; } = new("Metal");
-    /// <summary>
-    /// Khronos Vulkan renderer.
-    /// </summary>
-    public static GraphicsApi Vulkan { get; } = new("Vulkan");
-    /// <summary>
-    /// Desktop OpenGL renderer.
-    /// </summary>
-    public static GraphicsApi OpenGL { get; } = new("OpenGL");
-    /// <summary>
-    /// OpenGL ES renderer.
-    /// </summary>
-    public static GraphicsApi OpenGLES { get; } = new("OpenGLES");
-    /// <summary>
-    /// WebGPU renderer.
-    /// </summary>
-    public static GraphicsApi WebGPU { get; } = new("WebGPU");
+    private readonly HashSet<RenderTextureFormat> m_sampledFormats;
+    private readonly HashSet<RenderTextureFormat> m_sampled3DFormats;
+    private readonly HashSet<RenderTextureFormat> m_sampledCubeFormats;
+    private readonly HashSet<RenderTextureFormat> m_renderTargetFormats;
+    private readonly HashSet<RenderTextureFormat> m_multisampleRenderTargetFormats;
+    private readonly HashSet<RenderTextureFormat> m_storageReadFormats;
+    private readonly HashSet<RenderTextureFormat> m_storageWriteFormats;
 
     /// <summary>
-    /// Creates an open, stable backend identity without registering a backend implementation.
+    /// Creates a device capability snapshot.
     /// </summary>
-    /// <param name="value">
-    /// A portable case-sensitive identifier used in target artifact paths.
+    /// <param name="backend">
+    /// Active graphics API family.
     /// </param>
-    /// <exception cref="ArgumentException">
-    /// The identifier is empty or contains nonportable characters.
-    /// </exception>
-    public GraphicsApi(string value)
-    {
-        if (!IsPortableIdentifier(value))
-            throw new ArgumentException(
-                "Graphics API IDs must begin with a letter or digit and use only portable letters, numbers, dots, underscores or hyphens.",
-                nameof(value));
-        this.value = value;
-    }
-
-    /// <summary>
-    /// Gets the stable backend identity used by target artifacts and provider selection.
-    /// </summary>
-    public string value { get; }
-
-    /// <summary>
-    /// Gets whether this value contains an initialized backend identity.
-    /// </summary>
-    public bool isValid => !string.IsNullOrEmpty(value);
-
-    /// <summary>
-    /// Parses an open backend identity without consulting a closed engine-side backend list.
-    /// </summary>
-    /// <param name="value">
-    /// The exact stable backend identity.
+    /// <param name="features">
+    /// Supported optional features.
     /// </param>
-    /// <param name="api">
-    /// The parsed value, or default when parsing fails.
+    /// <param name="limits">
+    /// Device limits.
     /// </param>
-    /// <returns>
-    /// True when the identifier is portable and nonempty.
-    /// </returns>
-    public static bool TryParse(
-        string? value,
-        out GraphicsApi api
+    /// <param name="sampledFormats">
+    /// Formats valid for sampled two-dimensional textures.
+    /// </param>
+    /// <param name="renderTargetFormats">
+    /// Formats valid as raster attachments.
+    /// </param>
+    /// <param name="storageReadFormats">
+    /// Formats valid for unordered shader reads.
+    /// </param>
+    /// <param name="storageWriteFormats">
+    /// Formats valid for unordered shader writes.
+    /// </param>
+    /// <param name="originBottomLeft">
+    /// Whether render-target coordinates start at the bottom-left.
+    /// </param>
+    /// <param name="homogeneousDepth">
+    /// Whether clip-space depth uses the negative-one-to-one range.
+    /// </param>
+    /// <param name="sampled3DFormats">
+    /// Formats valid for sampled volume textures.
+    /// </param>
+    /// <param name="sampledCubeFormats">
+    /// Formats valid for sampled cubemaps.
+    /// </param>
+    /// <param name="multisampleRenderTargetFormats">
+    /// Formats valid as multisampled raster attachments.
+    /// </param>
+    public GraphicsCapabilities(
+        GraphicsApi backend,
+        GraphicsCapability features,
+        GraphicsLimits limits,
+        IEnumerable<RenderTextureFormat> sampledFormats,
+        IEnumerable<RenderTextureFormat> renderTargetFormats,
+        IEnumerable<RenderTextureFormat> storageReadFormats,
+        IEnumerable<RenderTextureFormat> storageWriteFormats,
+        bool originBottomLeft,
+        bool homogeneousDepth,
+        IEnumerable<RenderTextureFormat>? sampled3DFormats = null,
+        IEnumerable<RenderTextureFormat>? sampledCubeFormats = null,
+        IEnumerable<RenderTextureFormat>? multisampleRenderTargetFormats = null
     ) {
-        api = default;
-        if (!IsPortableIdentifier(value))
-            return false;
-        api = new GraphicsApi(value!);
-        return true;
+        ArgumentNullException.ThrowIfNull(limits);
+        ArgumentNullException.ThrowIfNull(sampledFormats);
+        ArgumentNullException.ThrowIfNull(renderTargetFormats);
+        ArgumentNullException.ThrowIfNull(storageReadFormats);
+        ArgumentNullException.ThrowIfNull(storageWriteFormats);
+        if (!backend.isValid)
+        {
+            throw new ArgumentException("Graphics capabilities require a backend identity.", nameof(backend));
+        }
+        this.backend = backend;
+        this.features = features;
+        this.limits = limits;
+        this.originBottomLeft = originBottomLeft;
+        this.homogeneousDepth = homogeneousDepth;
+        m_sampledFormats = [.. sampledFormats];
+        m_sampled3DFormats = [.. sampled3DFormats ?? []];
+        m_sampledCubeFormats = [.. sampledCubeFormats ?? []];
+        m_renderTargetFormats = [.. renderTargetFormats];
+        m_multisampleRenderTargetFormats = [.. multisampleRenderTargetFormats ?? []];
+        m_storageReadFormats = [.. storageReadFormats];
+        m_storageWriteFormats = [.. storageWriteFormats];
     }
 
     /// <summary>
-    /// Compares two backend identities using stable ordinal ordering.
+    /// Gets the active graphics API family.
     /// </summary>
-    /// <param name="other">
-    /// The other backend identity.
+    public GraphicsApi backend { get; }
+
+    /// <summary>
+    /// Gets all supported optional features.
+    /// </summary>
+    public GraphicsCapability features { get; }
+
+    /// <summary>
+    /// Gets device limits.
+    /// </summary>
+    public GraphicsLimits limits { get; }
+
+    /// <summary>
+    /// Gets whether render-target coordinates start at the bottom-left.
+    /// </summary>
+    public bool originBottomLeft { get; }
+
+    /// <summary>
+    /// Gets whether clip-space depth uses the negative-one-to-one range.
+    /// </summary>
+    public bool homogeneousDepth { get; }
+
+    /// <summary>
+    /// Tests whether every requested optional feature is supported.
+    /// </summary>
+    /// <param name="required">
+    /// The required consumed by supports; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     /// <returns>
-    /// A negative, zero, or positive value according to ordinal identifier order.
+    /// <see langword="true"/> when every requested feature is available.
     /// </returns>
-    public int CompareTo(GraphicsApi other) => string.Compare(value, other.value, StringComparison.Ordinal);
+    public bool Supports(GraphicsCapability required) => (features & required) == required;
 
     /// <summary>
-    /// Formats the exact stable backend identity.
+    /// Tests whether a format is valid for sampled two-dimensional textures.
     /// </summary>
+    /// <param name="format">
+    /// Texture format to query.
+    /// </param>
     /// <returns>
-    /// The identity, or an empty string for an uninitialized value.
+    /// <see langword="true"/> when the format can be sampled.
     /// </returns>
-    public override string ToString() => value ?? string.Empty;
+    public bool SupportsSampled(RenderTextureFormat format) => SupportsSampled(format, RenderTextureDimension.Texture2D);
 
-    private static bool IsPortableIdentifier(string? candidate)
+    /// <summary>
+    /// Tests whether a format is valid for sampled textures of one dimensional shape.
+    /// </summary>
+    /// <param name="format">
+    /// Texture format to query.
+    /// </param>
+    /// <param name="dimension">
+    /// Texture shape to query.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the format and dimension can be sampled.
+    /// </returns>
+    public bool SupportsSampled(
+        RenderTextureFormat format,
+        RenderTextureDimension dimension
+    ) => dimension switch
     {
-        if (string.IsNullOrEmpty(candidate) || !char.IsAsciiLetterOrDigit(candidate[0]))
-            return false;
-        foreach (char character in candidate)
-            if (!(char.IsAsciiLetterOrDigit(character) || character is '-' or '_' or '.'))
-                return false;
-        return true;
-    }
+        RenderTextureDimension.Texture2D => m_sampledFormats.Contains(format),
+        RenderTextureDimension.Texture3D => m_sampled3DFormats.Contains(format),
+        RenderTextureDimension.Cube => m_sampledCubeFormats.Contains(format),
+        _ => false
+    };
+
+    /// <summary>
+    /// Tests whether a format is valid as a raster attachment.
+    /// </summary>
+    /// <param name="format">
+    /// The format consumed by supports render target; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the format can be attached.
+    /// </returns>
+    public bool SupportsRenderTarget(RenderTextureFormat format) => m_renderTargetFormats.Contains(format);
+
+    /// <summary>
+    /// Tests whether a format is valid as a multisampled raster attachment.
+    /// </summary>
+    /// <param name="format">
+    /// Texture format to query.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the format can be attached with multisampling.
+    /// </returns>
+    public bool SupportsMultisampleRenderTarget(RenderTextureFormat format) => m_multisampleRenderTargetFormats.Contains(format);
+
+    /// <summary>
+    /// Tests whether a format supports the requested unordered shader access.
+    /// </summary>
+    /// <param name="format">
+    /// Texture format to query.
+    /// </param>
+    /// <param name="access">
+    /// Required storage access.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the format supports every requested access direction.
+    /// </returns>
+    public bool SupportsStorage(
+        RenderTextureFormat format,
+        RenderStorageAccess access
+    ) => access switch
+    {
+        RenderStorageAccess.Read => m_storageReadFormats.Contains(format),
+        RenderStorageAccess.Write => m_storageWriteFormats.Contains(format),
+        RenderStorageAccess.ReadWrite => m_storageReadFormats.Contains(format)
+                                         && m_storageWriteFormats.Contains(format),
+        _ => false
+    };
 }
 
 /// <summary>
@@ -214,268 +299,4 @@ public enum GraphicsCapability
     /// Asynchronous texture transfer from GPU memory to CPU-visible bytes.
     /// </summary>
     TextureReadback = 1 << 19
-}
-
-/// <summary>
-/// Captures device limits used to validate and compile render graphs.
-/// </summary>
-public sealed class GraphicsLimits
-{
-    /// <summary>
-    /// Creates a graphics limits snapshot.
-    /// </summary>
-    /// <param name="maxViews">
-    /// Maximum logical backend views in one frame.
-    /// </param>
-    /// <param name="maxColorAttachments">
-    /// Maximum color attachments in one raster pass.
-    /// </param>
-    /// <param name="maxTextureSize">
-    /// Maximum two-dimensional texture extent.
-    /// </param>
-    /// <param name="maxComputeBindings">
-    /// Maximum storage bindings in one compute pass.
-    /// </param>
-    public GraphicsLimits(
-        int maxViews,
-        int maxColorAttachments,
-        int maxTextureSize,
-        int maxComputeBindings
-    ) {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxViews);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxColorAttachments);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxTextureSize);
-        ArgumentOutOfRangeException.ThrowIfNegative(maxComputeBindings);
-        this.maxViews = maxViews;
-        this.maxColorAttachments = maxColorAttachments;
-        this.maxTextureSize = maxTextureSize;
-        this.maxComputeBindings = maxComputeBindings;
-    }
-
-    /// <summary>
-    /// Gets the maximum logical backend views in one frame.
-    /// </summary>
-    public int maxViews { get; }
-
-    /// <summary>
-    /// Gets the maximum color attachments in one raster pass.
-    /// </summary>
-    public int maxColorAttachments { get; }
-
-    /// <summary>
-    /// Gets the maximum two-dimensional texture extent.
-    /// </summary>
-    public int maxTextureSize { get; }
-
-    /// <summary>
-    /// Gets the maximum storage bindings in one compute pass.
-    /// </summary>
-    public int maxComputeBindings { get; }
-}
-
-/// <summary>
-/// Provides an immutable capability snapshot for one device generation.
-/// </summary>
-public sealed class GraphicsCapabilities
-{
-    private readonly HashSet<RenderTextureFormat> m_sampledFormats;
-    private readonly HashSet<RenderTextureFormat> m_sampled3DFormats;
-    private readonly HashSet<RenderTextureFormat> m_sampledCubeFormats;
-    private readonly HashSet<RenderTextureFormat> m_renderTargetFormats;
-    private readonly HashSet<RenderTextureFormat> m_multisampleRenderTargetFormats;
-    private readonly HashSet<RenderTextureFormat> m_storageReadFormats;
-    private readonly HashSet<RenderTextureFormat> m_storageWriteFormats;
-
-    /// <summary>
-    /// Creates a device capability snapshot.
-    /// </summary>
-    /// <param name="backend">
-    /// Active graphics API family.
-    /// </param>
-    /// <param name="features">
-    /// Supported optional features.
-    /// </param>
-    /// <param name="limits">
-    /// Device limits.
-    /// </param>
-    /// <param name="sampledFormats">
-    /// Formats valid for sampled two-dimensional textures.
-    /// </param>
-    /// <param name="renderTargetFormats">
-    /// Formats valid as raster attachments.
-    /// </param>
-    /// <param name="storageReadFormats">
-    /// Formats valid for unordered shader reads.
-    /// </param>
-    /// <param name="storageWriteFormats">
-    /// Formats valid for unordered shader writes.
-    /// </param>
-    /// <param name="originBottomLeft">
-    /// Whether render-target coordinates start at the bottom-left.
-    /// </param>
-    /// <param name="homogeneousDepth">
-    /// Whether clip-space depth uses the negative-one-to-one range.
-    /// </param>
-    /// <param name="sampled3DFormats">
-    /// Formats valid for sampled volume textures.
-    /// </param>
-    /// <param name="sampledCubeFormats">
-    /// Formats valid for sampled cubemaps.
-    /// </param>
-    /// <param name="multisampleRenderTargetFormats">
-    /// Formats valid as multisampled raster attachments.
-    /// </param>
-    public GraphicsCapabilities(
-        GraphicsApi backend,
-        GraphicsCapability features,
-        GraphicsLimits limits,
-        IEnumerable<RenderTextureFormat> sampledFormats,
-        IEnumerable<RenderTextureFormat> renderTargetFormats,
-        IEnumerable<RenderTextureFormat> storageReadFormats,
-        IEnumerable<RenderTextureFormat> storageWriteFormats,
-        bool originBottomLeft,
-        bool homogeneousDepth,
-        IEnumerable<RenderTextureFormat>? sampled3DFormats = null,
-        IEnumerable<RenderTextureFormat>? sampledCubeFormats = null,
-        IEnumerable<RenderTextureFormat>? multisampleRenderTargetFormats = null
-    ) {
-        ArgumentNullException.ThrowIfNull(limits);
-        ArgumentNullException.ThrowIfNull(sampledFormats);
-        ArgumentNullException.ThrowIfNull(renderTargetFormats);
-        ArgumentNullException.ThrowIfNull(storageReadFormats);
-        ArgumentNullException.ThrowIfNull(storageWriteFormats);
-        if (!backend.isValid)
-            throw new ArgumentException("Graphics capabilities require a backend identity.", nameof(backend));
-        this.backend = backend;
-        this.features = features;
-        this.limits = limits;
-        this.originBottomLeft = originBottomLeft;
-        this.homogeneousDepth = homogeneousDepth;
-        m_sampledFormats = new HashSet<RenderTextureFormat>(sampledFormats);
-        m_sampled3DFormats = new HashSet<RenderTextureFormat>(sampled3DFormats ?? []);
-        m_sampledCubeFormats = new HashSet<RenderTextureFormat>(sampledCubeFormats ?? []);
-        m_renderTargetFormats = new HashSet<RenderTextureFormat>(renderTargetFormats);
-        m_multisampleRenderTargetFormats = new HashSet<RenderTextureFormat>(
-            multisampleRenderTargetFormats ?? []);
-        m_storageReadFormats = new HashSet<RenderTextureFormat>(storageReadFormats);
-        m_storageWriteFormats = new HashSet<RenderTextureFormat>(storageWriteFormats);
-    }
-
-    /// <summary>
-    /// Gets the active graphics API family.
-    /// </summary>
-    public GraphicsApi backend { get; }
-
-    /// <summary>
-    /// Gets all supported optional features.
-    /// </summary>
-    public GraphicsCapability features { get; }
-
-    /// <summary>
-    /// Gets device limits.
-    /// </summary>
-    public GraphicsLimits limits { get; }
-
-    /// <summary>
-    /// Gets whether render-target coordinates start at the bottom-left.
-    /// </summary>
-    public bool originBottomLeft { get; }
-
-    /// <summary>
-    /// Gets whether clip-space depth uses the negative-one-to-one range.
-    /// </summary>
-    public bool homogeneousDepth { get; }
-
-    /// <summary>
-    /// Tests whether every requested optional feature is supported.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when every requested feature is available.
-    /// </returns>
-    /// <param name="required">
-    /// The required consumed by supports; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    public bool Supports(GraphicsCapability required) => (features & required) == required;
-
-    /// <summary>
-    /// Tests whether a format is valid for sampled two-dimensional textures.
-    /// </summary>
-    /// <param name="format">
-    /// Texture format to query.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the format can be sampled.
-    /// </returns>
-    public bool SupportsSampled(RenderTextureFormat format) => SupportsSampled(format, RenderTextureDimension.Texture2D);
-
-    /// <summary>
-    /// Tests whether a format is valid for sampled textures of one dimensional shape.
-    /// </summary>
-    /// <param name="format">
-    /// Texture format to query.
-    /// </param>
-    /// <param name="dimension">
-    /// Texture shape to query.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the format and dimension can be sampled.
-    /// </returns>
-    public bool SupportsSampled(
-        RenderTextureFormat format,
-        RenderTextureDimension dimension
-    )
-        => dimension switch
-        {
-            RenderTextureDimension.Texture2D => m_sampledFormats.Contains(format),
-            RenderTextureDimension.Texture3D => m_sampled3DFormats.Contains(format),
-            RenderTextureDimension.Cube => m_sampledCubeFormats.Contains(format),
-            _ => false
-        };
-
-    /// <summary>
-    /// Tests whether a format is valid as a raster attachment.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when the format can be attached.
-    /// </returns>
-    /// <param name="format">
-    /// The format consumed by supports render target; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    public bool SupportsRenderTarget(RenderTextureFormat format) => m_renderTargetFormats.Contains(format);
-
-    /// <summary>
-    /// Tests whether a format is valid as a multisampled raster attachment.
-    /// </summary>
-    /// <param name="format">
-    /// Texture format to query.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the format can be attached with multisampling.
-    /// </returns>
-    public bool SupportsMultisampleRenderTarget(RenderTextureFormat format) => m_multisampleRenderTargetFormats.Contains(format);
-
-    /// <summary>
-    /// Tests whether a format supports the requested unordered shader access.
-    /// </summary>
-    /// <param name="format">
-    /// Texture format to query.
-    /// </param>
-    /// <param name="access">
-    /// Required storage access.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the format supports every requested access direction.
-    /// </returns>
-    public bool SupportsStorage(
-        RenderTextureFormat format,
-        RenderStorageAccess access
-    )
-        => access switch
-        {
-            RenderStorageAccess.Read => m_storageReadFormats.Contains(format),
-            RenderStorageAccess.Write => m_storageWriteFormats.Contains(format),
-            RenderStorageAccess.ReadWrite => m_storageReadFormats.Contains(format)
-                                             && m_storageWriteFormats.Contains(format),
-            _ => false
-        };
 }

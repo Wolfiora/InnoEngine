@@ -5,14 +5,16 @@ using System.Threading;
 
 namespace Inno.Core.Collections;
 
-sealed partial class IndexedObjectStore<T>
-where T : class
+public sealed partial class IndexedObjectStore<T>
+    where T : class
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool IsValidItem(T item)
     {
-        if (item == null)
+        if (item is null)
+        {
             return false;
+        }
 
         m_lock.EnterReadLock();
         try
@@ -41,7 +43,7 @@ where T : class
         T item,
         out IndexedObjectRuntimeHandle handle
     ) {
-        if (item == null)
+        if (item is null)
         {
             handle = default;
             return false;
@@ -146,13 +148,16 @@ where T : class
     {
         int slot = handle.slot;
         if ((uint)slot >= (uint)m_generations.Count)
+        {
             return false;
+        }
 
         if (m_generations[slot] != handle.generation)
+        {
             return false;
+        }
 
         int denseIndex = m_sparseToDense[slot];
         return denseIndex >= 0 && denseIndex < m_activeList.Count;
     }
-
 }

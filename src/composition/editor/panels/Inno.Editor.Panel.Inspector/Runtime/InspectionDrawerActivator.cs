@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Reflection;
-
 using Inno.Editor.Inspection;
 
 namespace Inno.Editor.Panel.Inspector;
@@ -23,7 +22,9 @@ internal sealed class InspectionDrawerActivator
     {
         ArgumentNullException.ThrowIfNull(dependencies);
         if (dependencies.Any(static dependency => dependency is null))
+        {
             throw new ArgumentException("Inspection drawer dependencies cannot contain null.", nameof(dependencies));
+        }
         m_dependencies = [.. dependencies];
     }
 
@@ -40,21 +41,26 @@ internal sealed class InspectionDrawerActivator
     {
         ArgumentNullException.ThrowIfNull(drawerType);
         ConstructorInfo[] constructors = drawerType.GetConstructors(
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+        );
         if (constructors.Length != 1)
         {
             throw new InvalidOperationException(
-                $"Inspection drawer '{drawerType.FullName}' must declare exactly one constructor.");
+                $"Inspection drawer '{drawerType.FullName}' must declare exactly one constructor."
+            );
         }
 
         ParameterInfo[] parameters = constructors[0].GetParameters();
         var arguments = new object?[parameters.Length];
         for (int i = 0; i < parameters.Length; i++)
+        {
             arguments[i] = Resolve(drawerType, parameters[i].ParameterType);
+        }
         return constructors[0].Invoke(arguments) as IInspectionDrawer
                ?? throw new InvalidOperationException(
-                   $"Inspection drawer '{drawerType.FullName}' does not implement " +
-                   $"'{typeof(IInspectionDrawer).FullName}'.");
+                   $"Inspection drawer '{drawerType.FullName}' does not implement "
+                   + $"'{typeof(IInspectionDrawer).FullName}'."
+               );
     }
 
     private object Resolve(
@@ -68,12 +74,14 @@ internal sealed class InspectionDrawerActivator
         {
             1 => matches[0],
             0 => throw new InvalidOperationException(
-                $"Inspection drawer '{drawerType.FullName}' requests unavailable dependency " +
-                $"'{dependencyType.FullName}'. Drawers should normally use InspectionDrawContext, " +
-                "or request one dependency supplied by the Inspector composition root."),
+                $"Inspection drawer '{drawerType.FullName}' requests unavailable dependency "
+                + $"'{dependencyType.FullName}'. Drawers should normally use InspectionDrawContext, "
+                + "or request one dependency supplied by the Inspector composition root."
+            ),
             _ => throw new InvalidOperationException(
-                $"Inspection drawer '{drawerType.FullName}' has ambiguous dependency " +
-                $"'{dependencyType.FullName}'.")
+                $"Inspection drawer '{drawerType.FullName}' has ambiguous dependency "
+                + $"'{dependencyType.FullName}'."
+            )
         };
     }
 }

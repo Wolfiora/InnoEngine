@@ -16,9 +16,7 @@ public abstract class EditorState
     /// <summary>
     /// Initializes the base contract for a runtime-owned editor state parameter.
     /// </summary>
-    protected EditorState()
-    {
-    }
+    protected EditorState() {}
 
     /// <summary>
     /// Reads a compatible value or returns the caller-provided fallback.

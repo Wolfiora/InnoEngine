@@ -1,8 +1,9 @@
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Inno.Extensibility.Types;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 
@@ -13,22 +14,9 @@ namespace Inno.Rendering.Runtime;
 /// The boundary lets a runtime resource service create generation-scoped values while their mutable
 /// representation remains private to the Rendering assembly.
 /// </remarks>
-[Inno.Extensibility.Types.StableTypeId("c06ff3f1-8280-52cc-a57a-8d864eb358c6")]
+[StableTypeID("c06ff3f1-8280-52cc-a57a-8d864eb358c6")]
 public abstract class RenderResourceProvider
 {
-    /// <summary>
-    /// Represents one material binding staged by a derived resource service.
-    /// </summary>
-    protected readonly struct MaterialBinding
-    {
-        internal MaterialBinding(RenderMaterialBinding value)
-        {
-            this.value = value;
-        }
-
-        internal RenderMaterialBinding value { get; }
-    }
-
     /// <summary>
     /// Creates a protected uniform binding value.
     /// </summary>
@@ -42,10 +30,9 @@ public abstract class RenderResourceProvider
     /// A binding token accepted by the material-pass construction helpers.
     /// </returns>
     protected static MaterialBinding CreateUniformBinding(
-        RenderBindingId id,
+        RenderBindingID id,
         ReadOnlySpan<byte> data
-    )
-        => new(new RenderMaterialBinding(RenderMaterialBindingKind.Uniform, id, data.ToArray(), default, default));
+    ) => new(new RenderMaterialBinding(RenderMaterialBindingKind.Uniform, id, data.ToArray(), default, default));
 
     /// <summary>
     /// Creates a protected sampled-texture binding value.
@@ -63,11 +50,10 @@ public abstract class RenderResourceProvider
     /// A binding token accepted by the material-pass construction helpers.
     /// </returns>
     protected static MaterialBinding CreateTextureBinding(
-        RenderBindingId id,
+        RenderBindingID id,
         PersistentTextureHandle texture,
         RenderSamplerState sampler
-    )
-        => new(new RenderMaterialBinding(RenderMaterialBindingKind.Texture, id, null, texture, sampler));
+    ) => new(new RenderMaterialBinding(RenderMaterialBindingKind.Texture, id, null, texture, sampler));
 
     /// <summary>
     /// Creates a generation-scoped resolved material pass when no compiled-interface query is required.
@@ -93,8 +79,7 @@ public abstract class RenderResourceProvider
         GraphicsPipelineHandle graphicsPipeline,
         ComputePipelineHandle computePipeline,
         IReadOnlyList<MaterialBinding> bindings
-    )
-        => CreateMaterialPass(definition, graphicsPipeline, computePipeline, [], new ShaderInterface([]), bindings);
+    ) => CreateMaterialPass(definition, graphicsPipeline, computePipeline, [], new ShaderInterface([]), bindings);
 
     /// <summary>
     /// Creates a generation-scoped resolved material pass.
@@ -127,14 +112,14 @@ public abstract class RenderResourceProvider
         IReadOnlyList<ShaderPropertyDefinition> declaredBindings,
         ShaderInterface activeInterface,
         IReadOnlyList<MaterialBinding> bindings
-    )
-        => new(
-            definition,
-            graphicsPipeline,
-            computePipeline,
-            declaredBindings,
-            activeInterface,
-            bindings.Select(static binding => binding.value).ToArray());
+    ) => new(
+        definition,
+        graphicsPipeline,
+        computePipeline,
+        declaredBindings,
+        activeInterface,
+        bindings.Select(static binding => binding.value).ToArray()
+    );
 
     /// <summary>
     /// Creates generation-scoped resolved geometry from persistent buffers and immutable sections.
@@ -167,7 +152,18 @@ public abstract class RenderResourceProvider
         int vertexCount,
         int indexCount,
         IReadOnlyList<RenderGeometrySection> sections
-    )
-        => new(vertexBuffer, indexBuffer, vertexLayout, vertexCount, indexCount, sections);
-}
+    ) => new(vertexBuffer, indexBuffer, vertexLayout, vertexCount, indexCount, sections);
 
+    /// <summary>
+    /// Represents one material binding staged by a derived resource service.
+    /// </summary>
+    protected readonly struct MaterialBinding
+    {
+        internal MaterialBinding(RenderMaterialBinding value)
+        {
+            this.value = value;
+        }
+
+        internal RenderMaterialBinding value { get; }
+    }
+}

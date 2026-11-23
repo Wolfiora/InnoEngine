@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-
 using Inno.Core.Serialization;
 using Inno.Core.Serialization.Converters;
 using Inno.Scene;
@@ -26,7 +25,7 @@ internal sealed class GameComponentReferenceConverter : SerializationConverter<G
         ArgumentNullException.ThrowIfNull(value);
         EngineReferenceToken token = SceneReferenceScope.current.Capture(value, writer.path);
         writer.Write("kind", (int)token.kind);
-        writer.Write("sourceId", token.sourceId);
+        writer.Write("sourceId", token.sourceID);
     }
 
     /// <summary>
@@ -43,9 +42,12 @@ internal sealed class GameComponentReferenceConverter : SerializationConverter<G
         ArgumentNullException.ThrowIfNull(reader);
         var token = new EngineReferenceToken(
             (EngineReferenceKind)reader.Read<int>("kind"),
-            reader.Read<Guid>("sourceId"));
+            reader.Read<Guid>("sourceId")
+        );
         if (token.kind != EngineReferenceKind.GameComponent)
+        {
             throw new InvalidDataException($"Reference token at '{reader.path}' is not a GameComponent reference.");
+        }
         return (GameComponent)SceneReferenceScope.current.Resolve(token, reader.valueType, reader.path);
     }
 }

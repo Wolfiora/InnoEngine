@@ -24,7 +24,7 @@ public readonly struct AnimationTarget : IEquatable<AnimationTarget>
     public AnimationTarget(Identity identity)
     {
         m_runtimeIdentity = identity.runtimeIdentity
-            ?? throw new ArgumentException("Animation targets require a live identity.", nameof(identity));
+                            ?? throw new ArgumentException("Animation targets require a live identity.", nameof(identity));
         m_identity = identity;
         m_samplingOnly = false;
     }
@@ -49,12 +49,12 @@ public readonly struct AnimationTarget : IEquatable<AnimationTarget>
     /// <summary>
     /// Gets whether this value was initialized with a destination or sampling policy.
     /// </summary>
-    public bool isValid => m_samplingOnly || m_identity.persistentId != Guid.Empty;
+    public bool isValid => m_samplingOnly || m_identity.persistentID != Guid.Empty;
 
     /// <summary>
     /// Gets the persistent destination identifier, or empty for sampling-only playback.
     /// </summary>
-    public Guid persistentId => m_identity.persistentId;
+    public Guid persistentID => m_identity.persistentID;
 
     /// <summary>
     /// Resolves the original runtime slot without binding to a replacement generation.
@@ -65,7 +65,8 @@ public readonly struct AnimationTarget : IEquatable<AnimationTarget>
     /// <returns>
     /// The live destination, or null for a missing, retired, or incompatible target.
     /// </returns>
-    public TObject? Resolve<TObject>() where TObject : IdentityObject => m_identity.Resolve<TObject>();
+    public TObject? Resolve<TObject>()
+        where TObject : IdentityObject => m_identity.Resolve<TObject>();
 
     /// <summary>
     /// Compares runtime destinations, including their identity domain.

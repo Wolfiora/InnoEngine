@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
 using Inno.Core.Serialization;
 using Inno.Core.Serialization.Converters;
 using Inno.Scene;
@@ -38,20 +37,23 @@ internal sealed class SceneSubtreeStateConverter : SerializationConverter<SceneS
             .Where(entry => included.Contains(entry.gameObject))
             .ToArray();
         EngineObject[] allObjects = GetAllObjects(scene);
-        var sourceIds = new Dictionary<EngineObject, Guid>(ReferenceEqualityComparer.Instance);
+        var sourceIDs = new Dictionary<EngineObject, Guid>(ReferenceEqualityComparer.Instance);
         for (int i = 0; i < allObjects.Length; i++)
-            sourceIds.Add(allObjects[i], allObjects[i].identity.persistentId);
-        var references = new SceneGraphReferenceMap(scene, sourceIds, root);
+        {
+            sourceIDs.Add(allObjects[i], allObjects[i].identity.persistentID);
+        }
+        var references = new SceneGraphReferenceMap(scene, sourceIDs, root);
 
-        writer.Write(C_ROOT_ID_KEY, root.identity.persistentId);
+        writer.Write(C_ROOT_ID_KEY, root.identity.persistentID);
         using (references.Enter())
         {
             SceneGraphSerialization.WriteObjects(
                 writer,
                 entries,
-                sourceIds,
+                sourceIDs,
                 included.Contains,
-                preserveRootSiblingOrder: true);
+                preserveRootSiblingOrder: true
+            );
         }
     }
 
@@ -68,9 +70,8 @@ internal sealed class SceneSubtreeStateConverter : SerializationConverter<SceneS
     {
         ArgumentNullException.ThrowIfNull(reader);
         GameScene scene = reader.context.GetRequired<GameScene>();
-        Guid rootId = reader.Read<Guid>(C_ROOT_ID_KEY);
-        IReadOnlyList<SerializationReader> objectReaders =
-            reader.ReadObjectArray(SceneGraphSerialization.C_OBJECTS_KEY);
+        Guid rootID = reader.Read<Guid>(C_ROOT_ID_KEY);
+        IReadOnlyList<SerializationReader> objectReaders = reader.ReadObjectArray(SceneGraphSerialization.C_OBJECTS_KEY);
         SceneGraphSerialization.ValidateMissingReferenceAliases(reader);
         SceneGraphSerialization.ValidateObjects(objectReaders);
         var existing = new HashSet<GameObject>(scene.GetObjects(), ReferenceEqualityComparer.Instance);
@@ -79,21 +80,22 @@ internal sealed class SceneSubtreeStateConverter : SerializationConverter<SceneS
             var references = new SceneGraphReferenceMap(scene);
             EngineObject[] externalObjects = GetAllObjects(scene);
             for (int i = 0; i < externalObjects.Length; i++)
-                references.Register(externalObjects[i].identity.persistentId, externalObjects[i]);
+            {
+                references.Register(externalObjects[i].identity.persistentID, externalObjects[i]);
+            }
             RestoredSceneGraph restored = SceneGraphSerialization.RestoreObjects(
                 scene,
                 objectReaders,
-                preservePersistentIds: true,
+                preservePersistentIDs: true,
                 references,
                 SceneGraphSerialization.ReadMissingReferenceAliases(reader),
-                reader.context);
-            if (!restored.objects.TryGetValue(rootId, out GameObject? root))
-                throw new InvalidDataException($"Scene subtree root '{rootId}' is missing.");
-            SceneGraphSerialization.ReconcilePrefabConnections(
-                scene,
-                reader.context,
-                root,
-                includeRestoredRoot: true);
+                reader.context
+            );
+            if (!restored.objects.TryGetValue(rootID, out GameObject? root))
+            {
+                throw new InvalidDataException($"Scene subtree root '{rootID}' is missing.");
+            }
+            SceneGraphSerialization.ReconcilePrefabConnections(scene, reader.context, root, includeRestoredRoot: true);
             return new SceneSubtreeState(root);
         }
         catch (Exception exception)
@@ -102,15 +104,15 @@ internal sealed class SceneSubtreeStateConverter : SerializationConverter<SceneS
                 exception,
                 scene,
                 existing,
-                "Scene subtree deserialization");
+                "Scene subtree deserialization"
+            );
             throw;
         }
     }
 
     private static EngineObject[] GetAllObjects(GameScene scene)
         => scene.GetObjects()
-            .SelectMany(static gameObject =>
-                gameObject.GetComponents().Cast<EngineObject>().Prepend(gameObject))
+            .SelectMany(static gameObject => gameObject.GetComponents().Cast<EngineObject>().Prepend(gameObject))
             .Concat(scene.GetSystems())
             .ToArray();
 
@@ -121,6 +123,8 @@ internal sealed class SceneSubtreeStateConverter : SerializationConverter<SceneS
         _ = result.Add(gameObject);
         IReadOnlyList<Transform> children = gameObject.transform.children;
         for (int i = 0; i < children.Count; i++)
+        {
             CollectSubtree(children[i].gameObject, result);
+        }
     }
 }

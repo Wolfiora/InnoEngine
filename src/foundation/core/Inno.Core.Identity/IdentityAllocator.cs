@@ -1,7 +1,7 @@
-using Inno.Core.Execution;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Inno.Core.Execution;
 
 namespace Inno.Core.Identity;
 
@@ -10,8 +10,8 @@ namespace Inno.Core.Identity;
 /// </summary>
 public sealed class IdentityAllocator
 {
-    private static readonly ExecutionSlot<IdentityAllocator> S_CURRENT_SCOPE = new("allocator");
-    private static int S_NEXT_DOMAIN_ID;
+    private static readonly ExecutionSlot<IdentityAllocator> CURRENT_SCOPE = new("allocator");
+    private static int s_nextDomainID;
 
     private readonly IdentityRegistry m_registry;
 
@@ -23,17 +23,19 @@ public sealed class IdentityAllocator
     /// </exception>
     public IdentityAllocator()
     {
-        int nextDomainId = Interlocked.Increment(ref S_NEXT_DOMAIN_ID);
-        if (nextDomainId <= 0)
+        int nextDomainID = Interlocked.Increment(ref s_nextDomainID);
+        if (nextDomainID <= 0)
+        {
             throw new InvalidOperationException("The process exhausted available identity domains.");
-        domainId = new IdentityDomainId(nextDomainId);
-        m_registry = new IdentityRegistry(domainId);
+        }
+        this.domainID = new IdentityDomainID(nextDomainID);
+        m_registry = new IdentityRegistry(domainID);
     }
 
     /// <summary>
     /// Gets whether the current asynchronous execution context is bound to an allocator.
     /// </summary>
-    public static bool hasCurrent => S_CURRENT_SCOPE.TryGet(out _);
+    public static bool hasCurrent => CURRENT_SCOPE.TryGet(out _);
 
     /// <summary>
     /// Gets the allocator bound to the current asynchronous execution context.
@@ -41,7 +43,7 @@ public sealed class IdentityAllocator
     /// <exception cref="InvalidOperationException">
     /// Thrown when the caller is outside a runtime session execution scope.
     /// </exception>
-    public static IdentityAllocator current => S_CURRENT_SCOPE.current;
+    public static IdentityAllocator current => CURRENT_SCOPE.current;
 
     /// <summary>
     /// Gets the number of currently registered identity entries.
@@ -55,7 +57,7 @@ public sealed class IdentityAllocator
     /// <summary>
     /// Gets the process-unique domain that qualifies every runtime identity allocated here.
     /// </summary>
-    public IdentityDomainId domainId { get; }
+    public IdentityDomainID domainID { get; }
 
     /// <summary>
     /// Occurs after an object has been permanently removed from this allocator.
@@ -64,7 +66,7 @@ public sealed class IdentityAllocator
     /// Every observer is invoked. Multiple observer failures are reported as one
     /// <see cref="AggregateException"/> after notification completes.
     /// </remarks>
-    public event Action<IdentityObject>? ObjectUnregistered;
+    public event Action<IdentityObject>? objectUnregistered;
 
     /// <summary>
     /// Binds this allocator to the current asynchronous execution context until the returned scope is disposed.
@@ -75,10 +77,7 @@ public sealed class IdentityAllocator
     /// <exception cref="InvalidOperationException">
     /// Thrown when scopes are disposed out of order.
     /// </exception>
-    public IDisposable EnterScope()
-    {
-        return S_CURRENT_SCOPE.Enter(this);
-    }
+    public IDisposable EnterScope() => CURRENT_SCOPE.Enter(this);
 
     /// <summary>
     /// Registers an object and assigns its session-local runtime identity.
@@ -86,7 +85,7 @@ public sealed class IdentityAllocator
     /// <param name="obj">
     /// The identity object owned by this runtime session.
     /// </param>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// An optional persistent identity override. When omitted, the object's existing persistent identity is retained.
     /// An empty resolved identity is replaced with a newly generated identity.
     /// </param>
@@ -101,8 +100,8 @@ public sealed class IdentityAllocator
     /// </exception>
     public bool Register(
         IdentityObject obj,
-        Guid? persistentId = null
-    ) => m_registry.Register(obj, persistentId);
+        Guid? persistentID = null
+    ) => m_registry.Register(obj, persistentID);
 
     /// <summary>
     /// Assigns a persistent identity to a detached object without allocating a runtime identity.
@@ -110,28 +109,32 @@ public sealed class IdentityAllocator
     /// <param name="obj">
     /// The detached identity object to initialize.
     /// </param>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The non-empty persistent identity to assign.
     /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="obj"/> is null.
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="persistentId"/> is empty.
+    /// Thrown when <paramref name="persistentID"/> is empty.
     /// </exception>
     /// <exception cref="InvalidOperationException">
     /// Thrown when the object already has a live runtime identity.
     /// </exception>
     public void InitializePersistentIdentity(
         IdentityObject obj,
-        Guid persistentId
+        Guid persistentID
     ) {
         ArgumentNullException.ThrowIfNull(obj);
-        if (persistentId == Guid.Empty)
-            throw new ArgumentException("A detached persistent identity cannot be empty.", nameof(persistentId));
-        if (obj.identity.runtimeId is not null)
+        if (persistentID == Guid.Empty)
+        {
+            throw new ArgumentException("A detached persistent identity cannot be empty.", nameof(persistentID));
+        }
+        if (obj.identity.runtimeID is not null)
+        {
             throw new InvalidOperationException("A registered identity object cannot be reinitialized.");
-        obj.SetIdentity(new Identity(persistentId));
+        }
+        obj.SetIdentity(new Identity(persistentID));
     }
 
     /// <summary>
@@ -153,10 +156,14 @@ public sealed class IdentityAllocator
     {
         ArgumentNullException.ThrowIfNull(obj);
         if (!m_registry.Unregister(obj))
+        {
             return false;
-        Action<IdentityObject>? handlers = ObjectUnregistered;
+        }
+        Action<IdentityObject>? handlers = objectUnregistered;
         if (handlers is null)
+        {
             return true;
+        }
         List<Exception>? failures = null;
         foreach (Delegate handler in handlers.GetInvocationList())
         {
@@ -171,7 +178,9 @@ public sealed class IdentityAllocator
             }
         }
         if (failures is not null)
+        {
             throw new AggregateException("One or more identity unregistration observers failed.", failures);
+        }
         return true;
     }
 
@@ -181,15 +190,15 @@ public sealed class IdentityAllocator
     /// <typeparam name="TIdentity">
     /// The required identity object contract.
     /// </typeparam>
-    /// <param name="runtimeId">
+    /// <param name="runtimeID">
     /// The packed runtime identity allocated by this instance.
     /// </param>
     /// <returns>
     /// The live compatible object, or <see langword="null"/> when no matching object exists.
     /// </returns>
-    public TIdentity? Get<TIdentity>(int runtimeId)
+    public TIdentity? Get<TIdentity>(int runtimeID)
         where TIdentity : IdentityObject
-        => m_registry.Get<TIdentity>(runtimeId);
+            => m_registry.Get<TIdentity>(runtimeID);
 
     /// <summary>
     /// Resolves a domain-qualified runtime identity without allowing cross-session aliasing.
@@ -205,9 +214,9 @@ public sealed class IdentityAllocator
     /// </returns>
     public TIdentity? Get<TIdentity>(RuntimeIdentity identity)
         where TIdentity : IdentityObject
-        => identity.domainId == domainId
-            ? m_registry.Get<TIdentity>(identity.runtimeId)
-            : null;
+            => identity.domainID == domainID
+               ? m_registry.Get<TIdentity>(identity.runtimeID)
+               : null;
 
     /// <summary>
     /// Resolves a registered object by its persistent identity.
@@ -215,14 +224,13 @@ public sealed class IdentityAllocator
     /// <typeparam name="TIdentity">
     /// The required identity object contract.
     /// </typeparam>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The non-empty persistent identity to resolve.
     /// </param>
     /// <returns>
     /// The live compatible object, or <see langword="null"/> when no matching object exists.
     /// </returns>
-    public TIdentity? Get<TIdentity>(Guid persistentId)
+    public TIdentity? Get<TIdentity>(Guid persistentID)
         where TIdentity : IdentityObject
-        => m_registry.Get<TIdentity>(persistentId);
-
+            => m_registry.Get<TIdentity>(persistentID);
 }

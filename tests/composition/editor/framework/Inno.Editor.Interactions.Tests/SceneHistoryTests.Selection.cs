@@ -1,0 +1,130 @@
+using System;
+using Xunit;
+using Inno.Core.Identity;
+using Inno.Core.Mathematics;
+using Inno.Scene;
+using Inno.Scene.Components;
+
+namespace Inno.Editor.Interactions.Tests;
+
+public sealed partial class SceneHistoryTests
+{
+    [Fact]
+    public void BatchPropertyEditPreservesIndependentBeforeValuesInOneUndo()
+    {
+        GameScene scene = CreateScene();
+        HistoryComponent first = scene.CreateObject("First").AddComponent<HistoryComponent>();
+        HistoryComponent second = scene.CreateObject("Second").AddComponent<HistoryComponent>();
+        first.value = 12;
+        second.value = 34;
+        Assert.False(m_edits.HaveSamePropertyValues([first, second], "value"));
+        Assert.True(m_edits.ChangeProperties([first, second], "value", () => first.value = 42, "Edit Selection"));
+        Assert.Equal(42, first.value);
+        Assert.Equal(42, second.value);
+        Assert.True(m_edits.HaveSamePropertyValues([first, second], "value"));
+        Assert.True(m_runtime.interactions.history.Undo().succeeded);
+        Assert.Equal(12, first.value);
+        Assert.Equal(34, second.value);
+        Assert.True(m_runtime.interactions.history.Redo().succeeded);
+        Assert.Equal(42, first.value);
+        Assert.Equal(42, second.value);
+    }
+
+    [Fact]
+    public void BatchAxisEditPreservesUneditedComponentsIncludingEqualPrimarySamples()
+    {
+        GameScene scene = CreateScene();
+        Transform first = scene.CreateObject("First").transform;
+        Transform second = scene.CreateObject("Second").transform;
+        first.localPosition = new(1, 2, 3);
+        second.localPosition = new(4, 5, 6);
+        Assert.True(
+            m_edits.ChangeProperties(
+                [first, second],
+                "localPosition",
+                () => first.localPosition = new(9, 2, 3),
+                "Edit X",
+                componentName: "x"
+            )
+        );
+        Assert.Equal(new Vector3(9, 5, 6), second.localPosition);
+        Assert.True(m_runtime.interactions.history.Undo().succeeded);
+        Assert.Equal(new Vector3(4, 5, 6), second.localPosition);
+        Assert.True(m_edits.ChangeProperties([first, second], "localPosition", () => {}, "Use Primary X", componentName: "x"));
+        Assert.Equal(new Vector3(1, 5, 6), second.localPosition);
+        Assert.Throws<ArgumentException>(
+            () => m_edits.ChangeProperties(
+                [first, second],
+                "localPosition",
+                () => first.localPosition = default,
+                "Rejected Component",
+                componentName: "notAComponent"
+            )
+        );
+        Assert.Equal(new Vector3(1, 2, 3), first.localPosition);
+    }
+
+    [Fact]
+    public void LaterBatchSetterFailureRestoresAllEarlierTargets()
+    {
+        GameScene scene = CreateScene();
+        BatchValidationComponent first = scene.CreateObject("First").AddComponent<BatchValidationComponent>();
+        BatchValidationComponent second = scene.CreateObject("Second").AddComponent<BatchValidationComponent>();
+        first.value = 12;
+        second.value = 34;
+        second.rejectAnswer = true;
+        Assert.ThrowsAny<Exception>(() => m_edits.ChangeProperties([first, second], "value", () => first.value = 42, "Rejected Selection"));
+        Assert.Equal(12, first.value);
+        Assert.Equal(34, second.value);
+        Assert.False(m_runtime.interactions.history.canUndo);
+    }
+
+    [Fact]
+    public void BatchDeleteNormalizesSelectedAncestorsAndRestoresEverySubtree()
+    {
+        GameScene scene = CreateScene();
+        GameObject root = scene.CreateObject("Root");
+        GameObject child = scene.CreateObject("Child");
+        GameObject other = scene.CreateObject("Other");
+        child.transform.SetParent(root.transform);
+        Guid rootID = root.identity.persistentID;
+        Guid childID = child.identity.persistentID;
+        Guid otherID = other.identity.persistentID;
+        m_edits.DeleteGameObjects([child, root, other]);
+        Assert.Null(IdentityAllocator.current.Get<GameObject>(rootID));
+        Assert.Null(IdentityAllocator.current.Get<GameObject>(childID));
+        Assert.Null(IdentityAllocator.current.Get<GameObject>(otherID));
+        Assert.True(m_runtime.interactions.history.Undo().succeeded);
+        GameObject restoredRoot = Assert.IsType<GameObject>(IdentityAllocator.current.Get<GameObject>(rootID));
+        GameObject restoredChild = Assert.IsType<GameObject>(IdentityAllocator.current.Get<GameObject>(childID));
+        Assert.Same(restoredRoot.transform, restoredChild.transform.parent);
+        Assert.NotNull(IdentityAllocator.current.Get<GameObject>(otherID));
+        Assert.True(m_runtime.interactions.history.Redo().succeeded);
+        Assert.Null(IdentityAllocator.current.Get<GameObject>(rootID));
+    }
+
+    [Fact]
+    public void BatchMovePreservesRootOrderAndRestoresIndependentPlacements()
+    {
+        GameScene scene = CreateScene();
+        GameObject first = scene.CreateObject("First");
+        GameObject second = scene.CreateObject("Second");
+        GameObject destination = scene.CreateObject("Destination");
+        GameObject child = scene.CreateObject("Child");
+        child.transform.SetParent(first.transform);
+        m_edits.MoveGameObjects([first, child, second], scene, destination);
+        Assert.Same(destination.transform, first.transform.parent);
+        Assert.Same(destination.transform, second.transform.parent);
+        Assert.Same(first.transform, child.transform.parent);
+        Assert.Equal(0, first.transform.siblingIndex);
+        Assert.Equal(1, second.transform.siblingIndex);
+        Assert.True(m_runtime.interactions.history.Undo().succeeded);
+        Assert.Null(first.transform.parent);
+        Assert.Null(second.transform.parent);
+        Assert.Same(first.transform, child.transform.parent);
+        Assert.True(m_runtime.interactions.history.Redo().succeeded);
+        Assert.Same(destination.transform, second.transform.parent);
+        Assert.Throws<InvalidOperationException>(() => m_edits.MoveGameObjects([destination], scene, child));
+        Assert.Same(destination.transform, first.transform.parent);
+    }
+}

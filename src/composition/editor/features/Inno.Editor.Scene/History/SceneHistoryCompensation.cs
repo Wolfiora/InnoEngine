@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Scene;
 
 namespace Inno.Editor.Scene;
@@ -21,7 +20,7 @@ internal static class SceneHistoryCompensation
         GameObject[] created = scene.GetObjects()
             .Where(gameObject => !existing.Contains(gameObject))
             .ToArray();
-        var messages = new List<string>();
+        List<string> messages = [];
         bool statePreserved = true;
         for (int i = 0; i < created.Length; i++)
         {
@@ -29,11 +28,14 @@ internal static class SceneHistoryCompensation
             SceneHistoryCompensationResult result = Remove(
                 gameObject,
                 () => scene.DestroyObject(gameObject),
-                $"{description} GameObject '{gameObject.identity.persistentId}'",
-                workspace);
+                $"{description} GameObject '{gameObject.identity.persistentID}'",
+                workspace
+            );
             statePreserved &= result.statePreserved;
             if (!string.IsNullOrWhiteSpace(result.message))
+            {
                 messages.Add(result.message);
+            }
         }
 
         GameObject[] survivors = scene.GetObjects()
@@ -45,8 +47,8 @@ internal static class SceneHistoryCompensation
             messages.Add($"{description} left {survivors.Length} untracked GameObject(s) in the scene.");
         }
         return statePreserved
-            ? SceneHistoryCompensationResult.Preserved(string.Join(" ", messages))
-            : SceneHistoryCompensationResult.Lost(string.Join(" ", messages));
+               ? SceneHistoryCompensationResult.Preserved(string.Join(" ", messages))
+               : SceneHistoryCompensationResult.Lost(string.Join(" ", messages));
     }
 
     internal static SceneHistoryCompensationResult Remove(
@@ -58,7 +60,7 @@ internal static class SceneHistoryCompensation
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(remove);
         ArgumentException.ThrowIfNullOrWhiteSpace(description);
-        Guid persistentId = target.identity.persistentId;
+        Guid persistentID = target.identity.persistentID;
         Exception? failure = null;
         bool reportedRemoved = false;
         try
@@ -70,27 +72,28 @@ internal static class SceneHistoryCompensation
             failure = exception;
         }
 
-        bool remainsRegistered = ReferenceEquals(
-            workspace.Find<EngineObject>(persistentId),
-            target);
+        bool remainsRegistered = ReferenceEquals(workspace.Find<EngineObject>(persistentID), target);
         if (target.isDestroyed && !remainsRegistered)
         {
             return SceneHistoryCompensationResult.Preserved(
                 failure is null
-                    ? string.Empty
-                    : $"{description} was removed, but its destruction callback failed: {failure.Message}");
+                ? string.Empty
+                : $"{description} was removed, but its destruction callback failed: {failure.Message}"
+            );
         }
 
         if (failure is not null)
         {
             return SceneHistoryCompensationResult.Lost(
-                $"{description} did not reach the destroyed and unregistered postcondition " +
-                $"after removal threw: {failure.Message}");
+                $"{description} did not reach the destroyed and unregistered postcondition "
+                + $"after removal threw: {failure.Message}"
+            );
         }
         return SceneHistoryCompensationResult.Lost(
             reportedRemoved
-                ? $"{description} reported successful removal but did not reach the destroyed and unregistered postcondition."
-                : $"{description} could not be fully destroyed and unregistered.");
+            ? $"{description} reported successful removal but did not reach the destroyed and unregistered postcondition."
+            : $"{description} could not be fully destroyed and unregistered."
+        );
     }
 }
 

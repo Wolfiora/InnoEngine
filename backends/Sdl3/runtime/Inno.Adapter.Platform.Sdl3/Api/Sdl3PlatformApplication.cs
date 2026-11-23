@@ -11,11 +11,6 @@ namespace Inno.Adapter.Platform.Sdl3;
 public sealed unsafe partial class Sdl3PlatformApplication : IPlatformApplication
 {
     /// <summary>
-    /// Occurs after the observable redraw requested state changes.
-    /// </summary>
-    public event Action<uint>? redrawRequested;
-
-    /// <summary>
     /// Initializes platform subsystems required for windowing and input events.
     /// </summary>
     /// <param name="hostIntegration">
@@ -31,6 +26,11 @@ public sealed unsafe partial class Sdl3PlatformApplication : IPlatformApplicatio
         m_hostIntegration = hostIntegration;
         Initialize();
     }
+
+    /// <summary>
+    /// Occurs after the observable redraw requested state changes.
+    /// </summary>
+    public event Action<uint>? redrawRequested;
 
     /// <summary>
     /// Creates a platform window from the provided options.
@@ -63,12 +63,6 @@ public sealed unsafe partial class Sdl3PlatformApplication : IPlatformApplicatio
     /// </returns>
     public partial IReadOnlyList<Sdl3PlatformWindow> GetWindows();
 
-    IPlatformWindow IPlatformApplication.CreateWindow(PlatformWindowOptions options)
-        => CreateWindow(options);
-
-    IReadOnlyList<IPlatformWindow> IPlatformApplication.GetWindows()
-        => GetWindows();
-
     /// <summary>
     /// Registers an optional platform backend integration for this application instance.
     /// </summary>
@@ -84,4 +78,8 @@ public sealed unsafe partial class Sdl3PlatformApplication : IPlatformApplicatio
     /// Releases all platform resources owned by this application instance.
     /// </summary>
     public partial void Dispose();
+
+    IPlatformWindow IPlatformApplication.CreateWindow(PlatformWindowOptions options) => CreateWindow(options);
+
+    IReadOnlyList<IPlatformWindow> IPlatformApplication.GetWindows() => GetWindows();
 }

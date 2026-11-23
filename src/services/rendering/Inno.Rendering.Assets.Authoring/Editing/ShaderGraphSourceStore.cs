@@ -1,17 +1,17 @@
+using System;
+using System.IO;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Graphs;
 using Inno.Core.Serialization;
-using Inno.Rendering;
-using System;
-using System.IO;
+using Inno.Extensibility.Types;
 
 namespace Inno.Rendering.Assets.Authoring;
 
 /// <summary>
 /// Reads and atomically saves the sole shader graph source format without requiring successful compilation.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("dcfd81b7-a22d-5b35-a79a-a608e69b7ad8")]
+[StableTypeID("dcfd81b7-a22d-5b35-a79a-a608e69b7ad8")]
 public sealed class ShaderGraphSourceStore
 {
     private readonly AssetSourceStore m_sources;
@@ -31,8 +31,9 @@ public sealed class ShaderGraphSourceStore
         SerializationRegistry serialization
     ) {
         ArgumentNullException.ThrowIfNull(assets);
+        ArgumentNullException.ThrowIfNull(serialization);
         m_sources = assets.CreateSourceStore();
-        m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
+        m_serialization = serialization;
     }
 
     /// <summary>
@@ -85,38 +86,8 @@ public sealed class ShaderGraphSourceStore
     private static void Validate(AssetPath path)
     {
         if (!path.isValid || !path.localPath.EndsWith(".ishader", StringComparison.OrdinalIgnoreCase))
+        {
             throw new ArgumentException("A shader graph source must use the .ishader extension.", nameof(path));
+        }
     }
-
 }
-
-/// <summary>
-/// Contains detached graph source state, not a compiled or live runtime asset.
-/// </summary>
-[Inno.Extensibility.Types.StableTypeId("fb1d9ba2-d37c-59f1-a7ef-17feeb3beb0e")]
-public sealed class ShaderGraphSourceSnapshot
-{
-    private readonly GraphDocument m_document;
-    internal ShaderGraphSourceSnapshot(
-        GraphDocument document,
-        string hash,
-        bool readOnly
-    ) {
-        m_document = document;
-        contentHash = hash;
-        isReadOnly = readOnly;
-    }
-    /// <summary>
-    /// Gets a detached copy of authored graph records.
-    /// </summary>
-    public GraphDocument document => m_document.Clone();
-    /// <summary>
-    /// Gets the source fingerprint used to reject external-edit conflicts.
-    /// </summary>
-    public string contentHash { get; }
-    /// <summary>
-    /// Gets whether the source belongs to an immutable installation mount.
-    /// </summary>
-    public bool isReadOnly { get; }
-}
-

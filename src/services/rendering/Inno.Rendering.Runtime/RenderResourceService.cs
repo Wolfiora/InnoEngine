@@ -1,11 +1,11 @@
-using Inno.Core.Diagnostics;
 using System;
-using Inno.Core.Execution;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
@@ -18,14 +18,14 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     private readonly IRenderDevice m_device;
     private readonly IDiagnosticReporter m_diagnostics;
     private readonly IRenderTargetArtifactProvider? m_targetArtifacts;
-    private readonly RenderResourceCache<RenderPersistentResourceId, BufferEntry> m_buffers;
-    private readonly RenderResourceCache<RenderPersistentResourceId, TextureEntry> m_textures;
-    private readonly RenderResourceCache<RenderPersistentResourceId, GraphicsPipelineEntry> m_graphicsPipelines;
-    private readonly RenderResourceCache<RenderPersistentResourceId, ComputePipelineEntry> m_computePipelines;
+    private readonly RenderResourceCache<RenderPersistentResourceID, BufferEntry> m_buffers;
+    private readonly RenderResourceCache<RenderPersistentResourceID, TextureEntry> m_textures;
+    private readonly RenderResourceCache<RenderPersistentResourceID, GraphicsPipelineEntry> m_graphicsPipelines;
+    private readonly RenderResourceCache<RenderPersistentResourceID, ComputePipelineEntry> m_computePipelines;
     private readonly RenderGeometryOwner m_geometry;
     private readonly RenderMaterialOwner m_materials;
     private readonly RenderReadbackOwner m_readbacks;
-    private readonly HashSet<RenderPersistentResourceId> m_pendingReleases = [];
+    private readonly HashSet<RenderPersistentResourceID> m_pendingReleases = [];
     private bool m_mutationAllowed;
     private ulong m_frameIndex;
     private bool m_disposed;
@@ -38,8 +38,10 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         IRenderTargetArtifactProvider? targetArtifacts,
         RenderResourceLimits limits
     ) {
-        m_device = device ?? throw new ArgumentNullException(nameof(device));
-        m_diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
+        ArgumentNullException.ThrowIfNull(device);
+        ArgumentNullException.ThrowIfNull(diagnostics);
+        m_device = device;
+        m_diagnostics = diagnostics;
         m_targetArtifacts = targetArtifacts;
         m_readbacks = new(device, limits.pendingReadbacks);
         m_buffers = new(entry => m_device.DestroyBuffer(entry.handle), limits.resourcesPerKind);
@@ -66,7 +68,9 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(artifact);
         if (!m_mutationAllowed)
+        {
             throw new InvalidOperationException("Shader artifact validation requires an open frame before graph execution.");
+        }
         m_materials.ValidateArtifact(artifact);
     }
 
@@ -84,10 +88,12 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(material);
         ShaderAsset shader = material.shader
-            ?? throw new ArgumentException("A material must reference a shader before prewarming.", nameof(material));
+                             ?? throw new ArgumentException("A material must reference a shader before prewarming.", nameof(material));
         RenderShaderVariant variant = RenderShaderVariant.FromMaterial(material);
         if (m_targetArtifacts is null)
+        {
             throw new InvalidOperationException("No render target artifact provider is configured for this runtime.");
+        }
         return m_targetArtifacts.GetShaderArtifact(shader, variant, m_device.capabilities, out _);
     }
 
@@ -113,10 +119,14 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     public void PrewarmTextureArtifact(RenderTextureArtifactReference texture)
     {
         ThrowIfDisposed();
-        if (texture.assetId == Guid.Empty || string.IsNullOrWhiteSpace(texture.slot.id))
+        if (texture.assetID == Guid.Empty || string.IsNullOrWhiteSpace(texture.slot.id))
+        {
             throw new ArgumentException("A valid texture artifact reference is required.", nameof(texture));
+        }
         if (m_targetArtifacts is null)
+        {
             throw new InvalidOperationException("No render target artifact provider is configured for this runtime.");
+        }
         _ = m_targetArtifacts.GetTextureArtifact(texture, out _);
     }
 
@@ -142,20 +152,20 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     /// The validated persistent buffer handle that represents the completed operation.
     /// </returns>
     public PersistentBufferHandle AcquireBuffer(
-        RenderPersistentResourceId id,
+        RenderPersistentResourceID id,
         long revision,
         PersistentBufferDescriptor descriptor,
         ReadOnlyMemory<byte> initialData,
         string name
     ) {
         ThrowIfDisposed();
-        RequireId(id);
+        RequireID(id);
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         if (m_buffers.TryGetValue(id, out BufferEntry? current)
             && current.revision == revision
-            && BufferDescriptorsEqual(current.descriptor, descriptor))
-        {
+            && BufferDescriptorsEqual(current.descriptor, descriptor)
+        ) {
             current.lastUsedFrame = m_frameIndex;
             return current.handle;
         }
@@ -190,24 +200,26 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     /// The validated persistent texture handle that represents the completed operation.
     /// </returns>
     public PersistentTextureHandle AcquireTexture(
-        RenderPersistentResourceId id,
+        RenderPersistentResourceID id,
         long revision,
         RenderTextureDescriptor descriptor,
         IReadOnlyList<RenderTextureSubresourceData> subresources,
         string name
     ) {
         ThrowIfDisposed();
-        RequireId(id);
+        RequireID(id);
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentNullException.ThrowIfNull(subresources);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         if (subresources.Count == 0)
+        {
             throw new ArgumentException("A raw texture requires at least one subresource upload.", nameof(subresources));
+        }
         if (m_textures.TryGetValue(id, out TextureEntry? current)
             && current.kind == TextureEntryKind.Raw
             && current.revision == revision
-            && descriptor.Equals(current.descriptor))
-        {
+            && descriptor.Equals(current.descriptor)
+        ) {
             current.lastUsedFrame = m_frameIndex;
             return current.handle;
         }
@@ -221,17 +233,14 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
                 if (subresource.mipLevel >= descriptor.mipCount
                     || (subresource.mipLevel < descriptor.mipCount
                         && subresource.arrayLayer
-                            >= descriptor.GetSubresourceLayerCount(subresource.mipLevel)))
-                {
+                           >= descriptor.GetSubresourceLayerCount(subresource.mipLevel))
+                ) {
                     throw new ArgumentException(
                         "A texture upload addresses a mip or layer outside its descriptor.",
-                        nameof(subresources));
+                        nameof(subresources)
+                    );
                 }
-                m_device.UpdateTexture(
-                    candidate,
-                    subresource.data.Span,
-                    subresource.mipLevel,
-                    subresource.arrayLayer);
+                m_device.UpdateTexture(candidate, subresource.data.Span, subresource.mipLevel, subresource.arrayLayer);
             }
         }
         catch (Exception failure)
@@ -240,12 +249,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
             throw;
         }
 
-        var replacement = new TextureEntry(
-            candidate,
-            TextureEntryKind.Raw,
-            descriptor,
-            revision,
-            m_frameIndex);
+        var replacement = new TextureEntry(candidate, TextureEntryKind.Raw, descriptor, revision, m_frameIndex);
         m_textures.Replace(id, replacement);
         m_textures.Drain();
         return candidate;
@@ -273,22 +277,24 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     /// The validated persistent texture handle that represents the completed operation.
     /// </returns>
     public PersistentTextureHandle AcquireKtxTexture(
-        RenderPersistentResourceId id,
+        RenderPersistentResourceID id,
         long revision,
         ReadOnlyMemory<byte> containerData,
         bool sRgb,
         string name
     ) {
         ThrowIfDisposed();
-        RequireId(id);
+        RequireID(id);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         if (containerData.IsEmpty)
+        {
             throw new ArgumentException("A KTX resource cannot be empty.", nameof(containerData));
+        }
         if (m_textures.TryGetValue(id, out TextureEntry? current)
             && current.kind == TextureEntryKind.Ktx
             && current.revision == revision
-            && current.sRgb == sRgb)
-        {
+            && current.sRgb == sRgb
+        ) {
             current.lastUsedFrame = m_frameIndex;
             return current.handle;
         }
@@ -298,14 +304,16 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
             RenderTextureContainer.Ktx,
             containerData.Span,
             sRgb,
-            name);
+            name
+        );
         var replacement = new TextureEntry(
             candidate,
             TextureEntryKind.Ktx,
             descriptor: null,
             revision,
             m_frameIndex,
-            sRgb);
+            sRgb
+        );
         m_textures.Replace(id, replacement);
         m_textures.Drain();
         return candidate;
@@ -330,9 +338,13 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     ) {
         ThrowIfDisposed();
         if (!texture.isValid)
+        {
             throw new ArgumentException("A valid persistent texture is required.", nameof(texture));
+        }
         if (data.IsEmpty)
+        {
             throw new ArgumentException("Texture update data cannot be empty.", nameof(data));
+        }
         m_device.UpdateTextureRegion(texture, region, data.Span);
     }
 
@@ -357,7 +369,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         CancellationToken cancellationToken = default
     ) {
         ThrowIfDisposed();
-        return m_readbacks.Read(texture, mipLevel, cancellationToken);
+        return m_readbacks.ReadAsync(texture, mipLevel, cancellationToken);
     }
 
     /// <summary>
@@ -366,10 +378,10 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     /// <param name="material">
     /// The material consumed by try resolve graphics material; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <param name="contractId">
+    /// <param name="contractID">
     /// The contract id consumed by try resolve graphics material; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <param name="passRoleId">
+    /// <param name="passRoleID">
     /// The pass role id consumed by try resolve graphics material; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     /// <param name="vertexLayout">
@@ -386,8 +398,8 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     /// </returns>
     public bool TryResolveGraphicsMaterial(
         MaterialAsset material,
-        ShaderContractId contractId,
-        ShaderPassRoleId passRoleId,
+        ShaderContractID contractID,
+        ShaderPassRoleID passRoleID,
         RenderVertexLayout? vertexLayout,
         MaterialPropertyBlock? overrides,
         out RenderMaterialPass? materialPass
@@ -395,12 +407,13 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         ThrowIfDisposed();
         return m_materials.TryResolveMaterial(
             material,
-            contractId,
-            passRoleId,
+            contractID,
+            passRoleID,
             ShaderProgramKind.Raster,
             vertexLayout,
             overrides,
-            out materialPass);
+            out materialPass
+        );
     }
 
     /// <summary>
@@ -415,10 +428,10 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     /// <param name="material">
     /// The material consumed by try resolve material artifact; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <param name="contractId">
+    /// <param name="contractID">
     /// The contract id consumed by try resolve material artifact; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <param name="passRoleId">
+    /// <param name="passRoleID">
     /// The pass role id consumed by try resolve material artifact; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     /// <param name="programKind">
@@ -440,11 +453,11 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool TryResolveMaterialArtifact(
-        RenderPersistentResourceId scope,
+        RenderPersistentResourceID scope,
         RenderShaderArtifact artifact,
         MaterialAsset material,
-        ShaderContractId contractId,
-        ShaderPassRoleId passRoleId,
+        ShaderContractID contractID,
+        ShaderPassRoleID passRoleID,
         ShaderProgramKind programKind,
         RenderVertexLayout? vertexLayout,
         MaterialPropertyBlock? overrides,
@@ -452,17 +465,33 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         out RenderMaterialPass? materialPass
     ) {
         ThrowIfDisposed();
-        RequireId(scope);
+        RequireID(scope);
         ArgumentNullException.ThrowIfNull(artifact);
         ArgumentNullException.ThrowIfNull(diagnostics);
         if (m_targetArtifacts is null)
+        {
             throw new InvalidOperationException("No render target artifact decoder is configured.");
+        }
         if (!Enum.IsDefined(programKind))
+        {
             throw new ArgumentOutOfRangeException(nameof(programKind));
+        }
         if (programKind == ShaderProgramKind.Compute && vertexLayout is not null)
+        {
             throw new ArgumentException("A compute program cannot consume a vertex layout.", nameof(vertexLayout));
-        return m_materials.TryResolveMaterial(material, contractId, passRoleId, programKind, vertexLayout, overrides,
-            out materialPass, artifact, scope.value, diagnostics);
+        }
+        return m_materials.TryResolveMaterial(
+            material,
+            contractID,
+            passRoleID,
+            programKind,
+            vertexLayout,
+            overrides,
+            out materialPass,
+            artifact,
+            scope.value,
+            diagnostics
+        );
     }
 
     /// <summary>
@@ -471,10 +500,10 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     /// <param name="material">
     /// The material consumed by try resolve compute material; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <param name="contractId">
+    /// <param name="contractID">
     /// The contract id consumed by try resolve compute material; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <param name="passRoleId">
+    /// <param name="passRoleID">
     /// The pass role id consumed by try resolve compute material; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     /// <param name="overrides">
@@ -488,20 +517,21 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     /// </returns>
     public bool TryResolveComputeMaterial(
         MaterialAsset material,
-        ShaderContractId contractId,
-        ShaderPassRoleId passRoleId,
+        ShaderContractID contractID,
+        ShaderPassRoleID passRoleID,
         MaterialPropertyBlock? overrides,
         out RenderMaterialPass? materialPass
     ) {
         ThrowIfDisposed();
         return m_materials.TryResolveMaterial(
             material,
-            contractId,
-            passRoleId,
+            contractID,
+            passRoleID,
             ShaderProgramKind.Compute,
             vertexLayout: null,
             overrides,
-            out materialPass);
+            out materialPass
+        );
     }
 
     /// <summary>
@@ -542,7 +572,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     ) {
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(texture);
-        Guid id = texture.identity.persistentId;
+        Guid id = texture.identity.persistentID;
         if (id == Guid.Empty)
         {
             resolvedTexture = default;
@@ -570,16 +600,18 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     ) {
         ThrowIfDisposed();
         resolvedTexture = default;
-        if (texture.assetId == Guid.Empty || string.IsNullOrWhiteSpace(texture.slot.id))
+        if (texture.assetID == Guid.Empty || string.IsNullOrWhiteSpace(texture.slot.id))
+        {
             return false;
+        }
 
-        RenderPersistentResourceId resourceId = new($"asset:{texture.assetId:D}:texture:{texture.slot.id}");
+        var resourceID = new RenderPersistentResourceID($"asset:{texture.assetID:D}:texture:{texture.slot.id}");
         bool sRgb = texture.slot.colorSpace == TextureColorSpace.Srgb;
-        if (m_textures.TryGetValue(resourceId, out TextureEntry? current)
+        if (m_textures.TryGetValue(resourceID, out TextureEntry? current)
             && current.kind == TextureEntryKind.Ktx
             && current.revision == texture.contentRevision
-            && current.sRgb == sRgb)
-        {
+            && current.sRgb == sRgb
+        ) {
             current.lastUsedFrame = m_frameIndex;
             resolvedTexture = current.handle;
             return true;
@@ -588,11 +620,13 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         {
             ReadOnlyMemory<byte> artifact = ReadOnlyMemory<byte>.Empty;
             RenderTargetArtifactStatus status = m_targetArtifacts is null
-                ? RenderTargetArtifactStatus.Unavailable
-                : m_targetArtifacts.GetTextureArtifact(texture, out artifact);
-            string sourceId = $"{texture.assetId:D}:{texture.slot.id}";
+                                                ? RenderTargetArtifactStatus.Unavailable
+                                                : m_targetArtifacts.GetTextureArtifact(texture, out artifact);
+            string sourceID = $"{texture.assetID:D}:{texture.slot.id}";
             if (status != RenderTargetArtifactStatus.Unavailable)
-                m_diagnostics.Resolve("RENDER_TEXTURE_TARGET_UNAVAILABLE", sourceId);
+            {
+                m_diagnostics.Resolve("RENDER_TEXTURE_TARGET_UNAVAILABLE", sourceID);
+            }
             if (status != RenderTargetArtifactStatus.Ready)
             {
                 if (status == RenderTargetArtifactStatus.Unavailable)
@@ -600,11 +634,12 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
                     Publish(
                         "RENDER_TEXTURE_TARGET_UNAVAILABLE",
                         m_targetArtifacts is null
-                            ? "No render target artifact provider is configured for this runtime."
-                            : $"No deployed target texture artifact exists for '{sourceId}'.",
-                        sourceId);
+                        ? "No render target artifact provider is configured for this runtime."
+                        : $"No deployed target texture artifact exists for '{sourceID}'.",
+                        sourceID
+                    );
                 }
-                if (m_textures.TryGetValue(resourceId, out TextureEntry? lastGood))
+                if (m_textures.TryGetValue(resourceID, out TextureEntry? lastGood))
                 {
                     lastGood.lastUsedFrame = m_frameIndex;
                     resolvedTexture = lastGood.handle;
@@ -615,15 +650,11 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
             if (artifact.IsEmpty)
             {
                 throw new InvalidOperationException(
-                    $"Target artifact provider returned an empty ready texture for '{sourceId}'.");
+                    $"Target artifact provider returned an empty ready texture for '{sourceID}'."
+                );
             }
-            resolvedTexture = AcquireKtxTexture(
-                resourceId,
-                texture.contentRevision,
-                artifact,
-                sRgb,
-                sourceId);
-            m_diagnostics.Resolve("RENDER_TEXTURE_RESOLVE_FAILED", sourceId);
+            resolvedTexture = AcquireKtxTexture(resourceID, texture.contentRevision, artifact, sRgb, sourceID);
+            m_diagnostics.Resolve("RENDER_TEXTURE_RESOLVE_FAILED", sourceID);
             return true;
         }
         catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
@@ -634,9 +665,10 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         {
             Publish(
                 "RENDER_TEXTURE_RESOLVE_FAILED",
-                $"Texture artifact '{texture.assetId:D}:{texture.slot.id}' kept its last-good GPU resource: {exception.Message}",
-                $"{texture.assetId:D}:{texture.slot.id}");
-            if (m_textures.TryGetValue(resourceId, out TextureEntry? lastGood))
+                $"Texture artifact '{texture.assetID:D}:{texture.slot.id}' kept its last-good GPU resource: {exception.Message}",
+                $"{texture.assetID:D}:{texture.slot.id}"
+            );
+            if (m_textures.TryGetValue(resourceID, out TextureEntry? lastGood))
             {
                 lastGood.lastUsedFrame = m_frameIndex;
                 resolvedTexture = lastGood.handle;
@@ -665,18 +697,18 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     /// The validated graphics pipeline handle that represents the completed operation.
     /// </returns>
     public GraphicsPipelineHandle AcquireGraphicsPipeline(
-        RenderPersistentResourceId id,
+        RenderPersistentResourceID id,
         long revision,
         GraphicsPipelineDescriptor descriptor,
         string name
     ) {
         ThrowIfDisposed();
-        RequireId(id);
+        RequireID(id);
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         if (m_graphicsPipelines.TryGetValue(id, out GraphicsPipelineEntry? current)
-            && current.revision == revision)
-        {
+            && current.revision == revision
+        ) {
             current.lastUsedFrame = m_frameIndex;
             return current.handle;
         }
@@ -708,18 +740,18 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     /// The validated compute pipeline handle that represents the completed operation.
     /// </returns>
     public ComputePipelineHandle AcquireComputePipeline(
-        RenderPersistentResourceId id,
+        RenderPersistentResourceID id,
         long revision,
         ComputePipelineDescriptor descriptor,
         string name
     ) {
         ThrowIfDisposed();
-        RequireId(id);
+        RequireID(id);
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         if (m_computePipelines.TryGetValue(id, out ComputePipelineEntry? current)
-            && current.revision == revision)
-        {
+            && current.revision == revision
+        ) {
             current.lastUsedFrame = m_frameIndex;
             return current.handle;
         }
@@ -738,28 +770,21 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     /// <param name="id">
     /// The stable identity used to locate the requested value.
     /// </param>
-    public void Release(RenderPersistentResourceId id)
+    public void Release(RenderPersistentResourceID id)
     {
         ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
-        RequireId(id);
+        RequireID(id);
         if (!m_mutationAllowed)
         {
             if (m_materials.HasScope(id.value) || m_graphicsPipelines.TryGetValue(id, out _)
-                || m_computePipelines.TryGetValue(id, out _) || m_buffers.TryGetValue(id, out _) || m_textures.TryGetValue(id, out _))
+                || m_computePipelines.TryGetValue(id, out _) || m_buffers.TryGetValue(id, out _) || m_textures.TryGetValue(id, out _)
+            ) {
                 m_pendingReleases.Add(id);
+            }
             return;
         }
         ThrowIfDisposed();
         ReleaseNow(id);
-    }
-
-    private void ReleaseNow(RenderPersistentResourceId id)
-    {
-        m_materials.ReleaseScope(id.value);
-        m_graphicsPipelines.Release(id);
-        m_computePipelines.Release(id);
-        m_buffers.Release(id);
-        m_textures.Release(id);
     }
 
     /// <summary>
@@ -768,13 +793,17 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         if (m_retirement is null)
         {
             m_retirement = new RenderRetirementQueue();
             m_retirement.Add(m_readbacks.Dispose);
             if (m_failedAllocation is not null)
+            {
                 m_retirement.Add(m_failedAllocation.Dispose);
+            }
             m_retirement.Add(m_materials.Dispose);
             m_retirement.Add(m_geometry.Dispose);
             m_retirement.Add(m_graphicsPipelines.Dispose);
@@ -798,17 +827,30 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         CompleteRetirement();
     }
 
-    private void CompleteRetirement()
+    internal RenderResourceStatistics statistics
+        => new()
     {
-        m_disposed = true;
-    }
-
-    internal RenderResourceStatistics statistics => new()
-    {
-        activeResources = m_buffers.Count + m_textures.Count + m_graphicsPipelines.Count + m_computePipelines.Count + m_materials.count + m_geometry.count,
-        retiringResources = m_buffers.pendingCount + m_textures.pendingCount + m_graphicsPipelines.pendingCount + m_computePipelines.pendingCount + m_materials.retiringCount + m_geometry.retiringCount,
-        rejectedResources = m_buffers.rejectedCount + m_textures.rejectedCount + m_graphicsPipelines.rejectedCount + m_computePipelines.rejectedCount + m_materials.rejectedCount + m_geometry.rejectedCount,
-        pendingReadbacks = m_readbacks.count, peakReadbacks = m_readbacks.peakCount, rejectedReadbacks = m_readbacks.rejectedCount
+        activeResources = m_buffers.count
+                          + m_textures.count
+                          + m_graphicsPipelines.count
+                          + m_computePipelines.count
+                          + m_materials.count
+                          + m_geometry.count,
+        retiringResources = m_buffers.pendingCount
+                            + m_textures.pendingCount
+                            + m_graphicsPipelines.pendingCount
+                            + m_computePipelines.pendingCount
+                            + m_materials.retiringCount
+                            + m_geometry.retiringCount,
+        rejectedResources = m_buffers.rejectedCount
+                            + m_textures.rejectedCount
+                            + m_graphicsPipelines.rejectedCount
+                            + m_computePipelines.rejectedCount
+                            + m_materials.rejectedCount
+                            + m_geometry.rejectedCount,
+        pendingReadbacks = m_readbacks.count,
+        peakReadbacks = m_readbacks.peakCount,
+        rejectedReadbacks = m_readbacks.rejectedCount
     };
 
     internal void BeginFrame(ulong frameIndex)
@@ -819,19 +861,24 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         m_geometry.BeginFrame(frameIndex);
         m_materials.BeginFrame(frameIndex);
         m_readbacks.Update();
-        foreach (RenderPersistentResourceId id in m_pendingReleases)
+        foreach (RenderPersistentResourceID id in m_pendingReleases)
+        {
             ReleaseNow(id);
+        }
         m_pendingReleases.Clear();
     }
 
     internal void EndMutation() => m_mutationAllowed = false;
+
     internal void BeginMutation() => m_mutationAllowed = true;
 
     internal void SweepUnused()
     {
         ThrowIfDisposed();
         if (m_frameIndex < C_UNUSED_FRAME_LIMIT)
+        {
             return;
+        }
         ulong oldest = m_frameIndex - C_UNUSED_FRAME_LIMIT;
         m_materials.Sweep(oldest);
         m_geometry.Sweep(oldest);
@@ -841,30 +888,22 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         m_textures.Sweep(entry => entry.lastUsedFrame < oldest);
     }
 
-    private static bool BufferDescriptorsEqual(
-        PersistentBufferDescriptor left,
-        PersistentBufferDescriptor right
-    )
-        => left.buffer.Equals(right.buffer)
-            && Equals(left.vertexLayout, right.vertexLayout)
-            && left.indexFormat == right.indexFormat;
-
-    private static void RequireId(RenderPersistentResourceId id)
+    private void ReleaseNow(RenderPersistentResourceID id)
     {
-        if (!id.isValid)
-            throw new ArgumentException("A persistent render resource ID must be valid.", nameof(id));
+        m_materials.ReleaseScope(id.value);
+        m_graphicsPipelines.Release(id);
+        m_computePipelines.Release(id);
+        m_buffers.Release(id);
+        m_textures.Release(id);
     }
+
+    private void CompleteRetirement() => m_disposed = true;
 
     private void Publish(
         string code,
         string message,
         string? source
-    )
-        => m_diagnostics.Publish(new Diagnostic(
-            code,
-            message,
-            DiagnosticSeverity.Error,
-            source));
+    ) => m_diagnostics.Publish(new Diagnostic(code, message, DiagnosticSeverity.Error, source));
 
     private void ThrowIfDisposed()
     {
@@ -897,6 +936,21 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
             throw new AggregateException("GPU allocation and retirement failed.", failure, retirement);
         }
         m_failedAllocation = null;
+    }
+
+    private static bool BufferDescriptorsEqual(
+        PersistentBufferDescriptor left,
+        PersistentBufferDescriptor right
+    ) => left.buffer.Equals(right.buffer)
+         && Equals(left.vertexLayout, right.vertexLayout)
+         && left.indexFormat == right.indexFormat;
+
+    private static void RequireID(RenderPersistentResourceID id)
+    {
+        if (!id.isValid)
+        {
+            throw new ArgumentException("A persistent render resource ID must be valid.", nameof(id));
+        }
     }
 
     private enum TextureEntryKind
@@ -984,5 +1038,4 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         internal long revision { get; }
         internal ulong lastUsedFrame { get; set; }
     }
-
 }

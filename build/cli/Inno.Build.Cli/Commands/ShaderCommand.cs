@@ -26,35 +26,62 @@ internal static class ShaderCommand
     ) {
         string root = request.root;
         string configuration = request.configuration;
-        BuildTargetId target = request.target;
-        BuildTargetId toolsTarget = request.toolsTarget;
+        BuildTargetID target = request.target;
+        BuildTargetID toolsTarget = request.toolsTarget;
         BuildCompositionContext context = request.composition;
         BuildDistribution distribution = request.distribution;
 
         BgfxShaderTargetProfile platform = StandardBuildDistribution.Create(context).ResolveShaderTarget(target);
         if (!GraphicsApi.TryParse(options.Require("renderer"), out GraphicsApi renderer))
+        {
             throw new ArgumentException("The shader platform or rendering API is invalid.");
+        }
         NativeBuildContext native = new NativeBuildContext(root, configuration.ToLowerInvariant())
             .WithBindingGenerator(distribution.ResolveBindingGenerator(toolsTarget.value));
         if (request.nativeDependencies.Length == 0)
-            native = native.WithToolchain(await distribution.ResolveNativeToolchain(toolsTarget.value)
-            .ResolveAsync(native, context.host, toolsTarget.value, cancellationToken).ConfigureAwait(false));
+        {
+            native = native.WithToolchain(
+                await distribution.ResolveNativeToolchain(toolsTarget.value)
+                    .ResolveAsync(native, context.host, toolsTarget.value, cancellationToken)
+                    .ConfigureAwait(false)
+            );
+        }
         NativeProductContribution contribution = distribution.ResolveNativeProduct(toolsTarget.value, "shader-tools");
         using ProductNativeBuildResult products = request.nativeDependencies.Length == 0
-            ? await contribution.BuildAsync(native, cancellationToken).ConfigureAwait(false)
-            : await NativeDependencyManifest.AcquireAsync(root, request.nativeDependencies, toolsTarget.value,
-                configuration.ToLowerInvariant(), contribution.plan, cancellationToken).ConfigureAwait(false);
+                                                  ? await contribution.BuildAsync(native, cancellationToken).ConfigureAwait(false)
+                                                  : await NativeDependencyManifest.AcquireAsync(
+                                                      root,
+                                                      request.nativeDependencies,
+                                                      toolsTarget.value,
+                                                      configuration.ToLowerInvariant(),
+                                                      contribution.plan,
+                                                      cancellationToken
+                                                  ).ConfigureAwait(false);
         NativeBuildProduct product = products.Single();
         string extension = context.host.services.executableExtension;
-        var executables = Enum.GetValues<BgfxTool>().ToDictionary(static tool => tool,
-            tool => product.files.Single(file => Path.GetFileName(file) == tool.ToString().ToLowerInvariant()
-                + extension));
+        Dictionary<BgfxTool, string> executables = Enum.GetValues<BgfxTool>().ToDictionary(
+            static tool => tool,
+            tool => product.files.Single(file => (
+                Path.GetFileName(file) == tool.ToString().ToLowerInvariant()
+                                          + extension
+            ))
+        );
         string includes = Path.GetDirectoryName(product.files.Single(file => Path.GetFileName(file) == "bgfx_shader.sh"))!;
         ShaderBuildInputs inputs = ShaderBuildInputs.Capture(options.Require("assets"), cancellationToken);
-        using ProcessOwnedDirectory compilation = await StandardBuildCaches.CreateShaderWorkspaceAsync(root, cancellationToken).ConfigureAwait(false);
-        ShaderArtifactBuilder.Compile(inputs, compilation, options.Require("shader"),
-            platform, renderer, options.Require("output"), new ToolRunner(executables, includes, context.host.services.workspaces), cancellationToken);
+        using ProcessOwnedDirectory compilation = await StandardBuildCaches.CreateShaderWorkspaceAsync(
+            root,
+            cancellationToken
+        ).ConfigureAwait(false);
+        ShaderArtifactBuilder.Compile(
+            inputs,
+            compilation,
+            options.Require("shader"),
+            platform,
+            renderer,
+            options.Require("output"),
+            new ToolRunner(executables, includes, context.host.services.workspaces),
+            cancellationToken
+        );
         return;
-        
     }
 }

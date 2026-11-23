@@ -11,7 +11,7 @@ public interface IPlatformBackendFactory
     /// <summary>
     /// Gets the exact registrations available in this composition snapshot.
     /// </summary>
-    IReadOnlyList<PlatformBackendId> supportedBackends { get; }
+    IReadOnlyList<PlatformBackendID> supportedBackends { get; }
 
     /// <summary>
     /// Creates a new platform application for the selected backend.
@@ -25,5 +25,5 @@ public interface IPlatformBackendFactory
     /// <exception cref="System.NotSupportedException">
     /// Thrown when the catalog does not contain the selected backend.
     /// </exception>
-    IPlatformApplication CreateApplication(PlatformBackendId backend);
+    IPlatformApplication CreateApplication(PlatformBackendID backend);
 }

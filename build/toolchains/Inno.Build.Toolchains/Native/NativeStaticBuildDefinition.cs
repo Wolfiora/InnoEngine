@@ -41,15 +41,22 @@ public sealed class NativeStaticBuildDefinition
         this.cmakeFile = ValidatePath(cmakeFile);
         this.inputPaths = Array.AsReadOnly(inputPaths.Select(ValidatePath).Distinct(StringComparer.Ordinal).ToArray());
         this.nativeSourceDirectory = nativeSourceDirectory is null ? null : ValidatePath(nativeSourceDirectory);
-        if (this.nativeSourceDirectory is not null && !this.inputPaths.Any(path => path == this.nativeSourceDirectory
-            || path.StartsWith(this.nativeSourceDirectory + "/", StringComparison.Ordinal)))
-            throw new ArgumentException("The native source root must contain declared static recipe inputs.", nameof(nativeSourceDirectory));
+        if (this.nativeSourceDirectory is not null && !this.inputPaths.Any(path => (
+            path == this.nativeSourceDirectory
+            || path.StartsWith(this.nativeSourceDirectory + "/", StringComparison.Ordinal)
+        ))) {
+            throw new ArgumentException(
+                "The native source root must contain declared static recipe inputs.",
+                nameof(nativeSourceDirectory)
+            );
+        }
         string[] archives = logicalOutputs.Select(ValidatePath).ToArray();
         if (archives.Length == 0 || archives.Any(static name => name.Contains('/'))
-            || archives.Distinct(StringComparer.OrdinalIgnoreCase).Count() != archives.Length)
+            || archives.Distinct(StringComparer.OrdinalIgnoreCase).Count() != archives.Length
+        ) {
             throw new ArgumentException("A static recipe requires unique portable archive file names.", nameof(logicalOutputs));
+        }
         this.logicalOutputs = Array.AsReadOnly(archives);
-
     }
 
     /// <summary>
@@ -72,13 +79,14 @@ public sealed class NativeStaticBuildDefinition
     /// </summary>
     public IReadOnlyList<string> logicalOutputs { get; }
 
-
     private static string ValidatePath(string path)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         string portable = path.Replace('\\', '/');
         if (portable.StartsWith('/') || portable.Contains(':') || portable.Split('/').Any(static part => part is "" or "." or ".."))
+        {
             throw new ArgumentException("A static recipe path must remain within its declared root.", nameof(path));
+        }
         return portable;
     }
 }

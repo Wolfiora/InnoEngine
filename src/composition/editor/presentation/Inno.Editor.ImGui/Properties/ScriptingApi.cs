@@ -1,15 +1,16 @@
-using Inno.Scripting.Api;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+using Inno.Scripting.Api;
+
 using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 
 [assembly: ScriptingApiNamespace("InnoEditor.ImGui", "Inno.Editor.ImGui", ScriptingApiScope.Editor)]
 [assembly: ScriptingApiNamespace("InnoEditor.ImGui", "Inno.Editor.ImGui.ImGuiWidget", ScriptingApiScope.Editor)]
-[assembly: ScriptingApiExport(typeof(EditorUiSession), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(EditorUISession), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorPalette), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorStyleMetrics), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(ListNavigationResult), ScriptingApiScope.Editor)]
-[assembly: ScriptingApiExport(typeof(Inno.Editor.ImGui.ImGui), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(ImGui), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorWidget), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(InlineRenameResult), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(TreeNodeDrawContext), ScriptingApiScope.Editor)]
@@ -34,8 +35,8 @@ using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 [assembly: ScriptingApiExport(typeof(ImGuiTreeNodeFlags), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(ImGuiWindowFlags), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorDrawList), ScriptingApiScope.Editor)]
-[assembly: ScriptingApiExport(typeof(EditorUiLayout), ScriptingApiScope.Editor)]
-[assembly: ScriptingApiExport(typeof(EditorUiInput), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(EditorUILayout), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(EditorUIInput), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(TransformGizmoOperation), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(TransformGizmoSpace), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(TransformGizmoOptions), ScriptingApiScope.Editor)]

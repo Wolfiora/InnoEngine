@@ -1,6 +1,5 @@
 using System;
 using System.Text;
-
 using Inno.Native.Text;
 using Inno.Text;
 
@@ -20,8 +19,10 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
     public FreeTypeHarfBuzzTextBackend()
     {
         InnoTextFontAdapterRuntime* context = TextNativeOperations.CreateSession();
-        if (context == null)
+        if (context is null)
+        {
             throw new InvalidOperationException("The native text backend returned a null context.");
+        }
         m_context = context;
     }
 
@@ -43,7 +44,9 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
     ) {
         EnsureActive();
         if (data.IsEmpty)
+        {
             throw new ArgumentException("Font data cannot be empty.", nameof(data));
+        }
         ArgumentOutOfRangeException.ThrowIfNegative(faceIndex);
         ulong handle = 0;
         ThrowIfFailed(TextNativeOperations.LoadFont(m_context, data, faceIndex, ref handle), "load font");
@@ -60,7 +63,9 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
     {
         EnsureActive();
         if (!font.isValid)
+        {
             return;
+        }
         ThrowIfFailed(TextNativeOperations.ReleaseFont(m_context, font.value), "release font");
     }
 
@@ -90,7 +95,9 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
     ) {
         EnsureActive();
         if (!font.isValid)
+        {
             throw new ArgumentException("A valid font handle is required.", nameof(font));
+        }
         ArgumentNullException.ThrowIfNull(text);
         byte[] textBytes = Utf8(text);
         byte[] languageBytes = Utf8(options.language ?? string.Empty);
@@ -100,39 +107,47 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
         fixed (byte* languagePointer = languageBytes)
         fixed (byte* scriptPointer = scriptBytes)
         {
-            ThrowIfFailed(TextNativeOperations.ShapeUtf8(
-                m_context,
-                font.value,
-                textPointer,
-                checked((uint)(textBytes.Length - 1)),
-                style.fontSize,
-                (Direction)options.direction,
-                languagePointer,
-                scriptPointer,
-                (InnoTextFontAdapterGlyph*)null,
-                0,
-                &glyphCount), "query shaped glyph count");
-            InnoTextFontAdapterGlyph[] nativeGlyphs = new InnoTextFontAdapterGlyph[checked((int)glyphCount)];
+            ThrowIfFailed(
+                TextNativeOperations.ShapeUtf8(
+                    m_context,
+                    font.value,
+                    textPointer,
+                    checked((uint)(textBytes.Length - 1)),
+                    style.fontSize,
+                    (Direction)options.direction,
+                    languagePointer,
+                    scriptPointer,
+                    (InnoTextFontAdapterGlyph*)null,
+                    0,
+                    &glyphCount
+                ),
+                "query shaped glyph count"
+            );
+            var nativeGlyphs = new InnoTextFontAdapterGlyph[checked((int)glyphCount)];
             if (nativeGlyphs.Length > 0)
             {
                 fixed (InnoTextFontAdapterGlyph* glyphPointer = nativeGlyphs)
                 {
-                    ThrowIfFailed(TextNativeOperations.ShapeUtf8(
-                        m_context,
-                        font.value,
-                        textPointer,
-                        checked((uint)(textBytes.Length - 1)),
-                        style.fontSize,
-                        (Direction)options.direction,
-                        languagePointer,
-                        scriptPointer,
-                        glyphPointer,
-                        checked((uint)nativeGlyphs.Length),
-                        &glyphCount), "shape text");
+                    ThrowIfFailed(
+                        TextNativeOperations.ShapeUtf8(
+                            m_context,
+                            font.value,
+                            textPointer,
+                            checked((uint)(textBytes.Length - 1)),
+                            style.fontSize,
+                            (Direction)options.direction,
+                            languagePointer,
+                            scriptPointer,
+                            glyphPointer,
+                            checked((uint)nativeGlyphs.Length),
+                            &glyphCount
+                        ),
+                        "shape text"
+                    );
                 }
             }
 
-            TextGlyph[] glyphs = new TextGlyph[nativeGlyphs.Length];
+            var glyphs = new TextGlyph[nativeGlyphs.Length];
             float width = 0f;
             for (int index = 0; index < nativeGlyphs.Length; index++)
             {
@@ -140,9 +155,13 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
                 float advanceX = glyph.AdvanceX;
                 float advanceY = glyph.AdvanceY;
                 if (options.direction is TextDirection.TopToBottom or TextDirection.BottomToTop)
+                {
                     advanceY += MathF.CopySign(style.letterSpacing, advanceY == 0f ? 1f : advanceY);
+                }
                 else
+                {
                     advanceX += MathF.CopySign(style.letterSpacing, advanceX == 0f ? 1f : advanceX);
+                }
                 width += MathF.Abs(advanceX);
                 glyphs[index] = new TextGlyph(
                     glyph.GlyphId,
@@ -150,7 +169,8 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
                     advanceX,
                     advanceY,
                     glyph.OffsetX,
-                    glyph.OffsetY);
+                    glyph.OffsetY
+                );
             }
             InnoTextFontAdapterMetrics metrics = default;
             ThrowIfFailed(TextNativeOperations.GetMetrics(m_context, font.value, style.fontSize, ref metrics), "query font metrics");
@@ -159,7 +179,8 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
                 metrics.Descender,
                 metrics.LineHeight,
                 metrics.UnderlinePosition,
-                metrics.UnderlineThickness);
+                metrics.UnderlineThickness
+            );
             return new TextLayout(glyphs, publicMetrics, width, MathF.Max(0f, metrics.LineHeight));
         }
     }
@@ -170,7 +191,7 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
     /// <param name="font">
     /// The loaded face.
     /// </param>
-    /// <param name="glyphId">
+    /// <param name="glyphID">
     /// The font-specific glyph identifier.
     /// </param>
     /// <param name="fontSize">
@@ -181,32 +202,43 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
     /// </returns>
     public GlyphBitmap Rasterize(
         TextFontHandle font,
-        uint glyphId,
+        uint glyphID,
         float fontSize
     ) {
         EnsureActive();
         if (!font.isValid)
+        {
             throw new ArgumentException("A valid font handle is required.", nameof(font));
+        }
         if (!float.IsFinite(fontSize) || fontSize <= 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(fontSize));
+        }
         InnoTextFontAdapterBitmap bitmap = default;
-        ThrowIfFailed(TextNativeOperations.RasterizeGlyph(
-            m_context, font.value, glyphId, fontSize, null, 0, &bitmap), "query glyph bitmap");
-        byte[] pixels = new byte[checked((int)bitmap.ByteLength)];
+        ThrowIfFailed(
+            TextNativeOperations.RasterizeGlyph(m_context, font.value, glyphID, fontSize, null, 0, &bitmap),
+            "query glyph bitmap"
+        );
+        var pixels = new byte[checked((int)bitmap.ByteLength)];
         if (pixels.Length > 0)
         {
             fixed (byte* pixelPointer = pixels)
-                ThrowIfFailed(TextNativeOperations.RasterizeGlyph(
-                    m_context, font.value, glyphId, fontSize, pixelPointer, checked((uint)pixels.Length), &bitmap),
-                    "rasterize glyph");
+            {
+                ThrowIfFailed(
+                    TextNativeOperations.RasterizeGlyph(
+                        m_context,
+                        font.value,
+                        glyphID,
+                        fontSize,
+                        pixelPointer,
+                        checked((uint)pixels.Length),
+                        &bitmap
+                    ),
+                    "rasterize glyph"
+                );
+            }
         }
-        return new GlyphBitmap(
-            bitmap.Width,
-            bitmap.Height,
-            bitmap.BearingX,
-            bitmap.BearingY,
-            bitmap.AdvanceX,
-            pixels);
+        return new GlyphBitmap(bitmap.Width, bitmap.Height, bitmap.BearingX, bitmap.BearingY, bitmap.AdvanceX, pixels);
     }
 
     /// <summary>
@@ -215,15 +247,19 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_disposed = true;
         TextNativeOperations.DestroySession(m_context);
         m_context = null;
     }
 
+    private void EnsureActive() => ObjectDisposedException.ThrowIf(m_disposed, this);
+
     private static byte[] Utf8(string value)
     {
-        byte[] bytes = new byte[Encoding.UTF8.GetByteCount(value) + 1];
+        var bytes = new byte[Encoding.UTF8.GetByteCount(value) + 1];
         Encoding.UTF8.GetBytes(value, bytes);
         return bytes;
     }
@@ -233,8 +269,10 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
         string operation
     ) {
         if (result != Result.Success)
-            throw new InvalidOperationException($"Failed to {operation}: {TextNativeOperations.ResultMessage(result) ?? result.ToString()}.");
+        {
+            throw new InvalidOperationException(
+                $"Failed to {operation}: {TextNativeOperations.ResultMessage(result) ?? result.ToString()}."
+            );
+        }
     }
-
-    private void EnsureActive() => ObjectDisposedException.ThrowIf(m_disposed, this);
 }

@@ -16,52 +16,9 @@ namespace Inno.Core.Collections;
 /// <c>dependency</c>. The graph accepts cycles; operations that require an acyclic graph,
 /// such as <see cref="TopologicalSort"/>, report them explicitly.
 /// </remarks>
-public sealed class DependencyGraph<TKey> where TKey : notnull
+public sealed class DependencyGraph<TKey>
+    where TKey : notnull
 {
-    private sealed class Node
-    {
-        internal required long order;
-        internal HashSet<TKey> dependencies = null!;
-        internal HashSet<TKey> dependents = null!;
-    }
-
-    private sealed class NodePriorityComparer(IComparer<TKey>? orderingComparer) : IComparer<NodePriority>
-    {
-        /// <summary>
-        /// Compares two values according to the deterministic ordering used by this collection.
-        /// </summary>
-        /// <param name="x">
-        /// The horizontal or first component.
-        /// </param>
-        /// <param name="y">
-        /// The vertical or second component.
-        /// </param>
-        /// <returns>
-        /// The scalar result calculated from the supplied inputs.
-        /// </returns>
-        public int Compare(
-            NodePriority x,
-            NodePriority y
-        ) {
-            if (orderingComparer is not null)
-            {
-                int keyComparison = orderingComparer.Compare(x.key, y.key);
-                if (keyComparison != 0)
-                    return keyComparison;
-            }
-
-            return x.order.CompareTo(y.order);
-        }
-    }
-
-    private readonly struct NodePriority(
-        TKey key,
-        long order
-    ) {
-        internal TKey key { get; } = key;
-        internal long order { get; } = order;
-    }
-
     private readonly Dictionary<TKey, Node> m_nodes;
     private readonly IEqualityComparer<TKey> m_equalityComparer;
     private readonly IComparer<TKey>? m_orderingComparer;
@@ -167,7 +124,9 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
         try
         {
             if (!AddNodeLocked(node))
+            {
                 return false;
+            }
 
             m_version++;
             return true;
@@ -193,18 +152,24 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
         try
         {
             if (!m_nodes.Remove(node, out Node? removed))
+            {
                 return false;
+            }
 
             foreach (TKey dependency in removed.dependencies)
             {
                 if (m_nodes.TryGetValue(dependency, out Node? dependencyNode))
+                {
                     dependencyNode.dependents.Remove(node);
+                }
             }
 
             foreach (TKey dependent in removed.dependents)
             {
                 if (m_nodes.TryGetValue(dependent, out Node? dependentNode))
+                {
                     dependentNode.dependencies.Remove(node);
+                }
             }
 
             m_version++;
@@ -238,7 +203,9 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
             AddNodeLocked(node);
             AddNodeLocked(dependency);
             if (!m_nodes[node].dependencies.Add(dependency))
+            {
                 return false;
+            }
 
             m_nodes[dependency].dependents.Add(node);
             m_version++;
@@ -269,14 +236,16 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
         m_sync.EnterWriteLock();
         try
         {
-            if (!m_nodes.TryGetValue(node, out Node? dependentNode) ||
-                !dependentNode.dependencies.Remove(dependency))
-            {
+            if (!m_nodes.TryGetValue(node, out Node? dependentNode)
+                || !dependentNode.dependencies.Remove(dependency)
+            ) {
                 return false;
             }
 
             if (m_nodes.TryGetValue(dependency, out Node? dependencyNode))
+            {
                 dependencyNode.dependents.Remove(node);
+            }
 
             m_version++;
             return true;
@@ -311,14 +280,20 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
         {
             bool changed = AddNodeLocked(node);
             foreach (TKey dependency in replacement)
+            {
                 changed |= AddNodeLocked(dependency);
+            }
 
             Node target = m_nodes[node];
             if (!changed && target.dependencies.SetEquals(replacement))
+            {
                 return;
+            }
 
             foreach (TKey previous in target.dependencies)
+            {
                 m_nodes[previous].dependents.Remove(node);
+            }
 
             target.dependencies.Clear();
             foreach (TKey dependency in replacement)
@@ -350,8 +325,7 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
     public IReadOnlyList<TKey> GetDependencies(
         TKey node,
         bool recursive = false
-    )
-        => GetConnectedNodes(node, recursive, static value => value.dependencies);
+    ) => GetConnectedNodes(node, recursive, static value => value.dependencies);
 
     /// <summary>
     /// Gets direct or transitive dependents of a node.
@@ -368,8 +342,7 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
     public IReadOnlyList<TKey> GetDependents(
         TKey node,
         bool recursive = false
-    )
-        => GetConnectedNodes(node, recursive, static value => value.dependents);
+    ) => GetConnectedNodes(node, recursive, static value => value.dependents);
 
     /// <summary>
     /// Determines whether one node directly or transitively depends on another.
@@ -395,9 +368,13 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
         try
         {
             if (!m_nodes.TryGetValue(node, out Node? start))
+            {
                 return false;
+            }
             if (!recursive)
+            {
                 return start.dependencies.Contains(dependency);
+            }
 
             var visited = new HashSet<TKey>(m_equalityComparer);
             var pending = new Stack<TKey>(start.dependencies);
@@ -405,11 +382,17 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
             {
                 TKey current = pending.Pop();
                 if (m_equalityComparer.Equals(current, dependency))
+                {
                     return true;
+                }
                 if (!visited.Add(current) || !m_nodes.TryGetValue(current, out Node? currentNode))
+                {
                     continue;
+                }
                 foreach (TKey next in currentNode.dependencies)
+                {
                     pending.Push(next);
+                }
             }
 
             return false;
@@ -440,7 +423,9 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
             {
                 remaining.Add(key, value.dependencies.Count);
                 if (value.dependencies.Count == 0)
+                {
                     ready.Enqueue(key, new NodePriority(key, value.order));
+                }
             }
 
             var result = new List<TKey>(m_nodes.Count);
@@ -450,18 +435,21 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
                 foreach (TKey dependent in OrderNodes(m_nodes[current].dependents))
                 {
                     if (--remaining[dependent] != 0)
+                    {
                         continue;
+                    }
                     Node dependentNode = m_nodes[dependent];
                     ready.Enqueue(dependent, new NodePriority(dependent, dependentNode.order));
                 }
             }
 
             if (result.Count == m_nodes.Count)
+            {
                 return result.ToArray();
+            }
 
             IReadOnlyList<TKey> cycle = FindCycleLocked();
-            throw new InvalidOperationException(
-                $"Dependency graph contains a cycle: {string.Join(" -> ", cycle)}.");
+            throw new InvalidOperationException($"Dependency graph contains a cycle: {string.Join(" -> ", cycle)}.");
         }
         finally
         {
@@ -508,12 +496,14 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
             var lowLinks = new Dictionary<TKey, int>(m_nodes.Count, m_equalityComparer);
             var active = new HashSet<TKey>(m_equalityComparer);
             var stack = new Stack<TKey>();
-            var components = new List<IReadOnlyList<TKey>>();
+            List<IReadOnlyList<TKey>> components = [];
 
             foreach (TKey node in OrderNodes(m_nodes.Keys))
             {
                 if (!indexes.ContainsKey(node))
+                {
                     Visit(node);
+                }
             }
 
             components.Sort((
@@ -544,9 +534,11 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
                 }
 
                 if (lowLinks[node] != indexes[node])
+                {
                     return;
+                }
 
-                var component = new List<TKey>();
+                List<TKey> component = [];
                 TKey current;
                 do
                 {
@@ -575,7 +567,9 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
         try
         {
             if (m_nodes.Count == 0)
+            {
                 return;
+            }
             m_nodes.Clear();
             m_version++;
         }
@@ -588,7 +582,9 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
     private bool AddNodeLocked(TKey node)
     {
         if (m_nodes.ContainsKey(node))
+        {
             return false;
+        }
         m_nodes.Add(node, new Node
         {
             order = m_nextNodeOrder++,
@@ -607,9 +603,13 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
         try
         {
             if (!m_nodes.TryGetValue(node, out Node? start))
-                return Array.Empty<TKey>();
+            {
+                return [];
+            }
             if (!recursive)
+            {
                 return OrderNodes(selector(start));
+            }
 
             var result = new HashSet<TKey>(m_equalityComparer);
             var pending = new Stack<TKey>(selector(start));
@@ -617,9 +617,13 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
             {
                 TKey current = pending.Pop();
                 if (!result.Add(current) || !m_nodes.TryGetValue(current, out Node? currentNode))
+                {
                     continue;
+                }
                 foreach (TKey connected in selector(currentNode))
+                {
                     pending.Push(connected);
+                }
             }
 
             result.Remove(node);
@@ -634,15 +638,17 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
     private IReadOnlyList<TKey> FindCycleLocked()
     {
         var states = new Dictionary<TKey, byte>(m_nodes.Count, m_equalityComparer);
-        var path = new List<TKey>();
+        List<TKey> path = [];
         var pathIndexes = new Dictionary<TKey, int>(m_nodes.Count, m_equalityComparer);
 
         foreach (TKey node in OrderNodes(m_nodes.Keys))
         {
             if (!states.ContainsKey(node) && Visit(node, out IReadOnlyList<TKey>? cycle))
+            {
                 return cycle;
+            }
         }
-        return Array.Empty<TKey>();
+        return [];
 
         bool Visit(
             TKey node,
@@ -656,14 +662,18 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
                 if (!states.TryGetValue(dependency, out byte state))
                 {
                     if (Visit(dependency, out cycle))
+                    {
                         return true;
+                    }
                 }
                 else if (state == 1)
                 {
                     int start = pathIndexes[dependency];
                     var found = new List<TKey>(path.Count - start + 1);
                     for (int i = start; i < path.Count; i++)
+                    {
                         found.Add(path[i]);
+                    }
                     found.Add(dependency);
                     cycle = found.ToArray();
                     return true;
@@ -673,7 +683,7 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
             states[node] = 2;
             pathIndexes.Remove(node);
             path.RemoveAt(path.Count - 1);
-            cycle = Array.Empty<TKey>();
+            cycle = [];
             return false;
         }
     }
@@ -693,8 +703,56 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
         {
             int comparison = m_orderingComparer.Compare(left, right);
             if (comparison != 0)
+            {
                 return comparison;
+            }
         }
         return m_nodes[left].order.CompareTo(m_nodes[right].order);
+    }
+
+    private sealed class Node
+    {
+        internal required long order;
+        internal HashSet<TKey> dependencies = null!;
+        internal HashSet<TKey> dependents = null!;
+    }
+
+    private sealed class NodePriorityComparer(IComparer<TKey>? orderingComparer) : IComparer<NodePriority>
+    {
+        /// <summary>
+        /// Compares two values according to the deterministic ordering used by this collection.
+        /// </summary>
+        /// <param name="x">
+        /// The horizontal or first component.
+        /// </param>
+        /// <param name="y">
+        /// The vertical or second component.
+        /// </param>
+        /// <returns>
+        /// The scalar result calculated from the supplied inputs.
+        /// </returns>
+        public int Compare(
+            NodePriority x,
+            NodePriority y
+        ) {
+            if (orderingComparer is not null)
+            {
+                int keyComparison = orderingComparer.Compare(x.key, y.key);
+                if (keyComparison != 0)
+                {
+                    return keyComparison;
+                }
+            }
+
+            return x.order.CompareTo(y.order);
+        }
+    }
+
+    private readonly struct NodePriority(
+        TKey key,
+        long order
+    ) {
+        internal TKey key { get; } = key;
+        internal long order { get; } = order;
     }
 }

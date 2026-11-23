@@ -6,13 +6,13 @@ namespace Inno.Editor.Interactions;
 public sealed class EditorToolbarItem
 {
     internal EditorToolbarItem(
-        string actionId,
+        string actionID,
         EditorToolbarIcon icon,
         string tooltip,
         int order,
         EditorActionState status
     ) {
-        this.actionId = actionId;
+        this.actionID = actionID;
         this.icon = icon;
         this.tooltip = tooltip;
         this.order = order;
@@ -22,7 +22,7 @@ public sealed class EditorToolbarItem
     /// <summary>
     /// Gets the stable action dispatched when this item is pressed.
     /// </summary>
-    public string actionId { get; }
+    public string actionID { get; }
 
     /// <summary>
     /// Gets the resolved presentation-independent symbol.

@@ -11,8 +11,7 @@ public sealed class CopyPassBuilder : RenderPassBuilder
     internal CopyPassBuilder(
         RenderGraphBuilder graph,
         RenderPassRecord pass
-    )
-        : base(graph, pass) { }
+    ) : base(graph, pass) {}
 
     /// <summary>
     /// Declares one texture copy operation.
@@ -30,16 +29,8 @@ public sealed class CopyPassBuilder : RenderPassBuilder
         RenderTextureHandle source,
         RenderTextureHandle destination
     ) {
-        graph.AddUse(
-            pass,
-            source,
-            RenderResourceAccess.Read,
-            RenderResourceUseKind.CopySource);
-        graph.AddUse(
-            pass,
-            destination,
-            RenderResourceAccess.Write,
-            RenderResourceUseKind.CopyDestination);
+        graph.AddUse(pass, source, RenderResourceAccess.Read, RenderResourceUseKind.CopySource);
+        graph.AddUse(pass, destination, RenderResourceAccess.Write, RenderResourceUseKind.CopyDestination);
         return this;
     }
 
@@ -59,16 +50,8 @@ public sealed class CopyPassBuilder : RenderPassBuilder
         RenderBufferHandle source,
         RenderBufferHandle destination
     ) {
-        graph.AddUse(
-            pass,
-            source,
-            RenderResourceAccess.Read,
-            RenderResourceUseKind.CopySource);
-        graph.AddUse(
-            pass,
-            destination,
-            RenderResourceAccess.Write,
-            RenderResourceUseKind.CopyDestination);
+        graph.AddUse(pass, source, RenderResourceAccess.Read, RenderResourceUseKind.CopySource);
+        graph.AddUse(pass, destination, RenderResourceAccess.Write, RenderResourceUseKind.CopyDestination);
         return this;
     }
 }

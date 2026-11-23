@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Scripting.Api;
 
 namespace Inno.Editor.Interactions;
@@ -16,7 +15,7 @@ public sealed class EditorMenuItem
     /// <param name="label">
     /// The visible contextual label of the node.
     /// </param>
-    /// <param name="actionId">
+    /// <param name="actionID">
     /// The leaf action identifier, or an empty string for a structural submenu.
     /// </param>
     /// <param name="order">
@@ -36,7 +35,7 @@ public sealed class EditorMenuItem
     /// </param>
     internal EditorMenuItem(
         string label,
-        string actionId,
+        string actionID,
         int order,
         bool separatorBefore,
         EditorActionState status,
@@ -44,11 +43,11 @@ public sealed class EditorMenuItem
         object? argument = null
     ) {
         this.label = label ?? string.Empty;
-        this.actionId = actionId ?? string.Empty;
+        this.actionID = actionID ?? string.Empty;
         this.order = order;
         this.separatorBefore = separatorBefore;
         this.status = status;
-        this.children = children ?? Array.Empty<EditorMenuItem>();
+        this.children = children ?? [];
         this.argument = argument;
     }
 
@@ -61,7 +60,7 @@ public sealed class EditorMenuItem
     /// Gets the stable action identifier consumed by a presentation backend.
     /// </summary>
     [ScriptingApiIgnore]
-    public string actionId { get; }
+    public string actionID { get; }
 
     /// <summary>
     /// Gets the stable ordering value.

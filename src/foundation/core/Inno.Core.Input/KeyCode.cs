@@ -9,7 +9,6 @@ public enum KeyCode
     /// No recognized physical key.
     /// </summary>
     Unknown = 0,
-    
     /// <summary>
     /// The A letter key.
     /// </summary>
@@ -114,7 +113,6 @@ public enum KeyCode
     /// The Z letter key.
     /// </summary>
     Z = 90,
-
     /// <summary>
     /// The 0 key on the primary keyboard row.
     /// </summary>
@@ -155,7 +153,6 @@ public enum KeyCode
     /// The 9 key on the primary keyboard row.
     /// </summary>
     D9 = 57,
-
     /// <summary>
     /// The escape key.
     /// </summary>
@@ -176,7 +173,6 @@ public enum KeyCode
     /// The backspace key.
     /// </summary>
     Backspace = 8,
-
     /// <summary>
     /// The left arrow key.
     /// </summary>
@@ -193,11 +189,10 @@ public enum KeyCode
     /// The down arrow key.
     /// </summary>
     DownArrow = 40,
-
     /// <summary>
     /// The left super key.
     /// </summary>
-    LeftSuper = 91, 
+    LeftSuper = 91,
     /// <summary>
     /// The right super key.
     /// </summary>
@@ -226,7 +221,6 @@ public enum KeyCode
     /// The right alt key.
     /// </summary>
     RightAlt = 165,
-
     /// <summary>
     /// The caps lock key.
     /// </summary>
@@ -255,7 +249,6 @@ public enum KeyCode
     /// The page down key.
     /// </summary>
     PageDown = 34,
-
     /// <summary>
     /// The 0 key on the numeric keypad.
     /// </summary>
@@ -296,7 +289,6 @@ public enum KeyCode
     /// The 9 key on the numeric keypad.
     /// </summary>
     NumPad9 = 105,
-
     /// <summary>
     /// The num lock key.
     /// </summary>
@@ -305,7 +297,6 @@ public enum KeyCode
     /// The scroll lock key.
     /// </summary>
     ScrollLock = 145,
-
     /// <summary>
     /// The F1 function key.
     /// </summary>
@@ -354,49 +345,59 @@ public enum KeyCode
     /// The F12 function key.
     /// </summary>
     F12 = 123,
-
     /// <summary>
     /// The plus key.
     /// </summary>
-    Plus = 187,          // '+' key
+    // '+' key
+    Plus = 187,
     /// <summary>
     /// The comma key.
     /// </summary>
-    Comma = 188,         // ',' key
+    // ',' key
+    Comma = 188,
     /// <summary>
     /// The minus key.
     /// </summary>
-    Minus = 189,         // '-' key
+    // '-' key
+    Minus = 189,
     /// <summary>
     /// The period key.
     /// </summary>
-    Period = 190,        // '.' key
+    // '.' key
+    Period = 190,
     /// <summary>
     /// The slash key.
     /// </summary>
-    Slash = 191,         // '/' key
+    // '/' key
+    Slash = 191,
     /// <summary>
     /// The tilde key.
     /// </summary>
-    Tilde = 192,         // '`' key
+    // '`' key
+    Tilde = 192,
     /// <summary>
     /// The backslash key.
     /// </summary>
-    Backslash = 220,     // '\' key
+    // '\' key
+    Backslash = 220,
     /// <summary>
     /// The semicolon key.
     /// </summary>
-    Semicolon = 186,     // ';' key
+    // ';' key
+    Semicolon = 186,
     /// <summary>
     /// The quote key.
     /// </summary>
-    Quote = 222,         // ''' key
+    // ''' key
+    Quote = 222,
     /// <summary>
     /// The left bracket key.
     /// </summary>
-    LeftBracket = 219,   // '[' key
+    // '[' key
+    LeftBracket = 219,
     /// <summary>
     /// The right bracket key.
     /// </summary>
-    RightBracket = 221   // ']' key
+    // ']' key
+    RightBracket = 221
 }

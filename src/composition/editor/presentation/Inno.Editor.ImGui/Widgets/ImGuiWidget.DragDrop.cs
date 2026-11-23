@@ -1,10 +1,12 @@
 using System;
-using BGCS.Runtime;
 using System.Numerics;
+using BGCS.Runtime;
 using Inno.Native.ImGui;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
+
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
@@ -39,8 +41,7 @@ public sealed unsafe partial class ImGuiWidget
         in TPayload payload,
         Action? drawPreview = null,
         bool allowHoldToOpenOthers = true
-    )
-        where TPayload : unmanaged
+    ) where TPayload : unmanaged
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(payloadType);
         ImGuiDragDropFlags sourceFlags = allowHoldToOpenOthers ? ImGuiDragDropFlags.None : ImGuiDragDropFlags.SourceNoHoldToOpenOthers;
@@ -87,8 +88,7 @@ public sealed unsafe partial class ImGuiWidget
         Func<TPayload> payloadFactory,
         Action? drawPreview = null,
         bool allowHoldToOpenOthers = true
-    )
-        where TPayload : unmanaged
+    ) where TPayload : unmanaged
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(payloadType);
         ArgumentNullException.ThrowIfNull(payloadFactory);
@@ -123,11 +123,7 @@ public sealed unsafe partial class ImGuiWidget
     public bool DragDropTarget<TPayload>(
         string payloadType,
         out TPayload payload
-    )
-        where TPayload : unmanaged
-    {
-        return DragDropTarget(payloadType, out payload, out _);
-    }
+    ) where TPayload : unmanaged => DragDropTarget(payloadType, out payload, out _);
 
     /// <summary>
     /// Accepts an unmanaged payload and reports its preview state on the most recently submitted item.
@@ -151,11 +147,7 @@ public sealed unsafe partial class ImGuiWidget
         string payloadType,
         out TPayload payload,
         out bool isPreviewing
-    )
-        where TPayload : unmanaged
-    {
-        return DragDropTarget(payloadType, out payload, out isPreviewing, drawDefaultHighlight: true);
-    }
+    ) where TPayload : unmanaged => DragDropTarget(payloadType, out payload, out isPreviewing, drawDefaultHighlight: true);
 
     /// <summary>
     /// Accepts an unmanaged payload and controls whether ImGui draws its default target rectangle.
@@ -183,8 +175,7 @@ public sealed unsafe partial class ImGuiWidget
         out TPayload payload,
         out bool isPreviewing,
         bool drawDefaultHighlight
-    )
-        where TPayload : unmanaged
+    ) where TPayload : unmanaged
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(payloadType);
         payload = default;
@@ -196,12 +187,16 @@ public sealed unsafe partial class ImGuiWidget
 
         ImGuiDragDropFlags flags = ImGuiDragDropFlags.AcceptBeforeDelivery;
         if (!drawDefaultHighlight)
+        {
             flags |= ImGuiDragDropFlags.AcceptNoDrawDefaultRect;
+        }
         using NativeStringLease nativeType = Utf8Codec.EncodeNullTerminated(payloadType, allowsNull: false);
         ImGuiPayload* nativePayload = NativeImGui.Raw.AcceptDragDropPayload((sbyte*)nativeType.pointer, (int)flags);
         bool compatible = TryReadDragDropPayload(nativePayload, out payload);
         if (compatible)
+        {
             isPreviewing = nativePayload->Preview != 0;
+        }
         bool delivered = compatible && nativePayload->Delivery != 0;
         NativeImGui.EndDragDropTarget();
         return delivered;
@@ -222,7 +217,7 @@ public sealed unsafe partial class ImGuiWidget
     /// <param name="maximum">
     /// Maximum screen coordinate of the complete target.
     /// </param>
-    /// <param name="targetId">
+    /// <param name="targetID">
     /// ImGui identifier unique within the current window.
     /// </param>
     /// <param name="payload">
@@ -244,35 +239,42 @@ public sealed unsafe partial class ImGuiWidget
         string payloadType,
         Vector2 minimum,
         Vector2 maximum,
-        uint targetId,
+        uint targetID,
         out TPayload payload,
         out bool isPreviewing,
         bool drawDefaultHighlight = true
-    )
-        where TPayload : unmanaged
+    ) where TPayload : unmanaged
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(payloadType);
         payload = default;
         isPreviewing = false;
         if (maximum.X <= minimum.X || maximum.Y <= minimum.Y)
+        {
             return false;
-        ImRect bounds = new()
+        }
+        var bounds = new ImRect()
         {
             Min = ImGui.ToNative(minimum),
             Max = ImGui.ToNative(maximum)
         };
-        if (NativeImGui.Raw.BeginDragDropTargetCustom(&bounds, targetId) == 0)
+        if (NativeImGui.Raw.BeginDragDropTargetCustom(&bounds, targetID) == 0)
+        {
             return false;
+        }
         try
         {
             ImGuiDragDropFlags flags = ImGuiDragDropFlags.AcceptBeforeDelivery;
             if (!drawDefaultHighlight)
+            {
                 flags |= ImGuiDragDropFlags.AcceptNoDrawDefaultRect;
+            }
             using NativeStringLease nativeType = Utf8Codec.EncodeNullTerminated(payloadType, allowsNull: false);
             ImGuiPayload* nativePayload = NativeImGui.Raw.AcceptDragDropPayload((sbyte*)nativeType.pointer, (int)flags);
             bool compatible = TryReadDragDropPayload(nativePayload, out payload);
             if (compatible)
+            {
                 isPreviewing = nativePayload->Preview != 0;
+            }
             return compatible && nativePayload->Delivery != 0;
         }
         finally
@@ -284,8 +286,7 @@ public sealed unsafe partial class ImGuiWidget
     private unsafe void SetDragDropPayload<TPayload>(
         string payloadType,
         in TPayload payload
-    )
-        where TPayload : unmanaged
+    ) where TPayload : unmanaged
     {
         TPayload payloadCopy = payload;
         using NativeStringLease nativeType = Utf8Codec.EncodeNullTerminated(payloadType, allowsNull: false);
@@ -295,12 +296,13 @@ public sealed unsafe partial class ImGuiWidget
     private unsafe bool TryReadDragDropPayload<TPayload>(
         ImGuiPayload* nativePayload,
         out TPayload payload
-    )
-        where TPayload : unmanaged
+    ) where TPayload : unmanaged
     {
         payload = default;
-        if ((nativePayload == null) || nativePayload->DataSize != sizeof(TPayload) || nativePayload->Data == null)
+        if ((nativePayload is null) || nativePayload->DataSize != sizeof(TPayload) || nativePayload->Data is null)
+        {
             return false;
+        }
         payload = *(TPayload*)nativePayload->Data;
         return true;
     }

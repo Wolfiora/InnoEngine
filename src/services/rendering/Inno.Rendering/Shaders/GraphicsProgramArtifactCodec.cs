@@ -12,8 +12,8 @@ public static class GraphicsProgramArtifactCodec
     private const int C_MAX_STAGE_BYTES = 128 * 1024 * 1024;
     private const int C_MAX_BINDINGS = 4096;
     private const int C_MAX_NAME_BYTES = 8192;
-    private static readonly UTF8Encoding Utf8 = new(false, true);
-    private static readonly byte[] Magic = "INNOGPU"u8.ToArray();
+    private static readonly UTF8Encoding UTF8 = new(false, true);
+    private static readonly byte[] MAGIC = "INNOGPU"u8.ToArray();
 
     /// <summary>
     /// Encodes owned program binaries, reflected bindings, and raster state for device distribution.
@@ -35,12 +35,14 @@ public static class GraphicsProgramArtifactCodec
     {
         ArgumentNullException.ThrowIfNull(descriptor);
         using var output = new MemoryStream();
-        using var writer = new BinaryWriter(output, Utf8, leaveOpen: true);
-        writer.Write(Magic);
+        using var writer = new BinaryWriter(output, UTF8, leaveOpen: true);
+        writer.Write(MAGIC);
         WriteStage(writer, descriptor.vertexShader.Span);
         WriteStage(writer, descriptor.fragmentShader.Span);
         if (descriptor.bindings.Count > C_MAX_BINDINGS)
+        {
             throw new InvalidDataException("The graphics program contains too many bindings.");
+        }
         writer.Write(descriptor.bindings.Count);
         foreach (RenderShaderBindingDescriptor binding in descriptor.bindings)
         {
@@ -77,13 +79,17 @@ public static class GraphicsProgramArtifactCodec
         RenderVertexLayout? vertexLayout = null
     ) {
         if (bytes.Length > 2L * C_MAX_STAGE_BYTES + 2L * C_MAX_BINDINGS * C_MAX_NAME_BYTES + 1024 * 1024)
+        {
             throw new InvalidDataException("The graphics program exceeds its input budget.");
+        }
         try
         {
             using var input = new MemoryStream(bytes.ToArray(), writable: false);
-            using var reader = new BinaryReader(input, Utf8, leaveOpen: true);
-            if (!ReadBytes(reader, Magic.Length).AsSpan().SequenceEqual(Magic))
+            using var reader = new BinaryReader(input, UTF8, leaveOpen: true);
+            if (!ReadBytes(reader, MAGIC.Length).AsSpan().SequenceEqual(MAGIC))
+            {
                 throw new InvalidDataException("The graphics program magic is invalid.");
+            }
             byte[] vertex = ReadBytes(reader, ReadCount(reader, C_MAX_STAGE_BYTES));
             byte[] fragment = ReadBytes(reader, ReadCount(reader, C_MAX_STAGE_BYTES));
             int count = ReadCount(reader, C_MAX_BINDINGS);
@@ -91,20 +97,26 @@ public static class GraphicsProgramArtifactCodec
             for (int index = 0; index < count; index++)
             {
                 bindings[index] = new RenderShaderBindingDescriptor(
-                    new RenderBindingId(ReadName(reader)),
+                    new RenderBindingID(ReadName(reader)),
                     ReadEnum<RenderShaderBindingKind>(reader),
                     reader.ReadInt32(),
                     ReadEnum<RenderUniformType>(reader),
                     reader.ReadInt32(),
                     ReadEnum<RenderStorageAccess>(reader),
-                    ReadName(reader));
+                    ReadName(reader)
+                );
             }
             RenderRasterState raster = ReadRaster(reader);
             if (input.Position != input.Length)
+            {
                 throw new InvalidDataException("The graphics program contains trailing data.");
+            }
             return new GraphicsPipelineDescriptor(vertex, fragment, bindings, vertexLayout, raster);
         }
-        catch (InvalidDataException) { throw; }
+        catch (InvalidDataException)
+        {
+            throw;
+        }
         catch (Exception failure) when (failure is IOException or ArgumentException or OverflowException)
         {
             throw new InvalidDataException("The graphics program is malformed.", failure);
@@ -116,7 +128,9 @@ public static class GraphicsProgramArtifactCodec
         ReadOnlySpan<byte> bytes
     ) {
         if (bytes.IsEmpty || bytes.Length > C_MAX_STAGE_BYTES)
+        {
             throw new InvalidDataException("A graphics program stage has an invalid length.");
+        }
         writer.Write(bytes.Length);
         writer.Write(bytes);
     }
@@ -125,15 +139,17 @@ public static class GraphicsProgramArtifactCodec
         BinaryWriter writer,
         string value
     ) {
-        byte[] bytes = Utf8.GetBytes(value);
+        byte[] bytes = UTF8.GetBytes(value);
         if (bytes.Length == 0 || bytes.Length > C_MAX_NAME_BYTES)
+        {
             throw new InvalidDataException("A graphics program binding name has an invalid length.");
+        }
         writer.Write(bytes.Length);
         writer.Write(bytes);
     }
 
     private static string ReadName(BinaryReader reader)
-        => Utf8.GetString(ReadBytes(reader, ReadCount(reader, C_MAX_NAME_BYTES)));
+        => UTF8.GetString(ReadBytes(reader, ReadCount(reader, C_MAX_NAME_BYTES)));
 
     private static int ReadCount(
         BinaryReader reader,
@@ -141,7 +157,9 @@ public static class GraphicsProgramArtifactCodec
     ) {
         int count = reader.ReadInt32();
         if (count < 0 || count > maximum)
+        {
             throw new InvalidDataException("A graphics program field exceeds its length budget.");
+        }
         return count;
     }
 
@@ -150,14 +168,19 @@ public static class GraphicsProgramArtifactCodec
         int count
     ) {
         if (count > reader.BaseStream.Length - reader.BaseStream.Position)
+        {
             throw new InvalidDataException("The graphics program is truncated.");
+        }
         byte[] bytes = reader.ReadBytes(count);
         if (bytes.Length != count)
+        {
             throw new InvalidDataException("The graphics program is truncated.");
+        }
         return bytes;
     }
 
-    private static T ReadEnum<T>(BinaryReader reader) where T : struct, Enum
+    private static T ReadEnum<T>(BinaryReader reader)
+        where T : struct, Enum
     {
         T value = (T)Enum.ToObject(typeof(T), reader.ReadInt32());
         return Enum.IsDefined(value) ? value : throw new InvalidDataException("A graphics program enum is invalid.");
@@ -165,11 +188,11 @@ public static class GraphicsProgramArtifactCodec
 
     private static bool ReadBoolean(BinaryReader reader)
         => reader.ReadByte() switch
-        {
-            0 => false,
-            1 => true,
-            _ => throw new InvalidDataException("A graphics program boolean is invalid.")
-        };
+    {
+        0 => false,
+        1 => true,
+        _ => throw new InvalidDataException("A graphics program boolean is invalid.")
+    };
 
     private static void WriteRaster(
         BinaryWriter writer,
@@ -180,8 +203,10 @@ public static class GraphicsProgramArtifactCodec
             || (state.colorWriteMask & ~0xF) != 0
             || !Enum.IsDefined(state.blend.colorSource) || !Enum.IsDefined(state.blend.colorDestination)
             || !Enum.IsDefined(state.blend.colorEquation) || !Enum.IsDefined(state.blend.alphaSource)
-            || !Enum.IsDefined(state.blend.alphaDestination) || !Enum.IsDefined(state.blend.alphaEquation))
+            || !Enum.IsDefined(state.blend.alphaDestination) || !Enum.IsDefined(state.blend.alphaEquation)
+        ) {
             throw new InvalidDataException("The graphics program raster state is invalid.");
+        }
         writer.Write((int)state.topology);
         writer.Write((int)state.cull);
         writer.Write((int)state.frontFace);
@@ -209,7 +234,9 @@ public static class GraphicsProgramArtifactCodec
         bool depthWrite = ReadBoolean(reader);
         byte mask = reader.ReadByte();
         if ((mask & ~0xF) != 0)
+        {
             throw new InvalidDataException("A graphics program color mask is invalid.");
+        }
         bool multisampling = ReadBoolean(reader);
         var blend = new RenderBlendState
         {

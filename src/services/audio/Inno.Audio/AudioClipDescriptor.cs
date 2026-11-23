@@ -32,7 +32,7 @@ public readonly record struct AudioClipDescriptor
     /// The load mode is undefined or a channel, rate, frame, or byte count is outside its valid range.
     /// </exception>
     public AudioClipDescriptor(
-        AudioCodecId codec,
+        AudioCodecID codec,
         AudioClipLoadMode loadMode,
         int channels,
         int sampleRate,
@@ -40,9 +40,13 @@ public readonly record struct AudioClipDescriptor
         long encodedByteLength
     ) {
         if (!codec.isValid)
+        {
             throw new ArgumentException("A valid codec identifier is required.", nameof(codec));
+        }
         if (!Enum.IsDefined(loadMode))
+        {
             throw new ArgumentOutOfRangeException(nameof(loadMode));
+        }
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(channels);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sampleRate);
         ArgumentOutOfRangeException.ThrowIfNegative(frameCount);
@@ -58,7 +62,7 @@ public readonly record struct AudioClipDescriptor
     /// <summary>
     /// Gets the encoded codec protocol.
     /// </summary>
-    public AudioCodecId codec { get; }
+    public AudioCodecID codec { get; }
 
     /// <summary>
     /// Gets the required storage strategy.
@@ -84,5 +88,4 @@ public readonly record struct AudioClipDescriptor
     /// Gets the encoded artifact length in bytes.
     /// </summary>
     public long encodedByteLength { get; }
-
 }

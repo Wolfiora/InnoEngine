@@ -7,14 +7,26 @@ namespace Inno.Core.Serialization;
 /// </summary>
 public sealed class SerializedProperty
 {
-    #region Backing Delegates
-
     private readonly Func<object?> m_getter;
     private readonly Action<object?> m_setter;
 
-    #endregion
-
-    #region Public State
+    internal SerializedProperty(
+        string name,
+        Type propertyType,
+        Func<object?> getter,
+        Action<object?> setter,
+        PropertyVisibility visibility,
+        bool canRead,
+        bool canWrite
+    ) {
+        this.name = name;
+        this.propertyType = propertyType;
+        this.visibility = visibility;
+        this.canRead = canRead;
+        this.canWrite = canWrite;
+        m_getter = getter;
+        m_setter = setter;
+    }
 
     /// <summary>
     /// Gets the display and serialization key name.
@@ -41,32 +53,6 @@ public sealed class SerializedProperty
     /// </summary>
     public bool canWrite { get; }
 
-    #endregion
-
-    #region Construction
-
-    internal SerializedProperty(
-        string name,
-        Type propertyType,
-        Func<object?> getter,
-        Action<object?> setter,
-        PropertyVisibility visibility,
-        bool canRead,
-        bool canWrite
-    ) {
-        this.name = name;
-        this.propertyType = propertyType;
-        this.visibility = visibility;
-        this.canRead = canRead;
-        this.canWrite = canWrite;
-        m_getter = getter;
-        m_setter = setter;
-    }
-
-    #endregion
-
-    #region Public API
-
     /// <summary>
     /// Gets the current value.
     /// </summary>
@@ -79,7 +65,9 @@ public sealed class SerializedProperty
     public object? GetValue()
     {
         if (!canRead)
+        {
             throw new InvalidOperationException($"Serialized property '{name}' does not permit runtime reads.");
+        }
         return m_getter();
     }
 
@@ -95,9 +83,9 @@ public sealed class SerializedProperty
     public void SetValue(object? value)
     {
         if (!canWrite)
+        {
             throw new InvalidOperationException($"Serialized property '{name}' does not permit runtime writes.");
+        }
         m_setter(value);
     }
-
-    #endregion
 }

@@ -32,8 +32,9 @@ internal sealed class AssemblyModuleEntry
             assemblies
                 .Select(static assembly => assembly.GetName().Name ?? assembly.FullName ?? "Unknown")
                 .OrderBy(static name => name, StringComparer.Ordinal)
-                .ToArray())
-        {
-            upstreamModuleNames = upstreamModuleNames
-        };
+                .ToArray()
+        )
+    {
+        upstreamModuleNames = upstreamModuleNames
+    };
 }

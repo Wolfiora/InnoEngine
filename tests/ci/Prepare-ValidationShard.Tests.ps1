@@ -5,13 +5,13 @@ $originalOutput = $env:GITHUB_OUTPUT
 try {
     foreach ($case in $cases) {
         $root = Join-Path $owner $case
-        $scripts = Join-Path $root 'tests/ci'
+        $scripts = Join-Path $root 'tools/ci'
         $received = Join-Path $root 'artifacts/validation/received'
         $attempt = if ($case -ceq 'future-attempt') { 3 } else { 1 }
         $planDirectory = Join-Path $received "validation-plan-fixture-attempt-$attempt"
         $entryDirectory = Join-Path $received "validation-entry-fixture-attempt-$attempt"
         New-Item -ItemType Directory -Path $scripts, $planDirectory, $entryDirectory -Force | Out-Null
-        Copy-Item -LiteralPath "$PSScriptRoot/Prepare-ValidationShard.ps1", "$PSScriptRoot/Select-ValidationArtifact.ps1" -Destination $scripts
+        Copy-Item -LiteralPath "$PSScriptRoot/../../tools/ci/Prepare-ValidationShard.ps1", "$PSScriptRoot/../../tools/ci/Select-ValidationArtifact.ps1" -Destination $scripts
         'prepared entry bytes' | Set-Content (Join-Path $entryDirectory 'ValidationEntry.dll')
         $entry = 'artifacts/validation/bootstrap/outputs/bin/ValidationEntry/debug/ValidationEntry.dll'
         if ($case -ceq 'escaped-entry') { $entry = 'src/ValidationEntry.dll' }

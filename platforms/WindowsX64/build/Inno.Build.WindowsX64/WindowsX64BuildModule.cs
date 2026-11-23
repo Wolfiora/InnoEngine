@@ -14,7 +14,13 @@ public static class WindowsX64BuildModule
     /// Gets the explicit implemented product target, independent of the tool execution host.
     /// </summary>
     public static PlatformTargetDescriptor target { get; } = new(
-        new BuildTargetId("windows-x64"), "Windows", "x64", "msvc-x64", "win-x64", true);
+        new BuildTargetID("windows-x64"),
+        "Windows",
+        "x64",
+        "msvc-x64",
+        "win-x64",
+        true
+    );
 
     /// <summary>
     /// Contributes the platform's target, product inputs and SDK resolver as one registration.
@@ -51,11 +57,15 @@ public static class WindowsX64BuildModule
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(nativePlan);
         ArgumentNullException.ThrowIfNull(editorNativePlan);
-        return new(target,
+        return new(
+            target,
             () => new WindowsX64GameBuildTarget(supportPackValidator),
-            new WindowsX64PlayerSupportPackSource(nativePlan, context.host, context.dotnetHost, bindingGenerator, supportPackValidator), new WindowsX64NativeToolchainProvider(context.dotnetHost),
+            new WindowsX64PlayerSupportPackSource(nativePlan, context.host, context.dotnetHost, bindingGenerator, supportPackValidator),
+            new WindowsX64NativeToolchainProvider(context.dotnetHost),
             "platforms/WindowsX64/editor/Inno.Editor.WindowsX64/Inno.Editor.WindowsX64.csproj",
-            [nativePlan, editorNativePlan, shaderToolsPlan], bindingGenerator,
-            [ManagedDeploymentId.coreClr, ManagedDeploymentId.nativeAot]);
+            [nativePlan, editorNativePlan, shaderToolsPlan],
+            bindingGenerator,
+            [ManagedDeploymentID.coreClr, ManagedDeploymentID.nativeAot]
+        );
     }
 }

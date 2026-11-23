@@ -11,13 +11,17 @@ internal sealed class NativeInputVerificationScope
     internal NativeInputVerificationScope(
         NativeBuildInputState state,
         string phase
-    ) => m_inputs = new NativeInputReadCache(state, phase);
+    ) {
+        m_inputs = new NativeInputReadCache(state, phase);
+    }
 
     internal NativeInputSnapshot Capture(
         IEnumerable<NativeBuildInput> inputs,
         CancellationToken cancellationToken
     ) {
         lock (m_gate)
+        {
             return NativeInputSnapshot.Capture(inputs, m_inputs, cancellationToken);
+        }
     }
 }

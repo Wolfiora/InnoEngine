@@ -18,7 +18,9 @@ internal static class DocumentationPreparedExports
     ) => "prepared/1/" + project + "/" + input + "/" + configuration + "/" + target;
 
     internal static string ScriptIdentity(IReadOnlyDictionary<string, string> inputs)
-        => Convert.ToHexStringLower(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(inputs.OrderBy(pair => pair.Key, StringComparer.Ordinal))));
+        => Convert.ToHexStringLower(
+            SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(inputs.OrderBy(pair => pair.Key, StringComparer.Ordinal)))
+        );
 
     internal static void Record(
         string root,
@@ -30,7 +32,9 @@ internal static class DocumentationPreparedExports
         JsonElement data = receipt.RootElement;
         string configuration = data.GetProperty("configuration").GetString()!;
         if (plan.RootElement.GetProperty("configuration").GetString() != configuration)
+        {
             throw new InvalidDataException("Prepared export plan differs from its completed context.");
+        }
         using var cache = new DocumentationExportCache(root, cancellationToken);
         foreach (JsonElement capture in data.GetProperty("captures").EnumerateArray())
         {
@@ -38,7 +42,9 @@ internal static class DocumentationPreparedExports
             if (name != Path.GetFileName(name)) throw new InvalidDataException("Invalid prepared capture path.");
             byte[] bytes = File.ReadAllBytes(Path.Combine(completed, name));
             if (Convert.ToHexStringLower(SHA256.HashData(bytes)) != capture.GetProperty("sha256").GetString())
+            {
                 throw new InvalidDataException("Completed capture digest changed.");
+            }
             using JsonDocument facts = JsonDocument.Parse(bytes);
             string target = capture.GetProperty("target").GetString()!;
             string model = capture.GetProperty("model").GetString()!;
@@ -50,13 +56,26 @@ internal static class DocumentationPreparedExports
                     string input = plan.RootElement.GetProperty("inputIdentities").GetProperty(owner).GetString()!;
                     cache.Capture(owner, Key(owner, input, configuration, target), () => new
                     {
-                        fact = project.Clone(), producerRevision = data.GetProperty("revision").GetString(), inputIdentity = input
+                        fact = project.Clone(),
+                        producerRevision = data.GetProperty("revision").GetString(),
+                        inputIdentity = input
                     }, cancellationToken);
                 }
             }
-            else cache.Capture(model, Key(model, plan.RootElement.GetProperty("scriptInputIdentity").GetString()!, configuration, target),
-                () => new { fact = facts.RootElement.Clone(), producerRevision = data.GetProperty("revision").GetString(),
-                    inputIdentity = plan.RootElement.GetProperty("scriptInputIdentity").GetString() }, cancellationToken);
+            else
+            {
+                cache.Capture(
+                    model,
+                    Key(model, plan.RootElement.GetProperty("scriptInputIdentity").GetString()!, configuration, target),
+                    () => new
+                    {
+                        fact = facts.RootElement.Clone(),
+                        producerRevision = data.GetProperty("revision").GetString(),
+                        inputIdentity = plan.RootElement.GetProperty("scriptInputIdentity").GetString()
+                    },
+                    cancellationToken
+                );
+            }
         }
         cache.Report();
     }

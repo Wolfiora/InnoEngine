@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using Inno.Native.ImGui;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
@@ -39,19 +40,23 @@ public sealed unsafe partial class ImGuiWidget
         m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(label);
         if (offset < 0 || (values.Length == 0 ? offset != 0 : offset >= values.Length))
+        {
             throw new ArgumentOutOfRangeException(nameof(offset));
+        }
         float maximum = 0f;
         float minimum = 0f;
         foreach (float value in values)
         {
             if (!float.IsFinite(value))
+            {
                 throw new ArgumentException("Trend samples must be finite.", nameof(values));
+            }
             maximum = MathF.Max(maximum, value);
             minimum = MathF.Min(minimum, value);
         }
         NativeImGui.TextUnformatted(label);
         Vector2 origin = NativeImGui.GetCursorScreenPos();
-        Vector2 size = new(MathF.Max(1f, NativeImGui.GetContentRegionAvail().X), style.trendHeight);
+        var size = new Vector2(MathF.Max(1f, NativeImGui.GetContentRegionAvail().X), style.trendHeight);
         _ = NativeImGui.InvisibleButton(label, size);
         EditorDrawList draw = ImGui.GetDrawList();
         draw.FilledRectangle(origin, origin + size, NativeImGui.ColorConvertFloat4ToU32(EditorPalette.collectionRow));
@@ -65,7 +70,9 @@ public sealed unsafe partial class ImGuiWidget
             float normalized = (float)(((double)value - minimum) / range);
             Vector2 point = origin + new Vector2(x * size.X, (1f - normalized) * size.Y);
             if (index > 0)
+            {
                 draw.Line(previous, point, color);
+            }
             previous = point;
         }
     }

@@ -6,24 +6,25 @@ namespace Inno.Scripting.Compiler;
 
 internal static class ScriptTypeIdentity
 {
-    private static readonly Guid C_SCRIPT_SOURCE_NAMESPACE =
-        Guid.Parse("6ca29f90-69d4-4f27-b42b-fdad7cc10e6a");
+    private static readonly Guid SCRIPT_SOURCE_NAMESPACE = Guid.Parse("6ca29f90-69d4-4f27-b42b-fdad7cc10e6a");
 
-    internal static Guid CreateCanonical(Guid sourcePersistentId)
+    internal static Guid CreateCanonical(Guid sourcePersistentID)
     {
-        if (sourcePersistentId == Guid.Empty)
-            throw new ArgumentException("A script source identity is required.", nameof(sourcePersistentId));
-        return CreateGuidV5(C_SCRIPT_SOURCE_NAMESPACE, sourcePersistentId.ToString("D"));
+        if (sourcePersistentID == Guid.Empty)
+        {
+            throw new ArgumentException("A script source identity is required.", nameof(sourcePersistentID));
+        }
+        return CreateGuidV5(SCRIPT_SOURCE_NAMESPACE, sourcePersistentID.ToString("D"));
     }
 
     private static Guid CreateGuidV5(
-        Guid namespaceId,
+        Guid namespaceID,
         string name
     ) {
-        byte[] namespaceBytes = namespaceId.ToByteArray();
+        byte[] namespaceBytes = namespaceID.ToByteArray();
         SwapGuidByteOrder(namespaceBytes);
         byte[] nameBytes = Encoding.UTF8.GetBytes(name);
-        byte[] data = new byte[namespaceBytes.Length + nameBytes.Length];
+        var data = new byte[namespaceBytes.Length + nameBytes.Length];
         Buffer.BlockCopy(namespaceBytes, 0, data, 0, namespaceBytes.Length);
         Buffer.BlockCopy(nameBytes, 0, data, namespaceBytes.Length, nameBytes.Length);
 

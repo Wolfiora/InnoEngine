@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
-
 using Inno.Core.Execution;
 using Inno.Extensibility.Modules;
 
@@ -14,7 +13,7 @@ namespace Inno.Core.Logging;
 /// </summary>
 public sealed class LogRouter : IDisposable
 {
-    private static readonly ExecutionSlot<LogRouter> S_CURRENT_SCOPE = new("router");
+    private static readonly ExecutionSlot<LogRouter> CURRENT_SCOPE = new("router");
 
     private readonly List<ILogSink> m_sinks = [];
     private readonly Lock m_sinksLock = new();
@@ -29,18 +28,8 @@ public sealed class LogRouter : IDisposable
     private volatile bool m_running = true;
     private volatile LogLevel m_minimumLevel = LogLevel.Debug;
     private volatile bool m_disposed;
-    private int m_deliveryThreadId;
+    private int m_deliveryThreadID;
     private ILogSink[] m_sinkSnapshot = [];
-
-    /// <summary>
-    /// Occurs after a failing sink has been quarantined from this router.
-    /// </summary>
-    /// <remarks>
-    /// Quarantine removes the sink from delivery but does not dispose it. The host must retain
-    /// responsibility for safely releasing a removed sink. Observers run within delivery and
-    /// must not flush or dispose this router from their callback.
-    /// </remarks>
-    public event Action<ILogSink, Exception>? sinkFailed;
 
     /// <summary>
     /// Creates an isolated logging router with an explicit delivery policy.
@@ -58,14 +47,16 @@ public sealed class LogRouter : IDisposable
     /// A capacity or budget is not positive, or the delivery policy is not a defined mode.
     /// </exception>
     public LogRouter(
-        int queueCapacity = 65536,
+        int queueCapacity = 65_536,
         int drainBudget = 4096,
         LogDeliveryMode deliveryMode = LogDeliveryMode.Background
     ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(queueCapacity);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(drainBudget);
         if (!Enum.IsDefined(deliveryMode))
+        {
             throw new ArgumentOutOfRangeException(nameof(deliveryMode));
+        }
         m_queueCapacity = queueCapacity;
         m_drainBudget = drainBudget;
         if (deliveryMode == LogDeliveryMode.Background)
@@ -79,7 +70,15 @@ public sealed class LogRouter : IDisposable
         }
     }
 
-    internal static LogRouter current => S_CURRENT_SCOPE.current;
+    /// <summary>
+    /// Occurs after a failing sink has been quarantined from this router.
+    /// </summary>
+    /// <remarks>
+    /// Quarantine removes the sink from delivery but does not dispose it. The host must retain
+    /// responsibility for safely releasing a removed sink. Observers run within delivery and
+    /// must not flush or dispose this router from their callback.
+    /// </remarks>
+    public event Action<ILogSink, Exception>? sinkFailed;
 
     /// <summary>
     /// Binds this router to the current asynchronous execution context.
@@ -93,7 +92,7 @@ public sealed class LogRouter : IDisposable
     public IDisposable EnterScope()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        return S_CURRENT_SCOPE.Enter(this);
+        return CURRENT_SCOPE.Enter(this);
     }
 
     /// <summary>
@@ -126,24 +125,26 @@ public sealed class LogRouter : IDisposable
     /// <summary>
     /// Removes a sink from subsequent delivery snapshots without disposing it.
     /// </summary>
-    /// <remarks>
-    /// An in-flight batch may still borrow the previous snapshot. This operation does not wait
-    /// for its callbacks; the host must coordinate quiescence before releasing sink resources.
-    /// Router disposal releases only sinks that remain registered.
-    /// </remarks>
     /// <param name="sink">
     /// The sink to remove when registered.
     /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="sink"/> is null.
     /// </exception>
+    /// <remarks>
+    /// An in-flight batch may still borrow the previous snapshot. This operation does not wait
+    /// for its callbacks; the host must coordinate quiescence before releasing sink resources.
+    /// Router disposal releases only sinks that remain registered.
+    /// </remarks>
     public void UnregisterSink(ILogSink sink)
     {
         ArgumentNullException.ThrowIfNull(sink);
         lock (m_sinksLock)
         {
             if (m_sinks.Remove(sink))
+            {
                 Volatile.Write(ref m_sinkSnapshot, m_sinks.ToArray());
+            }
         }
     }
 
@@ -182,7 +183,8 @@ public sealed class LogRouter : IDisposable
             this,
             ownerType.Assembly.GetInnoAssemblyDomain(),
             ownerType.Assembly.GetInnoAssemblyScope(),
-            ownerType.Name);
+            ownerType.Name
+        );
     }
 
     /// <summary>
@@ -200,7 +202,9 @@ public sealed class LogRouter : IDisposable
     public void Dispatch(LogEntry entry)
     {
         if (!TryDispatch(entry))
+        {
             throw new InvalidOperationException("The log queue is full; the producer must apply backpressure.");
+        }
     }
 
     /// <summary>
@@ -212,26 +216,32 @@ public sealed class LogRouter : IDisposable
     /// <returns>
     /// True when accepted or filtered by policy; false when bounded queue capacity is exhausted.
     /// </returns>
+    /// <exception cref="ObjectDisposedException">
+    /// The router has stopped accepting work.
+    /// </exception>
     /// <remarks>
     /// Inline callers serialize delivery. Entries written by a sink callback are queued until
     /// every sink has received the current entry, without recursively invoking callbacks.
     /// </remarks>
-    /// <exception cref="ObjectDisposedException">
-    /// The router has stopped accepting work.
-    /// </exception>
     public bool TryDispatch(LogEntry entry)
     {
         lock (m_queueSync)
         {
             ObjectDisposedException.ThrowIf(m_disposed, this);
             if (!IsEnabled(entry.level))
+            {
                 return true;
+            }
             if (m_queue.Count >= m_queueCapacity)
+            {
                 return false;
+            }
             Enqueue(WorkItem.ForEntry(entry));
         }
         if (m_worker is null)
+        {
             DrainInline();
+        }
         return true;
     }
 
@@ -253,11 +263,15 @@ public sealed class LogRouter : IDisposable
         {
             ObjectDisposedException.ThrowIf(m_disposed, this);
             if (m_queue.Count >= m_queueCapacity)
+            {
                 throw new InvalidOperationException("The log queue is full; retry the flush after the worker drains pending entries.");
+            }
             Enqueue(WorkItem.ForBarrier(completion));
         }
         if (m_worker is null)
+        {
             DrainInline();
+        }
         completion.Wait();
     }
 
@@ -274,8 +288,12 @@ public sealed class LogRouter : IDisposable
     {
         EnsureOutsideDelivery("dispose");
         lock (m_disposalSync)
+        {
             DisposeCore();
+        }
     }
+
+    internal static LogRouter current => CURRENT_SCOPE.current;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool IsEnabled(LogLevel level) => level >= m_minimumLevel;
@@ -285,14 +303,18 @@ public sealed class LogRouter : IDisposable
         lock (m_queueSync)
         {
             if (m_disposed)
+            {
                 return;
+            }
             m_disposed = true;
             m_running = false;
             m_signal.Release();
         }
         m_worker?.Join();
         if (m_worker is null)
+        {
             DrainInline();
+        }
         ILogSink[] sinks;
         lock (m_sinksLock)
         {
@@ -305,7 +327,9 @@ public sealed class LogRouter : IDisposable
         for (int index = 0; index < sinks.Length; index++)
         {
             if (sinks[index] is not IDisposable disposable)
+            {
                 continue;
+            }
             try
             {
                 disposable.Dispose();
@@ -318,12 +342,14 @@ public sealed class LogRouter : IDisposable
         }
         m_signal.Dispose();
         if (failures is not null)
+        {
             throw new AggregateException("One or more log sinks failed to dispose.", failures);
+        }
     }
 
     private void ProcessQueue()
     {
-        Volatile.Write(ref m_deliveryThreadId, Environment.CurrentManagedThreadId);
+        Volatile.Write(ref m_deliveryThreadID, Environment.CurrentManagedThreadId);
         try
         {
             while (true)
@@ -331,12 +357,14 @@ public sealed class LogRouter : IDisposable
                 m_signal.Wait();
                 DrainQueue();
                 if (!m_running && m_queue.IsEmpty)
+                {
                     return;
+                }
             }
         }
         finally
         {
-            Volatile.Write(ref m_deliveryThreadId, 0);
+            Volatile.Write(ref m_deliveryThreadID, 0);
         }
     }
 
@@ -344,32 +372,40 @@ public sealed class LogRouter : IDisposable
     {
         lock (m_inlineDeliverySync)
         {
-            if (m_deliveryThreadId != 0)
+            if (m_deliveryThreadID != 0)
+            {
                 return;
-            Volatile.Write(ref m_deliveryThreadId, Environment.CurrentManagedThreadId);
+            }
+            Volatile.Write(ref m_deliveryThreadID, Environment.CurrentManagedThreadId);
             try
             {
                 while (!m_queue.IsEmpty)
+                {
                     DrainQueue();
+                }
             }
             finally
             {
-                Volatile.Write(ref m_deliveryThreadId, 0);
+                Volatile.Write(ref m_deliveryThreadID, 0);
             }
         }
     }
 
     private void EnsureOutsideDelivery(string operation)
     {
-        if (Volatile.Read(ref m_deliveryThreadId) == Environment.CurrentManagedThreadId)
+        if (Volatile.Read(ref m_deliveryThreadID) == Environment.CurrentManagedThreadId)
+        {
             throw new InvalidOperationException($"A log delivery callback cannot {operation} its own router.");
+        }
     }
 
     private void Enqueue(WorkItem item)
     {
         m_queue.Enqueue(item);
         if (m_worker is not null)
+        {
             m_signal.Release();
+        }
     }
 
     private void DrainQueue()
@@ -387,7 +423,9 @@ public sealed class LogRouter : IDisposable
             for (int index = 0; index < sinks.Length; index++)
             {
                 if (quarantined?.Contains(sinks[index]) == true)
+                {
                     continue;
+                }
                 try
                 {
                     sinks[index].Receive(item.entry);
@@ -413,8 +451,7 @@ public sealed class LogRouter : IDisposable
         Action<ILogSink, Exception>? handlers = sinkFailed;
         if (handlers is null)
         {
-            ReportFailureToConsole(
-                $"Log sink '{sink.GetType().FullName}' failed and was quarantined: {exception}");
+            ReportFailureToConsole($"Log sink '{sink.GetType().FullName}' failed and was quarantined: {exception}");
             return;
         }
         foreach (Delegate handler in handlers.GetInvocationList())
@@ -426,7 +463,8 @@ public sealed class LogRouter : IDisposable
             catch (Exception observerFailure)
             {
                 ReportFailureToConsole(
-                    $"Log sink failure observer '{handler.Method.DeclaringType?.FullName}' failed: {observerFailure}");
+                    $"Log sink failure observer '{handler.Method.DeclaringType?.FullName}' failed: {observerFailure}"
+                );
             }
         }
     }
@@ -451,5 +489,4 @@ public sealed class LogRouter : IDisposable
 
         internal static WorkItem ForBarrier(ManualResetEventSlim completion) => new(default, completion);
     }
-
 }

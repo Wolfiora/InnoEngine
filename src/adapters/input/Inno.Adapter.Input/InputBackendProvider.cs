@@ -21,17 +21,19 @@ public abstract class InputBackendProvider
     /// <exception cref="ArgumentException">
     /// The identity is unassigned.
     /// </exception>
-    protected InputBackendProvider(InputBackendId id)
+    protected InputBackendProvider(InputBackendID id)
     {
         if (!id.isValid)
+        {
             throw new ArgumentException("A provider requires an assigned backend ID.", nameof(id));
+        }
         this.id = id;
     }
 
     /// <summary>
     /// Gets this registration's immutable implementation identity.
     /// </summary>
-    public InputBackendId id { get; }
+    public InputBackendID id { get; }
 
     /// <summary>
     /// Creates a caller-owned input service using this implementation.
@@ -50,4 +52,3 @@ public abstract class InputBackendProvider
         bool acceptAllWindows
     );
 }
-

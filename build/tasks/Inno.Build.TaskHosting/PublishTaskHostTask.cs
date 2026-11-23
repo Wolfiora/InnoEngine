@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
 
@@ -16,7 +17,7 @@ namespace Inno.Build.TaskHosting;
 /// Publishes one immutable task runtime per content identity before a build loads its private closure.
 /// This bootstrap depends only on filesystem primitives and never loads the task runtime being built.
 /// </summary>
-public sealed partial class PublishTaskHostTask : Microsoft.Build.Utilities.Task, ICancelableTask
+public sealed partial class PublishTaskHostTask : Task, ICancelableTask
 {
     private readonly object m_cancellationGate = new();
     private readonly CancellationTokenSource m_cancellation = new();
@@ -83,25 +84,42 @@ public sealed partial class PublishTaskHostTask : Microsoft.Build.Utilities.Task
             var publisherCache = new BuildCachePublisher(cache, BuildCacheArtifactRole.ImmutableArtifact);
             using FileLease activity = publisherCache.AcquireUseAsync(cancellation).AsTask().GetAwaiter().GetResult();
             bool prepared = BuildEngine is IBuildEngine4 engine
-                && TaskRuntimeBuildScope.Read(engine, "publication:" + cache + "/" + fingerprint, load, verifyOutputs: false, cancellation: cancellation)
-                    is ITaskItem[] publication
-                && publication.Length == files.Length
-                && publication.Zip(files).All(static pair => pair.First.ItemSpec == pair.Second.source
-                    && pair.First.GetMetadata("RelativePath") == pair.Second.relative
-                    && pair.First.GetMetadata("FileHash") == pair.Second.hash);
+                            && TaskRuntimeBuildScope.Read(
+                                engine,
+                                "publication:" + cache + "/" + fingerprint,
+                                load,
+                                verifyOutputs: false,
+                                cancellationToken: cancellation
+                            )
+                                is ITaskItem[] publication
+                            && publication.Length == files.Length
+                            && publication.Zip(files).All(static pair => (
+                                pair.First.ItemSpec == pair.Second.source
+                                && pair.First.GetMetadata("RelativePath") == pair.Second.relative
+                                && pair.First.GetMetadata("FileHash") == pair.Second.hash
+                            ));
             if (!prepared)
             {
-                using FileLease ownership = FileLease.AcquireAsync(destination + ".lock",
-                    Timeout.InfiniteTimeSpan, cancellation).AsTask().GetAwaiter().GetResult();
+                using FileLease ownership = FileLease.AcquireAsync(
+                    destination + ".lock",
+                    Timeout.InfiniteTimeSpan,
+                    cancellation
+                ).AsTask().GetAwaiter().GetResult();
                 TaskRuntimePreparation.ValidateSources(files, cancellation);
                 if (!TaskRuntimePreparation.IsComplete(Path.Combine(destination, "Runtime"), files, cancellation))
+                {
                     TaskRuntimePreparation.PublishCandidate(destination, files, cancellation);
+                }
                 TaskRuntimePreparation.ValidateSources(files, cancellation);
             }
             PublishedAssembly = Path.Combine(destination, "Runtime", "Inno.Build.Tasks.dll");
             using (FileLease ownership = FileLease.AcquireAsync(destination + ".lock", Timeout.InfiniteTimeSpan, cancellation)
-                .AsTask().GetAwaiter().GetResult())
+                .AsTask()
+                .GetAwaiter()
+                .GetResult()
+            ) {
                 publisherCache.Record(destination, destination + ".lock", [], null, null, cancellation);
+            }
             RegisterReader(load, PublishedAssembly);
             Log.LogMessage(MessageImportance.Normal, "INNO-TASK-HOST verified {0}", fingerprint);
             return true;
@@ -127,15 +145,22 @@ public sealed partial class PublishTaskHostTask : Microsoft.Build.Utilities.Task
     public void Cancel()
     {
         lock (m_cancellationGate)
+        {
             if (!m_finished)
+            {
                 m_cancellation.Cancel();
+            }
+        }
     }
 
     private TaskRuntimePreparation.RuntimeFile[] FreezeFiles() => TaskRuntimePreparation.FreezeFiles(InputFiles);
+
     private static string RequireAbsolute(string path) => TaskRuntimePreparation.RequireAbsolute(path);
+
     private static void RegisterReader(
         string load,
         string assembly
     ) => TaskRuntimePreparation.RegisterReader(load, assembly);
+
     private static void RegisterProcessOwner(string directory) => TaskRuntimePreparation.RegisterProcessOwner(directory);
 }

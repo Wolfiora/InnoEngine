@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
 using Inno.Assets;
 using Inno.Core.Serialization;
 using Inno.Scene;
@@ -23,22 +22,18 @@ internal static class PrefabOverrideProcessor
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(storageReferences);
         if (connection.sourceAsset.isMissing || connection.sourceAsset.runtimePayload.IsEmpty)
+        {
             return connection.overrides;
+        }
 
-        (GameScene sourceScene, _, PrefabConnectionRecord sourceConnection) =
-            InstantiateSource(connection.sourceAsset, context);
+        (GameScene sourceScene, _, PrefabConnectionRecord sourceConnection) = InstantiateSource(connection.sourceAsset, context);
         try
         {
             SceneGraphReferenceMap currentReferences = CreateComparisonReferences(scene, connection);
             SceneGraphReferenceMap sourceReferences = CreateComparisonReferences(sourceScene, sourceConnection);
             var overrides = new PrefabOverrideSet();
 
-            CaptureObjectOverrides(
-                connection,
-                sourceConnection,
-                scene,
-                sourceScene,
-                overrides);
+            CaptureObjectOverrides(connection, sourceConnection, scene, sourceScene, overrides);
             CaptureAdditions(connection, scene, overrides);
             CaptureComponentOverrides(
                 connection,
@@ -49,7 +44,8 @@ internal static class PrefabOverrideProcessor
                 currentReferences,
                 sourceReferences,
                 storageReferences,
-                overrides);
+                overrides
+            );
             PreserveOrphanedOverrides(connection.overrides, sourceConnection, overrides);
             connection.overrides = overrides;
             return overrides;
@@ -57,7 +53,9 @@ internal static class PrefabOverrideProcessor
         finally
         {
             if (!sourceScene.isDestroyed)
+            {
                 sourceScene.Unload();
+            }
         }
     }
 
@@ -76,8 +74,7 @@ internal static class PrefabOverrideProcessor
         }
 
         GameScene scene = instanceRoot.scene;
-        (GameScene sourceScene, _, PrefabConnectionRecord sourceConnection) =
-            InstantiateSource(connection.sourceAsset, context);
+        (GameScene sourceScene, _, PrefabConnectionRecord sourceConnection) = InstantiateSource(connection.sourceAsset, context);
         try
         {
             MarkOrphanedOverrides(connection, sourceConnection, sourceScene, context);
@@ -95,14 +92,17 @@ internal static class PrefabOverrideProcessor
                 sourceScene,
                 context,
                 sourceReferences,
-                targetReferences);
+                targetReferences
+            );
             RestoreSourceObjectState(connection, sourceConnection, scene, sourceScene, instanceRoot);
             RefreshInstanceInfo(connection, instanceRoot);
         }
         finally
         {
             if (!sourceScene.isDestroyed)
+            {
                 sourceScene.Unload();
+            }
         }
     }
 
@@ -113,32 +113,44 @@ internal static class PrefabOverrideProcessor
         GameScene sourceScene,
         PrefabOverrideSet overrides
     ) {
-        foreach ((Guid sourceId, Guid sourceRuntimeId) in sourceConnection.objectIdentities)
+        foreach ((Guid sourceID, Guid sourceRuntimeID) in sourceConnection.objectIdentities)
         {
-            GameObject? sourceObject = sourceScene.FindObject(sourceRuntimeId);
-            GameObject? currentObject = connection.objectIdentities.TryGetValue(sourceId, out Guid currentRuntimeId)
-                ? scene.FindObject(currentRuntimeId)
-                : null;
+            GameObject? sourceObject = sourceScene.FindObject(sourceRuntimeID);
+            GameObject? currentObject = connection.objectIdentities.TryGetValue(sourceID, out Guid currentRuntimeID)
+                                        ? scene.FindObject(currentRuntimeID)
+                                        : null;
             if (sourceObject is null)
+            {
                 continue;
+            }
             if (currentObject is null)
             {
-                overrides.MarkObjectRemoved(sourceId);
+                overrides.MarkObjectRemoved(sourceID);
                 continue;
             }
 
             PrefabObjectOverrideKind kind = PrefabObjectOverrideKind.None;
             if (!string.Equals(currentObject.name, sourceObject.name, StringComparison.Ordinal))
+            {
                 kind |= PrefabObjectOverrideKind.Name;
+            }
             if (!string.Equals(currentObject.tag, sourceObject.tag, StringComparison.Ordinal))
+            {
                 kind |= PrefabObjectOverrideKind.Tag;
+            }
             if (currentObject.activeSelf != sourceObject.activeSelf)
+            {
                 kind |= PrefabObjectOverrideKind.ActiveSelf;
-            if (GetMappedParentId(currentObject, connection) != GetMappedParentId(sourceObject, sourceConnection))
+            }
+            if (GetMappedParentID(currentObject, connection) != GetMappedParentID(sourceObject, sourceConnection))
+            {
                 kind |= PrefabObjectOverrideKind.Parent;
+            }
             if (currentObject.transform.siblingIndex != sourceObject.transform.siblingIndex)
+            {
                 kind |= PrefabObjectOverrideKind.SiblingIndex;
-            overrides.SetStructure(sourceId, kind);
+            }
+            overrides.SetStructure(sourceID, kind);
         }
     }
 
@@ -153,22 +165,26 @@ internal static class PrefabOverrideProcessor
         SceneReferenceScope storageReferences,
         PrefabOverrideSet overrides
     ) {
-        foreach ((Guid sourceId, Guid sourceRuntimeId) in sourceConnection.componentIdentities)
+        foreach ((Guid sourceID, Guid sourceRuntimeID) in sourceConnection.componentIdentities)
         {
-            GameComponent? sourceComponent = sourceScene.FindComponent(sourceRuntimeId);
-            GameComponent? currentComponent = connection.componentIdentities.TryGetValue(sourceId, out Guid currentRuntimeId)
-                ? scene.FindComponent(currentRuntimeId)
-                : null;
+            GameComponent? sourceComponent = sourceScene.FindComponent(sourceRuntimeID);
+            GameComponent? currentComponent = connection.componentIdentities.TryGetValue(sourceID, out Guid currentRuntimeID)
+                                              ? scene.FindComponent(currentRuntimeID)
+                                              : null;
             if (sourceComponent is null)
+            {
                 continue;
+            }
             if (currentComponent is null || currentComponent.GetType() != sourceComponent.GetType())
             {
-                overrides.MarkComponentRemoved(sourceId);
+                overrides.MarkComponentRemoved(sourceID);
                 continue;
             }
 
-            IReadOnlyList<SerializationMemberMetadata> members =
-                SerializedPropertyValueCodec.GetMembers(sourceComponent.GetType(), context);
+            IReadOnlyList<SerializationMemberMetadata> members = SerializedPropertyValueCodec.GetMembers(
+                sourceComponent.GetType(),
+                context
+            );
             for (int memberIndex = 0; memberIndex < members.Count; memberIndex++)
             {
                 SerializationMemberMetadata member = members[memberIndex];
@@ -180,23 +196,28 @@ internal static class PrefabOverrideProcessor
                         member,
                         sourceComponent,
                         context,
-                        sourceReferences);
+                        sourceReferences
+                    );
                     currentValue = SerializedPropertyValueCodec.Encode(
                         member,
                         currentComponent,
                         context,
-                        currentReferences);
+                        currentReferences
+                    );
                 }
                 catch (Exception exception)
                 {
                     throw new InvalidOperationException(
-                        $"Failed to compare prefab override for GameComponent " +
-                        $"'{currentComponent.GetType().FullName}.{member.name}' on GameObject " +
-                        $"'{currentComponent.gameObject.name}'.",
-                        exception);
+                        $"Failed to compare prefab override for GameComponent "
+                        + $"'{currentComponent.GetType().FullName}.{member.name}' on GameObject "
+                        + $"'{currentComponent.gameObject.name}'.",
+                        exception
+                    );
                 }
                 if (sourceValue.AsSpan().SequenceEqual(currentValue))
+                {
                     continue;
+                }
                 byte[] persistedValue;
                 try
                 {
@@ -204,17 +225,19 @@ internal static class PrefabOverrideProcessor
                         member,
                         currentComponent,
                         context,
-                        storageReferences);
+                        storageReferences
+                    );
                 }
                 catch (Exception exception)
                 {
                     throw new InvalidOperationException(
-                        $"Failed to persist prefab override for GameComponent " +
-                        $"'{currentComponent.GetType().FullName}.{member.name}' on GameObject " +
-                        $"'{currentComponent.gameObject.name}'.",
-                        exception);
+                        $"Failed to persist prefab override for GameComponent "
+                        + $"'{currentComponent.GetType().FullName}.{member.name}' on GameObject "
+                        + $"'{currentComponent.gameObject.name}'.",
+                        exception
+                    );
                 }
-                overrides.SetProperty(new PrefabPropertyOverride(sourceId, member.name, persistedValue));
+                overrides.SetProperty(new PrefabPropertyOverride(sourceID, member.name, persistedValue));
             }
         }
     }
@@ -224,27 +247,37 @@ internal static class PrefabOverrideProcessor
         GameScene scene,
         PrefabOverrideSet overrides
     ) {
-        if (!connection.objectIdentities.TryGetValue(connection.sourceRootId, out Guid rootRuntimeId))
+        if (!connection.objectIdentities.TryGetValue(connection.sourceRootID, out Guid rootRuntimeID))
+        {
             return;
-        GameObject? root = scene.FindObject(rootRuntimeId);
+        }
+        GameObject? root = scene.FindObject(rootRuntimeID);
         if (root is null)
+        {
             return;
-        var mappedObjectIds = connection.objectIdentities.Values.ToHashSet();
-        var mappedComponentIds = connection.componentIdentities.Values.ToHashSet();
+        }
+        HashSet<Guid> mappedObjectIDs = connection.objectIdentities.Values.ToHashSet();
+        HashSet<Guid> mappedComponentIDs = connection.componentIdentities.Values.ToHashSet();
         var stack = new Stack<GameObject>();
         stack.Push(root);
         while (stack.Count != 0)
         {
             GameObject gameObject = stack.Pop();
-            if (!mappedObjectIds.Contains(gameObject.identity.persistentId))
-                overrides.MarkObjectAdded(gameObject.identity.persistentId);
+            if (!mappedObjectIDs.Contains(gameObject.identity.persistentID))
+            {
+                overrides.MarkObjectAdded(gameObject.identity.persistentID);
+            }
             foreach (GameComponent component in gameObject.GetComponents())
             {
-                if (!mappedComponentIds.Contains(component.identity.persistentId))
-                    overrides.MarkComponentAdded(component.identity.persistentId);
+                if (!mappedComponentIDs.Contains(component.identity.persistentID))
+                {
+                    overrides.MarkComponentAdded(component.identity.persistentID);
+                }
             }
             foreach (Transform child in gameObject.transform.children)
+            {
                 stack.Push(child.gameObject);
+            }
         }
     }
 
@@ -255,19 +288,23 @@ internal static class PrefabOverrideProcessor
     ) {
         foreach (PrefabPropertyOverride property in previous.properties)
         {
-            if (!sourceConnection.componentIdentities.ContainsKey(property.sourceComponentId))
+            if (!sourceConnection.componentIdentities.ContainsKey(property.sourceComponentID))
             {
-                current.SetProperty(property with
-                {
-                    value = (byte[])property.value.Clone(),
-                    isOrphaned = true
-                });
+                current.SetProperty(
+                    property with
+                    {
+                        value = (byte[])property.value.Clone(),
+                        isOrphaned = true
+                    }
+                );
             }
         }
         foreach (PrefabStructureOverride structure in previous.structures)
         {
-            if (!sourceConnection.objectIdentities.ContainsKey(structure.sourceObjectId))
-                current.SetStructure(structure.sourceObjectId, structure.kind, isOrphaned: true);
+            if (!sourceConnection.objectIdentities.ContainsKey(structure.sourceObjectID))
+            {
+                current.SetStructure(structure.sourceObjectID, structure.kind, isOrphaned: true);
+            }
         }
     }
 
@@ -280,29 +317,23 @@ internal static class PrefabOverrideProcessor
         foreach (PrefabPropertyOverride property in connection.overrides.properties.ToArray())
         {
             bool hasProperty = false;
-            if (sourceConnection.componentIdentities.TryGetValue(
-                    property.sourceComponentId,
-                    out Guid sourceRuntimeId) &&
-                sourceScene.FindComponent(sourceRuntimeId) is GameComponent sourceComponent)
-            {
+            if (sourceConnection.componentIdentities.TryGetValue(property.sourceComponentID, out Guid sourceRuntimeID)
+                && sourceScene.FindComponent(sourceRuntimeID) is GameComponent sourceComponent
+            ) {
                 hasProperty = SerializedPropertyValueCodec.GetMembers(sourceComponent.GetType(), context)
-                    .Any(member => string.Equals(
-                        member.name,
-                        property.propertyName,
-                        StringComparison.Ordinal));
+                    .Any(member => string.Equals(member.name, property.propertyName, StringComparison.Ordinal));
             }
             if (!hasProperty && !property.isOrphaned)
+            {
                 connection.overrides.SetProperty(property with { isOrphaned = true });
+            }
         }
         foreach (PrefabStructureOverride structure in connection.overrides.structures.ToArray())
         {
-            if (!sourceConnection.objectIdentities.ContainsKey(structure.sourceObjectId) &&
-                !structure.isOrphaned)
-            {
-                connection.overrides.SetStructure(
-                    structure.sourceObjectId,
-                    structure.kind,
-                    isOrphaned: true);
+            if (!sourceConnection.objectIdentities.ContainsKey(structure.sourceObjectID)
+                && !structure.isOrphaned
+            ) {
+                connection.overrides.SetStructure(structure.sourceObjectID, structure.kind, isOrphaned: true);
             }
         }
     }
@@ -313,28 +344,35 @@ internal static class PrefabOverrideProcessor
         GameScene scene,
         GameObject instanceRoot
     ) {
-        Guid[] removedSourceIds = connection.objectIdentities.Keys
-            .Where(sourceId =>
-                connection.overrides.IsObjectRemoved(sourceId) ||
-                !sourceConnection.objectIdentities.ContainsKey(sourceId))
+        Guid[] removedSourceIDs = connection.objectIdentities.Keys
+            .Where(sourceID => (
+                connection.overrides.IsObjectRemoved(sourceID)
+                || !sourceConnection.objectIdentities.ContainsKey(sourceID)
+            ))
             .ToArray();
-        for (int i = 0; i < removedSourceIds.Length; i++)
+        for (int i = 0; i < removedSourceIDs.Length; i++)
         {
-            Guid sourceId = removedSourceIds[i];
-            if (!connection.objectIdentities.TryGetValue(sourceId, out Guid runtimeId))
+            Guid sourceID = removedSourceIDs[i];
+            if (!connection.objectIdentities.TryGetValue(sourceID, out Guid runtimeID))
+            {
                 continue;
-            GameObject? target = scene.FindObject(runtimeId);
+            }
+            GameObject? target = scene.FindObject(runtimeID);
             if (target is null || ReferenceEquals(target, instanceRoot))
+            {
                 continue;
+            }
 
             GameObject[] addedChildren = target.transform.children
                 .Select(static child => child.gameObject)
-                .Where(child => !connection.objectIdentities.Values.Contains(child.identity.persistentId))
+                .Where(child => !connection.objectIdentities.Values.Contains(child.identity.persistentID))
                 .ToArray();
             for (int childIndex = 0; childIndex < addedChildren.Length; childIndex++)
+            {
                 scene.SetParent(addedChildren[childIndex].transform, instanceRoot.transform, worldPositionStays: false);
+            }
             scene.DestroyObject(target);
-            connection.RemoveObject(sourceId);
+            connection.RemoveObject(sourceID);
         }
     }
 
@@ -344,24 +382,28 @@ internal static class PrefabOverrideProcessor
         GameScene scene,
         GameScene sourceScene
     ) {
-        foreach ((Guid sourceId, Guid sourceRuntimeId) in sourceConnection.objectIdentities)
+        foreach ((Guid sourceID, Guid sourceRuntimeID) in sourceConnection.objectIdentities)
         {
-            if (connection.objectIdentities.ContainsKey(sourceId) || connection.overrides.IsObjectRemoved(sourceId))
+            if (connection.objectIdentities.ContainsKey(sourceID) || connection.overrides.IsObjectRemoved(sourceID))
+            {
                 continue;
-            GameObject sourceObject = sourceScene.FindObject(sourceRuntimeId)
-                ?? throw new InvalidOperationException($"Prefab source object '{sourceId}' disappeared during reconciliation.");
+            }
+            GameObject sourceObject = sourceScene.FindObject(sourceRuntimeID)
+                ?? throw new InvalidOperationException($"Prefab source object '{sourceID}' disappeared during reconciliation.");
             GameObject target = scene.CreateObject(
                 sourceObject.name,
-                persistentId: null,
-                transformPersistentId: null,
-                invokeReset: false);
+                persistentID: null,
+                transformPersistentID: null,
+                invokeReset: false
+            );
             target.SetTagDirect(sourceObject.tag);
             target.SetActiveSelfDirect(sourceObject.activeSelf);
-            connection.MapObject(sourceId, target);
+            connection.MapObject(sourceID, target);
 
-            Guid sourceTransformId = sourceConnection.componentIdentities.Single(
-                pair => pair.Value == sourceObject.transform.identity.persistentId).Key;
-            connection.MapComponent(sourceTransformId, target.transform);
+            Guid sourceTransformID = sourceConnection.componentIdentities.Single(
+                pair => pair.Value == sourceObject.transform.identity.persistentID
+            ).Key;
+            connection.MapComponent(sourceTransformID, target.transform);
         }
     }
 
@@ -370,20 +412,25 @@ internal static class PrefabOverrideProcessor
         PrefabConnectionRecord sourceConnection,
         GameScene scene
     ) {
-        Guid[] removedSourceIds = connection.componentIdentities.Keys
-            .Where(sourceId =>
-                connection.overrides.IsComponentRemoved(sourceId) ||
-                !sourceConnection.componentIdentities.ContainsKey(sourceId))
+        Guid[] removedSourceIDs = connection.componentIdentities.Keys
+            .Where(sourceID => (
+                connection.overrides.IsComponentRemoved(sourceID)
+                || !sourceConnection.componentIdentities.ContainsKey(sourceID)
+            ))
             .ToArray();
-        for (int i = 0; i < removedSourceIds.Length; i++)
+        for (int i = 0; i < removedSourceIDs.Length; i++)
         {
-            Guid sourceId = removedSourceIds[i];
-            if (!connection.componentIdentities.TryGetValue(sourceId, out Guid runtimeId))
+            Guid sourceID = removedSourceIDs[i];
+            if (!connection.componentIdentities.TryGetValue(sourceID, out Guid runtimeID))
+            {
                 continue;
-            GameComponent? target = scene.FindComponent(runtimeId);
+            }
+            GameComponent? target = scene.FindComponent(runtimeID);
             if (target is not null && target is not Transform)
+            {
                 scene.RemoveComponent(target.gameObject, target);
-            connection.RemoveComponent(sourceId);
+            }
+            connection.RemoveComponent(sourceID);
         }
     }
 
@@ -393,25 +440,28 @@ internal static class PrefabOverrideProcessor
         GameScene scene,
         GameScene sourceScene
     ) {
-        foreach ((Guid sourceId, Guid sourceRuntimeId) in sourceConnection.componentIdentities)
+        foreach ((Guid sourceID, Guid sourceRuntimeID) in sourceConnection.componentIdentities)
         {
-            if (connection.componentIdentities.ContainsKey(sourceId) ||
-                connection.overrides.IsComponentRemoved(sourceId))
+            if (connection.componentIdentities.ContainsKey(sourceID)
+                || connection.overrides.IsComponentRemoved(sourceID)
+            ) {
+                continue;
+            }
+            GameComponent sourceComponent = sourceScene.FindComponent(sourceRuntimeID)
+                ?? throw new InvalidOperationException($"Prefab source component '{sourceID}' disappeared during reconciliation.");
+            Guid sourceOwnerID = sourceConnection.objectIdentities.Single(
+                pair => pair.Value == sourceComponent.gameObject.identity.persistentID
+            ).Key;
+            if (!connection.objectIdentities.TryGetValue(sourceOwnerID, out Guid targetOwnerID))
             {
                 continue;
             }
-            GameComponent sourceComponent = sourceScene.FindComponent(sourceRuntimeId)
-                ?? throw new InvalidOperationException($"Prefab source component '{sourceId}' disappeared during reconciliation.");
-            Guid sourceOwnerId = sourceConnection.objectIdentities.Single(
-                pair => pair.Value == sourceComponent.gameObject.identity.persistentId).Key;
-            if (!connection.objectIdentities.TryGetValue(sourceOwnerId, out Guid targetOwnerId))
-                continue;
-            GameObject targetOwner = scene.FindObject(targetOwnerId)
-                ?? throw new InvalidOperationException($"Prefab target owner for source object '{sourceOwnerId}' is unavailable.");
+            GameObject targetOwner = scene.FindObject(targetOwnerID)
+                ?? throw new InvalidOperationException($"Prefab target owner for source object '{sourceOwnerID}' is unavailable.");
             GameComponent target = sourceComponent is Transform
-                ? targetOwner.transform
-                : scene.AddComponent(targetOwner, sourceComponent.GetType(), persistentId: null, invokeReset: false);
-            connection.MapComponent(sourceId, target);
+                                   ? targetOwner.transform
+                                   : scene.AddComponent(targetOwner, sourceComponent.GetType(), persistentID: null, invokeReset: false);
+            connection.MapComponent(sourceID, target);
         }
     }
 
@@ -424,36 +474,33 @@ internal static class PrefabOverrideProcessor
         SceneGraphReferenceMap sourceReferences,
         SceneGraphReferenceMap targetReferences
     ) {
-        foreach ((Guid sourceId, Guid sourceRuntimeId) in sourceConnection.componentIdentities)
+        foreach ((Guid sourceID, Guid sourceRuntimeID) in sourceConnection.componentIdentities)
         {
-            if (!connection.componentIdentities.TryGetValue(sourceId, out Guid targetRuntimeId))
-                continue;
-            GameComponent? sourceComponent = sourceScene.FindComponent(sourceRuntimeId);
-            GameComponent? targetComponent = scene.FindComponent(targetRuntimeId);
-            if (sourceComponent is null || targetComponent is null ||
-                sourceComponent.GetType() != targetComponent.GetType())
+            if (!connection.componentIdentities.TryGetValue(sourceID, out Guid targetRuntimeID))
             {
                 continue;
             }
+            GameComponent? sourceComponent = sourceScene.FindComponent(sourceRuntimeID);
+            GameComponent? targetComponent = scene.FindComponent(targetRuntimeID);
+            if (sourceComponent is null || targetComponent is null
+                || sourceComponent.GetType() != targetComponent.GetType()
+            ) {
+                continue;
+            }
 
-            IReadOnlyList<SerializationMemberMetadata> members =
-                SerializedPropertyValueCodec.GetMembers(sourceComponent.GetType(), context);
+            IReadOnlyList<SerializationMemberMetadata> members = SerializedPropertyValueCodec.GetMembers(
+                sourceComponent.GetType(),
+                context
+            );
             for (int memberIndex = 0; memberIndex < members.Count; memberIndex++)
             {
                 SerializationMemberMetadata member = members[memberIndex];
-                if (connection.overrides.IsPropertyOverridden(sourceId, member.name))
+                if (connection.overrides.IsPropertyOverridden(sourceID, member.name))
+                {
                     continue;
-                byte[] value = SerializedPropertyValueCodec.Encode(
-                    member,
-                    sourceComponent,
-                    context,
-                    sourceReferences);
-                SerializedPropertyValueCodec.Decode(
-                    member,
-                    targetComponent,
-                    value,
-                    context,
-                    targetReferences);
+                }
+                byte[] value = SerializedPropertyValueCodec.Encode(member, sourceComponent, context, sourceReferences);
+                SerializedPropertyValueCodec.Decode(member, targetComponent, value, context, targetReferences);
             }
         }
     }
@@ -465,48 +512,64 @@ internal static class PrefabOverrideProcessor
         GameScene sourceScene,
         GameObject instanceRoot
     ) {
-        foreach ((Guid sourceId, Guid sourceRuntimeId) in sourceConnection.objectIdentities)
+        foreach ((Guid sourceID, Guid sourceRuntimeID) in sourceConnection.objectIdentities)
         {
-            if (!connection.objectIdentities.TryGetValue(sourceId, out Guid targetRuntimeId))
-                continue;
-            GameObject? sourceObject = sourceScene.FindObject(sourceRuntimeId);
-            GameObject? targetObject = scene.FindObject(targetRuntimeId);
-            if (sourceObject is null || targetObject is null)
-                continue;
-
-            PrefabObjectOverrideKind kind = connection.overrides.GetStructureOverride(sourceId);
-            if ((kind & PrefabObjectOverrideKind.Name) == 0)
-                targetObject.SetNameDirect(sourceObject.name);
-            if ((kind & PrefabObjectOverrideKind.Tag) == 0)
-                targetObject.SetTagDirect(sourceObject.tag);
-            if ((kind & PrefabObjectOverrideKind.ActiveSelf) == 0)
-                targetObject.SetActiveSelfDirect(sourceObject.activeSelf);
-            if (!ReferenceEquals(targetObject, instanceRoot) &&
-                (kind & PrefabObjectOverrideKind.Parent) == 0)
+            if (!connection.objectIdentities.TryGetValue(sourceID, out Guid targetRuntimeID))
             {
-                Guid sourceParentId = GetMappedParentId(sourceObject, sourceConnection);
-                Transform? targetParent = sourceParentId == Guid.Empty
-                    ? instanceRoot.transform
-                    : connection.objectIdentities.TryGetValue(sourceParentId, out Guid parentRuntimeId)
-                        ? scene.FindObject(parentRuntimeId)?.transform
-                        : null;
+                continue;
+            }
+            GameObject? sourceObject = sourceScene.FindObject(sourceRuntimeID);
+            GameObject? targetObject = scene.FindObject(targetRuntimeID);
+            if (sourceObject is null || targetObject is null)
+            {
+                continue;
+            }
+
+            PrefabObjectOverrideKind kind = connection.overrides.GetStructureOverride(sourceID);
+            if ((kind & PrefabObjectOverrideKind.Name) == 0)
+            {
+                targetObject.SetNameDirect(sourceObject.name);
+            }
+            if ((kind & PrefabObjectOverrideKind.Tag) == 0)
+            {
+                targetObject.SetTagDirect(sourceObject.tag);
+            }
+            if ((kind & PrefabObjectOverrideKind.ActiveSelf) == 0)
+            {
+                targetObject.SetActiveSelfDirect(sourceObject.activeSelf);
+            }
+            if (!ReferenceEquals(targetObject, instanceRoot)
+                && (kind & PrefabObjectOverrideKind.Parent) == 0
+            ) {
+                Guid sourceParentID = GetMappedParentID(sourceObject, sourceConnection);
+                Transform? targetParent = sourceParentID == Guid.Empty
+                                          ? instanceRoot.transform
+                                          : connection.objectIdentities.TryGetValue(sourceParentID, out Guid parentRuntimeID)
+                                            ? scene.FindObject(parentRuntimeID)?.transform
+                                            : null;
                 scene.SetParent(targetObject.transform, targetParent, worldPositionStays: false);
             }
         }
 
-        foreach ((Guid sourceId, Guid sourceRuntimeId) in sourceConnection.objectIdentities
-                     .OrderBy(pair => sourceScene.FindObject(pair.Value)?.transform.siblingIndex ?? int.MaxValue))
-        {
-            if (!connection.objectIdentities.TryGetValue(sourceId, out Guid targetRuntimeId))
-                continue;
-            GameObject? targetObject = scene.FindObject(targetRuntimeId);
-            if (targetObject is null || ReferenceEquals(targetObject, instanceRoot))
-                continue;
-            if ((connection.overrides.GetStructureOverride(sourceId) & PrefabObjectOverrideKind.SiblingIndex) == 0)
+        foreach ((Guid sourceID, Guid sourceRuntimeID) in sourceConnection.objectIdentities
+            .OrderBy(pair => sourceScene.FindObject(pair.Value)?.transform.siblingIndex ?? int.MaxValue)
+        ) {
+            if (!connection.objectIdentities.TryGetValue(sourceID, out Guid targetRuntimeID))
             {
-                GameObject? sourceObject = sourceScene.FindObject(sourceRuntimeId);
+                continue;
+            }
+            GameObject? targetObject = scene.FindObject(targetRuntimeID);
+            if (targetObject is null || ReferenceEquals(targetObject, instanceRoot))
+            {
+                continue;
+            }
+            if ((connection.overrides.GetStructureOverride(sourceID) & PrefabObjectOverrideKind.SiblingIndex) == 0)
+            {
+                GameObject? sourceObject = sourceScene.FindObject(sourceRuntimeID);
                 if (sourceObject is not null)
+                {
                     scene.SetSiblingIndex(targetObject.transform, sourceObject.transform.siblingIndex);
+                }
             }
             scene.RecomputeActiveSubtree(targetObject);
         }
@@ -518,21 +581,26 @@ internal static class PrefabOverrideProcessor
         GameObject instanceRoot
     ) {
         GameScene scene = instanceRoot.scene;
-        foreach ((Guid sourceId, Guid runtimeId) in connection.objectIdentities)
+        foreach ((Guid sourceID, Guid runtimeID) in connection.objectIdentities)
         {
-            GameObject? gameObject = scene.FindObject(runtimeId);
+            GameObject? gameObject = scene.FindObject(runtimeID);
             if (gameObject is null)
+            {
                 continue;
-            gameObject.SetPrefabInstanceDirect(new PrefabInstanceInfo(
-                connection.sourceAsset.identity.persistentId,
-                sourceId,
-                instanceRoot,
-                ReferenceEquals(gameObject, instanceRoot),
-                connection.isVariant,
-                connection.sourceAsset.isMissing,
-                connection.overrides.count,
-                connection.overrides.orphanedCount,
-                connection.sourceAsset));
+            }
+            gameObject.SetPrefabInstanceDirect(
+                new PrefabInstanceInfo(
+                    connection.sourceAsset.identity.persistentID,
+                    sourceID,
+                    instanceRoot,
+                    ReferenceEquals(gameObject, instanceRoot),
+                    connection.isVariant,
+                    connection.sourceAsset.isMissing,
+                    connection.overrides.count,
+                    connection.overrides.orphanedCount,
+                    connection.sourceAsset
+                )
+            );
         }
         instanceRoot.SetPrefabConnectionDirect(connection);
     }
@@ -546,18 +614,24 @@ internal static class PrefabOverrideProcessor
             .ToArray();
         var ids = new Dictionary<EngineObject, Guid>(ReferenceEqualityComparer.Instance);
         for (int objectIndex = 0; objectIndex < allObjects.Length; objectIndex++)
-            ids.Add(allObjects[objectIndex], allObjects[objectIndex].identity.persistentId);
-        foreach ((Guid sourceId, Guid runtimeId) in connection.objectIdentities)
         {
-            GameObject? gameObject = scene.FindObject(runtimeId);
-            if (gameObject is not null)
-                ids[gameObject] = sourceId;
+            ids.Add(allObjects[objectIndex], allObjects[objectIndex].identity.persistentID);
         }
-        foreach ((Guid sourceId, Guid runtimeId) in connection.componentIdentities)
+        foreach ((Guid sourceID, Guid runtimeID) in connection.objectIdentities)
         {
-            GameComponent? component = scene.FindComponent(runtimeId);
+            GameObject? gameObject = scene.FindObject(runtimeID);
+            if (gameObject is not null)
+            {
+                ids[gameObject] = sourceID;
+            }
+        }
+        foreach ((Guid sourceID, Guid runtimeID) in connection.componentIdentities)
+        {
+            GameComponent? component = scene.FindComponent(runtimeID);
             if (component is not null)
-                ids[component] = sourceId;
+            {
+                ids[component] = sourceID;
+            }
         }
         return new SceneGraphReferenceMap(scene, ids);
     }
@@ -567,45 +641,50 @@ internal static class PrefabOverrideProcessor
         PrefabConnectionRecord connection
     ) {
         SceneGraphReferenceMap references = CreateComparisonReferences(scene, connection);
-        foreach ((Guid sourceId, Guid runtimeId) in connection.objectIdentities)
+        foreach ((Guid sourceID, Guid runtimeID) in connection.objectIdentities)
         {
-            GameObject? gameObject = scene.FindObject(runtimeId);
+            GameObject? gameObject = scene.FindObject(runtimeID);
             if (gameObject is not null)
-                references.Register(sourceId, gameObject);
+            {
+                references.Register(sourceID, gameObject);
+            }
         }
-        foreach ((Guid sourceId, Guid runtimeId) in connection.componentIdentities)
+        foreach ((Guid sourceID, Guid runtimeID) in connection.componentIdentities)
         {
-            GameComponent? component = scene.FindComponent(runtimeId);
+            GameComponent? component = scene.FindComponent(runtimeID);
             if (component is not null)
-                references.Register(sourceId, component);
+            {
+                references.Register(sourceID, component);
+            }
         }
         return references;
     }
 
-    private static Guid GetMappedParentId(
+    private static Guid GetMappedParentID(
         GameObject gameObject,
         PrefabConnectionRecord connection
     ) {
         Transform? parent = gameObject.transform.parent;
         if (parent is null)
-            return Guid.Empty;
-        Guid parentRuntimeId = parent.gameObject.identity.persistentId;
-        foreach ((Guid sourceId, Guid runtimeId) in connection.objectIdentities)
         {
-            if (runtimeId == parentRuntimeId)
-                return sourceId;
+            return Guid.Empty;
         }
-        return parentRuntimeId;
+        Guid parentRuntimeID = parent.gameObject.identity.persistentID;
+        foreach ((Guid sourceID, Guid runtimeID) in connection.objectIdentities)
+        {
+            if (runtimeID == parentRuntimeID)
+            {
+                return sourceID;
+            }
+        }
+        return parentRuntimeID;
     }
 
     private static (GameScene scene, GameObject root, PrefabConnectionRecord connection) InstantiateSource(
         AssetObject sourceAsset,
         SerializationContext context
     ) {
-        var sourceScene = new GameScene(
-            SceneWorld.current.typeCatalog,
-            "Prefab Source Comparison",
-            persistentId: null);
+        var sourceScene = new GameScene(SceneWorld.current.typeCatalog, "Prefab Source Comparison", persistentID: null);
         SerializationContext sourceContext = context
             .With(sourceScene)
             .With(sourceAsset);
@@ -615,19 +694,25 @@ internal static class PrefabOverrideProcessor
             {
                 GameObject sourceRoot = context.GetRequired<SerializationRegistry>().Deserialize<GameObject>(
                     sourceAsset.runtimePayload.Span,
-                    sourceContext);
+                    sourceContext
+                );
                 if (!string.IsNullOrWhiteSpace(sourceAsset.assetPath.ToString()))
+                {
                     sourceRoot.name = Path.GetFileNameWithoutExtension(sourceAsset.assetPath.ToString());
+                }
                 PrefabConnectionRecord connection = sourceRoot.prefabConnection
                     ?? throw new InvalidOperationException(
-                        $"Prefab source asset '{sourceAsset.identity.persistentId}' did not create a source mapping.");
+                        $"Prefab source asset '{sourceAsset.identity.persistentID}' did not create a source mapping."
+                    );
                 return (sourceScene, sourceRoot, connection);
             }
         }
         catch
         {
             if (!sourceScene.isDestroyed)
+            {
                 sourceScene.Unload();
+            }
             throw;
         }
     }

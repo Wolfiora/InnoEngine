@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Extensibility.Modules;
 
 namespace Inno.Core.Logging;
@@ -31,8 +30,8 @@ namespace Inno.Core.Logging;
 /// <param name="stackTrace">
 /// The captured managed stack trace, or an empty string when no trace is available.
 /// </param>
-/// <param name="sessionId">
-/// The isolated runtime session that produced the entry, or <see cref="LogSessionId.none"/> for process-level work.
+/// <param name="sessionID">
+/// The isolated runtime session that produced the entry, or <see cref="LogSessionID.none"/> for process-level work.
 /// </param>
 public readonly struct LogEntry(
     LogLevel level,
@@ -43,7 +42,7 @@ public readonly struct LogEntry(
     string file,
     int line,
     string stackTrace,
-    LogSessionId sessionId
+    LogSessionID sessionID
 ) {
     /// <summary>
     /// Gets the severity of this entry.
@@ -93,5 +92,5 @@ public readonly struct LogEntry(
     /// <summary>
     /// Gets the isolated runtime session that produced this entry.
     /// </summary>
-    public readonly LogSessionId sessionId = sessionId;
+    public readonly LogSessionID sessionID = sessionID;
 }

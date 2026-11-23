@@ -31,11 +31,17 @@ public readonly struct DiagnosticLocation : IEquatable<DiagnosticLocation>
         int column = 0
     ) {
         if (string.IsNullOrWhiteSpace(sourcePath))
+        {
             throw new ArgumentException("A diagnostic source path is required.", nameof(sourcePath));
+        }
         if (line < 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(line), "A diagnostic line cannot be negative.");
+        }
         if (column < 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(column), "A diagnostic column cannot be negative.");
+        }
         this.sourcePath = sourcePath;
         this.line = line;
         this.column = column;
@@ -59,26 +65,26 @@ public readonly struct DiagnosticLocation : IEquatable<DiagnosticLocation>
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
-    /// </returns>
     /// <param name="other">
     /// The value to compare with this instance.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
+    /// </returns>
     public bool Equals(DiagnosticLocation other)
-        => string.Equals(sourcePath, other.sourcePath, StringComparison.Ordinal) &&
-           line == other.line &&
-           column == other.column;
+        => string.Equals(sourcePath, other.sourcePath, StringComparison.Ordinal)
+           && line == other.line
+           && column == other.column;
 
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
-    /// </returns>
     /// <param name="obj">
     /// The object to compare with this instance.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
+    /// </returns>
     public override bool Equals(object? obj) => obj is DiagnosticLocation other && Equals(other);
 
     /// <summary>

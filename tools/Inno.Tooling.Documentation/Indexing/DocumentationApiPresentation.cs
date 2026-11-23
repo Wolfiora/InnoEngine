@@ -13,7 +13,7 @@ namespace Inno.Tooling.Documentation.Indexing;
 
 internal static class DocumentationApiPresentation
 {
-    private static readonly MarkdownPipeline S_MARKDOWN = new MarkdownPipelineBuilder().UseYamlFrontMatter().Build();
+    private static readonly MarkdownPipeline MARKDOWN = new MarkdownPipelineBuilder().UseYamlFrontMatter().Build();
 
     internal static string? Parent(DocumentationApiFact fact)
         => fact.containingType is null ? null : fact.family + ":" + fact.project + ":" + fact.containingType;
@@ -22,7 +22,7 @@ internal static class DocumentationApiPresentation
         DocumentationApiFact fact,
         IReadOnlyDictionary<string, DocumentationApiFact[]> facts
     ) {
-        var names = new List<string>();
+        List<string> names = [];
         var visited = new HashSet<string>(StringComparer.Ordinal);
         while (true)
         {
@@ -31,21 +31,26 @@ internal static class DocumentationApiPresentation
             string? parent = Parent(fact);
             if (parent is null) break;
             if (!facts.TryGetValue(parent, out DocumentationApiFact[]? owner))
+            {
                 throw new InvalidDataException("Missing API containing type: " + parent);
+            }
             fact = owner[0];
         }
         names.Reverse();
         return string.Join('.', names);
     }
 
-    internal static string Cell(string text) => WebUtility.HtmlEncode(text)
-        .Replace("|", "\\|", StringComparison.Ordinal).Replace("[", "\\[", StringComparison.Ordinal)
-        .Replace("]", "\\]", StringComparison.Ordinal).Replace("\r", " ", StringComparison.Ordinal)
-        .Replace("\n", " ", StringComparison.Ordinal);
+    internal static string Cell(string text)
+        => WebUtility.HtmlEncode(text)
+            .Replace("|", "\\|", StringComparison.Ordinal)
+            .Replace("[", "\\[", StringComparison.Ordinal)
+            .Replace("]", "\\]", StringComparison.Ordinal)
+            .Replace("\r", " ", StringComparison.Ordinal)
+            .Replace("\n", " ", StringComparison.Ordinal);
 
     internal static string Summary(string markdown)
     {
-        MarkdownDocument document = Markdown.Parse(markdown, S_MARKDOWN);
+        MarkdownDocument document = Markdown.Parse(markdown, MARKDOWN);
         ParagraphBlock? paragraph = document.OfType<ParagraphBlock>().FirstOrDefault();
         if (paragraph is null) return "No summary is available; open the declaration and full contract.";
         string text = Regex.Replace(Markdown.ToPlainText(markdown[paragraph.Span.Start..(paragraph.Span.End + 1)]), @"\s+", " ").Trim();
@@ -62,24 +67,38 @@ internal static class DocumentationApiPresentation
             string relative = Path.GetRelativePath(root, path).Replace('\\', '/');
             if (relative.StartsWith("content/en/api/", StringComparison.Ordinal)) continue;
             string text = File.ReadAllText(DocumentationApiFacts.Resolve(root, relative));
-            if (Markdown.Parse(text, S_MARKDOWN).OfType<YamlFrontMatterBlock>().FirstOrDefault() is null) continue;
+            if (Markdown.Parse(text, MARKDOWN).OfType<YamlFrontMatterBlock>().FirstOrDefault() is null) continue;
             YamlMappingNode metadata = DocumentationApiFragment.ReadMetadata(relative, text);
             if (!metadata.Children.TryGetValue(new YamlScalarNode("kind"), out YamlNode? kind)
-                || kind is not YamlScalarNode { Value: "project" }) continue;
+                || kind is not YamlScalarNode { Value: "project" }
+            ) {
+                continue;
+            }
             if (!metadata.Children.TryGetValue(new YamlScalarNode("owners"), out YamlNode? owners)
-                || owners is not YamlSequenceNode sequence) continue;
+                || owners is not YamlSequenceNode sequence
+            ) {
+                continue;
+            }
             metadata.Children.TryGetValue(new YamlScalarNode("description"), out YamlNode? description);
             if (description is not null && DocumentationApiFragment.IsNull(description)) description = null;
             // A synchronized guide has no authored summary. Its generated body must not feed API navigation,
             // so creating or removing the guide leaves every other planned page unchanged.
             bool synchronized = metadata.Children.ContainsKey(new YamlScalarNode("symbol"))
-                && (!metadata.Children.TryGetValue(new YamlScalarNode("source"), out YamlNode? source) || source is YamlScalarNode { Value: "xml" });
+                                && (!metadata.Children.TryGetValue(new YamlScalarNode("source"), out YamlNode? source)
+                                    || source is YamlScalarNode { Value: "xml" });
             if (description is null && synchronized) continue;
-            string summary = description is YamlScalarNode { Value: string value } ? value
-                : description is YamlSequenceNode items ? string.Join(" ", items.Children.Cast<YamlScalarNode>().Select(item => item.Value))
-                : Summary(text);
+            string summary = description is YamlScalarNode { Value: string value }
+                             ? value
+                             : description is YamlSequenceNode items
+                               ? string.Join(" ", items.Children.Cast<YamlScalarNode>().Select(item => item.Value))
+                               : Summary(text);
             foreach (YamlScalarNode owner in sequence.Children)
-                if (!result.TryAdd(owner.Value!, summary)) throw new InvalidDataException("Duplicate project guide: " + owner.Value);
+            {
+                if (!result.TryAdd(owner.Value!, summary))
+                {
+                    throw new InvalidDataException("Duplicate project guide: " + owner.Value);
+                }
+            }
         }
         return result;
     }

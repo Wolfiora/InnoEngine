@@ -1,18 +1,19 @@
-using Inno.Core.Diagnostics;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.Diagnostics;
+using Inno.Extensibility.Types;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 
 /// <summary>
 /// Provides generation-scoped GPU buffers for an imported geometry helper asset.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("6ad78a05-1eae-5e6f-a5d2-ab40b6c35075")]
+[StableTypeID("6ad78a05-1eae-5e6f-a5d2-ab40b6c35075")]
 public sealed class RenderGeometry
 {
     private readonly IReadOnlyList<RenderGeometrySection> m_sections;
@@ -96,11 +97,12 @@ public sealed class RenderGeometry
         ArgumentNullException.ThrowIfNull(commands);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(instanceCount);
         if ((uint)sectionIndex >= (uint)m_sections.Count)
+        {
             throw new ArgumentOutOfRangeException(nameof(sectionIndex));
+        }
         RenderGeometrySection section = m_sections[sectionIndex];
         commands.BindVertexBuffer(vertexBuffer);
         commands.BindIndexBuffer(indexBuffer, section.firstIndex);
         commands.DrawIndexed(section.indexCount, instanceCount);
     }
 }
-

@@ -8,7 +8,7 @@ namespace Inno.Audio;
 /// </summary>
 public sealed class AudioVoiceAllocator
 {
-    private static int S_NEXT_GENERATION;
+    private static int s_nextGeneration;
     private readonly uint m_generation;
     private ulong m_nextIdentity;
 
@@ -20,9 +20,11 @@ public sealed class AudioVoiceAllocator
     /// </exception>
     public AudioVoiceAllocator()
     {
-        int generation = Interlocked.Increment(ref S_NEXT_GENERATION);
+        int generation = Interlocked.Increment(ref s_nextGeneration);
         if (generation <= 0)
+        {
             throw new InvalidOperationException("Audio playback owner generations are exhausted.");
+        }
         m_generation = (uint)generation;
     }
 

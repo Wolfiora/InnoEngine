@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Core.Diagnostics;
 
 namespace Inno.Editor.Interactions;
@@ -14,6 +13,17 @@ internal sealed class EditorExtensionStateDiagnosticPublisher : IDisposable
 
     private readonly Dictionary<string, string> m_states = new(StringComparer.Ordinal);
 
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose()
+    {
+        foreach (string group in m_states.Keys.ToArray())
+        {
+            Resolve(group);
+        }
+    }
+
     internal bool PublishCapture(IReadOnlyList<string> messages) => Publish(C_CAPTURE_GROUP, "EDITOR-STATE-CAPTURE", messages);
 
     internal bool PublishRestore(IReadOnlyList<string> messages) => Publish(C_RESTORE_GROUP, "EDITOR-STATE-RESTORE", messages);
@@ -25,15 +35,6 @@ internal sealed class EditorExtensionStateDiagnosticPublisher : IDisposable
     }
 
     internal void ResolveSave() => Resolve(C_SAVE_GROUP);
-
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose()
-    {
-        foreach (string group in m_states.Keys.ToArray())
-            Resolve(group);
-    }
 
     private bool Publish(
         string group,
@@ -51,14 +52,12 @@ internal sealed class EditorExtensionStateDiagnosticPublisher : IDisposable
             return false;
         }
         string state = string.Join('\n', current);
-        if (m_states.TryGetValue(group, out string? previous) &&
-            string.Equals(previous, state, StringComparison.Ordinal))
-        {
+        if (m_states.TryGetValue(group, out string? previous)
+            && string.Equals(previous, state, StringComparison.Ordinal)
+        ) {
             return false;
         }
-        Diagnostics.Set(
-            group,
-            current.Select(message => Diagnostic.Error(code, message)));
+        Diagnostics.Set(group, current.Select(message => Diagnostic.Error(code, message)));
         m_states[group] = state;
         return true;
     }
@@ -66,7 +65,9 @@ internal sealed class EditorExtensionStateDiagnosticPublisher : IDisposable
     private void Resolve(string group)
     {
         if (!m_states.Remove(group))
+        {
             return;
+        }
         Diagnostics.Clear(group);
     }
 }

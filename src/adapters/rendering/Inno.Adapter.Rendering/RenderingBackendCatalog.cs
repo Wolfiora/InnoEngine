@@ -10,7 +10,7 @@ namespace Inno.Adapter.Rendering;
 /// </summary>
 public sealed class RenderingBackendCatalog : IRenderingBackendFactory
 {
-    private readonly Dictionary<RenderingBackendId, RenderingBackendProvider> m_providers = [];
+    private readonly Dictionary<RenderingBackendID, RenderingBackendProvider> m_providers = [];
 
     /// <summary>
     /// Validates and captures a complete set of runtime providers.
@@ -27,15 +27,17 @@ public sealed class RenderingBackendCatalog : IRenderingBackendFactory
         foreach (RenderingBackendProvider provider in providers)
         {
             if (provider is null || !provider.id.isValid || !m_providers.TryAdd(provider.id, provider))
+            {
                 throw new ArgumentException("Rendering providers require unique, assigned backend IDs.", nameof(providers));
+            }
         }
-        supportedBackends = new ReadOnlyCollection<RenderingBackendId>(new List<RenderingBackendId>(m_providers.Keys));
+        this.supportedBackends = new ReadOnlyCollection<RenderingBackendID>([.. m_providers.Keys]);
     }
 
     /// <summary>
     /// Gets backend registrations available in this type generation.
     /// </summary>
-    public IReadOnlyList<RenderingBackendId> supportedBackends { get; }
+    public IReadOnlyList<RenderingBackendID> supportedBackends { get; }
 
     /// <summary>
     /// Creates a device using this implementation's validated inputs.
@@ -53,14 +55,16 @@ public sealed class RenderingBackendCatalog : IRenderingBackendFactory
     /// No provider is registered for this exact backend ID.
     /// </exception>
     public IRenderDevice CreateDevice(
-        RenderingBackendId backend,
+        RenderingBackendID backend,
         RenderingBackendOptions options
     ) {
         ArgumentNullException.ThrowIfNull(options);
         if (!m_providers.TryGetValue(backend, out RenderingBackendProvider? provider))
+        {
             throw new NotSupportedException($"Rendering backend '{backend}' is not registered.");
+        }
         return provider.CreateDevice(options)
-            ?? throw new InvalidOperationException($"Rendering provider '{backend}' returned no device.");
+               ?? throw new InvalidOperationException($"Rendering provider '{backend}' returned no device.");
     }
 
     /// <summary>
@@ -75,11 +79,13 @@ public sealed class RenderingBackendCatalog : IRenderingBackendFactory
     /// <exception cref="NotSupportedException">
     /// No provider is registered for this exact backend identity.
     /// </exception>
-    public IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider(RenderingBackendId backend)
+    public IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider(RenderingBackendID backend)
     {
         if (!m_providers.TryGetValue(backend, out RenderingBackendProvider? provider))
+        {
             throw new NotSupportedException($"Rendering backend '{backend}' is not registered.");
+        }
         return provider.CreateCompositionProgramProvider()
-            ?? throw new InvalidOperationException($"Rendering provider '{backend}' returned no composition program provider.");
+               ?? throw new InvalidOperationException($"Rendering provider '{backend}' returned no composition program provider.");
     }
 }

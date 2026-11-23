@@ -2,9 +2,13 @@ using System;
 using Inno.Editor.Core;
 
 namespace Inno.Editor.Interactions;
+
 /// <summary>
 /// Provides contextual state to an editor action.
 /// </summary>
+/// <remarks>
+/// The typed action contexts derive from this class to add a strongly typed target or argument. It has no overridable members.
+/// </remarks>
 public class EditorActionContext
 {
     /// <summary>
@@ -38,8 +42,10 @@ public class EditorActionContext
         object? target = null,
         object? argument = null
     ) {
-        this.editor = editor ?? throw new ArgumentNullException(nameof(editor));
-        this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
+        ArgumentNullException.ThrowIfNull(editor);
+        ArgumentNullException.ThrowIfNull(interactions);
+        this.editor = editor;
+        this.interactions = interactions;
         ArgumentException.ThrowIfNullOrWhiteSpace(area);
         this.area = area;
         this.target = target;
@@ -50,22 +56,27 @@ public class EditorActionContext
     /// Gets the shared passive editor context.
     /// </summary>
     public EditorContext editor { get; }
+
     /// <summary>
     /// Gets the active interaction entry point.
     /// </summary>
     public EditorInteractions interactions { get; }
+
     /// <summary>
     /// Gets the transactional history used to record reversible mutations performed by this action.
     /// </summary>
     public IEditorHistory history => interactions.history;
+
     /// <summary>
     /// Gets the stable interaction area.
     /// </summary>
     public string area { get; }
+
     /// <summary>
     /// Gets the contextual action target.
     /// </summary>
     public object? target { get; }
+
     /// <summary>
     /// Gets the optional action argument.
     /// </summary>
@@ -119,27 +130,6 @@ public sealed class EditorActionContext<TTarget, TArgument> : EditorActionContex
     /// Gets the strongly typed action target.
     /// </summary>
     public new TTarget target { get; }
-    /// <summary>
-    /// Gets the strongly typed action argument.
-    /// </summary>
-    public new TArgument argument { get; }
-}
-
-/// <summary>
-/// Provides a strongly typed action argument to a targetless editor action.
-/// </summary>
-/// <typeparam name="TArgument">
-/// The action argument type required by the action.
-/// </typeparam>
-public sealed class EditorActionArgumentContext<TArgument> : EditorActionContext
-{
-    internal EditorActionArgumentContext(
-        EditorActionContext context,
-        TArgument argument
-    ) : base(context.editor, context.interactions, context.area, target: null, argument: argument)
-    {
-        this.argument = argument;
-    }
 
     /// <summary>
     /// Gets the strongly typed action argument.

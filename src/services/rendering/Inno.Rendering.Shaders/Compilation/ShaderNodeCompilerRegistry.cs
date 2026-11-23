@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Inno.Core.Serialization;
 using Inno.Core.Graphs;
+using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 
 namespace Inno.Rendering.Shaders;
@@ -21,17 +21,21 @@ public sealed class ShaderNodeCompilerRegistry : TypeRegistry<ShaderNodeCompiler
     /// <param name="types">
     /// Owner catalog, which must outlive this registry.
     /// </param>
-    public ShaderNodeCompilerRegistry(TypeCatalog types) : base(types) => m_types = types;
+    public ShaderNodeCompilerRegistry(TypeCatalog types)
+        : base(types)
+        {
+        m_types = types;
+    }
 
     /// <summary>
     /// Gets stable compiler identities without exposing provider instances.
     /// </summary>
-    public IReadOnlyList<string> definitionIds
+    public IReadOnlyList<string> definitionIDs
     {
         get
         {
             using IDisposable operation = m_types.AcquireOperation("Query shader node compilers");
-            return current.definitionIds;
+            return current.definitionIDs;
         }
     }
 
@@ -78,7 +82,7 @@ public sealed class ShaderNodeCompilerRegistry : TypeRegistry<ShaderNodeCompiler
     /// <param name="source">
     /// Resolved frozen source function, or null.
     /// </param>
-    /// <param name="implementationId">
+    /// <param name="implementationID">
     /// Selected source implementation identity.
     /// </param>
     /// <param name="input">
@@ -92,11 +96,11 @@ public sealed class ShaderNodeCompilerRegistry : TypeRegistry<ShaderNodeCompiler
         SerializationRegistry serialization,
         SerializationContext context,
         ShaderSourceModuleAnalysis? source = null,
-        string implementationId = "",
+        string implementationID = "",
         ShaderIrStageInput? input = null
     ) {
         using IDisposable operation = m_types.AcquireOperation("Describe shader node ports");
-        return current.DescribePorts(node, serialization, context, source, implementationId, input);
+        return current.DescribePorts(node, serialization, context, source, implementationID, input);
     }
 
     /// <summary>
@@ -110,10 +114,13 @@ public sealed class ShaderNodeCompilerRegistry : TypeRegistry<ShaderNodeCompiler
     /// </returns>
     protected override ShaderNodeCompilerCatalog Build(TypeCacheSnapshot types)
     {
-        var providers = new List<IShaderNodeCompiler>();
+        List<IShaderNodeCompiler> providers = [];
         foreach (Type type in types.GetTypesImplementing<IShaderNodeCompiler>()
-                     .Select(reference => reference.Resolve(types)).OrderBy(static type => type.FullName, StringComparer.Ordinal))
+            .Select(reference => reference.Resolve(types))
+            .OrderBy(static type => type.FullName, StringComparer.Ordinal)
+        ) {
             providers.Add(CreateExtension<IShaderNodeCompiler>(type));
+        }
         return new(providers);
     }
 

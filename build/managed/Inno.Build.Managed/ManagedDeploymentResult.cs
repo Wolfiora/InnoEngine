@@ -26,7 +26,7 @@ public sealed class ManagedDeploymentResult
     /// The nonempty set of relative output file paths, copied before returning to the pipeline.
     /// </param>
     public ManagedDeploymentResult(
-        ManagedDeploymentId deployment,
+        ManagedDeploymentID deployment,
         string outputDirectory,
         string sdkIdentity,
         IReadOnlyList<string> files
@@ -35,10 +35,14 @@ public sealed class ManagedDeploymentResult
         ArgumentException.ThrowIfNullOrWhiteSpace(outputDirectory);
         ArgumentException.ThrowIfNullOrWhiteSpace(sdkIdentity);
         ArgumentNullException.ThrowIfNull(files);
-        if (files.Count == 0 || files.Any(static file => string.IsNullOrWhiteSpace(file)
-            || Path.IsPathRooted(file) || file.Split('/', '\\').Any(static segment => segment is "." or ".."))
-            || files.Distinct(StringComparer.Ordinal).Count() != files.Count)
+        if (files.Count == 0 || files.Any(static file => (
+            string.IsNullOrWhiteSpace(file)
+            || Path.IsPathRooted(file) || file.Split('/', '\\').Any(static segment => segment is "." or "..")
+        ))
+            || files.Distinct(StringComparer.Ordinal).Count() != files.Count
+        ) {
             throw new ArgumentException("Managed output requires unique relative artifact paths.", nameof(files));
+        }
         this.deployment = deployment;
         this.outputDirectory = Path.GetFullPath(outputDirectory);
         this.sdkIdentity = sdkIdentity;
@@ -48,7 +52,7 @@ public sealed class ManagedDeploymentResult
     /// <summary>
     /// Gets the managed compiler identity that produced this publication.
     /// </summary>
-    public ManagedDeploymentId deployment { get; }
+    public ManagedDeploymentID deployment { get; }
 
     /// <summary>
     /// Gets the completed build-owned publication directory.

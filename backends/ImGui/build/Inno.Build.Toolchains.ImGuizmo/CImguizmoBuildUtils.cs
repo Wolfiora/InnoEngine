@@ -21,26 +21,28 @@ internal static class CImguizmoBuildUtils
         if (!Directory.Exists(cimguizmoDir))
         {
             throw new DirectoryNotFoundException(
-                $"cimguizmo source not found at {cimguizmoDir}. Place the cimguizmo repository in extern/cimguizmo before running this tool.");
+                $"cimguizmo source not found at {cimguizmoDir}. Place the cimguizmo repository in extern/cimguizmo before running this tool."
+            );
         }
 
         if (!Directory.Exists(cimguiDir))
         {
             throw new DirectoryNotFoundException(
-                $"cimgui source not found at {cimguiDir}. Place the cimgui repository in extern/cimgui before running this tool.");
+                $"cimgui source not found at {cimguiDir}. Place the cimgui repository in extern/cimgui before running this tool."
+            );
         }
 
-        var cimguizmoCpp = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.CIMGUIMO_CPP_FILE);
+        string cimguizmoCpp = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.C_CIMGUIMO_CPP_FILE);
         if (!File.Exists(cimguizmoCpp))
         {
-            throw new FileNotFoundException($"Missing {CImguizmoBuildConstants.CIMGUIMO_CPP_FILE}: {cimguizmoCpp}");
+            throw new FileNotFoundException($"Missing {CImguizmoBuildConstants.C_CIMGUIMO_CPP_FILE}: {cimguizmoCpp}");
         }
 
-        var imguizmoDir = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.IMGUIZMO_DIR_NAME);
-        var imguizmoCpp = Path.Combine(imguizmoDir, CImguizmoBuildConstants.IMGUIZMO_CPP_FILE);
+        string imguizmoDir = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.C_IMGUIZMO_DIR_NAME);
+        string imguizmoCpp = Path.Combine(imguizmoDir, CImguizmoBuildConstants.C_IMGUIZMO_CPP_FILE);
         if (!File.Exists(imguizmoCpp))
         {
-            throw new FileNotFoundException($"Missing {CImguizmoBuildConstants.IMGUIZMO_CPP_FILE}: {imguizmoCpp}");
+            throw new FileNotFoundException($"Missing {CImguizmoBuildConstants.C_IMGUIZMO_CPP_FILE}: {imguizmoCpp}");
         }
     }
 }

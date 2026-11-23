@@ -1,11 +1,10 @@
 using System;
-
-using Inno.Editor.Core;
-using Inno.Editor.Interactions;
-using Inno.Core.Serialization;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Inno.Core.Serialization;
+using Inno.Editor.Core;
+using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Inspection;
 
@@ -16,6 +15,29 @@ public sealed class InspectionDrawContext
 {
     private readonly InspectionDrawerRegistry m_drawers;
     private readonly IReadOnlyList<SerializedProperty> m_serializedProperties;
+
+    internal InspectionDrawContext(
+        EditorContext editorContext,
+        EditorInteractions interactions,
+        object target,
+        SerializedPropertyRenderer properties,
+        InspectionDrawerRegistry drawers,
+        IReadOnlyList<SerializedProperty> serializedProperties
+    ) {
+        ArgumentNullException.ThrowIfNull(editorContext);
+        ArgumentNullException.ThrowIfNull(interactions);
+        ArgumentNullException.ThrowIfNull(target);
+        ArgumentNullException.ThrowIfNull(properties);
+        ArgumentNullException.ThrowIfNull(drawers);
+        ArgumentNullException.ThrowIfNull(serializedProperties);
+        this.editorContext = editorContext;
+        this.interactions = interactions;
+        this.target = target;
+        this.properties = properties;
+        m_drawers = drawers;
+        m_serializedProperties = serializedProperties;
+    }
+
     /// <summary>
     /// Gets the shared editor context.
     /// </summary>
@@ -49,14 +71,15 @@ public sealed class InspectionDrawContext
     {
         ArgumentNullException.ThrowIfNull(target);
         if (!m_drawers.TryResolveExact(
-                editorContext,
-                target,
-                properties,
-                out IInspectionDrawer? drawer,
-                out InspectionDrawContext? context)
+            editorContext,
+            target,
+            properties,
+            out IInspectionDrawer? drawer,
+            out InspectionDrawContext? context
+        )
             || drawer is null
-            || context is null)
-        {
+            || context is null
+        ) {
             return false;
         }
         drawer.Draw(context);
@@ -96,9 +119,10 @@ public sealed class InspectionDrawContext
         SerializedProperty property = RequireProperty(propertyName);
         object? value = property.GetValue();
         return value is T typed
-            ? typed
-            : throw new InvalidOperationException(
-                $"Property '{propertyName}' does not contain '{typeof(T).FullName}'.");
+               ? typed
+               : throw new InvalidOperationException(
+                   $"Property '{propertyName}' does not contain '{typeof(T).FullName}'."
+               );
     }
 
     /// <summary>
@@ -110,11 +134,7 @@ public sealed class InspectionDrawContext
     public void DrawProperty(string propertyName)
     {
         SerializedProperty property = RequireProperty(propertyName);
-        properties.Draw(
-            editorContext,
-            target,
-            $"inline.{RuntimeHelpers.GetHashCode(target)}",
-            property);
+        properties.Draw(editorContext, target, $"inline.{RuntimeHelpers.GetHashCode(target)}", property);
     }
 
     /// <summary>
@@ -127,18 +147,10 @@ public sealed class InspectionDrawContext
     /// </remarks>
     public void DrawProperties()
     {
-        string ownerPath = string.Concat(
-            "inspection.",
-            target.GetType().FullName ?? target.GetType().Name,
-            ".",
-            RuntimeHelpers.GetHashCode(target).ToString("x8"));
+        string ownerPath = $"inspection.{target.GetType().FullName ?? target.GetType().Name}.{RuntimeHelpers.GetHashCode(target):x8}";
         for (int index = 0; index < m_serializedProperties.Count; index++)
         {
-            properties.Draw(
-                editorContext,
-                target,
-                ownerPath,
-                m_serializedProperties[index]);
+            properties.Draw(editorContext, target, ownerPath, m_serializedProperties[index]);
         }
     }
 
@@ -147,24 +159,8 @@ public sealed class InspectionDrawContext
         ArgumentException.ThrowIfNullOrWhiteSpace(propertyName);
         return m_serializedProperties.FirstOrDefault(property =>
                    string.Equals(property.name, propertyName, StringComparison.Ordinal))
-            ?? throw new InvalidOperationException(
-                $"Target '{target.GetType().FullName}' has no visible serialized property '{propertyName}'.");
-    }
-
-    internal InspectionDrawContext(
-        EditorContext editorContext,
-        EditorInteractions interactions,
-        object target,
-        SerializedPropertyRenderer properties,
-        InspectionDrawerRegistry drawers,
-        IReadOnlyList<SerializedProperty> serializedProperties
-    ) {
-        this.editorContext = editorContext ?? throw new ArgumentNullException(nameof(editorContext));
-        this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-        this.target = target ?? throw new ArgumentNullException(nameof(target));
-        this.properties = properties ?? throw new ArgumentNullException(nameof(properties));
-        m_drawers = drawers ?? throw new ArgumentNullException(nameof(drawers));
-        m_serializedProperties = serializedProperties
-            ?? throw new ArgumentNullException(nameof(serializedProperties));
+               ?? throw new InvalidOperationException(
+                   $"Target '{target.GetType().FullName}' has no visible serialized property '{propertyName}'."
+               );
     }
 }

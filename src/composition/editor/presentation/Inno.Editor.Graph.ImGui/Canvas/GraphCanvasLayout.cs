@@ -11,8 +11,8 @@ namespace Inno.Editor.Graph.ImGui;
 /// </summary>
 public sealed class GraphCanvasLayout
 {
-    private IReadOnlyList<GraphCanvasNode> m_nodes = Array.Empty<GraphCanvasNode>();
-    private Dictionary<GraphNodeId, GraphCanvasNode> m_byId = [];
+    private IReadOnlyList<GraphCanvasNode> m_nodes = [];
+    private Dictionary<GraphNodeID, GraphCanvasNode> m_byID = [];
 
     /// <summary>
     /// Gets nodes in draw order; reverse order determines overlapping-node hit priority.
@@ -38,24 +38,32 @@ public sealed class GraphCanvasLayout
     {
         ArgumentNullException.ThrowIfNull(nodes);
         GraphCanvasNode[] candidate = nodes.ToArray();
-        var byId = new Dictionary<GraphNodeId, GraphCanvasNode>(candidate.Length);
+        var byID = new Dictionary<GraphNodeID, GraphCanvasNode>(candidate.Length);
         int changes = 0;
         for (int index = 0; index < candidate.Length; index++)
         {
             GraphCanvasNode node = candidate[index];
             ArgumentNullException.ThrowIfNull(node);
-            if (m_byId.TryGetValue(node.id, out GraphCanvasNode? current) && Equivalent(current, node))
+            if (m_byID.TryGetValue(node.id, out GraphCanvasNode? current) && Equivalent(current, node))
+            {
                 candidate[index] = node = current;
+            }
             else
+            {
                 changes++;
-            if (!byId.TryAdd(node.id, node))
+            }
+            if (!byID.TryAdd(node.id, node))
+            {
                 throw new ArgumentException("A graph layout cannot contain duplicate node identities.", nameof(nodes));
+            }
         }
-        changes += m_byId.Keys.Count(id => !byId.ContainsKey(id));
+        changes += m_byID.Keys.Count(id => !byID.ContainsKey(id));
         if (changes == 0 && m_nodes.SequenceEqual(candidate))
+        {
             return 0;
+        }
         m_nodes = Array.AsReadOnly(candidate);
-        m_byId = byId;
+        m_byID = byID;
         return changes;
     }
 
@@ -72,9 +80,9 @@ public sealed class GraphCanvasLayout
     /// True when the current snapshot contains the node.
     /// </returns>
     public bool TryGetNode(
-        GraphNodeId id,
+        GraphNodeID id,
         [NotNullWhen(true)] out GraphCanvasNode? node
-    ) => m_byId.TryGetValue(id, out node);
+    ) => m_byID.TryGetValue(id, out node);
 
     private static bool Equivalent(
         GraphCanvasNode left,

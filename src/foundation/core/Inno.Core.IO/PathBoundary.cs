@@ -1,6 +1,6 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Inno.Core.IO;
 
@@ -33,7 +33,9 @@ public static class PathBoundary
         ArgumentException.ThrowIfNullOrWhiteSpace(root);
         ArgumentNullException.ThrowIfNull(relativePath);
         if (Path.IsPathRooted(relativePath))
+        {
             throw new ArgumentException("A contained path must be relative.", nameof(relativePath));
+        }
         string normalizedRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root));
         string candidate = Path.GetFullPath(relativePath.Length == 0 ? "." : relativePath, normalizedRoot);
         EnsureContains(normalizedRoot, candidate);
@@ -94,7 +96,8 @@ public static class PathBoundary
         if (!string.Equals(normalizedRoot, candidate, StringComparison.Ordinal))
         {
             string prefix = Path.EndsInDirectorySeparator(normalizedRoot)
-                ? normalizedRoot : normalizedRoot + Path.DirectorySeparatorChar;
+                            ? normalizedRoot
+                            : normalizedRoot + Path.DirectorySeparatorChar;
             string relative = candidate[prefix.Length..];
             foreach (string segment in relative.Split(Path.DirectorySeparatorChar))
             {
@@ -135,7 +138,9 @@ public static class PathBoundary
         ArgumentException.ThrowIfNullOrWhiteSpace(root);
         string normalizedRoot = Path.GetFullPath(root);
         if (!Directory.Exists(normalizedRoot))
+        {
             throw new DirectoryNotFoundException($"Owned directory '{normalizedRoot}' does not exist.");
+        }
         var pending = new Stack<string>();
         pending.Push(normalizedRoot);
         while (pending.Count > 0)
@@ -146,9 +151,13 @@ public static class PathBoundary
             {
                 FileAttributes attributes = RequireRegularEntry(entry);
                 if ((attributes & FileAttributes.Directory) != 0)
+                {
                     pending.Push(entry);
+                }
                 else
+                {
                     yield return entry;
+                }
             }
         }
     }
@@ -157,7 +166,9 @@ public static class PathBoundary
     {
         FileAttributes attributes = File.GetAttributes(path);
         if ((attributes & FileAttributes.ReparsePoint) != 0)
+        {
             throw new IOException($"Owned filesystem entry '{path}' cannot be a link or reparse point.");
+        }
         return attributes;
     }
 
@@ -167,8 +178,8 @@ public static class PathBoundary
     ) {
         string prefix = Path.EndsInDirectorySeparator(root) ? root : root + Path.DirectorySeparatorChar;
         if (!string.Equals(candidate, root, StringComparison.Ordinal)
-            && !candidate.StartsWith(prefix, StringComparison.Ordinal))
-        {
+            && !candidate.StartsWith(prefix, StringComparison.Ordinal)
+        ) {
             throw new IOException($"Path '{candidate}' escapes filesystem boundary '{root}'.");
         }
     }

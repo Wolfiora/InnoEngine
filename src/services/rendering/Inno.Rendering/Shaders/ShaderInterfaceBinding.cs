@@ -37,7 +37,7 @@ public sealed class ShaderInterfaceBinding
     /// Explicit resource slot, or null when the caller assigns an ordered layout.
     /// </param>
     public ShaderInterfaceBinding(
-        ShaderPropertyId id,
+        ShaderPropertyID id,
         ShaderPropertyType type,
         ShaderStage stages,
         int arrayCount = 1,
@@ -48,9 +48,13 @@ public sealed class ShaderInterfaceBinding
     ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(arrayCount);
         if (!Enum.IsDefined(bindingKind))
+        {
             throw new ArgumentOutOfRangeException(nameof(bindingKind));
+        }
         if (!Enum.IsDefined(storageAccess))
+        {
             throw new ArgumentOutOfRangeException(nameof(storageAccess));
+        }
         this.id = id;
         this.type = type;
         this.stages = stages;
@@ -60,14 +64,16 @@ public sealed class ShaderInterfaceBinding
         this.nativeName = nativeName ?? id.value;
         ArgumentException.ThrowIfNullOrWhiteSpace(this.nativeName);
         if (location < 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(location));
+        }
         this.location = location;
     }
 
     /// <summary>
     /// Gets the stable property ID.
     /// </summary>
-    public ShaderPropertyId id { get; }
+    public ShaderPropertyID id { get; }
 
     /// <summary>
     /// Gets the expected value or resource type.
@@ -98,9 +104,9 @@ public sealed class ShaderInterfaceBinding
     /// Gets the exact reflected symbol emitted by the adapter, distinct from the logical property ID.
     /// </summary>
     public string nativeName { get; }
+
     /// <summary>
     /// Gets an explicitly compiled resource slot, or null for a caller-assigned layout.
     /// </summary>
     public int? location { get; }
 }
-

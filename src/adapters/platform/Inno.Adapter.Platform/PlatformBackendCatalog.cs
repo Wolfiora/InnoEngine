@@ -10,7 +10,7 @@ namespace Inno.Adapter.Platform;
 /// </summary>
 public sealed class PlatformBackendCatalog : IPlatformBackendFactory
 {
-    private readonly Dictionary<PlatformBackendId, PlatformBackendProvider> m_providers = [];
+    private readonly Dictionary<PlatformBackendID, PlatformBackendProvider> m_providers = [];
 
     /// <summary>
     /// Validates and captures a complete provider set without creating any service.
@@ -30,23 +30,27 @@ public sealed class PlatformBackendCatalog : IPlatformBackendFactory
         foreach (PlatformBackendProvider provider in providers)
         {
             if (provider is null || !provider.id.isValid || !m_providers.TryAdd(provider.id, provider))
+            {
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
+            }
         }
-        supportedBackends = new ReadOnlyCollection<PlatformBackendId>(new List<PlatformBackendId>(m_providers.Keys));
+        this.supportedBackends = new ReadOnlyCollection<PlatformBackendID>([.. m_providers.Keys]);
     }
 
-    /// <inheritdoc />
-    public IReadOnlyList<PlatformBackendId> supportedBackends { get; }
+    /// <inheritdoc/>
+    public IReadOnlyList<PlatformBackendID> supportedBackends { get; }
 
-    /// <inheritdoc />
     /// <exception cref="InvalidOperationException">
     /// The selected provider returned no service.
     /// </exception>
-    public IPlatformApplication CreateApplication(PlatformBackendId backend) {
+    /// <inheritdoc/>
+    public IPlatformApplication CreateApplication(PlatformBackendID backend)
+    {
         if (!m_providers.TryGetValue(backend, out PlatformBackendProvider? provider))
+        {
             throw new NotSupportedException("Platform backend '" + backend + "' is not registered.");
+        }
         return provider.CreateApplication()
-            ?? throw new InvalidOperationException("Platform provider '" + backend + "' returned no service.");
+               ?? throw new InvalidOperationException("Platform provider '" + backend + "' returned no service.");
     }
 }
-

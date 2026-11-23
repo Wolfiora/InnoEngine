@@ -7,7 +7,8 @@ using Inno.Editor.Scene;
 using Inno.Scene;
 
 namespace Inno.Editor.Panel.Hierarchy;
-[EditorDrop(HierarchyInteractionIds.C_AREA)]
+
+[EditorDrop(HierarchyInteractionIDs.C_AREA)]
 internal sealed class MoveGameObjectToSceneDropHandler(SceneEdits edits) : EditorDrop<GameObject, HierarchySceneDropTarget>
 {
     /// <summary>
@@ -24,9 +25,9 @@ internal sealed class MoveGameObjectToSceneDropHandler(SceneEdits edits) : Edito
         GameObject[] sources = SelectedSources(context);
         GameScene target = context.target.scene;
         return sources.Length > 0
-            && sources.All(value => value.isRuntimeValid && edits.CanEdit(value))
-            && edits.CanEdit(target)
-            && target is { isLoaded: true, isDestroyed: false } ? EditorDropStatus.Accept() : EditorDropStatus.rejected;
+               && sources.All(value => value.isRuntimeValid && edits.CanEdit(value))
+               && edits.CanEdit(target)
+               && target is { isLoaded: true, isDestroyed: false } ? EditorDropStatus.Accept() : EditorDropStatus.rejected;
     }
 
     /// <summary>
@@ -41,7 +42,9 @@ internal sealed class MoveGameObjectToSceneDropHandler(SceneEdits edits) : Edito
     protected override EditorDropResult Drop(EditorDropContext<GameObject, HierarchySceneDropTarget> context)
     {
         if (!Query(context).canDrop)
+        {
             return EditorDropResult.rejected;
+        }
         edits.MoveGameObjects(SelectedSources(context), context.target.scene);
         return EditorDropResult.Accepted(context.source, context.target);
     }
@@ -49,8 +52,10 @@ internal sealed class MoveGameObjectToSceneDropHandler(SceneEdits edits) : Edito
     private static GameObject[] SelectedSources(EditorDropContext<GameObject, HierarchySceneDropTarget> context)
     {
         if (!context.interactions.selection.Contains(context.source))
+        {
             return[context.source];
-        var values = new List<GameObject>();
+        }
+        List<GameObject> values = [];
         context.interactions.selection.CopyTargets(values);
         return values.Count == context.interactions.selection.count ? values.ToArray() : [];
     }

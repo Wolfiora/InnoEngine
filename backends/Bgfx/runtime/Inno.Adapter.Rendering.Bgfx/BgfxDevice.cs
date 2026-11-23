@@ -1,9 +1,10 @@
-using Inno.Adapter.Platform;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Inno.Adapter.Platform;
+using Inno.Core.Execution;
 using Inno.Native.Bgfx;
 using Inno.Platform;
 using Inno.Rendering;
@@ -20,12 +21,10 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     private static int s_nextGeneration;
 
     private readonly BgfxProcessDeviceLease m_processLease;
-    private readonly int m_apiThreadId;
+    private readonly int m_apiThreadID;
     private readonly int m_deferredDestroyFrames;
     private readonly bool m_hasPrimarySurface;
     private readonly List<BgfxSurfaceRetirement> m_surfaceRetirements = [];
-    private Inno.Core.Execution.RetirementBarrier? m_surfaceRetirementBarrier;
-    private ulong m_submissionSequence;
     private readonly IBgfxSurfaceIntegration? m_surfaceIntegration;
     private readonly Dictionary<ulong, bgfx.TextureHandle> m_persistentTextures = [];
     private readonly Dictionary<ulong, RenderTextureDescriptor> m_persistentTextureDescriptors = [];
@@ -37,18 +36,20 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     private readonly List<PooledTransientTexture> m_transientTexturePool = [];
     private readonly List<bgfx.FrameBufferHandle> m_graphFrameBuffers = [];
     private readonly List<CachedGraphFrameBuffer> m_graphFrameBufferCache = [];
+    private RetirementBarrier? m_surfaceRetirementBarrier;
+    private ulong m_submissionSequence;
     private uint m_resetFlags;
     private bool m_resetPending;
 
     private CompiledRenderGraph? m_activeGraph;
     private bgfx.Encoder* m_activeEncoder;
-    private ulong m_nextPersistentId = 1;
-    private ulong m_nextReadbackId = 1;
+    private ulong m_nextPersistentID = 1;
+    private ulong m_nextReadbackID = 1;
     private uint m_backendFrame;
     private int m_activeGraphViewBase;
     private int m_backbufferWidth;
     private int m_backbufferHeight;
-    private int m_nextViewId;
+    private int m_nextViewID;
     private RenderPresentationSize? m_pendingPresentationSize;
     private bool m_presentationUpdatePending;
     private int m_drawCount;
@@ -73,31 +74,38 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     public BgfxDevice(BgfxDeviceOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
-        PlatformNativeHandles nativeHandles = options.window is null ? default
-            : options.window is INativeWindowSurface surface ? surface.nativeHandles
-            : throw new NotSupportedException("BGFX requires a window that implements INativeWindowSurface.");
+        PlatformNativeHandles nativeHandles = options.window is null
+            ? default
+            : options.window is INativeWindowSurface surface
+              ? surface.nativeHandles
+              : throw new NotSupportedException("BGFX requires a window that implements INativeWindowSurface.");
         m_surfaceIntegration = options.surfaceIntegration;
-        BgfxSurfaceDescriptor primarySurface = options.window is null ? default
-            : BgfxSurfaceBinding.Validate((m_surfaceIntegration
-                ?? throw new ArgumentException("A windowed BGFX device requires an explicit surface integration.", nameof(options)))
-                .Resolve(nativeHandles, BgfxSurfaceRole.Primary));
-        m_apiThreadId = Environment.CurrentManagedThreadId;
+        BgfxSurfaceDescriptor primarySurface = options.window is null
+            ? default
+            : BgfxSurfaceBinding.Validate(
+                (m_surfaceIntegration
+                 ?? throw new ArgumentException("A windowed BGFX device requires an explicit surface integration.", nameof(options)))
+                    .Resolve(nativeHandles, BgfxSurfaceRole.Primary)
+            );
+        m_apiThreadID = Environment.CurrentManagedThreadId;
         m_deferredDestroyFrames = options.deferredDestroyFrames;
         m_hasPrimarySurface = options.window is not null;
         int pixelWidth = options.backbufferWidth;
         int pixelHeight = options.backbufferHeight;
-        primaryPresentationSize = m_hasPrimarySurface && pixelWidth > 0 && pixelHeight > 0
-            ? new RenderPresentationSize(pixelWidth, pixelHeight) : null;
+        this.primaryPresentationSize = m_hasPrimarySurface && pixelWidth > 0 && pixelHeight > 0
+                                       ? new RenderPresentationSize(pixelWidth, pixelHeight)
+                                       : null;
         m_backbufferWidth = Math.Max(1, pixelWidth);
         m_backbufferHeight = Math.Max(1, pixelHeight);
         m_resetFlags = (uint)(
             (options.verticalSync ? bgfx.ResetFlags.Vsync : bgfx.ResetFlags.None)
             | (options.sRgbBackbuffer && (!m_hasPrimarySurface || primarySurface.supportsSrgbReset)
-                ? bgfx.ResetFlags.SrgbBackbuffer
-                : bgfx.ResetFlags.None));
+               ? bgfx.ResetFlags.SrgbBackbuffer
+               : bgfx.ResetFlags.None));
 
         bgfx.RendererType? preferredRenderer = options.preferredBackend is GraphicsApi backend
-            ? BgfxCapabilityMapper.ToNativeRenderer(backend) : null;
+                                               ? BgfxCapabilityMapper.ToNativeRenderer(backend)
+                                               : null;
         m_processLease = BgfxProcessDeviceLease.Acquire(options.forceSingleThreaded);
         bool nativeInitialized = false;
         try
@@ -111,10 +119,14 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
             bgfx.Init init;
             bgfx.Raw.init_ctor(&init);
             if (preferredRenderer.HasValue)
+            {
                 init.type = preferredRenderer.Value;
+            }
 
             if (options.window is not null)
+            {
                 BgfxSurfaceBinding.Apply(ref init, primarySurface);
+            }
             init.resolution.width = checked((uint)m_backbufferWidth);
             init.resolution.height = checked((uint)m_backbufferHeight);
             init.resolution.reset = m_resetFlags;
@@ -124,18 +136,20 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
             }
             nativeInitialized = true;
 
-            generation = unchecked((uint)Interlocked.Increment(ref s_nextGeneration));
+            this.generation = unchecked((uint)Interlocked.Increment(ref s_nextGeneration));
             if (generation == 0)
             {
-                generation = unchecked((uint)Interlocked.Increment(ref s_nextGeneration));
+                this.generation = unchecked((uint)Interlocked.Increment(ref s_nextGeneration));
             }
 
-            capabilities = BgfxCapabilityMapper.FromNative(bgfx.Raw.get_caps());
+            this.capabilities = BgfxCapabilityMapper.FromNative(bgfx.Raw.get_caps());
         }
         catch
         {
             if (nativeInitialized)
+            {
                 bgfx.shutdown();
+            }
             m_processLease.Dispose();
             throw;
         }
@@ -159,8 +173,9 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     /// <summary>
     /// Gets whether both the selected host and active renderer permit additional window surfaces.
     /// </summary>
-    public bool supportsAdditionalSurfaces => m_surfaceIntegration?.supportsAdditionalSurfaces == true
-        && capabilities.Supports(GraphicsCapability.SwapChain);
+    public bool supportsAdditionalSurfaces
+        => m_surfaceIntegration?.supportsAdditionalSurfaces == true
+           && capabilities.Supports(GraphicsCapability.SwapChain);
 
     /// <summary>
     /// Gets the generation identity that owns this value.
@@ -186,8 +201,12 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         {
             EnsureApiThread();
             ObjectDisposedException.ThrowIf(m_disposed, this);
-            return new RenderDeviceAllocationCounters(generation, m_transientTextureAllocationCount,
-                m_transientBufferAllocationCount, m_transientFrameBufferAllocationCount);
+            return new RenderDeviceAllocationCounters(
+                generation,
+                m_transientTextureAllocationCount,
+                m_transientBufferAllocationCount,
+                m_transientFrameBufferAllocationCount
+            );
         }
     }
 
@@ -196,7 +215,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     /// </summary>
     public uint backendFrame => m_backendFrame;
 
-    internal int allocatedViewCount => m_nextViewId;
+    internal int allocatedViewCount => m_nextViewID;
 
     internal void RecordDraw(int count = 1) => Interlocked.Add(ref m_drawCount, count);
 
@@ -222,7 +241,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     {
         EnsureApiThread();
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        if (!m_frameOpen || m_activeGraph is not null || m_activeEncoder != null)
+        if (!m_frameOpen || m_activeGraph is not null || m_activeEncoder is not null)
         {
             throw new InvalidOperationException("Operation requires an open frame before graph execution.");
         }
@@ -230,7 +249,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
 
     private void EnsureApiThread()
     {
-        if (Environment.CurrentManagedThreadId != m_apiThreadId)
+        if (Environment.CurrentManagedThreadId != m_apiThreadID)
         {
             throw new InvalidOperationException("BGFX API operations must run on the device API thread.");
         }
@@ -244,5 +263,4 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         byte a = (byte)(Math.Clamp(color.a, 0f, 1f) * 255f);
         return ((uint)r << 24) | ((uint)g << 16) | ((uint)b << 8) | a;
     }
-
 }

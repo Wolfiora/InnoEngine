@@ -25,18 +25,35 @@ internal static class BuildComposition
     internal static async Task<ProductNativeBuildResult> PrepareNativeAsync(
         BuildCompositionContext context,
         string engineRoot,
-        CancellationToken cancellationToken,
-        string? nativeDependencies = null
+        string? nativeDependencies = null,
+        CancellationToken cancellationToken = default
     ) {
-        var distribution = StandardBuildDistribution.Create(context).build;
+        BuildDistribution distribution = StandardBuildDistribution.Create(context).build;
         NativeProductContribution contribution = distribution.ResolveNativeProduct(context.toolsTarget.value, "shader-tools");
         if (nativeDependencies is not null)
-            return await NativeDependencyManifest.AcquireAsync(engineRoot, nativeDependencies, context.toolsTarget.value,
-                C_HOST_CONFIGURATION, contribution.plan, cancellationToken).ConfigureAwait(false);
-        var nativeContext = new NativeBuildContext(engineRoot, C_HOST_CONFIGURATION).WithBindingGenerator(StandardBuildDistribution.Create(context).build.ResolveBindingGenerator(context.toolsTarget.value));
-        var provider = StandardBuildDistribution.Create(context).build.ResolveNativeToolchain(context.toolsTarget.value);
-        nativeContext = nativeContext.WithToolchain(await provider.ResolveAsync(
-            nativeContext, context.host, context.toolsTarget.value, cancellationToken).ConfigureAwait(false));
+        {
+            return await NativeDependencyManifest.AcquireAsync(
+                engineRoot,
+                nativeDependencies,
+                context.toolsTarget.value,
+                C_HOST_CONFIGURATION,
+                contribution.plan,
+                cancellationToken
+            ).ConfigureAwait(false);
+        }
+        NativeBuildContext nativeContext = new NativeBuildContext(engineRoot, C_HOST_CONFIGURATION).WithBindingGenerator(
+            StandardBuildDistribution.Create(context).build.ResolveBindingGenerator(context.toolsTarget.value)
+        );
+        INativeToolchainProvider provider = StandardBuildDistribution.Create(context).build
+            .ResolveNativeToolchain(context.toolsTarget.value);
+        nativeContext = nativeContext.WithToolchain(
+            await provider.ResolveAsync(
+                nativeContext,
+                context.host,
+                context.toolsTarget.value,
+                cancellationToken
+            ).ConfigureAwait(false)
+        );
         return await contribution.BuildAsync(nativeContext, cancellationToken).ConfigureAwait(false);
     }
 
@@ -49,8 +66,14 @@ internal static class BuildComposition
         ScriptCompiler compiler,
         string supportPackRoot,
         ToolRunner tools
-    ) {
-        return BuildPipelineFactory.Create(
-            context, StandardBuildDistribution.Create(context, tools).build, engine, assets, plugins, settings, compiler, supportPackRoot);
-    }
+    ) => BuildPipelineFactory.Create(
+        context,
+        StandardBuildDistribution.Create(context, tools).build,
+        engine,
+        assets,
+        plugins,
+        settings,
+        compiler,
+        supportPackRoot
+    );
 }

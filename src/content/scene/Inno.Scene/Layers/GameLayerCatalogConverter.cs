@@ -1,9 +1,8 @@
 using System;
 using System.Linq;
-
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Core.Serialization.Converters;
+using Inno.Extensibility.Types;
 
 namespace Inno.Scene.Layers;
 
@@ -27,12 +26,8 @@ internal sealed class GameLayerCatalogConverter : SerializationConverter<GameLay
     ) {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(value);
-        writer.Write(
-            "localIds",
-            value.CaptureLocalIds().Select(static id => id ?? string.Empty).ToArray());
-        writer.Write(
-            "names",
-            value.CaptureNames().Select(static name => name ?? string.Empty).ToArray());
+        writer.Write("localIds", value.CaptureLocalIDs().Select(static id => id ?? string.Empty).ToArray());
+        writer.Write("names", value.CaptureNames().Select(static name => name ?? string.Empty).ToArray());
         writer.Write("interactionMasks", value.CaptureInteractionMasks());
     }
 
@@ -48,12 +43,12 @@ internal sealed class GameLayerCatalogConverter : SerializationConverter<GameLay
     public override GameLayerCatalog Read(SerializationReader reader)
     {
         ArgumentNullException.ThrowIfNull(reader);
-        string?[] localIds = reader.Read<string[]>("localIds")
+        string?[] localIDs = reader.Read<string[]>("localIds")
             .Select(static id => string.IsNullOrEmpty(id) ? null : id)
             .ToArray();
         string?[] names = reader.Read<string[]>("names")
             .Select(static name => string.IsNullOrEmpty(name) ? null : name)
             .ToArray();
-        return GameLayerCatalog.Restore(localIds, names, reader.Read<uint[]>("interactionMasks"));
+        return GameLayerCatalog.Restore(localIDs, names, reader.Read<uint[]>("interactionMasks"));
     }
 }

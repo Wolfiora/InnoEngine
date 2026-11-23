@@ -11,38 +11,36 @@ namespace Inno.Integration.WindowsX64.Sdl3;
 /// </summary>
 public sealed class WindowsX64Sdl3HostIntegration : ISdl3HostIntegration
 {
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public Sdl3HostCapabilities capabilities { get; } = new(multipleWindows: true, liveResize: true);
 
-    /// <inheritdoc />
-    public void ConfigureInitialization()
-    {
-    }
+    /// <inheritdoc/>
+    public void ConfigureInitialization() {}
 
-    /// <inheritdoc />
-    public nint CreateWindow(PlatformWindowOptions options)
-    {
-        return Sdl3WindowOperations.CreateWindow(options, requireOpenGl: false);
-    }
+    /// <inheritdoc/>
+    public nint CreateWindow(PlatformWindowOptions options) => Sdl3WindowOperations.CreateWindow(options, requireOpenGl: false);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public unsafe PlatformNativeHandles ResolveNativeSurface(nint windowHandle)
     {
         if (windowHandle == 0)
+        {
             throw new ArgumentException("A live SDL window is required.", nameof(windowHandle));
+        }
         uint properties = SDL.Raw.GetWindowProperties((SDLWindow*)windowHandle);
         ReadOnlySpan<byte> propertyName = "SDL.window.win32.hwnd\0"u8;
         nint surface;
         fixed (byte* name = propertyName)
+        {
             surface = (nint)SDL.Raw.GetPointerProperty(properties, (sbyte*)name, null);
+        }
         if (surface == 0)
+        {
             throw new InvalidOperationException("SDL did not provide the required Windows surface.");
-        return new PlatformNativeHandles(surface, handleKind: PlatformNativeHandleId.win32);
+        }
+        return new PlatformNativeHandles(surface, handleKind: PlatformNativeHandleID.win32);
     }
 
-    /// <inheritdoc />
-    public bool GetInitialFocus(nint windowHandle)
-    {
-        return Sdl3WindowOperations.ReadFocus(windowHandle);
-    }
+    /// <inheritdoc/>
+    public bool GetInitialFocus(nint windowHandle) => Sdl3WindowOperations.ReadFocus(windowHandle);
 }

@@ -1,13 +1,13 @@
+using Inno.Core.Input;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
-using Inno.Core.Input;
 using Inno.Scene;
 
 namespace Inno.Editor.Panel.Hierarchy;
 
-[EditorAction(HierarchyInteractionIds.C_UNLOAD_SCENE, priority: 100)]
-[EditorMenu(HierarchyInteractionIds.C_AREA, "Unload", order: 400, separatorBefore: true)]
-[EditorShortcut(HierarchyInteractionIds.C_AREA, KeyCode.Delete)]
+[EditorAction(HierarchyInteractionIDs.C_UNLOAD_SCENE, priority: 100)]
+[EditorMenu(HierarchyInteractionIDs.C_AREA, "Unload", order: 400, separatorBefore: true)]
+[EditorShortcut(HierarchyInteractionIDs.C_AREA, KeyCode.Delete)]
 internal sealed class UnloadSceneCommand(SceneEdits edits) : EditorAction<GameScene>
 {
     /// <summary>
@@ -21,8 +21,8 @@ internal sealed class UnloadSceneCommand(SceneEdits edits) : EditorAction<GameSc
     /// </returns>
     protected override EditorActionState Query(EditorActionContext<GameScene> context)
         => context.target is { isLoaded: true, isDestroyed: false }
-            ? EditorActionState.enabled
-            : EditorActionState.disabled;
+           ? EditorActionState.enabled
+           : EditorActionState.disabled;
 
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.
@@ -33,8 +33,12 @@ internal sealed class UnloadSceneCommand(SceneEdits edits) : EditorAction<GameSc
     protected override void Execute(EditorActionContext<GameScene> context)
     {
         if (!edits.CloseScene(context.target))
+        {
             return;
+        }
         if (context.interactions.selection.TryGet(out GameScene? selected) && ReferenceEquals(selected, context.target))
+        {
             _ = context.interactions.For(context.area).Select();
+        }
     }
 }

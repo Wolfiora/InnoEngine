@@ -1,7 +1,6 @@
-using Inno.Runtime.Contracts;
 using System;
-
 using Inno.Runtime;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Storage.Runtime;
 
@@ -20,15 +19,17 @@ public sealed class StorageRuntimeFactory : IRuntimeSubsystemFactory
     /// </param>
     public StorageRuntimeFactory(Func<RuntimeSubsystemContext, IApplicationStorage> storageFactory)
     {
-        m_storageFactory = storageFactory ?? throw new ArgumentNullException(nameof(storageFactory));
+        ArgumentNullException.ThrowIfNull(storageFactory);
+        m_storageFactory = storageFactory;
     }
 
     /// <summary>
     /// Gets stable ordering metadata for the frame-scoped storage service.
     /// </summary>
     public RuntimeSubsystemDescriptor descriptor { get; } = new(
-        new RuntimeSubsystemId("inno.runtime.storage"),
-        order: -900);
+        new RuntimeSubsystemID("inno.runtime.storage"),
+        order: -900
+    );
 
     /// <summary>
     /// Creates a storage feature over a newly allocated application sandbox.
@@ -43,7 +44,7 @@ public sealed class StorageRuntimeFactory : IRuntimeSubsystemFactory
     {
         ArgumentNullException.ThrowIfNull(context);
         IApplicationStorage storage = m_storageFactory(context)
-            ?? throw new InvalidOperationException("The application storage factory returned null.");
+                                      ?? throw new InvalidOperationException("The application storage factory returned null.");
         return new StorageRuntime(storage);
     }
 }

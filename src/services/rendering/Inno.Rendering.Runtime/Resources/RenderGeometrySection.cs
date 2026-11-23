@@ -1,18 +1,19 @@
-using Inno.Core.Diagnostics;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.Diagnostics;
+using Inno.Extensibility.Types;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 
 /// <summary>
 /// Describes one indexed range in resolved backend-neutral geometry.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("fc4ae91b-3a0b-59d3-b65e-4c0c3533d715")]
+[StableTypeID("fc4ae91b-3a0b-59d3-b65e-4c0c3533d715")]
 public readonly record struct RenderGeometrySection
 {
     /// <summary>
@@ -44,4 +45,3 @@ public readonly record struct RenderGeometrySection
     /// </summary>
     public int indexCount { get; }
 }
-

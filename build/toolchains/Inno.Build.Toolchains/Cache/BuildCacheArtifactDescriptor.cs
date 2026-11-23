@@ -20,12 +20,12 @@ public sealed class BuildCacheArtifactDescriptor
     /// <param name="leasePath">
     /// The absolute persistent file used by this entry's actual producer and readers for Core.IO coordination.
     /// </param>
+    /// <param name="targetID">
+    /// The explicit product target, or null for a shared host artifact that target-scoped cleanup must preserve.
+    /// </param>
     /// <param name="bytes">
     /// The publisher-recorded sum of owned file lengths, captured under writing ownership for cache budgeting.
     /// It does not measure allocated disk blocks or count shared hardlinks as recovered volume space.
-    /// </param>
-    /// <param name="targetId">
-    /// The explicit product target, or null for a shared host artifact that target-scoped cleanup must preserve.
     /// </param>
     /// <param name="lastUseUtc">
     /// The publisher's last recorded use, used only to order retirement.
@@ -48,7 +48,7 @@ public sealed class BuildCacheArtifactDescriptor
     public BuildCacheArtifactDescriptor(
         string directory,
         string leasePath,
-        string? targetId,
+        string? targetID,
         long bytes,
         DateTime lastUseUtc,
         IReadOnlyList<string> dependencies,
@@ -58,24 +58,32 @@ public sealed class BuildCacheArtifactDescriptor
         ArgumentException.ThrowIfNullOrWhiteSpace(leasePath);
         ArgumentNullException.ThrowIfNull(dependencies);
         if (!Path.IsPathFullyQualified(directory) || !Path.IsPathFullyQualified(leasePath)
-            || dependencies.Any(static path => !Path.IsPathFullyQualified(path)))
+            || dependencies.Any(static path => !Path.IsPathFullyQualified(path))
+        ) {
             throw new ArgumentException("Cache artifact paths must be absolute.");
-        if (bytes < 0)
-            throw new ArgumentOutOfRangeException(nameof(bytes));
-        if (targetId is not null && string.IsNullOrWhiteSpace(targetId))
-            throw new ArgumentException("A declared cache target cannot be blank.", nameof(targetId));
+        }
+        ArgumentOutOfRangeException.ThrowIfNegative(bytes);
+        if (targetID is not null && string.IsNullOrWhiteSpace(targetID))
+        {
+            throw new ArgumentException("A declared cache target cannot be blank.", nameof(targetID));
+        }
         if (lastUseUtc.Kind != DateTimeKind.Utc)
+        {
             throw new ArgumentException("Cache use timestamps must be UTC.", nameof(lastUseUtc));
+        }
         this.directory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
         this.leasePath = Path.GetFullPath(leasePath);
-        this.targetId = targetId;
+        this.targetID = targetID;
         this.bytes = bytes;
         this.lastUseUtc = lastUseUtc;
         if (!Enum.IsDefined(role))
+        {
             throw new ArgumentOutOfRangeException(nameof(role));
+        }
         this.role = role;
-        this.dependencies = new ReadOnlyCollection<string>(dependencies.Select(static path =>
-            Path.TrimEndingDirectorySeparator(Path.GetFullPath(path))).ToArray());
+        this.dependencies = new ReadOnlyCollection<string>(
+            dependencies.Select(static path => Path.TrimEndingDirectorySeparator(Path.GetFullPath(path))).ToArray()
+        );
     }
 
     /// <summary>
@@ -91,7 +99,7 @@ public sealed class BuildCacheArtifactDescriptor
     /// <summary>
     /// Gets the producer-declared target, or null when this artifact is shared by host operations.
     /// </summary>
-    public string? targetId { get; }
+    public string? targetID { get; }
 
     /// <summary>
     /// Gets the logical file size used for budgeting, without weakening content validation.

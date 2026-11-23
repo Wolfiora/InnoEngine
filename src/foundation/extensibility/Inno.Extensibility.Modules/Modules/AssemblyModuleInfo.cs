@@ -1,18 +1,6 @@
-using System;
 using System.Collections.Generic;
 
 namespace Inno.Extensibility.Modules;
-
-/// <summary>
-/// Describes the catalog state of a published assembly module generation.
-/// </summary>
-public enum AssemblyModuleStatus
-{
-    /// <summary>
-    /// The module generation is visible to assembly catalog participants.
-    /// </summary>
-    Active
-}
 
 /// <summary>
 /// Provides non-owning diagnostic information about an active assembly module.
@@ -58,5 +46,16 @@ public sealed record AssemblyModuleInfo(
     /// <summary>
     /// Gets stable module dependencies used by this active generation.
     /// </summary>
-    public IReadOnlyList<string> upstreamModuleNames { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> upstreamModuleNames { get; init; } = [];
+}
+
+/// <summary>
+/// Describes the catalog state of a published assembly module generation.
+/// </summary>
+public enum AssemblyModuleStatus
+{
+    /// <summary>
+    /// The module generation is visible to assembly catalog participants.
+    /// </summary>
+    Active
 }

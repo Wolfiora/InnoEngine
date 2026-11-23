@@ -1,11 +1,10 @@
 using System;
-
 using Inno.Core.Diagnostics;
 using Inno.Core.Settings;
 using Inno.Editor.Core;
+using Inno.Runtime;
 using Inno.Scene;
 using Inno.Scene.Layers;
-using Inno.Runtime;
 
 namespace Inno.Editor.Panel.Inspector;
 
@@ -27,7 +26,8 @@ internal sealed class SceneProjectSettingsModule : EditorModule
         RuntimeSession runtimeSession,
         DiagnosticHub diagnostics
     ) {
-        m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        ArgumentNullException.ThrowIfNull(settings);
+        m_settings = settings;
         ArgumentNullException.ThrowIfNull(runtimeSession);
         ArgumentNullException.ThrowIfNull(diagnostics);
         m_layerDiagnostics = new GameLayerDiagnosticPublisher(runtimeSession.scenes, diagnostics);
@@ -40,8 +40,9 @@ internal sealed class SceneProjectSettingsModule : EditorModule
     /// <exception cref="InvalidOperationException">
     /// Thrown before the module has started.
     /// </exception>
-    internal GameLayerCatalog layerStack => m_layerStack
-        ?? throw new InvalidOperationException("The project layer settings are not available.");
+    internal GameLayerCatalog layerStack
+        => m_layerStack
+           ?? throw new InvalidOperationException("The project layer settings are not available.");
 
     /// <summary>
     /// Gets the effective project tag catalog snapshot.
@@ -49,8 +50,9 @@ internal sealed class SceneProjectSettingsModule : EditorModule
     /// <exception cref="InvalidOperationException">
     /// Thrown before the module has started.
     /// </exception>
-    internal GameTagCatalog tagCatalog => m_tagCatalog
-        ?? throw new InvalidOperationException("The project tag settings are not available.");
+    internal GameTagCatalog tagCatalog
+        => m_tagCatalog
+           ?? throw new InvalidOperationException("The project tag settings are not available.");
 
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.
@@ -69,7 +71,9 @@ internal sealed class SceneProjectSettingsModule : EditorModule
     protected override void OnUpdate(EditorContext context)
     {
         if (m_observedRevision != m_settings.revision)
+        {
             RefreshSettings();
+        }
         m_layerDiagnostics.Refresh(layerStack);
         m_tagDiagnostics.Refresh(tagCatalog);
     }
@@ -91,8 +95,8 @@ internal sealed class SceneProjectSettingsModule : EditorModule
 
     private void RefreshSettings()
     {
-        m_layerStack = m_settings.Get<GameLayerCatalog>(GameLayerCatalog.settingId);
-        m_tagCatalog = m_settings.Get<GameTagCatalog>(GameTagCatalog.settingId);
+        m_layerStack = m_settings.Get<GameLayerCatalog>(GameLayerCatalog.settingID);
+        m_tagCatalog = m_settings.Get<GameTagCatalog>(GameTagCatalog.settingID);
         m_observedRevision = m_settings.revision;
     }
 }

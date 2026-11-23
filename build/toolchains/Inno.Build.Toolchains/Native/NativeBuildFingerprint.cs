@@ -43,7 +43,7 @@ public static class NativeBuildFingerprint
     ) {
         ArgumentNullException.ThrowIfNull(declarations);
         ArgumentNullException.ThrowIfNull(inputs);
-        NativeBuildInputState state = new();
+        var state = new NativeBuildInputState();
         return Create(declarations, state.CaptureInitial(inputs, cancellationToken));
     }
 
@@ -83,7 +83,9 @@ public static class NativeBuildFingerprint
     ) {
         using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         foreach (string declaration in declarations)
+        {
             Append(hash, declaration);
+        }
         foreach (NativeInputSnapshot.Entry entry in snapshot.entries)
         {
             Append(hash, entry.logicalPath);

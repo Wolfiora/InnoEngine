@@ -1,15 +1,27 @@
 using System;
 using System.Numerics;
 using Inno.Native.ImGui;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
+
 /// <summary>
 /// Provides standard help box presentation in the Editor UI.
 /// </summary>
 public sealed unsafe partial class ImGuiWidget
 {
     private SectionLayoutState? m_sectionLayout;
+
+    /// <summary>
+    /// Gets whether content belonging to the current Inspector section should be drawn.
+    /// </summary>
+    /// <remarks>
+    /// Attribute-driven drawers use this value to skip properties until the next section header
+    /// when the current section is collapsed.
+    /// </remarks>
+    public bool isSectionContentVisible => m_sectionLayout?.contentVisible ?? true;
+
     /// <summary>
     /// Draws a wrapped contextual message with a semantic icon and a subdued status surface.
     /// </summary>
@@ -31,7 +43,7 @@ public sealed unsafe partial class ImGuiWidget
         ArgumentNullException.ThrowIfNull(text);
         ArgumentNullException.ThrowIfNull(icon);
         Vector2 origin = NativeImGui.GetCursorScreenPos();
-        Vector2 padding = new(10f * style.zoom, 8f * style.zoom);
+        var padding = new Vector2(10f * style.zoom, 8f * style.zoom);
         float width = MathF.Max(1f, NativeImGui.GetContentRegionAvail().X);
         float iconWidth = NativeImGui.CalcTextSize(icon).X;
         float gap = 8f * style.zoom;
@@ -40,12 +52,34 @@ public sealed unsafe partial class ImGuiWidget
         float height = MathF.Max(NativeImGui.GetTextLineHeight(), textSize.Y) + padding.Y * 2f;
         ImDrawList* draw = NativeImGui.Raw.GetWindowDrawList();
         Vector4 background = Vector4.Lerp(EditorPalette.windowBackground, color, 0.075f);
-        background.W = EditorPalette.opacityOpaque;
+        background.W = EditorPalette.C_OPACITY_OPAQUE;
         Vector4 outline = color;
-        outline.W = EditorPalette.opacityMuted;
-        ImGui.DrawNativeFilledRectangle(draw, origin, origin + new Vector2(width, height), NativeImGui.ColorConvertFloat4ToU32(background), 4f * style.zoom, 0);
-        ImGui.DrawNativeRectangle(draw, origin, origin + new Vector2(width, height), NativeImGui.ColorConvertFloat4ToU32(outline), 4f * style.zoom, 0, 1f);
-        ImGui.DrawNativeFilledRectangle(draw, origin, origin + new Vector2(2f * style.zoom, height), NativeImGui.ColorConvertFloat4ToU32(color), 0, 0);
+        outline.W = EditorPalette.C_OPACITY_MUTED;
+        ImGui.DrawNativeFilledRectangle(
+            draw,
+            origin,
+            origin + new Vector2(width, height),
+            NativeImGui.ColorConvertFloat4ToU32(background),
+            4f * style.zoom,
+            0
+        );
+        ImGui.DrawNativeRectangle(
+            draw,
+            origin,
+            origin + new Vector2(width, height),
+            NativeImGui.ColorConvertFloat4ToU32(outline),
+            4f * style.zoom,
+            0,
+            1f
+        );
+        ImGui.DrawNativeFilledRectangle(
+            draw,
+            origin,
+            origin + new Vector2(2f * style.zoom, height),
+            NativeImGui.ColorConvertFloat4ToU32(color),
+            0,
+            0
+        );
         ImGui.DrawNativeText(draw, origin + padding, NativeImGui.ColorConvertFloat4ToU32(color), icon);
         NativeImGui.SetCursorScreenPos(origin + padding + new Vector2(iconWidth + gap, 0f));
         NativeImGui.PushTextWrapPos(NativeImGui.GetCursorPosX() + textWidth);
@@ -126,15 +160,6 @@ public sealed unsafe partial class ImGuiWidget
     }
 
     /// <summary>
-    /// Gets whether content belonging to the current Inspector section should be drawn.
-    /// </summary>
-    /// <remarks>
-    /// Attribute-driven drawers use this value to skip properties until the next section header
-    /// when the current section is collapsed.
-    /// </remarks>
-    public bool isSectionContentVisible => m_sectionLayout?.contentVisible ?? true;
-
-    /// <summary>
     /// Ensures that subsequently drawn default properties belong to a framed section.
     /// </summary>
     /// <param name="title">
@@ -158,7 +183,9 @@ public sealed unsafe partial class ImGuiWidget
         ArgumentNullException.ThrowIfNull(title);
         SectionLayoutState? layout = m_sectionLayout;
         if (layout is null)
+        {
             return true;
+        }
         return layout.sectionIndex == 0 ? SectionHeader(title, description) : layout.contentVisible;
     }
 
@@ -174,13 +201,13 @@ public sealed unsafe partial class ImGuiWidget
     /// <param name="drawLeadingControl">
     /// Optional interactive control drawn before the section title.
     /// </param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="title"/> is <see langword="null"/>.
-    /// </exception>
     /// <returns>
     /// <see langword="true"/> when the section content should be drawn; otherwise,
     /// <see langword="false"/> when the section is collapsed.
     /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="title"/> is <see langword="null"/>.
+    /// </exception>
     public bool SectionHeader(
         string title,
         string? description = null,
@@ -203,9 +230,9 @@ public sealed unsafe partial class ImGuiWidget
         float paddingX = style.sectionPadding.X;
         float legendInset = style.sectionHeaderPadding.X;
         int sectionIndex = layout.sectionIndex++;
-        uint stateId = NativeImGui.GetID($"##inspector_section_{sectionIndex}");
+        uint stateID = NativeImGui.GetID($"##inspector_section_{sectionIndex}");
         ImGuiStorage* storage = NativeImGui.Raw.GetStateStorage();
-        bool open = NativeImGui.Raw.GetBool(storage, stateId, 1) != 0;
+        bool open = NativeImGui.Raw.GetBool(storage, stateID, 1) != 0;
         NativeImGui.SetCursorScreenPos(new Vector2(origin.X + legendInset, origin.Y));
         bool titlePressed = false;
         Vector2 titleSize = GetClickableTextSize(title, Vector2.Zero);
@@ -218,7 +245,12 @@ public sealed unsafe partial class ImGuiWidget
                 NativeImGui.SameLine(0f, style.headerControlSpacing);
             }
 
-            titlePressed = ClickableText($"inspector_section_title_{sectionIndex}", title, new Vector2(MathF.Max(1f, titleSize.X), frameHeight), description);
+            titlePressed = ClickableText(
+                $"inspector_section_title_{sectionIndex}",
+                title,
+                new Vector2(MathF.Max(1f, titleSize.X), frameHeight),
+                description
+            );
         }
         finally
         {
@@ -228,7 +260,7 @@ public sealed unsafe partial class ImGuiWidget
         if (titlePressed)
         {
             open = !open;
-            NativeImGui.Raw.SetBool(storage, stateId, open ? (byte)1 : (byte)0);
+            NativeImGui.Raw.SetBool(storage, stateID, open ? (byte)1 : (byte)0);
         }
 
         Vector2 legendMin = NativeImGui.GetItemRectMin();
@@ -291,7 +323,9 @@ public sealed unsafe partial class ImGuiWidget
     private void CompleteSection(SectionLayoutState layout)
     {
         if (!layout.active)
+        {
             return;
+        }
         NativeImGui.Dummy(new Vector2(0f, style.sectionPadding.Y));
         NativeImGui.Unindent(style.sectionPadding.X);
         float bottom = MathF.Max(NativeImGui.GetCursorScreenPos().Y, layout.top + NativeImGui.GetFrameHeight());

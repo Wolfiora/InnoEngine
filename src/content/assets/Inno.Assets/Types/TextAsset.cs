@@ -1,33 +1,19 @@
 using Inno.Assets;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 
 namespace Inno.Assets;
 
 /// <summary>
 /// Stores decoded text content and its language hint.
 /// </summary>
-[StableTypeId("907c91cf-215b-42f4-9243-26d9666b231a")]
+[StableTypeID("907c91cf-215b-42f4-9243-26d9666b231a")]
 public sealed class TextAsset : AssetObject
 {
     /// <summary>
-    /// Gets the decoded text content.
-    /// </summary>
-    [SerializableProperty]
-    public string content { get; private set; } = string.Empty;
-
-    /// <summary>
-    /// Gets the language or format hint associated with the text.
-    /// </summary>
-    [SerializableProperty]
-    public string languageHint { get; private set; } = "plain";
-
-    /// <summary>
     /// Creates an empty text asset.
     /// </summary>
-    public TextAsset()
-    {
-    }
+    public TextAsset() {}
 
     /// <summary>
     /// Creates a text asset with content and an optional language hint.
@@ -45,4 +31,16 @@ public sealed class TextAsset : AssetObject
         this.content = content ?? string.Empty;
         this.languageHint = languageHint ?? "plain";
     }
+
+    /// <summary>
+    /// Gets the decoded text content.
+    /// </summary>
+    [SerializableProperty]
+    public string content { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// Gets the language or format hint associated with the text.
+    /// </summary>
+    [SerializableProperty]
+    public string languageHint { get; private set; } = "plain";
 }

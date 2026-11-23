@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Assets;
 
 namespace Inno.Scene;
@@ -12,39 +11,41 @@ internal sealed class PrefabConnectionRecord
 
     internal PrefabConnectionRecord(
         AssetObject sourceAsset,
-        Guid sourceRootId,
+        Guid sourceRootID,
         bool isVariant,
         PrefabOverrideSet? overrides = null
     ) {
-        this.sourceAsset = sourceAsset ?? throw new ArgumentNullException(nameof(sourceAsset));
-        this.sourceRootId = sourceRootId;
+        ArgumentNullException.ThrowIfNull(sourceAsset);
+        this.sourceAsset = sourceAsset;
+        this.sourceRootID = sourceRootID;
         this.isVariant = isVariant;
         this.overrides = overrides ?? new PrefabOverrideSet();
     }
 
     internal AssetObject sourceAsset { get; }
-    internal Guid sourceRootId { get; }
+    internal Guid sourceRootID { get; }
     internal bool isVariant { get; }
     internal PrefabOverrideSet overrides { get; set; }
     internal IReadOnlyDictionary<Guid, Guid> objectIdentities => m_objectIdentities;
     internal IReadOnlyDictionary<Guid, Guid> componentIdentities => m_componentIdentities;
 
     internal void MapObject(
-        Guid sourceId,
+        Guid sourceID,
         GameObject gameObject
     ) {
         ArgumentNullException.ThrowIfNull(gameObject);
-        m_objectIdentities[sourceId] = gameObject.identity.persistentId;
+        m_objectIdentities[sourceID] = gameObject.identity.persistentID;
     }
 
     internal void MapComponent(
-        Guid sourceId,
+        Guid sourceID,
         GameComponent component
     ) {
         ArgumentNullException.ThrowIfNull(component);
-        m_componentIdentities[sourceId] = component.identity.persistentId;
+        m_componentIdentities[sourceID] = component.identity.persistentID;
     }
 
-    internal void RemoveObject(Guid sourceId) => m_objectIdentities.Remove(sourceId);
-    internal void RemoveComponent(Guid sourceId) => m_componentIdentities.Remove(sourceId);
+    internal void RemoveObject(Guid sourceID) => m_objectIdentities.Remove(sourceID);
+
+    internal void RemoveComponent(Guid sourceID) => m_componentIdentities.Remove(sourceID);
 }

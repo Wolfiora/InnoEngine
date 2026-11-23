@@ -1,20 +1,20 @@
-using Inno.References;
-using Inno.Runtime.Contracts;
-using Inno.Core.Diagnostics;
-using Inno.Core.Execution;
-using Inno.Core.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Inno.Extensibility.Types;
-using Inno.Rendering;
-using Inno.Input;
+using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
+using Inno.Core.Identity;
 using Inno.Core.Mathematics;
+using Inno.Extensibility.Types;
+using Inno.Input;
+using Inno.References;
+using Inno.Rendering;
 using Inno.Rendering.Assets;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Rendering.Runtime;
 
-sealed partial class RenderRuntime
+public sealed partial class RenderRuntime
 {
     /// <summary>
     /// Validates and selects a project default while preserving its last-good generation.
@@ -33,7 +33,9 @@ sealed partial class RenderRuntime
         EnsureActive();
         ArgumentNullException.ThrowIfNull(pipelineAsset);
         if (m_frameOpen)
+        {
             throw new InvalidOperationException("A default pipeline can only change at a frame boundary.");
+        }
         if (TryGetGeneration(pipelineAsset, out _))
         {
             m_graphicsSettings.defaultPipeline = pipelineAsset;
@@ -56,9 +58,13 @@ sealed partial class RenderRuntime
     {
         EnsureActive();
         if (m_frameOpen)
+        {
             throw new InvalidOperationException("Rendering extensions can only reload at a frame boundary.");
+        }
         if (m_reloadSession is not null)
+        {
             throw new InvalidOperationException("A rendering extension reload is already active.");
+        }
 
         m_reloadSession = RenderRuntimeReloadSession.Create(this);
         return m_reloadSession;
@@ -82,13 +88,16 @@ sealed partial class RenderRuntime
         catch (Exception exception)
         {
             m_extensions.EnsureHealthy();
-            m_diagnostics.Publish(new Diagnostic(
-                "RENDER_EXTENSION_REGISTRY_FAILED",
-                $"Rendering extension discovery kept every last-good generation: {exception.Message}",
-                DiagnosticSeverity.Error,
-                asset.pipelineTypeId));
+            m_diagnostics.Publish(
+                new Diagnostic(
+                    "RENDER_EXTENSION_REGISTRY_FAILED",
+                    $"Rendering extension discovery kept every last-good generation: {exception.Message}",
+                    DiagnosticSeverity.Error,
+                    asset.pipelineTypeId
+                )
+            );
             return m_generations.TryGetValue(asset, out GenerationCacheEntry? failedEntry)
-                && (generation = failedEntry.lastGood) is not null;
+                   && (generation = failedEntry.lastGood) is not null;
         }
         m_diagnostics.Resolve("RENDER_EXTENSION_REGISTRY_FAILED", asset.pipelineTypeId);
 
@@ -99,15 +108,15 @@ sealed partial class RenderRuntime
         }
 
         if (entry.lastGood is not null
-            && entry.lastGood.typeCacheVersion != snapshot.typeCacheVersion)
-        {
+            && entry.lastGood.typeCacheVersion != snapshot.typeCacheVersion
+        ) {
             m_extensions.Retire(entry.lastGood);
             entry.lastGood = null;
         }
 
         if (entry.attemptedTypeCacheVersion == snapshot.typeCacheVersion
-            && string.Equals(entry.attemptedFingerprint, fingerprint, StringComparison.Ordinal))
-        {
+            && string.Equals(entry.attemptedFingerprint, fingerprint, StringComparison.Ordinal)
+        ) {
             generation = entry.lastGood;
             return generation is not null;
         }
@@ -130,11 +139,14 @@ sealed partial class RenderRuntime
         catch (Exception exception)
         {
             m_extensions.EnsureHealthy();
-            m_diagnostics.Publish(new Diagnostic(
-                "RENDER_EXTENSION_GENERATION_FAILED",
-                $"Pipeline '{asset.pipelineTypeId}' kept its last-good generation: {exception.Message}",
-                DiagnosticSeverity.Error,
-                asset.pipelineTypeId));
+            m_diagnostics.Publish(
+                new Diagnostic(
+                    "RENDER_EXTENSION_GENERATION_FAILED",
+                    $"Pipeline '{asset.pipelineTypeId}' kept its last-good generation: {exception.Message}",
+                    DiagnosticSeverity.Error,
+                    asset.pipelineTypeId
+                )
+            );
             generation = entry.lastGood;
             return generation is not null;
         }
@@ -146,17 +158,12 @@ sealed partial class RenderRuntime
         return generation is not null;
     }
 
-    private static bool TryCreateGeneration(
-        RenderExtensionRegistry.Snapshot snapshot,
-        RenderPipelineAsset asset,
-        out RenderPipelineGeneration? generation
-    )
-        => snapshot.TryCreateGeneration(asset, out generation);
-
     private void EndReloadSession(RenderRuntimeReloadSession session)
     {
         if (ReferenceEquals(m_reloadSession, session))
+        {
             m_reloadSession = null;
+        }
     }
 
     private void PruneRetiredGenerations()
@@ -174,32 +181,38 @@ sealed partial class RenderRuntime
         catch (Exception exception)
         {
             m_extensions.EnsureHealthy();
-            m_diagnostics.Publish(new Diagnostic(
-                "RENDER_EXTENSION_REGISTRY_FAILED",
-                $"Rendering extension discovery kept the current frame available: {exception.Message}",
-                DiagnosticSeverity.Error));
+            m_diagnostics.Publish(
+                new Diagnostic(
+                    "RENDER_EXTENSION_REGISTRY_FAILED",
+                    $"Rendering extension discovery kept the current frame available: {exception.Message}",
+                    DiagnosticSeverity.Error
+                )
+            );
             return;
         }
         m_diagnostics.Resolve("RENDER_EXTENSION_REGISTRY_FAILED");
 
         if (m_prunedTypeCacheVersion == snapshot.typeCacheVersion)
+        {
             return;
+        }
         m_scratch.generations.AddRange(m_generations);
         try
         {
             foreach ((RenderPipelineAsset asset, GenerationCacheEntry entry) in m_scratch.generations)
             {
                 if (entry.lastGood is not null
-                    && entry.lastGood.typeCacheVersion != snapshot.typeCacheVersion)
-                {
+                    && entry.lastGood.typeCacheVersion != snapshot.typeCacheVersion
+                ) {
                     m_extensions.Retire(entry.lastGood);
                     entry.lastGood = null;
                 }
 
                 if (entry.attemptedTypeCacheVersion != snapshot.typeCacheVersion)
+                {
                     m_generations.Remove(asset);
+                }
             }
-
         }
         finally
         {
@@ -207,8 +220,8 @@ sealed partial class RenderRuntime
         }
 
         if (m_requestProviders is not null
-            && m_requestProviders.typeCacheVersion != snapshot.typeCacheVersion)
-        {
+            && m_requestProviders.typeCacheVersion != snapshot.typeCacheVersion
+        ) {
             m_requestProviders = null;
         }
         m_prunedTypeCacheVersion = snapshot.typeCacheVersion;
@@ -222,8 +235,8 @@ sealed partial class RenderRuntime
         foreach (RenderFeatureConfiguration configuration in asset.features)
         {
             if (!configuration.enabled
-                || !features.TryGetValue(configuration.featureTypeId, out RenderPipelineFeature? feature))
-            {
+                || !features.TryGetValue(configuration.featureTypeId, out RenderPipelineFeature? feature)
+            ) {
                 continue;
             }
 
@@ -239,14 +252,23 @@ sealed partial class RenderRuntime
             }
             catch (Exception exception)
             {
-                PublishFrameIssue(new Diagnostic(
-                    "RENDER_FEATURE_FAILED",
-                    $"Feature '{configuration.featureTypeId}' was rolled back: {exception.Message}",
-                    DiagnosticSeverity.Error,
-                    configuration.featureTypeId));
+                PublishFrameIssue(
+                    new Diagnostic(
+                        "RENDER_FEATURE_FAILED",
+                        $"Feature '{configuration.featureTypeId}' was rolled back: {exception.Message}",
+                        DiagnosticSeverity.Error,
+                        configuration.featureTypeId
+                    )
+                );
             }
         }
     }
+
+    private static bool TryCreateGeneration(
+        RenderExtensionRegistry.Snapshot snapshot,
+        RenderPipelineAsset asset,
+        out RenderPipelineGeneration? generation
+    ) => snapshot.TryCreateGeneration(asset, out generation);
 
     private sealed class GenerationCacheEntry(RenderPipelineAsset asset)
     {
@@ -266,13 +288,13 @@ sealed partial class RenderRuntime
     internal sealed class RenderRuntimeReloadSession : IRenderRuntimeReloadTransaction
     {
         private readonly RenderRuntime m_owner;
+        private readonly Dictionary<RenderPipelineAsset, GenerationState> m_candidates = [];
         private IReadOnlyDictionary<RenderPipelineAsset, GenerationState>? m_previous;
         private RenderExtensionRegistry.RequestProviderGeneration? m_previousRequestProviders;
         private RenderRequest[]? m_previousPendingRequests;
         private RenderRequest[]? m_previousCurrentRequests;
         private CompositionRequest[]? m_previousPendingCompositions;
         private CompositionRequest[]? m_previousCurrentCompositions;
-        private readonly Dictionary<RenderPipelineAsset, GenerationState> m_candidates = [];
         private RenderExtensionRegistry.RequestProviderGeneration? m_candidateRequestProviders;
         private bool m_prepared;
         private bool m_activated;
@@ -296,36 +318,21 @@ sealed partial class RenderRuntime
             m_previousCurrentCompositions = previousCurrentCompositions;
         }
 
-        internal static RenderRuntimeReloadSession Create(RenderRuntime owner)
-        {
-            // Disposed sessions must not contribute obsolete assets to the next extension generation.
-            owner.PruneRetiredAssets();
-            var previous = new Dictionary<RenderPipelineAsset, GenerationState>();
-            foreach ((RenderPipelineAsset asset, GenerationCacheEntry entry) in owner.m_generations)
-            {
-                previous.Add(asset, new GenerationState(
-                    entry.attemptedTypeCacheVersion,
-                    entry.attemptedFingerprint,
-                    entry.lastGood));
-            }
-            lock (owner.m_requestLock)
-            {
-                return new RenderRuntimeReloadSession(
-                    owner,
-                    previous,
-                    owner.m_requestProviders,
-                    [.. owner.m_pendingRequests],
-                    [.. owner.m_currentRequests],
-                    [.. owner.m_pendingCompositions],
-                    [.. owner.m_currentCompositions]);
-            }
-        }
+        void IRenderRuntimeReloadTransaction.Prepare() => PrepareCandidate();
+
+        void IRenderRuntimeReloadTransaction.Activate() => Activate();
+
+        void IRenderRuntimeReloadTransaction.Complete() => Complete();
+
+        void IRenderRuntimeReloadTransaction.Rollback() => Rollback();
 
         internal void PrepareCandidate()
         {
             EnsureNotFinished();
             if (m_prepared)
+            {
                 return;
+            }
 
             RenderExtensionRegistry.Snapshot snapshot = m_owner.m_extensions.extensions;
             try
@@ -335,10 +342,7 @@ sealed partial class RenderRuntime
                 {
                     string fingerprint = RenderExtensionRegistry.GetConfigurationFingerprint(asset);
                     _ = TryCreateGeneration(snapshot, asset, out RenderPipelineGeneration? candidate);
-                    m_candidates.Add(asset, new GenerationState(
-                        snapshot.typeCacheVersion,
-                        fingerprint,
-                        candidate));
+                    m_candidates.Add(asset, new GenerationState(snapshot.typeCacheVersion, fingerprint, candidate));
                 }
                 m_prepared = true;
             }
@@ -349,14 +353,15 @@ sealed partial class RenderRuntime
             catch (Exception exception)
             {
                 DisposeCandidates();
-                m_owner.m_diagnostics.Publish(new Diagnostic(
-                    "RENDER_EXTENSION_RELOAD_REJECTED",
-                    "Rendering extension candidate was rejected and every last-good generation was retained: " +
-                    exception.Message,
-                    DiagnosticSeverity.Error));
-                throw new InvalidOperationException(
-                    "Rendering extension candidate activation failed.",
-                    exception);
+                m_owner.m_diagnostics.Publish(
+                    new Diagnostic(
+                        "RENDER_EXTENSION_RELOAD_REJECTED",
+                        "Rendering extension candidate was rejected and every last-good generation was retained: "
+                        + exception.Message,
+                        DiagnosticSeverity.Error
+                    )
+                );
+                throw new InvalidOperationException("Rendering extension candidate activation failed.", exception);
             }
         }
 
@@ -364,14 +369,20 @@ sealed partial class RenderRuntime
         {
             EnsureNotFinished();
             if (!m_prepared)
+            {
                 throw new InvalidOperationException("Rendering extension candidates have not been prepared.");
+            }
             if (m_activated)
+            {
                 return;
+            }
 
             foreach (RenderPipelineAsset asset in m_candidates.Keys)
             {
                 if (!m_owner.m_generations.ContainsKey(asset))
+                {
                     throw new InvalidOperationException("A tracked rendering generation changed during reload.");
+                }
             }
             foreach ((RenderPipelineAsset asset, GenerationState candidate) in m_candidates)
             {
@@ -396,14 +407,18 @@ sealed partial class RenderRuntime
         {
             EnsureNotFinished();
             if (!m_activated)
+            {
                 throw new InvalidOperationException("Rendering extension candidates have not been activated.");
+            }
             try
             {
                 var resources = new LifetimeScope();
                 foreach (GenerationState previous in m_previous!.Values)
                 {
                     if (previous.lastGood is not null)
+                    {
                         resources.Own(previous.lastGood);
+                    }
                 }
                 m_owner.m_extensions.Retire(resources);
             }
@@ -423,14 +438,18 @@ sealed partial class RenderRuntime
         internal void Rollback()
         {
             if (m_finished)
+            {
                 return;
+            }
 
             if (m_activated)
             {
                 foreach ((RenderPipelineAsset asset, GenerationState previous) in m_previous!)
                 {
                     if (!m_owner.m_generations.TryGetValue(asset, out GenerationCacheEntry? entry))
+                    {
                         continue;
+                    }
                     entry.attemptedTypeCacheVersion = previous.attemptedTypeCacheVersion;
                     entry.attemptedFingerprint = previous.attemptedFingerprint;
                     entry.lastGood = previous.lastGood;
@@ -464,13 +483,31 @@ sealed partial class RenderRuntime
             Finish();
         }
 
-        void IRenderRuntimeReloadTransaction.Prepare() => PrepareCandidate();
-
-        void IRenderRuntimeReloadTransaction.Activate() => Activate();
-
-        void IRenderRuntimeReloadTransaction.Complete() => Complete();
-
-        void IRenderRuntimeReloadTransaction.Rollback() => Rollback();
+        internal static RenderRuntimeReloadSession Create(RenderRuntime owner)
+        {
+            // Disposed sessions must not contribute obsolete assets to the next extension generation.
+            owner.PruneRetiredAssets();
+            var previous = new Dictionary<RenderPipelineAsset, GenerationState>();
+            foreach ((RenderPipelineAsset asset, GenerationCacheEntry entry) in owner.m_generations)
+            {
+                previous.Add(
+                    asset,
+                    new GenerationState(entry.attemptedTypeCacheVersion, entry.attemptedFingerprint, entry.lastGood)
+                );
+            }
+            lock (owner.m_requestLock)
+            {
+                return new RenderRuntimeReloadSession(
+                    owner,
+                    previous,
+                    owner.m_requestProviders,
+                    [.. owner.m_pendingRequests],
+                    [.. owner.m_currentRequests],
+                    [.. owner.m_pendingCompositions],
+                    [.. owner.m_currentCompositions]
+                );
+            }
+        }
 
         private void DisposeCandidates()
         {
@@ -478,7 +515,9 @@ sealed partial class RenderRuntime
             foreach (GenerationState candidate in m_candidates.Values)
             {
                 if (candidate.lastGood is not null)
+                {
                     resources.Own(candidate.lastGood);
+                }
             }
             m_owner.m_extensions.Retire(resources);
             m_candidates.Clear();
@@ -502,8 +541,9 @@ sealed partial class RenderRuntime
         private void EnsureNotFinished()
         {
             if (m_finished)
+            {
                 throw new InvalidOperationException("Rendering extension reload session is already finished.");
+            }
         }
     }
-
 }

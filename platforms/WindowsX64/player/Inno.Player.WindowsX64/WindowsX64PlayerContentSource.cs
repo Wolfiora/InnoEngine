@@ -16,8 +16,12 @@ internal sealed class WindowsX64PlayerContentSource : IPlayerContentSource
     internal WindowsX64PlayerContentSource(
         string applicationDirectory,
         string cacheRoot
-    ) => m_files = new FileContentDeployment(
-        WindowsX64ApplicationLocations.GetPlayerContentDirectory(applicationDirectory), cacheRoot);
+    ) {
+        m_files = new FileContentDeployment(
+            WindowsX64ApplicationLocations.GetPlayerContentDirectory(applicationDirectory),
+            cacheRoot
+        );
+    }
 
     /// <summary>
     /// Reads independently owned deployment metadata from the platform's explicit content source.

@@ -22,14 +22,15 @@ public static class StandardAdapterSelection
     /// <returns>
     /// A fully assigned standard selection; its catalog must still be validated before creating resources.
     /// </returns>
-    public static AdapterSelection Create(StorageBackendId storage) => new()
+    public static AdapterSelection Create(StorageBackendID storage)
+        => new()
     {
-        platform = PlatformBackendId.sdl3,
-        input = InputBackendId.events,
+        platform = PlatformBackendID.sdl3,
+        input = InputBackendID.events,
         storage = storage,
-        rendering = RenderingBackendId.bgfx,
-        audio = AudioBackendId.miniAudio,
-        text = TextBackendId.freeTypeHarfBuzz,
-        ui = UiBackendId.rmlUi
+        rendering = RenderingBackendID.bgfx,
+        audio = AudioBackendID.miniAudio,
+        text = TextBackendID.freeTypeHarfBuzz,
+        ui = UIBackendID.rmlUI
     };
 }

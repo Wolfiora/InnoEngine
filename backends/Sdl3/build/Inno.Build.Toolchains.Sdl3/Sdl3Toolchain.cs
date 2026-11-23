@@ -12,7 +12,7 @@ namespace Inno.Build.Toolchains.Sdl3;
 /// </summary>
 public static class Sdl3Toolchain
 {
-    private static readonly string[] S_ARGUMENTS = ["-DSDL_SHARED=ON", "-DSDL_STATIC=OFF", "-DSDL_TESTS=OFF", "-DSDL_EXAMPLES=OFF"];
+    private static readonly string[] ARGUMENTS = ["-DSDL_SHARED=ON", "-DSDL_STATIC=OFF", "-DSDL_TESTS=OFF", "-DSDL_EXAMPLES=OFF"];
 
     /// <summary>
     /// Gets the component's sole source, binding and intermediate owner.
@@ -24,8 +24,10 @@ public static class Sdl3Toolchain
         new NativeStaticBuildDefinition(
             "backends/Sdl3/build/Inno.Build.Toolchains.Sdl3/Native/StaticLibraries.cmake",
             ["extern/SDL"],
-            ["libSDL3"]),
-        bindingDefinition: "backends/Sdl3/native/Inno.Native.Sdl3/Bindings/bindings.props");
+            ["libSDL3"]
+        ),
+        bindingDefinition: "backends/Sdl3/native/Inno.Native.Sdl3/Bindings/bindings.props"
+    );
 
     /// <summary>
     /// Builds the component using the explicitly selected target SDK and validates the complete native product.
@@ -53,26 +55,41 @@ public static class Sdl3Toolchain
         NativeToolchainSelection selection = context.RequireToolchain();
         string source = Path.Combine(context.engineRoot, "extern", "SDL");
         NativeBuildRecipe recipe = CreateRecipe(context);
-        return await NativeArtifactPublisher.PublishAsync(context, recipe,
+        return await NativeArtifactPublisher.PublishAsync(
+            context,
+            recipe,
             async (
                 @scoped,
                 output,
                 token
-            ) => {
-                string build = await NativeCMakeExecutor.BuildAsync(scoped, componentDescriptor,
-                    source, "SDL3-shared", S_ARGUMENTS, token).ConfigureAwait(false);
+            ) =>
+            {
+                string build = await NativeCMakeExecutor.BuildAsync(
+                    scoped,
+                    componentDescriptor,
+                    source,
+                    "SDL3-shared",
+                    ARGUMENTS,
+                    token
+                ).ConfigureAwait(false);
                 string library = NativeCMakeExecutor.FindOutput(scoped, build, "*SDL3" + selection.sharedLibraryExtension);
                 string name = ToolchainEnvironment.NormalizeOutputName(Path.GetFileName(library), scoped.configuration);
                 File.Copy(library, Path.Combine(output, name));
-
-            }, cancellationToken, describeOutputs: static (
+            },
+            describeOutputs: static (
                 @scoped,
                 output
             ) =>
                 Directory.EnumerateFiles(output, "*", SearchOption.AllDirectories).Select(file =>
-                    new NativeArtifact(Path.GetRelativePath(output, file), file,
+                    new NativeArtifact(
+                        Path.GetRelativePath(output, file),
+                        file,
                         Path.GetRelativePath(output, file).StartsWith("Link" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
-                            ? NativeArtifactRole.ImportLibrary : NativeArtifactRole.SharedLibrary)).ToArray()).ConfigureAwait(false);
+                        ? NativeArtifactRole.ImportLibrary
+                        : NativeArtifactRole.SharedLibrary
+                    )).ToArray(),
+            cancellationToken: cancellationToken
+        ).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -101,10 +118,20 @@ public static class Sdl3Toolchain
         ArgumentNullException.ThrowIfNull(context);
         NativeToolchainSelection selection = context.RequireToolchain();
         if (context.RequireComponentOptions(componentDescriptor).libraryKind != NativeLibraryKind.Shared)
-            throw new NotSupportedException("This standalone producer requires shared linkage; static products use the declared aggregate recipe.");
+        {
+            throw new NotSupportedException(
+                "This standalone producer requires shared linkage; static products use the declared aggregate recipe."
+            );
+        }
         string implementation = componentDescriptor.GetToolchainRoot(context.engineRoot);
-        return NativeBuildRecipe.CreateForComponent(context, componentDescriptor, "sdl3", selection.targetId,
-            [Path.Combine(context.engineRoot, "extern", "SDL")], S_ARGUMENTS,
-            [Path.Combine(implementation, "Sdl3Toolchain.cs")]);
+        return NativeBuildRecipe.CreateForComponent(
+            context,
+            componentDescriptor,
+            "sdl3",
+            selection.targetID,
+            [Path.Combine(context.engineRoot, "extern", "SDL")],
+            ARGUMENTS,
+            [Path.Combine(implementation, "Sdl3Toolchain.cs")]
+        );
     }
 }

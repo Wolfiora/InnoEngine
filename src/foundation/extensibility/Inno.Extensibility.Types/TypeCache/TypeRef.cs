@@ -6,7 +6,7 @@ namespace Inno.Extensibility.Types;
 /// Identifies one logical runtime type without retaining its assembly or load context.
 /// </summary>
 /// <remarks>
-/// Equality and persistence use <see cref="stableId"/>. The <see cref="runtimeId"/> is only a
+/// Equality and persistence use <see cref="stableID"/>. The <see cref="runtimeID"/> is only a
 /// generation-local resolution hint and can become stale after an assembly reload.
 /// </remarks>
 public readonly struct TypeRef : IEquatable<TypeRef>
@@ -14,26 +14,24 @@ public readonly struct TypeRef : IEquatable<TypeRef>
     /// <summary>
     /// Creates an unresolved type reference from its persistent identity.
     /// </summary>
-    /// <param name="stableId">
+    /// <param name="stableID">
     /// The persistent type identity, or an empty value for an invalid reference.
     /// </param>
-    public TypeRef(Guid stableId)
-        : this(stableId, runtimeId: 0)
-    {
-    }
+    public TypeRef(Guid stableID)
+        : this(stableID, runtimeID: 0) {}
 
     internal TypeRef(
-        Guid stableId,
-        int runtimeId
+        Guid stableID,
+        int runtimeID
     ) {
-        this.stableId = stableId;
-        this.runtimeId = runtimeId;
+        this.stableID = stableID;
+        this.runtimeID = runtimeID;
     }
 
     /// <summary>
     /// Gets the persistent identity used across assembly generations and process launches.
     /// </summary>
-    public Guid stableId { get; }
+    public Guid stableID { get; }
 
     /// <summary>
     /// Gets the generation-local lookup hint captured when this value was created.
@@ -41,7 +39,7 @@ public readonly struct TypeRef : IEquatable<TypeRef>
     /// <remarks>
     /// This value must not be persisted or used as logical type identity.
     /// </remarks>
-    public int runtimeId { get; }
+    public int runtimeID { get; }
 
     /// <summary>
     /// Determines whether one type catalog currently resolves this reference.
@@ -58,7 +56,7 @@ public readonly struct TypeRef : IEquatable<TypeRef>
     public bool IsValid(TypeCatalog catalog)
     {
         ArgumentNullException.ThrowIfNull(catalog);
-        return stableId != Guid.Empty && catalog.TryResolve(this, out _);
+        return stableID != Guid.Empty && catalog.TryResolve(this, out _);
     }
 
     /// <summary>
@@ -100,8 +98,10 @@ public readonly struct TypeRef : IEquatable<TypeRef>
     public Type Resolve(TypeCacheSnapshot snapshot)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
-        if (stableId != Guid.Empty && snapshot.TryResolve(this, out Type? type))
+        if (stableID != Guid.Empty && snapshot.TryResolve(this, out Type? type))
+        {
             return type!;
+        }
         throw CreateResolutionException(snapshot.version);
     }
 
@@ -114,17 +114,17 @@ public readonly struct TypeRef : IEquatable<TypeRef>
     /// <returns>
     /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool Equals(TypeRef other) => stableId == other.stableId;
+    public bool Equals(TypeRef other) => stableID == other.stableID;
 
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
-    /// </returns>
     /// <param name="obj">
     /// The object to compare with this instance.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
+    /// </returns>
     public override bool Equals(object? obj) => obj is TypeRef other && Equals(other);
 
     /// <summary>
@@ -133,7 +133,7 @@ public readonly struct TypeRef : IEquatable<TypeRef>
     /// <returns>
     /// A hash code consistent with the implemented equality contract.
     /// </returns>
-    public override int GetHashCode() => stableId.GetHashCode();
+    public override int GetHashCode() => stableID.GetHashCode();
 
     /// <summary>
     /// Formats this value as a human-readable representation.
@@ -141,7 +141,7 @@ public readonly struct TypeRef : IEquatable<TypeRef>
     /// <returns>
     /// The human-readable representation of this value.
     /// </returns>
-    public override string ToString() => stableId == Guid.Empty ? "<invalid>" : stableId.ToString("D");
+    public override string ToString() => stableID == Guid.Empty ? "<invalid>" : stableID.ToString("D");
 
     /// <summary>
     /// Determines whether two references identify the same logical type.
@@ -180,11 +180,12 @@ public readonly struct TypeRef : IEquatable<TypeRef>
     private InvalidOperationException CreateResolutionException(long? snapshotVersion = null)
     {
         string generation = snapshotVersion is long version
-            ? $" in type-cache snapshot {version}"
-            : string.Empty;
+                            ? $" in type-cache snapshot {version}"
+                            : string.Empty;
         return new InvalidOperationException(
-            stableId == Guid.Empty
-                ? "An empty type reference cannot be resolved."
-                : $"Type reference '{stableId:D}' is not available{generation}.");
+            stableID == Guid.Empty
+            ? "An empty type reference cannot be resolved."
+            : $"Type reference '{stableID:D}' is not available{generation}."
+        );
     }
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
-
 using Inno.Core.Events;
 using Inno.Core.Execution;
 
@@ -29,7 +28,9 @@ public abstract class Layer
     protected Layer(string name = "Layer")
     {
         if (string.IsNullOrWhiteSpace(name))
+        {
             throw new ArgumentException("A layer name is required.", nameof(name));
+        }
         this.name = name;
     }
 
@@ -41,9 +42,7 @@ public abstract class Layer
     /// <summary>
     /// Runs after the layer has received its event scope and joined a stack.
     /// </summary>
-    public virtual void OnAttach()
-    {
-    }
+    public virtual void OnAttach() {}
 
     /// <summary>
     /// Runs while the layer is leaving its stack and before its event scope is released.
@@ -53,9 +52,7 @@ public abstract class Layer
     /// <see cref="RetirementPendingException"/> retains ownership and permits a later cleanup retry.
     /// Completed cleanup steps must not be repeated on that retry.
     /// </remarks>
-    public virtual void OnDetach()
-    {
-    }
+    public virtual void OnDetach() {}
 
     /// <summary>
     /// Advances fixed-step work for this layer.
@@ -63,9 +60,7 @@ public abstract class Layer
     /// <param name="fixedDeltaTime">
     /// The fixed simulation interval in seconds.
     /// </param>
-    public virtual void OnFixedUpdate(float fixedDeltaTime)
-    {
-    }
+    public virtual void OnFixedUpdate(float fixedDeltaTime) {}
 
     /// <summary>
     /// Advances variable-step work for this layer.
@@ -73,9 +68,7 @@ public abstract class Layer
     /// <param name="deltaTime">
     /// The elapsed frame time in seconds.
     /// </param>
-    public virtual void OnUpdate(float deltaTime)
-    {
-    }
+    public virtual void OnUpdate(float deltaTime) {}
 
     /// <summary>
     /// Advances work that must run after the regular update phase.
@@ -83,9 +76,7 @@ public abstract class Layer
     /// <param name="deltaTime">
     /// The elapsed frame time in seconds.
     /// </param>
-    public virtual void OnLateUpdate(float deltaTime)
-    {
-    }
+    public virtual void OnLateUpdate(float deltaTime) {}
 
     /// <summary>
     /// Prepares frame-scoped rendering state before render work is submitted.
@@ -93,9 +84,7 @@ public abstract class Layer
     /// <param name="deltaTime">
     /// The elapsed frame time in seconds.
     /// </param>
-    public virtual void OnBeforeRender(float deltaTime)
-    {
-    }
+    public virtual void OnBeforeRender(float deltaTime) {}
 
     /// <summary>
     /// Submits rendering work without presenting a concrete graphics backend.
@@ -103,23 +92,21 @@ public abstract class Layer
     /// <param name="deltaTime">
     /// The elapsed frame time in seconds.
     /// </param>
-    public virtual void OnRender(float deltaTime)
-    {
-    }
+    public virtual void OnRender(float deltaTime) {}
 
     /// <summary>
     /// Completes frame-scoped rendering state after render submission.
     /// </summary>
+    /// <param name="deltaTime">
+    /// The elapsed frame time in seconds.
+    /// </param>
     /// <remarks>
     /// A <see cref="LayerStack"/> invokes this callback in reverse order for every layer whose
     /// <see cref="OnBeforeRender"/> callback completed successfully, including when later work fails.
     /// </remarks>
-    /// <param name="deltaTime">
-    /// The elapsed frame time in seconds.
-    /// </param>
-    public virtual void OnAfterRender(float deltaTime)
-    {
-    }
+    public virtual void OnAfterRender(float deltaTime) {}
+
+    internal bool isAttached => m_events is not null;
 
     /// <summary>
     /// Subscribes to an event for the lifetime of this layer attachment.
@@ -142,8 +129,7 @@ public abstract class Layer
     protected IDisposable Listen<TEvent>(
         Action<TEvent> handler,
         int priority = 0
-    )
-        where TEvent : Event
+    ) where TEvent : Event
     {
         EventHub events = RequireActiveEvents();
         IDisposable subscription = events.Listen(handler, priority);
@@ -172,8 +158,7 @@ public abstract class Layer
     protected IDisposable ListenOnce<TEvent>(
         Action<TEvent> handler,
         int priority = 0
-    )
-        where TEvent : Event
+    ) where TEvent : Event
     {
         EventHub events = RequireActiveEvents();
         IDisposable subscription = events.ListenOnce(handler, priority);
@@ -197,13 +182,13 @@ public abstract class Layer
         events.Announce(evnt);
     }
 
-    internal bool isAttached => m_events is not null;
-
     internal void Attach(EventHub events)
     {
         ArgumentNullException.ThrowIfNull(events);
         if (m_events is not null)
+        {
             throw new InvalidOperationException($"Layer '{name}' is already attached.");
+        }
 
         m_events = events;
         OnAttach();
@@ -212,7 +197,9 @@ public abstract class Layer
     internal void Detach()
     {
         if (m_events is null)
+        {
             throw new InvalidOperationException($"Layer '{name}' is not attached.");
+        }
 
         if (!m_detaching)
         {
@@ -238,16 +225,20 @@ public abstract class Layer
         List<Exception>? failures = m_detachFailures;
         m_detachFailures = null;
         if (failures is null)
+        {
             return;
+        }
         if (failures.Count == 1)
+        {
             ExceptionDispatchInfo.Capture(failures[0]).Throw();
+        }
         throw new AggregateException($"Layer '{name}' encountered multiple detach failures.", failures);
     }
 
     private EventHub RequireActiveEvents()
         => !m_detaching && m_events is not null
-            ? m_events
-            : throw new InvalidOperationException("The layer has no active event scope or is already detaching.");
+           ? m_events
+           : throw new InvalidOperationException("The layer has no active event scope or is already detaching.");
 
     private List<Exception>? ReleaseSubscriptions()
     {

@@ -22,7 +22,7 @@ internal static class EditorTypeDistance
         }
 
         var visited = new HashSet<Type> { actualType };
-        var queue = new Queue<(Type Type, int Distance)>();
+        var queue = new Queue<(Type type, int distance)>();
         queue.Enqueue((actualType, 0));
         while (queue.Count > 0)
         {
@@ -40,7 +40,9 @@ internal static class EditorTypeDistance
             foreach (Type interfaceType in type.GetInterfaces())
             {
                 if (!visited.Add(interfaceType))
+                {
                     continue;
+                }
                 if (interfaceType == registeredType)
                 {
                     distance = currentDistance + 1;

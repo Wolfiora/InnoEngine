@@ -1,22 +1,21 @@
-using Inno.Extensibility.Reload;
 using System;
-using Inno.References;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Extensibility.Modules;
 using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
+using Inno.Extensibility.Types;
+using Inno.References;
 using Inno.Runtime;
 using Inno.Scene;
 using Inno.Scene.Components;
@@ -26,7 +25,6 @@ namespace Inno.Editor.Scene;
 internal sealed partial class EditorSceneWorkspace
 
 {
-
     /// <summary>
     /// Captures an immutable snapshot of the current observable state.
     /// </summary>
@@ -52,7 +50,9 @@ internal sealed partial class EditorSceneWorkspace
             .ToArray();
         state.Set("openScenes", scenePaths);
         if (m_runtimeSession.scenes.activeScene is GameScene active && TryGetSourcePath(active, out string activePath))
+        {
             state.Set("activeScene", activePath);
+        }
     }
 
     /// <summary>
@@ -89,13 +89,17 @@ internal sealed partial class EditorSceneWorkspace
         }
         long typeCatalogVersion = m_types.current.version;
         if (m_waitingTypeCatalogVersion == typeCatalogVersion)
+        {
             return;
+        }
         long now = Stopwatch.GetTimestamp();
         if (now < m_nextRestoreAttemptTimestamp)
+        {
             return;
+        }
         m_nextRestoreAttemptTimestamp = now + Stopwatch.Frequency / 4;
 
-        var candidates = new List<(GameScene Scene, string Path, Guid AssetId, byte[] Hash)>();
+        List<(GameScene scene, string path, Guid assetID, byte[] hash)> candidates = [];
         bool waitingForSourceIndex = false;
         try
         {
@@ -106,7 +110,8 @@ internal sealed partial class EditorSceneWorkspace
                 {
                     string absolutePath = Path.Combine(
                         m_assets.assetRoot,
-                        path.Replace('/', Path.DirectorySeparatorChar));
+                        path.Replace('/', Path.DirectorySeparatorChar)
+                    );
                     if (File.Exists(absolutePath))
                     {
                         waitingForSourceIndex = true;
@@ -118,26 +123,22 @@ internal sealed partial class EditorSceneWorkspace
                 SceneAsset asset = m_assets.Load<SceneAsset>(AssetPath.Parse(path));
                 GameScene scene = asset.Instantiate(m_serialization, m_assets);
                 scene.name = GetAssetName(path);
-                candidates.Add((
-                    scene,
-                    path,
-                    asset.identity.persistentId,
-                    ComputeSceneHash(scene)));
+                candidates.Add((scene, path, asset.identity.persistentID, ComputeSceneHash(scene)));
             }
         }
         catch (SceneTypeResolutionException exception)
         {
             DisposeRestoreCandidates(candidates);
             m_waitingTypeCatalogVersion = typeCatalogVersion;
-            string message =
-                $"{exception.elementKind} stable type id '{exception.stableTypeId}' " +
-                "is not present in the active type catalog.";
+            string message = $"{exception.elementKind} stable type id '{exception.stableTypeID}' "
+                             + "is not present in the active type catalog.";
             if (m_diagnostics.PublishRestoreFailure("SCENE-TYPE", message))
             {
                 m_log.Write(
                     LogLevel.Error,
                     "Editor scene workspace cannot restore saved scenes because {0}",
-                    [message]);
+                    [message]
+                );
             }
             return;
         }
@@ -146,10 +147,9 @@ internal sealed partial class EditorSceneWorkspace
             DisposeRestoreCandidates(candidates);
             m_waitingTypeCatalogVersion = typeCatalogVersion;
             if (m_diagnostics.PublishRestoreFailure("SCENE-RESTORE", exception.Message))
-                m_log.Write(
-                    LogLevel.Error,
-                    "Editor scene workspace could not restore saved scenes: {0}",
-                    [exception]);
+            {
+                m_log.Write(LogLevel.Error, "Editor scene workspace could not restore saved scenes: {0}", [exception]);
+            }
             return;
         }
         if (waitingForSourceIndex)
@@ -162,31 +162,32 @@ internal sealed partial class EditorSceneWorkspace
         m_documents.Clear();
         for (int i = 0; i < candidates.Count; i++)
         {
-            (GameScene scene, string path, Guid assetId, byte[] hash) = candidates[i];
+            (GameScene scene, string path, Guid assetID, byte[] hash) = candidates[i];
             m_runtimeSession.scenes.LoadSceneAdditive(scene, makeActive: false);
-            m_documents.Add(
-                scene.identity.persistentId,
-                new SceneDocument(scene, path, assetId, hash));
+            m_documents.Add(scene.identity.persistentID, new SceneDocument(scene, path, assetID, hash));
         }
         SceneDocument? activeDocument = m_documents.Values.FirstOrDefault(document =>
             string.Equals(document.sourcePath, m_pendingActivePath, StringComparison.OrdinalIgnoreCase));
         if (activeDocument is not null && activeDocument.scene.isLoaded)
+        {
             m_runtimeSession.scenes.SetActiveScene(activeDocument.scene);
+        }
         m_selection?.SetSelection(null);
         m_pendingScenePaths = null;
         m_waitingTypeCatalogVersion = -1;
         m_diagnostics.ResolveRestore();
     }
 
-    private void DisposeRestoreCandidates(IReadOnlyList<(GameScene Scene, string Path, Guid AssetId, byte[] Hash)> candidates)
+    private void DisposeRestoreCandidates(IReadOnlyList<(GameScene scene, string path, Guid assetID, byte[] hash)> candidates)
     {
         for (int i = candidates.Count - 1; i >= 0; i--)
         {
-            if (candidates[i].Scene.isDestroyed)
+            if (candidates[i].scene.isDestroyed)
+            {
                 continue;
-            m_runtimeSession.scenes.LoadSceneAdditive(candidates[i].Scene, makeActive: false);
-            _ = m_runtimeSession.scenes.UnloadScene(candidates[i].Scene);
+            }
+            m_runtimeSession.scenes.LoadSceneAdditive(candidates[i].scene, makeActive: false);
+            _ = m_runtimeSession.scenes.UnloadScene(candidates[i].scene);
         }
     }
-
 }

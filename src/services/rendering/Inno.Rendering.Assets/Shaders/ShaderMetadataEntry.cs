@@ -1,19 +1,19 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Scripting.Api;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
 /// <summary>
 /// Stores one open metadata key and value.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("239d558b-cead-5efc-82d8-aee339c78f59")]
+[StableTypeID("239d558b-cead-5efc-82d8-aee339c78f59")]
 public struct ShaderMetadataEntry
 {
     /// <summary>
@@ -44,4 +44,3 @@ public struct ShaderMetadataEntry
     /// </summary>
     public string value { get; set; }
 }
-

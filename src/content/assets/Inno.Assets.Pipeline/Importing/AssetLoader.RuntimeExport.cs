@@ -7,24 +7,23 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Collections;
 using Inno.Core.Diagnostics;
-using Inno.Core.Identity;
-using Inno.References;
 using Inno.Core.Execution;
 using Inno.Core.IO;
+using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
-using Inno.Core.Collections;
+using Inno.Extensibility.Types;
+using Inno.References;
 
 using IOFile = System.IO.File;
 
 namespace Inno.Assets.Pipeline;
 
-sealed partial class AssetLoader
+public sealed partial class AssetLoader
 {
     /// <summary>
     /// Writes a source-free runtime catalog and its exact immutable artifact closure.
@@ -66,8 +65,7 @@ sealed partial class AssetLoader
     public AssetRuntimeContentInfo ExportRuntimeArtifacts(
         string destinationLibraryRoot,
         CancellationToken cancellationToken
-    )
-        => Execute(() => ExportRuntimeArtifactsLocked(destinationLibraryRoot, cancellationToken));
+    ) => Execute(() => ExportRuntimeArtifactsLocked(destinationLibraryRoot, cancellationToken: cancellationToken));
 
     internal AssetRuntimeContentInfo ExportRuntimeArtifacts(
         string destinationLibraryRoot,
@@ -75,31 +73,31 @@ sealed partial class AssetLoader
         CancellationToken cancellationToken
     ) {
         ArgumentNullException.ThrowIfNull(serialization);
-        return Execute(() => ExportRuntimeArtifactsLocked(
-            destinationLibraryRoot,
-            cancellationToken,
-            serialization));
+        return Execute(() => ExportRuntimeArtifactsLocked(destinationLibraryRoot, serialization, cancellationToken));
     }
 
     private AssetRuntimeContentInfo ExportRuntimeArtifactsLocked(
         string destinationLibraryRoot,
-        CancellationToken cancellationToken,
-        SerializationGeneration? serialization = null
+        SerializationGeneration? serialization = null,
+        CancellationToken cancellationToken = default
     ) {
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentException.ThrowIfNullOrWhiteSpace(destinationLibraryRoot);
         string destination = Path.GetFullPath(destinationLibraryRoot);
         if (Directory.Exists(destination) && Directory.EnumerateFileSystemEntries(destination).Any())
+        {
             throw new IOException("Runtime asset content destination must be empty.");
+        }
         AssetRecord[] imported = m_recordsByPath.Values
-            .Where(static record =>
+            .Where(static record => (
                 !record.meta.isDirectory
                 && !record.meta.isTombstone
                 && !AssetSample.IsRuntimeExcluded(AssetPath.Parse(record.relativePath), isDirectory: false)
                 && (record.meta.importStatus == (int)AssetImportStatus.Imported
                     || !string.IsNullOrEmpty(record.meta.artifactKey)
                     || (!string.IsNullOrEmpty(record.meta.importerId)
-                        && record.meta.importStatus is (int)AssetImportStatus.Pending or (int)AssetImportStatus.Failed)))
+                        && record.meta.importStatus is (int)AssetImportStatus.Pending or (int)AssetImportStatus.Failed))
+            ))
             .OrderBy(static record => record.relativePath, StringComparer.Ordinal)
             .ToArray();
         AssetRecord? invalidScope = imported.FirstOrDefault(static record =>
@@ -107,14 +105,17 @@ sealed partial class AssetLoader
         if (invalidScope is not null)
         {
             throw new InvalidOperationException(
-                $"Asset '{invalidScope.relativePath}' has an invalid deployment scope.");
+                $"Asset '{invalidScope.relativePath}' has an invalid deployment scope."
+            );
         }
         AssetRecord[] exported = imported
             .Where(static record => record.meta.deploymentScope == (int)AssetDeploymentScope.Runtime)
             .ToArray();
         var validated = new HashSet<Guid>();
         foreach (AssetRecord record in exported)
+        {
             ValidateExportInputsLocked(record, record.relativePath, validated, cancellationToken);
+        }
         string[] keys = exported
             .Select(static record => record.meta.artifactKey)
             .Distinct(StringComparer.Ordinal)
@@ -122,42 +123,51 @@ sealed partial class AssetLoader
             .ToArray();
         foreach (AssetRecord record in exported)
         {
-            AssetArtifactKey key = new(record.meta.artifactKey);
+            var key = new AssetArtifactKey(record.meta.artifactKey);
             if (!m_artifacts.TryGet(key, "asset-state", serialization, out _)
-                || !m_artifacts.TryGet(key, "runtime", serialization, out _))
-            {
+                || !m_artifacts.TryGet(key, "runtime", serialization, out _)
+            ) {
                 throw new InvalidOperationException(
-                    $"Asset '{record.relativePath}' has no complete runtime artifact bundle '{key}'.");
+                    $"Asset '{record.relativePath}' has no complete runtime artifact bundle '{key}'."
+                );
             }
         }
-        HashSet<Guid> exportedIds = exported
-            .Select(static record => record.persistentId)
+        HashSet<Guid> exportedIDs = exported
+            .Select(static record => record.persistentID)
             .ToHashSet();
         foreach (AssetRecord record in exported)
         {
             AssetDependencyData unavailable = record.meta.runtimeDependencies
-                .FirstOrDefault(dependency => !exportedIds.Contains(dependency.persistentId));
+                .FirstOrDefault(dependency => !exportedIDs.Contains(dependency.persistentId));
             if (unavailable.persistentId != Guid.Empty)
             {
                 throw new InvalidOperationException(
-                    $"Runtime asset '{record.relativePath}' depends on non-runtime asset " +
-                    $"'{unavailable.lastKnownPath}'.");
+                    $"Runtime asset '{record.relativePath}' depends on non-runtime asset "
+                    + $"'{unavailable.lastKnownPath}'."
+                );
             }
         }
 
         Directory.CreateDirectory(destination);
         AssetCatalogStore catalog = serialization is null
-            ? new AssetCatalogStore(destination, m_serialization)
-            : new AssetCatalogStore(destination, serialization);
+                                    ? new AssetCatalogStore(destination, m_serialization)
+                                    : new AssetCatalogStore(destination, serialization);
         var destinationArtifacts = new AssetArtifactStore(destination, m_serialization);
         var projectedKeys = new Dictionary<string, AssetArtifactKey>(StringComparer.Ordinal);
         foreach (string key in keys)
-            projectedKeys.Add(key, m_artifacts.ExportRuntime(new(key), destinationArtifacts, serialization, cancellationToken));
-        var deployed = new List<AssetMeta>();
+        {
+            projectedKeys.Add(
+                key,
+                m_artifacts.ExportRuntime(new AssetArtifactKey(key), destinationArtifacts, serialization, cancellationToken)
+            );
+        }
+        List<AssetMeta> deployed = [];
         foreach (AssetRecord record in exported)
         {
             byte[] bytes = serialization is null ? m_serialization.Serialize(record.meta) : serialization.Serialize(record.meta);
-            AssetMeta meta = serialization is null ? m_serialization.Deserialize<AssetMeta>(bytes) : serialization.Deserialize<AssetMeta>(bytes);
+            AssetMeta meta = serialization is null
+                             ? m_serialization.Deserialize<AssetMeta>(bytes)
+                             : serialization.Deserialize<AssetMeta>(bytes);
             meta.artifactKey = projectedKeys[record.meta.artifactKey].value;
             meta.lastSuccessfulArtifactKey = meta.artifactKey;
             meta.importDependencies = [];
@@ -167,16 +177,19 @@ sealed partial class AssetLoader
         long totalBytes = Directory
             .EnumerateFiles(Path.Combine(destination, "AssetDatabase"), "*", SearchOption.AllDirectories)
             .Sum(static path => new FileInfo(path).Length);
-        totalBytes += Directory.EnumerateFiles(destinationArtifacts.root, "*", SearchOption.AllDirectories).Sum(static path => new FileInfo(path).Length);
+        totalBytes += Directory.EnumerateFiles(destinationArtifacts.root, "*", SearchOption.AllDirectories)
+            .Sum(static path => new FileInfo(path).Length);
 
-        AssetSourceId[] sources = exported
+        AssetSourceID[] sources = exported
             .Select(static record => AssetPath.Parse(record.relativePath).source)
-            .Append(AssetSourceId.project)
+            .Append(AssetSourceID.project)
             .Distinct()
             .OrderBy(static source => source.value, StringComparer.Ordinal)
             .ToArray();
-        foreach (AssetSourceId source in sources)
+        foreach (AssetSourceID source in sources)
+        {
             Directory.CreateDirectory(Path.Combine(destination, "Sources", source.value));
+        }
         return new AssetRuntimeContentInfo(sources, exported.Length, keys.Length, totalBytes);
     }
 
@@ -187,14 +200,17 @@ sealed partial class AssetLoader
         CancellationToken cancellationToken
     ) {
         cancellationToken.ThrowIfCancellationRequested();
-        if (!validated.Add(record.persistentId))
+        if (!validated.Add(record.persistentID))
+        {
             return;
+        }
         if (record.meta.isTombstone || record.meta.importStatus != (int)AssetImportStatus.Imported)
         {
             throw new InvalidOperationException(
-                $"Runtime export requires successful current inputs: {dependencyChain}. " +
-                $"Status: {(AssetImportStatus)record.meta.importStatus}. " +
-                string.Join(" | ", record.meta.diagnostics));
+                $"Runtime export requires successful current inputs: {dependencyChain}. "
+                + $"Status: {(AssetImportStatus)record.meta.importStatus}. "
+                + string.Join(" | ", record.meta.diagnostics)
+            );
         }
 
         // Validate authoring inputs as well as deployed references. Editor last-good artifacts
@@ -202,12 +218,15 @@ sealed partial class AssetLoader
         foreach (AssetImportDependencyData dependency in record.meta.importDependencies)
         {
             if ((AssetImportDependencyKind)dependency.kind != AssetImportDependencyKind.Artifact)
-                continue;
-            if (!Guid.TryParse(dependency.key, out Guid id)
-                || !m_recordsById.TryGetValue(id, out AssetRecord? input))
             {
+                continue;
+            }
+            if (!Guid.TryParse(dependency.key, out Guid id)
+                || !m_recordsByID.TryGetValue(id, out AssetRecord? input)
+            ) {
                 throw new InvalidOperationException(
-                    $"Runtime export has a missing artifact input: {dependencyChain} -> {dependency.key}.");
+                    $"Runtime export has a missing artifact input: {dependencyChain} -> {dependency.key}."
+                );
             }
             ValidateExportInputsLocked(input, $"{dependencyChain} -> {input.relativePath}", validated, cancellationToken);
         }
@@ -216,7 +235,8 @@ sealed partial class AssetLoader
         if (IsStale(record, out _))
         {
             throw new InvalidOperationException(
-                $"Runtime export has stale source inputs: {dependencyChain}. Reimport current sources and rebuild.");
+                $"Runtime export has stale source inputs: {dependencyChain}. Reimport current sources and rebuild."
+            );
         }
     }
 
@@ -227,26 +247,32 @@ sealed partial class AssetLoader
             if (!IsMounted(record.relativePath))
             {
                 throw new InvalidDataException(
-                    $"Runtime asset '{record.relativePath}' references an undeclared source mount.");
+                    $"Runtime asset '{record.relativePath}' references an undeclared source mount."
+                );
             }
             if (record.meta.isDirectory || record.meta.isTombstone)
+            {
                 continue;
+            }
             if (record.meta.deploymentScope != (int)AssetDeploymentScope.Runtime)
             {
                 throw new InvalidDataException(
-                    $"Runtime catalog contains authoring-only asset '{record.relativePath}'.");
+                    $"Runtime catalog contains authoring-only asset '{record.relativePath}'."
+                );
             }
             if (record.meta.importStatus != (int)AssetImportStatus.Imported)
             {
                 throw new InvalidDataException(
-                    $"Runtime asset '{record.relativePath}' was not successfully imported before export.");
+                    $"Runtime asset '{record.relativePath}' was not successfully imported before export."
+                );
             }
-            AssetArtifactKey key = new(record.meta.artifactKey);
+            var key = new AssetArtifactKey(record.meta.artifactKey);
             if (!m_artifacts.TryGet(key, "asset-state", out _)
-                || !m_artifacts.TryGet(key, "runtime", out _))
-            {
+                || !m_artifacts.TryGet(key, "runtime", out _)
+            ) {
                 throw new InvalidDataException(
-                    $"Runtime asset '{record.relativePath}' has an incomplete artifact bundle '{key}'.");
+                    $"Runtime asset '{record.relativePath}' has an incomplete artifact bundle '{key}'."
+                );
             }
         }
     }
@@ -254,10 +280,11 @@ sealed partial class AssetLoader
     private void EnsureReadOnlyImportsSucceededLocked()
     {
         AssetRecord[] failed = m_recordsByPath.Values
-            .Where(record =>
+            .Where(record => (
                 GetMount(record.relativePath).isReadOnly
                 && record.meta.importStatus is (int)AssetImportStatus.Failed
-                    or (int)AssetImportStatus.Conflict)
+                   or (int)AssetImportStatus.Conflict
+            ))
             .OrderBy(static record => record.relativePath, StringComparer.Ordinal)
             .ToArray();
         if (failed.Length == 0)
@@ -267,10 +294,8 @@ sealed partial class AssetLoader
 
         string details = string.Join(
             "; ",
-            failed.Select(record =>
-                $"{record.relativePath}: {string.Join(" | ", record.meta.diagnostics)}"));
-        throw new InvalidDataException(
-            $"Read-only Asset Source candidate contains failed imports: {details}");
+            failed.Select(record => $"{record.relativePath}: {string.Join(" | ", record.meta.diagnostics)}")
+        );
+        throw new InvalidDataException($"Read-only Asset Source candidate contains failed imports: {details}");
     }
-
 }

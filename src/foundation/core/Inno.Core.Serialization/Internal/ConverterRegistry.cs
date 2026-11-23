@@ -3,11 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
-
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization.Converters;
+using Inno.Extensibility.Types;
 
 namespace Inno.Core.Serialization;
 
@@ -23,18 +21,20 @@ internal sealed class ConverterRegistry : IDisposable
         m_registry.Refresh();
     }
 
-    internal void Refresh() => RequireRegistry().Refresh();
-
     /// <summary>
     /// Releases the resources owned by this instance.
     /// </summary>
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_disposed = true;
         m_registry.Dispose();
     }
+
+    internal void Refresh() => RequireRegistry().Refresh();
 
     internal ConverterInvoker? Resolve(Type valueType)
     {
@@ -48,15 +48,19 @@ internal sealed class ConverterRegistry : IDisposable
         ConverterRegistrySnapshot snapshot,
         Type valueType
     ) {
-        var candidates = new List<ConverterCandidate>();
+        List<ConverterCandidate> candidates = [];
         for (int i = 0; i < snapshot.registrations.Count; i++)
         {
             if (TryCreateCandidate(snapshot, snapshot.registrations[i], valueType, out ConverterCandidate? candidate))
+            {
                 candidates.Add(candidate!);
+            }
         }
 
         if (candidates.Count == 0)
+        {
             return null;
+        }
 
         int bestDistance = candidates.Min(static candidate => candidate.distance);
         ConverterCandidate[] best = candidates
@@ -66,12 +70,18 @@ internal sealed class ConverterRegistry : IDisposable
         if (best.Length > 1)
         {
             throw new InvalidOperationException(
-                $"Serialization type '{valueType.FullName}' has ambiguous converters " +
-                $"'{best[0].converterType.FullName}' and '{best[1].converterType.FullName}' at distance {bestDistance}.");
+                $"Serialization type '{valueType.FullName}' has ambiguous converters "
+                + $"'{best[0].converterType.FullName}' and '{best[1].converterType.FullName}' at distance {bestDistance}."
+            );
         }
 
         return best[0].invoker;
     }
+
+    private ConverterTypeRegistry RequireRegistry()
+        => !m_disposed
+           ? m_registry
+           : throw new ObjectDisposedException(nameof(ConverterRegistry));
 
     private static bool TryCreateCandidate(
         ConverterRegistrySnapshot snapshot,
@@ -81,45 +91,57 @@ internal sealed class ConverterRegistry : IDisposable
     ) {
         candidate = null;
         if (!TryGetConverterTargetPattern(registeredType, out Type targetPattern))
+        {
             throw new InvalidOperationException(
-                $"Serialization extension '{registeredType.FullName}' must inherit SerializationConverter<T>.");
+                $"Serialization extension '{registeredType.FullName}' must inherit SerializationConverter<T>."
+            );
+        }
 
         Type closedConverterType = registeredType;
         if (registeredType.ContainsGenericParameters)
         {
             if (!registeredType.IsGenericTypeDefinition)
+            {
                 return false;
+            }
 
             var bindings = new Dictionary<Type, Type>();
             if (!TryUnify(targetPattern, valueType, bindings))
+            {
                 return false;
+            }
 
             Type[] parameters = registeredType.GetGenericArguments();
             var arguments = new Type[parameters.Length];
             for (int i = 0; i < parameters.Length; i++)
             {
                 if (!bindings.TryGetValue(parameters[i], out Type? argument))
+                {
                     return false;
+                }
                 arguments[i] = argument;
             }
 
             Type? construction = snapshot.ConstructGenericType(registeredType, arguments);
             if (construction is null)
+            {
                 return false;
+            }
             closedConverterType = construction;
         }
 
         if (!TryGetConverterTargetPattern(closedConverterType, out Type targetType) || targetType.ContainsGenericParameters)
+        {
             return false;
+        }
         if (!targetType.IsAssignableFrom(valueType))
+        {
             return false;
+        }
 
-        var converter = (SerializationConverter)GetOrCreateConverter(snapshot, closedConverterType);
+        SerializationConverter converter = (SerializationConverter)GetOrCreateConverter(snapshot, closedConverterType);
         ConverterInvoker invoker = converter.CreateInvoker();
-        candidate = new ConverterCandidate(
-            closedConverterType,
-            GetTypeDistance(valueType, targetType),
-            invoker);
+        candidate = new ConverterCandidate(closedConverterType, GetTypeDistance(valueType, targetType), invoker);
         return true;
     }
 
@@ -128,7 +150,9 @@ internal sealed class ConverterRegistry : IDisposable
         Type converterType
     ) {
         if (snapshot.converterInstances.TryGetValue(converterType, out object? converter))
+        {
             return converter;
+        }
 
         try
         {
@@ -138,7 +162,8 @@ internal sealed class ConverterRegistry : IDisposable
         {
             throw new InvalidOperationException(
                 $"Serialization converter '{converterType.FullName}' must have a parameterless constructor.",
-                exception);
+                exception
+            );
         }
 
         snapshot.converterInstances.Add(converterType, converter);
@@ -152,7 +177,9 @@ internal sealed class ConverterRegistry : IDisposable
         for (Type? current = converterType; current is not null; current = current.BaseType)
         {
             if (!current.IsGenericType || current.GetGenericTypeDefinition() != typeof(SerializationConverter<>))
+            {
                 continue;
+            }
 
             targetPattern = current.GetGenericArguments()[0];
             return true;
@@ -170,29 +197,37 @@ internal sealed class ConverterRegistry : IDisposable
         if (pattern.IsGenericParameter)
         {
             if (bindings.TryGetValue(pattern, out Type? existing))
+            {
                 return existing == concrete;
+            }
             bindings.Add(pattern, concrete);
             return true;
         }
 
         if (pattern.IsArray)
         {
-            return concrete.IsArray &&
-                   pattern.GetArrayRank() == concrete.GetArrayRank() &&
-                   TryUnify(pattern.GetElementType()!, concrete.GetElementType()!, bindings);
+            return concrete.IsArray
+                   && pattern.GetArrayRank() == concrete.GetArrayRank()
+                   && TryUnify(pattern.GetElementType()!, concrete.GetElementType()!, bindings);
         }
 
         if (!pattern.IsGenericType)
+        {
             return pattern == concrete;
+        }
         if (!concrete.IsGenericType || pattern.GetGenericTypeDefinition() != concrete.GetGenericTypeDefinition())
+        {
             return false;
+        }
 
         Type[] patternArguments = pattern.GetGenericArguments();
         Type[] concreteArguments = concrete.GetGenericArguments();
         for (int i = 0; i < patternArguments.Length; i++)
         {
             if (!TryUnify(patternArguments[i], concreteArguments[i], bindings))
+            {
                 return false;
+            }
         }
 
         return true;
@@ -203,17 +238,23 @@ internal sealed class ConverterRegistry : IDisposable
         Type targetType
     ) {
         if (derivedType == targetType)
+        {
             return 0;
+        }
         // Assignability was validated by the caller. Implemented interfaces share one rank,
         // including variant constructions; class inheritance retains its exact depth.
         if (targetType.IsInterface)
+        {
             return 1;
+        }
 
         int distance = 1;
         for (Type? current = derivedType.BaseType; current is not null; current = current.BaseType)
         {
             if (current == targetType)
+            {
                 return distance;
+            }
             distance++;
         }
 
@@ -229,19 +270,7 @@ internal sealed class ConverterRegistry : IDisposable
     private sealed class ConverterTypeRegistry : TypeRegistry<ConverterRegistrySnapshot>
     {
         internal ConverterTypeRegistry(TypeCatalog types)
-            : base(types)
-        {
-        }
-
-        internal ConverterRegistryLease Capture()
-        {
-            while (true)
-            {
-                ConverterRegistrySnapshot snapshot = current;
-                if (snapshot.TryAcquire())
-                    return new ConverterRegistryLease(snapshot);
-            }
-        }
+            : base(types) {}
 
         /// <summary>
         /// Builds a validated result from the current immutable input snapshot.
@@ -264,7 +293,8 @@ internal sealed class ConverterRegistry : IDisposable
                 if (!TryGetConverterTargetPattern(registrations[i], out _))
                 {
                     throw new InvalidOperationException(
-                        $"Serialization extension '{registrations[i].FullName}' must inherit SerializationConverter<T>.");
+                        $"Serialization extension '{registrations[i].FullName}' must inherit SerializationConverter<T>."
+                    );
                 }
             }
 
@@ -278,23 +308,29 @@ internal sealed class ConverterRegistry : IDisposable
         /// The immutable state snapshot consumed by this operation.
         /// </param>
         protected override void DisposeSnapshot(ConverterRegistrySnapshot snapshot) => snapshot.Release();
-    }
 
-    private ConverterTypeRegistry RequireRegistry()
-        => !m_disposed
-            ? m_registry
-            : throw new ObjectDisposedException(nameof(ConverterRegistry));
+        internal ConverterRegistryLease Capture()
+        {
+            while (true)
+            {
+                ConverterRegistrySnapshot snapshot = current;
+                if (snapshot.TryAcquire())
+                {
+                    return new ConverterRegistryLease(snapshot);
+                }
+            }
+        }
+    }
 
     internal sealed class ConverterRegistrySnapshot(
         IReadOnlyList<Type> registrations,
         TypeCacheSnapshot types
-    )
-    {
-        private TypeCacheSnapshot? m_types = types;
+    ) {
         internal readonly Guid captureIdentity = Guid.NewGuid();
         internal readonly Lock sync = new();
         internal readonly ConcurrentDictionary<Type, ConverterInvoker?> cache = new();
         internal readonly Dictionary<Type, object> converterInstances = [];
+        private TypeCacheSnapshot? m_types = types;
         internal IReadOnlyList<Type> registrations = registrations;
         private int m_referenceCount = 1;
 
@@ -314,7 +350,9 @@ internal sealed class ConverterRegistry : IDisposable
             lock (sync)
             {
                 if (m_referenceCount == 0)
+                {
                     return false;
+                }
                 m_referenceCount++;
                 return true;
             }
@@ -326,12 +364,16 @@ internal sealed class ConverterRegistry : IDisposable
             lock (sync)
             {
                 if (m_referenceCount <= 0)
+                {
                     throw new InvalidOperationException("The serialization converter generation was released twice.");
+                }
                 m_referenceCount--;
                 dispose = m_referenceCount == 0;
             }
             if (!dispose)
+            {
                 return;
+            }
 
             foreach (object converter in converterInstances.Values.Distinct(ReferenceEqualityComparer.Instance))
             {
@@ -346,7 +388,8 @@ internal sealed class ConverterRegistry : IDisposable
                         Trace.TraceError(
                             "Serialization converter '{0}' failed while being disposed: {1}",
                             converter.GetType().FullName,
-                            exception);
+                            exception
+                        );
                     }
                 }
             }
@@ -354,238 +397,9 @@ internal sealed class ConverterRegistry : IDisposable
             {
                 cache.Clear();
                 converterInstances.Clear();
-                registrations = Array.Empty<Type>();
+                registrations = [];
                 m_types = null;
             }
         }
-    }
-}
-
-internal sealed class ConverterRegistryLease : IDisposable
-{
-    private ConcurrentDictionary<SerializationTypeMetadata, (ISerializationMetadataSource source, bool eligible)>? m_revisionPlans;
-    private ConverterRegistry.ConverterRegistrySnapshot? m_snapshot;
-
-    internal ConverterRegistryLease(ConverterRegistry.ConverterRegistrySnapshot snapshot)
-    {
-        m_snapshot = snapshot;
-    }
-
-    internal TypeCacheSnapshot types => (m_snapshot ?? throw new ObjectDisposedException(nameof(ConverterRegistryLease))).types;
-    internal Guid captureIdentity => (m_snapshot ?? throw new ObjectDisposedException(nameof(ConverterRegistryLease))).captureIdentity;
-
-    internal bool CanReuseRevision(
-        SerializationTypeMetadata metadata,
-        ISerializationMetadataSource source
-    ) {
-        var plans = Volatile.Read(ref m_revisionPlans);
-        if (plans is null)
-        {
-            var created = new ConcurrentDictionary<SerializationTypeMetadata, (ISerializationMetadataSource source, bool eligible)>();
-            plans = Interlocked.CompareExchange(ref m_revisionPlans, created, null) ?? created;
-        }
-        if (plans.TryGetValue(metadata, out var known) && ReferenceEquals(known.source, source))
-            return known.eligible;
-        bool eligible = !metadata.requiresConverter;
-        foreach (SerializationMemberMetadata member in metadata.members)
-        {
-            if (!eligible)
-                break;
-            if ((member.visibility & PropertyVisibility.Serialize) == 0)
-                continue;
-            if (!IsKnownDefault(member.type))
-            {
-                eligible = false;
-                break;
-            }
-            if (ValuePipeline.IsPrimitive(member.type) || member.type.IsEnum)
-                continue;
-            SerializationTypeMetadata nested = source.GetMetadata(member.type);
-            if (!nested.hasPureFieldAccess)
-            {
-                eligible = false;
-                break;
-            }
-            foreach (SerializationMemberMetadata field in nested.members)
-                if ((field.visibility & PropertyVisibility.Serialize) != 0 && !IsKnownDefault(field.type))
-                {
-                    eligible = false;
-                    break;
-                }
-        }
-        // An unresolved fact can become known through an ordinary write in this same operation.
-        // Cache only positive proofs; a key query still never invokes the resolver itself.
-        if (eligible)
-            plans[metadata] = (source, true);
-        return eligible;
-    }
-    internal ConverterInvoker? Resolve(Type valueType)
-    {
-        ArgumentNullException.ThrowIfNull(valueType);
-        ConverterRegistry.ConverterRegistrySnapshot snapshot = m_snapshot
-            ?? throw new ObjectDisposedException(nameof(ConverterRegistryLease));
-        Type normalizedType = Nullable.GetUnderlyingType(valueType) ?? valueType;
-        if (snapshot.cache.TryGetValue(normalizedType, out ConverterInvoker? cached))
-            return cached;
-        lock (snapshot.sync)
-        {
-            if (snapshot.cache.TryGetValue(normalizedType, out cached))
-                return cached;
-            ConverterInvoker? resolved = ConverterRegistry.ResolveSnapshot(snapshot, normalizedType);
-            if (!snapshot.cache.TryAdd(normalizedType, resolved))
-                throw new InvalidOperationException("The serialization converter resolution was published twice.");
-            return resolved;
-        }
-    }
-
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose()
-    {
-        ConverterRegistry.ConverterRegistrySnapshot? snapshot = Interlocked.Exchange(ref m_snapshot, null);
-        m_revisionPlans?.Clear();
-        snapshot?.Release();
-    }
-
-    private bool IsKnownDefault(Type type)
-    {
-        ConverterRegistry.ConverterRegistrySnapshot snapshot = m_snapshot
-            ?? throw new ObjectDisposedException(nameof(ConverterRegistryLease));
-        Type normalized = Nullable.GetUnderlyingType(type) ?? type;
-        // Reuse only facts established by the authoritative resolver. A key query must not
-        // construct converters, change their execution order, or introduce another resolver.
-        return snapshot.cache.TryGetValue(normalized, out ConverterInvoker? converter) && converter is null;
-    }
-}
-
-internal abstract class ConverterInvoker
-{
-    /// <summary>
-    /// Creates a validated converter invoker instance.
-    /// </summary>
-    /// <param name="targetType">
-    /// The target type consumed by converter invoker; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <param name="converterType">
-    /// The converter type consumed by converter invoker; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    protected ConverterInvoker(
-        Type targetType,
-        Type converterType
-    ) {
-        this.targetType = targetType;
-        this.converterType = converterType;
-    }
-
-    internal Type targetType { get; }
-
-    internal Type converterType { get; }
-
-    internal abstract SerializationNode Write(
-        SerializationOperation operation,
-        string path,
-        Type valueType,
-        object value,
-        SerializationNode? previous
-    );
-
-    internal abstract object Read(
-        SerializationOperation operation,
-        string path,
-        Type valueType,
-        ObjectSerializationNode node
-    );
-
-    internal abstract void Restore(
-        SerializationOperation operation,
-        string path,
-        Type valueType,
-        ObjectSerializationNode node,
-        object target
-    );
-}
-
-internal sealed class ConverterInvoker<T> : ConverterInvoker
-{
-    private readonly SerializationConverter<T> m_converter;
-
-    internal ConverterInvoker(
-        SerializationConverter<T> converter,
-        Type converterType
-    )
-        : base(typeof(T), converterType)
-    {
-        m_converter = converter;
-    }
-
-    internal override SerializationNode Write(
-        SerializationOperation operation,
-        string path,
-        Type valueType,
-        object value,
-        SerializationNode? previous
-    ) {
-        if (value is not T typed)
-        {
-            throw new InvalidOperationException(
-                $"Converter '{converterType.FullName}' cannot write runtime value '{value.GetType().FullName}' at '{path}'.");
-        }
-
-        ObjectSerializationNode? prior = previous as ObjectSerializationNode;
-        operation.RecordConverterWrite();
-        long converterWrites = operation.converterWrites;
-        SerializationCaptureAttempt attempt = SerializationCaptureAttempt.Capture(operation, valueType, typed, prior?.captureKey, m_converter);
-        SerializationCaptureKey? key = attempt.key;
-        if (key is not null && ReferenceEquals(key, prior?.captureKey))
-            return prior!;
-        var writer = new SerializationWriter(operation, prior, path, valueType);
-        m_converter.Write(writer, typed);
-        ObjectSerializationNode result = writer.Complete();
-        if (key is not null)
-        {
-            attempt.ValidateIdentities();
-            key = attempt.Verify(SerializationCaptureAttempt.Capture(operation, valueType, typed, key, m_converter));
-            if (operation.converterWrites != converterWrites)
-                key = null;
-        }
-        return SerializationNodeReuse.WithCaptureKey(result, prior, key);
-    }
-
-    internal override object Read(
-        SerializationOperation operation,
-        string path,
-        Type valueType,
-        ObjectSerializationNode node
-    ) {
-        T result = m_converter.Read(new SerializationReader(operation, node, path, valueType));
-        if (result is null)
-            throw new InvalidOperationException($"Converter '{converterType.FullName}' returned null at '{path}'.");
-        if (!valueType.IsInstanceOfType(result))
-        {
-            throw new InvalidOperationException(
-                $"Converter '{converterType.FullName}' returned '{result.GetType().FullName}', which is incompatible with '{valueType.FullName}' at '{path}'.");
-        }
-        if (result is ISerializable serializable)
-            operation.ScheduleRestoredObject(serializable);
-        return result;
-    }
-
-    internal override void Restore(
-        SerializationOperation operation,
-        string path,
-        Type valueType,
-        ObjectSerializationNode node,
-        object target
-    ) {
-        if (target is not T typed)
-        {
-            throw new InvalidOperationException(
-                $"Converter '{converterType.FullName}' cannot restore target '{target.GetType().FullName}' at '{path}'.");
-        }
-
-        m_converter.Restore(new SerializationReader(operation, node, path, valueType), typed);
-        if (target is ISerializable serializable)
-            operation.ScheduleRestoredObject(serializable);
     }
 }

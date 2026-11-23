@@ -1,18 +1,18 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
 /// <summary>
 /// Describes one capability-compatible material pass selection.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("e4a37a17-bfc1-5b29-9c57-f7b387271f9f")]
+[StableTypeID("e4a37a17-bfc1-5b29-9c57-f7b387271f9f")]
 public sealed class MaterialPassResolution
 {
     private readonly ShaderTechniqueDefinition m_technique;
@@ -45,4 +45,3 @@ public sealed class MaterialPassResolution
     /// </summary>
     public ShaderPassDefinition pass => ShaderDefinitionSnapshot.Copy(m_pass);
 }
-

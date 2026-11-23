@@ -9,7 +9,6 @@ public enum RuntimeSubsystemRequirement
     /// Missing capabilities, dependencies or failed startup reject the entire owner.
     /// </summary>
     Required,
-
     /// <summary>
     /// A fully compensated startup may remain unavailable with diagnostics; cleanup failures still reject the owner.
     /// </summary>

@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.ExceptionServices;
 using System.Linq;
-
-using Inno.Extensibility.Types;
+using System.Runtime.ExceptionServices;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Types;
 using Inno.Scene;
 using Inno.Scene.Components;
 using Inno.Scene.Layers;
@@ -35,8 +34,10 @@ public sealed partial class SceneEdits : EditorModule
         EditorSceneWorkspace workspace,
         EditorInteractions interactions
     ) {
-        m_workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
-        m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
+        ArgumentNullException.ThrowIfNull(workspace);
+        ArgumentNullException.ThrowIfNull(interactions);
+        m_workspace = workspace;
+        m_interactions = interactions;
     }
 
     /// <summary>
@@ -64,7 +65,9 @@ public sealed partial class SceneEdits : EditorModule
     {
         ArgumentNullException.ThrowIfNull(target);
         if (target.isDestroyed)
+        {
             return false;
+        }
         try
         {
             return m_workspace.CanEdit(ResolveOwnerScene(target));
@@ -88,30 +91,33 @@ public sealed partial class SceneEdits : EditorModule
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
-        Guid? activeBefore = GetActiveSceneId();
-        Guid? selectedBefore = GetSelectionId();
+        Guid? activeBefore = GetActiveSceneID();
+        Guid? selectedBefore = GetSelectionID();
         GameScene scene = m_workspace.CreateScene();
         RecordWithRollback(
             () =>
             {
-                EditorSceneWorkspace.SceneDocumentSnapshot snapshot =
-                    m_workspace.CaptureDocumentSnapshot(scene);
+                EditorSceneWorkspace.SceneDocumentSnapshot snapshot = m_workspace.CaptureDocumentSnapshot(scene);
                 RecordDocument(
                     historyName,
                     existsBefore: false,
                     existsAfter: true,
                     snapshot,
                     activeBefore,
-                    GetActiveSceneId(),
+                    GetActiveSceneID(),
                     selectedBefore,
-                    scene.identity.persistentId);
+                    scene.identity.persistentID
+                );
             },
             () =>
             {
                 if (!m_workspace.CloseScene(scene))
+                {
                     throw new InvalidOperationException("The unrecorded scene could not be removed.");
+                }
                 m_workspace.RestoreActiveScene(activeBefore);
-            });
+            }
+        );
         return scene;
     }
 
@@ -135,10 +141,12 @@ public sealed partial class SceneEdits : EditorModule
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
         EditorSceneWorkspace.SceneDocumentSnapshot snapshot = m_workspace.CaptureDocumentSnapshot(scene);
-        Guid? activeBefore = GetActiveSceneId();
-        Guid? selectedBefore = GetSelectionId();
+        Guid? activeBefore = GetActiveSceneID();
+        Guid? selectedBefore = GetSelectionID();
         if (!m_workspace.CloseScene(scene))
+        {
             return false;
+        }
         RecordWithRollback(
             () => RecordDocument(
                 historyName,
@@ -146,14 +154,16 @@ public sealed partial class SceneEdits : EditorModule
                 existsAfter: false,
                 snapshot,
                 activeBefore,
-                GetActiveSceneId(),
+                GetActiveSceneID(),
                 selectedBefore,
-                GetSelectionId()),
+                GetSelectionID()
+            ),
             () =>
             {
                 _ = m_workspace.RestoreDocumentSnapshot(snapshot);
                 m_workspace.RestoreActiveScene(activeBefore);
-            });
+            }
+        );
         return true;
     }
 }

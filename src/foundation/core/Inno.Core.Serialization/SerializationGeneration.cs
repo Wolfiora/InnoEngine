@@ -48,8 +48,7 @@ public sealed class SerializationGeneration : IDisposable
     public byte[] Serialize<T>(
         T value,
         SerializationContext? context = null
-    )
-        where T : class, ISerializable
+    ) where T : class, ISerializable
         => m_owner.Serialize(value, GetConverters(), context);
 
     /// <summary>
@@ -73,8 +72,7 @@ public sealed class SerializationGeneration : IDisposable
     public T Deserialize<T>(
         ReadOnlySpan<byte> bytes,
         SerializationContext? context = null
-    )
-        where T : class, ISerializable
+    ) where T : class, ISerializable
         => m_owner.Deserialize<T>(bytes, GetConverters(), context);
 
     /// <summary>
@@ -98,8 +96,7 @@ public sealed class SerializationGeneration : IDisposable
     public byte[] Encode(
         Action<SerializationWriter> write,
         SerializationContext? context = null
-    )
-        => m_owner.Encode(write, GetConverters(), context);
+    ) => m_owner.Encode(write, GetConverters(), context);
 
     /// <summary>
     /// Decodes a manually defined structured root using the converter generation captured by this instance.
@@ -129,8 +126,7 @@ public sealed class SerializationGeneration : IDisposable
         ReadOnlySpan<byte> bytes,
         Func<SerializationReader, TResult> read,
         SerializationContext? context = null
-    )
-        => m_owner.Decode(bytes, read, GetConverters(), context);
+    ) => m_owner.Decode(bytes, read, GetConverters(), context);
 
     /// <summary>
     /// Releases the pinned converter generation and every collectible type reference owned by this lease.

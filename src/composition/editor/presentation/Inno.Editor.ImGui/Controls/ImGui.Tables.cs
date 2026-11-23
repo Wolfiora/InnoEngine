@@ -1,8 +1,10 @@
 using System.Numerics;
 using Inno.Native.ImGui;
+
 using RawImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Presents tables through the active Editor UI context.
 /// </summary>
@@ -19,7 +21,7 @@ public static partial class ImGui
     /// </returns>
     public static bool TableSetColumnIndex(int index)
     {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         return RawImGui.TableSetColumnIndex(index);
     }
 
@@ -40,7 +42,7 @@ public static partial class ImGui
         uint color,
         int column = -1
     ) {
-        EditorUiSession.current.EnsureDrawing();
+        EditorUISession.current.EnsureDrawing();
         RawImGui.TableSetBgColor((int)target, color, column);
     }
 }

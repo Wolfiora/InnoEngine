@@ -25,6 +25,4 @@ public sealed class ShaderInterface
     /// Gets stable expected bindings.
     /// </summary>
     public IReadOnlyList<ShaderInterfaceBinding> bindings { get; }
-
 }
-

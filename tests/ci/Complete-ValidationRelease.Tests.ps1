@@ -31,7 +31,7 @@ try {
         function Start-Sleep { param($Seconds) throw 'Unexpected wait in a completed-run contract.' }
         $accepted = $false
         try {
-            $result = & "$PSScriptRoot/Complete-ValidationRelease.ps1" -SourceRunId 42 -Commit $commit -Repository fixture/engine -DefaultBranch master
+            $result = & "$PSScriptRoot/../../tools/ci/Complete-ValidationRelease.ps1" -SourceRunId 42 -Commit $commit -Repository fixture/engine -DefaultBranch master
             $accepted = $true
             if ($result -ne 43) { throw 'Completion returned another source run.' }
         } catch { if ($case -eq 'success') { throw } }

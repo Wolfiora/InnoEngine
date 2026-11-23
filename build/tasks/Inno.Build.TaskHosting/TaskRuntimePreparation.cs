@@ -19,13 +19,15 @@ internal static class TaskRuntimePreparation
         string cache,
         string request,
         string load,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         var publisher = new BuildCachePublisher(cache, BuildCacheArtifactRole.ImmutableArtifact);
-        using FileLease activity = publisher.AcquireUseAsync(cancellation).AsTask().GetAwaiter().GetResult();
+        using FileLease activity = publisher.AcquireUseAsync(cancellationToken).AsTask().GetAwaiter().GetResult();
         string index = Path.Combine(cache, request + ".request.json");
         if (!File.Exists(index))
+        {
             return null;
+        }
         RuntimeFile[] files;
         try
         {
@@ -38,18 +40,26 @@ internal static class TaskRuntimePreparation
             return null;
         }
         if (files.Length == 0)
+        {
             return null;
+        }
         string assembly = files.Single(static file => file.relative == "Inno.Build.Tasks.dll").source;
         string runtime = Path.GetDirectoryName(assembly)!;
         string publication = Path.GetDirectoryName(runtime)!;
         PathBoundary.RequireUnlinkedPath(cache, publication);
         if (Path.GetRelativePath(cache, publication) != Fingerprint(files)
-            || files.Any(file => file.source != PathBoundary.Resolve(runtime, file.relative)))
+            || files.Any(file => file.source != PathBoundary.Resolve(runtime, file.relative))
+        ) {
             return null;
-        using FileLease reading = FileLease.AcquireSharedAsync(publication + ".lock", TimeSpan.FromSeconds(30), cancellation)
-            .AsTask().GetAwaiter().GetResult();
-        if (!IsComplete(runtime, files, cancellation))
+        }
+        using FileLease reading = FileLease.AcquireSharedAsync(publication + ".lock", TimeSpan.FromSeconds(30), cancellationToken)
+            .AsTask()
+            .GetAwaiter()
+            .GetResult();
+        if (!IsComplete(runtime, files, cancellationToken))
+        {
             return null;
+        }
         RegisterReader(load, assembly);
         return CreateOutputs(files);
     }
@@ -64,39 +74,43 @@ internal static class TaskRuntimePreparation
         RuntimeFile[] files = FreezeFiles(outputs);
         string path = Path.Combine(cache, request + ".request.json");
         AtomicFile.WriteAllBytes(path, JsonSerializer.SerializeToUtf8Bytes(files));
-        publisher.RecordIndex(path, files.Select(static file => Path.GetDirectoryName(Path.GetDirectoryName(file.source)!)!)
-            .Distinct(StringComparer.Ordinal).ToArray());
+        publisher.RecordIndex(
+            path,
+            files.Select(static file => Path.GetDirectoryName(Path.GetDirectoryName(file.source)!)!)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray()
+        );
     }
 
-    private static ITaskItem[] CreateOutputs(IReadOnlyList<RuntimeFile> files) => files.Select(file =>
-    {
-        var item = new TaskItem(file.source);
-        item.SetMetadata("RelativePath", file.relative);
-        item.SetMetadata("FileHash", file.hash);
-        return (ITaskItem)item;
-    }).ToArray();
-
-    internal static string Fingerprint(IReadOnlyList<RuntimeFile> files) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-        string.Join('\n', files.Select(static file => file.relative + "|" + file.hash)))));
+    internal static string Fingerprint(IReadOnlyList<RuntimeFile> files)
+        => Convert.ToHexString(
+            SHA256.HashData(
+                Encoding.UTF8.GetBytes(string.Join('\n', files.Select(static file => file.relative + "|" + file.hash)))
+            )
+        );
 
     internal static ITaskItem[] Publish(
         string cache,
         ITaskItem[] inputs,
         IBuildEngine4 engine,
         string load,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         RuntimeFile[] files = FreezeFiles(inputs);
         string fingerprint = Fingerprint(files);
         string destination = Path.Combine(cache, fingerprint);
         var publisher = new BuildCachePublisher(cache, BuildCacheArtifactRole.ImmutableArtifact);
-        using FileLease activity = publisher.AcquireUseAsync(cancellation).AsTask().GetAwaiter().GetResult();
-        using FileLease lease = FileLease.AcquireAsync(destination + ".lock", Timeout.InfiniteTimeSpan, cancellation)
-            .AsTask().GetAwaiter().GetResult();
-        ValidateSources(files, cancellation);
-        if (!IsComplete(Path.Combine(destination, "Runtime"), files, cancellation))
-            PublishCandidate(destination, files, cancellation);
-        ValidateSources(files, cancellation);
+        using FileLease activity = publisher.AcquireUseAsync(cancellationToken).AsTask().GetAwaiter().GetResult();
+        using FileLease lease = FileLease.AcquireAsync(destination + ".lock", Timeout.InfiniteTimeSpan, cancellationToken)
+            .AsTask()
+            .GetAwaiter()
+            .GetResult();
+        ValidateSources(files, cancellationToken);
+        if (!IsComplete(Path.Combine(destination, "Runtime"), files, cancellationToken))
+        {
+            PublishCandidate(destination, files, cancellationToken);
+        }
+        ValidateSources(files, cancellationToken);
         ITaskItem[] output = files.Select(file =>
         {
             var item = new TaskItem(Path.Combine(destination, "Runtime", file.relative));
@@ -104,7 +118,7 @@ internal static class TaskRuntimePreparation
             item.SetMetadata("FileHash", file.hash);
             return (ITaskItem)item;
         }).ToArray();
-        publisher.Record(destination, destination + ".lock", [], null, null, cancellation);
+        publisher.Record(destination, destination + ".lock", [], null, null, cancellationToken);
         RegisterReader(load, Path.Combine(destination, "Runtime", "Inno.Build.Tasks.dll"));
         TaskRuntimeBuildScope.Register(engine, "publication:" + cache + "/" + fingerprint, output);
         return output;
@@ -113,7 +127,9 @@ internal static class TaskRuntimePreparation
     internal static RuntimeFile[] FreezeFiles(ITaskItem[] inputFiles)
     {
         if (inputFiles.Length == 0)
+        {
             throw new InvalidDataException("The task runtime closure is empty.");
+        }
         var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         RuntimeFile[] files = inputFiles.Select(item =>
         {
@@ -121,12 +137,16 @@ internal static class TaskRuntimePreparation
             string hash = item.GetMetadata("FileHash").ToUpperInvariant();
             if (relative.Length == 0 || relative.Split('/').Any(static segment => segment is "" or "." or "..")
                 || relative.Contains(':') || !paths.Add(relative)
-                || hash.Length != 64 || hash.Any(static character => !Uri.IsHexDigit(character)))
+                || hash.Length != 64 || hash.Any(static character => !Uri.IsHexDigit(character))
+            ) {
                 throw new InvalidDataException("A runtime input has an invalid path, hash or duplicate identity.");
+            }
             return new RuntimeFile(RequireAbsolute(item.ItemSpec), relative, hash);
         }).OrderBy(static file => file.relative, StringComparer.Ordinal).ToArray();
         if (!paths.Contains("Inno.Build.Tasks.dll"))
+        {
             throw new InvalidDataException("The task runtime closure has no task assembly.");
+        }
         return files;
     }
 
@@ -134,38 +154,49 @@ internal static class TaskRuntimePreparation
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         if (!Path.IsPathFullyQualified(path))
+        {
             throw new ArgumentException("Task host locations must be absolute.", nameof(path));
+        }
         return Path.GetFullPath(path);
     }
 
     internal static void ValidateSources(
         IReadOnlyList<RuntimeFile> files,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         foreach (RuntimeFile file in files)
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             if (Hash(file.source) != file.hash)
+            {
                 throw new InvalidDataException($"Task runtime input changed after selection: {file.source}");
+            }
         }
     }
 
     internal static bool IsComplete(
         string runtime,
         IReadOnlyList<RuntimeFile> files,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         if (!Directory.Exists(runtime))
+        {
             return false;
+        }
         string[] actual = PathBoundary.EnumerateFiles(runtime)
-            .Select(path => Path.GetRelativePath(runtime, path).Replace('\\', '/')).ToArray();
+            .Select(path => Path.GetRelativePath(runtime, path).Replace('\\', '/'))
+            .ToArray();
         if (!actual.ToHashSet(StringComparer.Ordinal).SetEquals(files.Select(static file => file.relative)))
+        {
             return false;
+        }
         foreach (RuntimeFile file in files)
         {
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             if (Hash(PathBoundary.Resolve(runtime, file.relative)) != file.hash)
+            {
                 return false;
+            }
         }
         return true;
     }
@@ -173,25 +204,30 @@ internal static class TaskRuntimePreparation
     internal static void PublishCandidate(
         string destination,
         IReadOnlyList<RuntimeFile> files,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
-        using ProcessOwnedDirectory candidateOwner = ProcessOwnedDirectory.CreateAsync(Path.GetDirectoryName(destination)!, cancellation)
-            .AsTask().GetAwaiter().GetResult();
+        using ProcessOwnedDirectory candidateOwner = ProcessOwnedDirectory
+            .CreateAsync(Path.GetDirectoryName(destination)!, cancellationToken)
+            .AsTask()
+            .GetAwaiter()
+            .GetResult();
         string staging = candidateOwner.directory;
         string runtime = Path.Combine(staging, "Runtime");
         try
         {
             foreach (RuntimeFile file in files)
             {
-                cancellation.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 string output = PathBoundary.Resolve(runtime, file.relative);
                 Directory.CreateDirectory(Path.GetDirectoryName(output)!);
                 File.Copy(file.source, output);
             }
-            if (!IsComplete(runtime, files, cancellation))
+            if (!IsComplete(runtime, files, cancellationToken))
+            {
                 throw new InvalidDataException("The copied task runtime did not match its selected closure.");
-            ValidateSources(files, cancellation);
-            cancellation.ThrowIfCancellationRequested();
+            }
+            ValidateSources(files, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
             try
             {
                 AtomicDirectory.Install(staging, destination);
@@ -216,11 +252,11 @@ internal static class TaskRuntimePreparation
     internal static void RegisterWorkspaceReader(
         string load,
         string workspace,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
         string operation = Path.GetDirectoryName(load)!;
         new BuildCachePublisher(Path.GetDirectoryName(operation)!, BuildCacheArtifactRole.ProcessWorkingDirectory)
-            .RecordProcessUse(operation, operation + ".lock", [workspace], cancellation);
+            .RecordProcessUse(operation, operation + ".lock", [workspace], cancellationToken);
     }
 
     internal static void RegisterReader(
@@ -235,14 +271,29 @@ internal static class TaskRuntimePreparation
         string host = Path.GetDirectoryName(Path.GetDirectoryName(assembly))!;
         var hostPublisher = new BuildCachePublisher(Path.GetDirectoryName(host)!, BuildCacheArtifactRole.ImmutableArtifact);
         using FileLease activity = hostPublisher.AcquireUseAsync().AsTask().GetAwaiter().GetResult();
-        new BuildCachePublisher(root, BuildCacheArtifactRole.ProcessWorkingDirectory).RecordProcessUse(operation, operation + ".lock", [host]);
+        new BuildCachePublisher(
+            root,
+            BuildCacheArtifactRole.ProcessWorkingDirectory
+        ).RecordProcessUse(operation, operation + ".lock", [host]);
     }
 
     internal static void RegisterProcessOwner(string directory)
     {
         string operation = Path.GetDirectoryName(directory)!;
-        new BuildCachePublisher(Path.GetDirectoryName(operation)!, BuildCacheArtifactRole.ProcessWorkingDirectory).RecordProcessUse(operation, operation + ".lock", []);
+        new BuildCachePublisher(
+            Path.GetDirectoryName(operation)!,
+            BuildCacheArtifactRole.ProcessWorkingDirectory
+        ).RecordProcessUse(operation, operation + ".lock", []);
     }
+
+    private static ITaskItem[] CreateOutputs(IReadOnlyList<RuntimeFile> files)
+        => files.Select(file =>
+        {
+            var item = new TaskItem(file.source);
+            item.SetMetadata("RelativePath", file.relative);
+            item.SetMetadata("FileHash", file.hash);
+            return (ITaskItem)item;
+        }).ToArray();
 
     internal sealed record RuntimeFile(
         string source,

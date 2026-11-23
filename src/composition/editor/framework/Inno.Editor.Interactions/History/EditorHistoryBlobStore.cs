@@ -14,17 +14,47 @@ internal sealed class EditorHistoryBlobStore : IDisposable
     internal EditorHistoryBlobStore(string? cacheDirectory)
     {
         if (string.IsNullOrWhiteSpace(cacheDirectory))
+        {
             return;
-        m_sessionDirectory = Path.Combine(
-            Path.GetFullPath(cacheDirectory),
-            Guid.NewGuid().ToString("N"));
+        }
+        m_sessionDirectory = Path.Combine(Path.GetFullPath(cacheDirectory), Guid.NewGuid().ToString("N"));
+    }
+
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose()
+    {
+        if (m_disposed)
+        {
+            return;
+        }
+        m_disposed = true;
+        m_references.Clear();
+        if (m_sessionDirectory is not null)
+        {
+            try
+            {
+                if (Directory.Exists(m_sessionDirectory))
+                {
+                    Directory.Delete(m_sessionDirectory, recursive: true);
+                }
+            }
+            catch (Exception)
+            {
+                // A stale session directory is safe to remove with the project's Library cache.
+            }
+        }
+        GC.SuppressFinalize(this);
     }
 
     internal string Retain(ReadOnlySpan<byte> bytes)
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_sessionDirectory is null)
+        {
             throw new InvalidOperationException("The history does not have a disk payload store.");
+        }
         Directory.CreateDirectory(m_sessionDirectory);
         string hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
         string path = Path.Combine(m_sessionDirectory, hash + ".bin");
@@ -48,7 +78,9 @@ internal sealed class EditorHistoryBlobStore : IDisposable
     internal void Release(string path)
     {
         if (m_disposed || !m_references.TryGetValue(path, out int count))
+        {
             return;
+        }
         if (count > 1)
         {
             m_references[path] = count - 1;
@@ -58,35 +90,13 @@ internal sealed class EditorHistoryBlobStore : IDisposable
         try
         {
             if (File.Exists(path))
+            {
                 File.Delete(path);
+            }
         }
-        catch
+        catch (Exception)
         {
             // Session cleanup retries deletion when the history is disposed.
         }
-    }
-
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose()
-    {
-        if (m_disposed)
-            return;
-        m_disposed = true;
-        m_references.Clear();
-        if (m_sessionDirectory is not null)
-        {
-            try
-            {
-                if (Directory.Exists(m_sessionDirectory))
-                    Directory.Delete(m_sessionDirectory, recursive: true);
-            }
-            catch
-            {
-                // A stale session directory is safe to remove with the project's Library cache.
-            }
-        }
-        GC.SuppressFinalize(this);
     }
 }

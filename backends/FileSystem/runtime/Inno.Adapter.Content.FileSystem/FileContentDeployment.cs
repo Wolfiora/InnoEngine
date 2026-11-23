@@ -75,25 +75,44 @@ public sealed class FileContentDeployment
         ArgumentNullException.ThrowIfNull(pack);
         ArgumentNullException.ThrowIfNull(serialization);
         if (!scope.isValid)
+        {
             throw new ArgumentException("Content preparation requires an application namespace.", nameof(scope));
+        }
         cancellationToken.ThrowIfCancellationRequested();
-        var stream = new FileStream(Path.Combine(m_contentDirectory, pack.fileName),
-            FileMode.Open, FileAccess.Read, FileShare.Read);
+        var stream = new FileStream(
+            Path.Combine(m_contentDirectory, pack.fileName),
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read
+        );
         PackContentStore? source = null;
         try
         {
-            source = await Task.Run(() => ContentPackReader.Open(stream, pack, serialization,
-                m_limits, cancellationToken), CancellationToken.None).ConfigureAwait(false);
-            return await FileContentPreparation.PrepareAsync(source,
-                new FileContentCacheOptions(Path.Combine(m_cacheRoot, scope.value!)), cancellationToken)
+            source = await Task.Run(() => ContentPackReader.Open(
+                stream,
+                pack,
+                serialization,
+                m_limits,
+                cancellationToken
+            ), CancellationToken.None).ConfigureAwait(false);
+            return await FileContentPreparation
+                .PrepareAsync(
+                    source,
+                    new FileContentCacheOptions(Path.Combine(m_cacheRoot, scope.value!)),
+                    cancellationToken
+                )
                 .ConfigureAwait(false);
         }
         finally
         {
             if (source is not null)
+            {
                 source.Dispose();
+            }
             else
+            {
                 stream.Dispose();
+            }
         }
     }
 
@@ -121,15 +140,27 @@ public sealed class FileContentDeployment
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
         if (fileName is "." or ".." || fileName.IndexOfAny(['/', '\\', ':']) >= 0)
+        {
             throw new ArgumentException("A deployment document requires a single portable filename.", nameof(fileName));
-        using var stream = new FileStream(Path.Combine(m_contentDirectory, fileName),
-            FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.Asynchronous);
+        }
+        using var stream = new FileStream(
+            Path.Combine(m_contentDirectory, fileName),
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            4096,
+            FileOptions.Asynchronous
+        );
         if (stream.Length is <= 0 or > C_METADATA_LIMIT)
+        {
             throw new InvalidDataException($"Deployment metadata '{fileName}' exceeds its document budget.");
-        byte[] bytes = new byte[checked((int)stream.Length)];
+        }
+        var bytes = new byte[checked((int)stream.Length)];
         await stream.ReadExactlyAsync(bytes, cancellationToken).ConfigureAwait(false);
         if (stream.ReadByte() != -1)
+        {
             throw new InvalidDataException($"Deployment metadata '{fileName}' changed during acquisition.");
+        }
         return bytes;
     }
 }

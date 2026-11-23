@@ -18,7 +18,7 @@ internal sealed class ImGuizmoModuleProvider : INativeModuleProvider
         m_dependency = dependency;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool TryGetExport(
         string name,
         out nint address
@@ -38,7 +38,9 @@ internal sealed class ImGuizmoModuleProvider : INativeModuleProvider
         lock (m_gate)
         {
             if (m_closing)
+            {
                 return;
+            }
             m_closing = true;
             // A failed API unload is terminal; its dependency must remain retained for process lifetime.
             m_api.Dispose();

@@ -1,21 +1,21 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
 /// <summary>
 /// Holds frame-local material overrides without modifying a shared asset.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("aa10e23b-3f29-525e-af70-e48b77746037")]
+[StableTypeID("aa10e23b-3f29-525e-af70-e48b77746037")]
 public sealed class MaterialPropertyBlock
 {
-    private readonly Dictionary<ShaderPropertyId, MaterialValue> m_values = [];
+    private readonly Dictionary<ShaderPropertyID, MaterialValue> m_values = [];
 
     /// <summary>
     /// Gets the number of active overrides.
@@ -32,11 +32,13 @@ public sealed class MaterialPropertyBlock
     /// Neutral material value.
     /// </param>
     public void Set(
-        ShaderPropertyId id,
+        ShaderPropertyID id,
         MaterialValue value
     ) {
         if (!id.isValid)
+        {
             throw new ArgumentException("A material property ID must be valid.", nameof(id));
+        }
         m_values[id] = value;
     }
 
@@ -46,14 +48,14 @@ public sealed class MaterialPropertyBlock
     /// <param name="id">
     /// Stable shader property identifier.
     /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the override exists.
-    /// </returns>
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the override exists.
+    /// </returns>
     public bool TryGet(
-        ShaderPropertyId id,
+        ShaderPropertyID id,
         out MaterialValue value
     ) => m_values.TryGetValue(id, out value);
 
@@ -65,9 +67,10 @@ public sealed class MaterialPropertyBlock
     internal MaterialPropertyBlock Snapshot()
     {
         var snapshot = new MaterialPropertyBlock();
-        foreach ((ShaderPropertyId id, MaterialValue value) in m_values)
+        foreach ((ShaderPropertyID id, MaterialValue value) in m_values)
+        {
             snapshot.m_values.Add(id, value);
+        }
         return snapshot;
     }
 }
-

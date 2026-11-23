@@ -4,24 +4,26 @@ using Inno.Editor.ImGui;
 using Inno.Editor.Settings;
 
 namespace Inno.Editor.Workbench;
+
 /// <summary>
 /// Applies the configured actual UI size and preserves project-local zoom multiples around it.
 /// </summary>
-/// <param name="ui">
-/// The host-owned presentation session receiving the selected scale.
-/// </param>
 /// <param name="settings">
 /// The validated configuration that controls this operation.
+/// </param>
+/// <param name="ui">
+/// The host-owned presentation session receiving the selected scale.
 /// </param>
 [EditorModule("editor-zoom", order: 10)]
 internal sealed class EditorZoomModule(
     EditorSettings settings,
-    EditorUiSession ui
+    EditorUISession ui
 ) : EditorModule
 {
-    private IDisposable? m_settingsSubscription;
     private const string C_ACTUAL_SIZE_PATH = "Editor/Appearance/Accessibility/Actual Size";
     private const string C_DENSITY_PATH = "Editor/Appearance/Density";
+
+    private IDisposable? m_settingsSubscription;
     private float m_actualSize = 1f;
     private int m_zoomStep;
     internal float zoom => ui.widgets.style.zoom;
@@ -29,9 +31,6 @@ internal sealed class EditorZoomModule(
     internal bool canZoomOut => ResolveZoom(m_zoomStep - 1) < ResolveZoom(m_zoomStep) - 0.0001f;
     internal bool isActualSize => m_zoomStep == 0;
 
-    internal bool ZoomIn() => SetStep(m_zoomStep + 1);
-    internal bool ZoomOut() => SetStep(m_zoomStep - 1);
-    internal bool UseActualSize() => SetStep(0);
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.
     /// </summary>
@@ -50,10 +49,7 @@ internal sealed class EditorZoomModule(
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    protected override void OnStop(EditorContext context)
-    {
-        m_settingsSubscription?.Dispose();
-    }
+    protected override void OnStop(EditorContext context) => m_settingsSubscription?.Dispose();
 
     /// <summary>
     /// Captures the zoom step relative to the configured actual UI size.
@@ -61,10 +57,7 @@ internal sealed class EditorZoomModule(
     /// <param name="state">
     /// The project-local module state that receives the zoom step.
     /// </param>
-    protected override void Capture(EditorState state)
-    {
-        state.Set("step", m_zoomStep);
-    }
+    protected override void Capture(EditorState state) => state.Set("step", m_zoomStep);
 
     /// <summary>
     /// Restores the bounded project-local zoom step after settings initialize.
@@ -77,6 +70,12 @@ internal sealed class EditorZoomModule(
         m_zoomStep = Math.Clamp(state.Get("step", 0), -10, 10);
         _ = ui.widgets.style.SetZoom(ResolveZoom(m_zoomStep));
     }
+
+    internal bool ZoomIn() => SetStep(m_zoomStep + 1);
+
+    internal bool ZoomOut() => SetStep(m_zoomStep - 1);
+
+    internal bool UseActualSize() => SetStep(0);
 
     private void ApplyActualSize(EditorSettings changedSettings)
     {
@@ -95,10 +94,13 @@ internal sealed class EditorZoomModule(
     {
         float resolved = ResolveZoom(step);
         if (MathF.Abs(resolved - ResolveZoom(m_zoomStep)) < 0.0001f)
+        {
             return false;
+        }
         m_zoomStep = step;
         return ui.widgets.style.SetZoom(resolved);
     }
 
-    private static float NormalizeActualSize(float value) => float.IsFinite(value) ? Math.Clamp(value, EditorStyleMetrics.C_MIN_ZOOM, EditorStyleMetrics.C_MAX_ZOOM) : 1f;
+    private static float NormalizeActualSize(float value)
+        => float.IsFinite(value) ? Math.Clamp(value, EditorStyleMetrics.C_MIN_ZOOM, EditorStyleMetrics.C_MAX_ZOOM) : 1f;
 }

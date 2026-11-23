@@ -1,8 +1,10 @@
 using System;
 using Inno.Native.ImGui;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
+
 /// <summary>
 /// Presents mixed values using the same controls and shared History.
 /// </summary>

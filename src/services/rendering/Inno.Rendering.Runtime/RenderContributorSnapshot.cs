@@ -6,7 +6,7 @@ namespace Inno.Rendering.Runtime;
 
 internal sealed class RenderContributorSnapshot
 {
-    internal static readonly RenderContributorSnapshot empty = new([]);
+    internal static readonly RenderContributorSnapshot EMPTY = new([]);
 
     internal RenderContributorSnapshot(IReadOnlyList<IRenderFrameGraphContributor> contributors)
     {

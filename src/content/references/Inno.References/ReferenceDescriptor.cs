@@ -10,13 +10,13 @@ public sealed class ReferenceDescriptor
     /// <summary>
     /// Creates a persistent reference descriptor.
     /// </summary>
-    /// <param name="kindId">
+    /// <param name="kindID">
     /// The open protocol used to resolve the target.
     /// </param>
-    /// <param name="targetPersistentId">
+    /// <param name="targetPersistentID">
     /// The target object's persistent identity, or an empty value for an explicitly unassigned slot.
     /// </param>
-    /// <param name="expectedStableTypeId">
+    /// <param name="expectedStableTypeID">
     /// An optional stable type constraint interpreted by the resolver.
     /// </param>
     /// <param name="lastKnownName">
@@ -26,20 +26,22 @@ public sealed class ReferenceDescriptor
     /// Optional non-authoritative source path retained for diagnostics.
     /// </param>
     /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="kindId"/> is invalid.
+    /// Thrown when <paramref name="kindID"/> is invalid.
     /// </exception>
     public ReferenceDescriptor(
-        ReferenceKindId kindId,
-        Guid targetPersistentId,
-        Guid expectedStableTypeId = default,
+        ReferenceKindID kindID,
+        Guid targetPersistentID,
+        Guid expectedStableTypeID = default,
         string? lastKnownName = null,
         string? lastKnownPath = null
     ) {
-        if (!kindId.isValid)
-            throw new ArgumentException("A reference descriptor requires a valid kind identifier.", nameof(kindId));
-        this.kindId = kindId;
-        this.targetPersistentId = targetPersistentId;
-        this.expectedStableTypeId = expectedStableTypeId;
+        if (!kindID.isValid)
+        {
+            throw new ArgumentException("A reference descriptor requires a valid kind identifier.", nameof(kindID));
+        }
+        this.kindID = kindID;
+        this.targetPersistentID = targetPersistentID;
+        this.expectedStableTypeID = expectedStableTypeID;
         this.lastKnownName = lastKnownName;
         this.lastKnownPath = lastKnownPath;
     }
@@ -47,17 +49,17 @@ public sealed class ReferenceDescriptor
     /// <summary>
     /// Gets the protocol used to resolve this reference.
     /// </summary>
-    public ReferenceKindId kindId { get; }
+    public ReferenceKindID kindID { get; }
 
     /// <summary>
     /// Gets the persistent identity of the intended target, or an empty value when unassigned.
     /// </summary>
-    public Guid targetPersistentId { get; }
+    public Guid targetPersistentID { get; }
 
     /// <summary>
     /// Gets the optional stable type constraint interpreted by the selected resolver.
     /// </summary>
-    public Guid expectedStableTypeId { get; }
+    public Guid expectedStableTypeID { get; }
 
     /// <summary>
     /// Gets optional display text retained only for diagnostics and missing-state presentation.
@@ -72,5 +74,5 @@ public sealed class ReferenceDescriptor
     /// <summary>
     /// Gets whether the user explicitly left this reference unassigned.
     /// </summary>
-    public bool isUnassigned => targetPersistentId == Guid.Empty;
+    public bool isUnassigned => targetPersistentID == Guid.Empty;
 }

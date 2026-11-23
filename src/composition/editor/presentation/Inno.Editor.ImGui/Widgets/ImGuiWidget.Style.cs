@@ -1,9 +1,11 @@
 using System;
 using System.Numerics;
 using Inno.Native.ImGui;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
+
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
@@ -11,6 +13,7 @@ public sealed unsafe partial class ImGuiWidget
 {
     private float m_appliedZoom = float.NaN;
     private bool? m_appliedCompactMode;
+
     /// <summary>
     /// Gets the centralized editor layout metrics shared by every widget and feature panel.
     /// </summary>
@@ -34,12 +37,14 @@ public sealed unsafe partial class ImGuiWidget
     {
         m_session.PrepareStyleInput();
         if (float.IsNaN(m_appliedZoom) || MathF.Abs(m_appliedZoom - style.zoom) > 0.0001f || m_appliedCompactMode != style.isCompact)
+        {
             SetupStyle();
+        }
     }
 
     private void ApplyLayoutStyle(ImGuiStyle* nativeStyle)
     {
-        nativeStyle->Alpha = EditorPalette.opacityOpaque;
+        nativeStyle->Alpha = EditorPalette.C_OPACITY_OPAQUE;
         nativeStyle->DisabledAlpha = style.disabledAlpha;
         nativeStyle->FontScaleMain = style.fontScale;
         nativeStyle->WindowPadding = ImGui.ToNative(style.windowPadding);

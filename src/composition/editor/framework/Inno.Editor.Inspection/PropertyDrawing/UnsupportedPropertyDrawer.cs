@@ -1,11 +1,11 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Inno.Editor.ImGui;
 
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+
 namespace Inno.Editor.Inspection;
+
 internal sealed class UnsupportedPropertyDrawer : IPropertyDrawer
 {
-    internal static UnsupportedPropertyDrawer instance { get; } = new();
-
     /// <summary>
     /// Renders the value presentation for the current editor frame.
     /// </summary>
@@ -20,4 +20,6 @@ internal sealed class UnsupportedPropertyDrawer : IPropertyDrawer
             value is null ? $"Unsupported {context.propertyType.Name} (null)" : $"Unsupported {context.propertyType.Name}: {value}"
         );
     }
+
+    internal static UnsupportedPropertyDrawer instance { get; } = new();
 }

@@ -16,12 +16,12 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
     private readonly List<IDisposable> m_resources = [];
     private readonly List<Task> m_tasks = [];
     private readonly List<Exception> m_retirementFailures = [];
+    private readonly int m_maxTrackedWork;
     private Exception? m_blockedWorkFailure;
     private bool m_canceling;
     private bool m_disposing;
     private bool m_stopping;
     private bool m_disposed;
-    private readonly int m_maxTrackedWork;
     private int m_peakTrackedWork;
     private long m_rejectedWork;
 
@@ -48,9 +48,12 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         get
         {
             lock (m_sync)
+            {
                 return m_tasks.Count(static task => !task.IsCompletedSuccessfully && !task.IsCanceled);
+            }
         }
     }
+
     /// <summary>
     /// Gets the largest simultaneous retained work count.
     /// </summary>
@@ -59,9 +62,12 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         get
         {
             lock (m_sync)
+            {
                 return m_peakTrackedWork;
+            }
         }
     }
+
     /// <summary>
     /// Gets work registrations rejected before ownership transfer by finite capacity.
     /// </summary>
@@ -70,7 +76,9 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         get
         {
             lock (m_sync)
+            {
                 return m_rejectedWork;
+            }
         }
     }
 
@@ -87,8 +95,11 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         get
         {
             lock (m_sync)
-                return !m_canceling && !m_disposing && m_blockedWorkFailure is null && m_tasks.All(static task =>
-                    task.IsCompleted && (task.Exception is not Exception failure || RetirementPendingException.Find(failure) is null));
+            {
+                return !m_canceling && !m_disposing && m_blockedWorkFailure is null && m_tasks.All(static task => (
+                    task.IsCompleted && (task.Exception is not Exception failure || RetirementPendingException.Find(failure) is null)
+                ));
+            }
         }
     }
 
@@ -110,7 +121,8 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
     /// <exception cref="InvalidOperationException">
     /// Retirement has already started.
     /// </exception>
-    public TResource Own<TResource>(TResource resource) where TResource : IDisposable
+    public TResource Own<TResource>(TResource resource)
+        where TResource : IDisposable
     {
         ArgumentNullException.ThrowIfNull(resource);
         lock (m_sync)
@@ -160,28 +172,32 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         ArgumentNullException.ThrowIfNull(operation);
         var completion = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
         TrackCore(completion.Task, observeCompletion: false);
-        _ = CompleteOperationAsync(operation, cancellationToken, completion);
+        _ = CompleteOperationAsync(operation, completion, cancellationToken);
         return completion.Task;
     }
 
     /// <summary>
     /// Stops new registrations and invokes cancellation callbacks on the calling thread.
     /// </summary>
+    /// <exception cref="AggregateException">
+    /// One or more cancellation callbacks fail.
+    /// </exception>
     /// <remarks>
     /// Callbacks must return promptly. Dependent resources remain owned while cancellation callbacks execute,
     /// including when another thread attempts disposal. A callback reporting pending work permanently blocks release.
     /// </remarks>
-    /// <exception cref="AggregateException">
-    /// One or more cancellation callbacks fail.
-    /// </exception>
     public void Cancel()
     {
         lock (m_sync)
         {
             if (m_blockedWorkFailure is not null)
+            {
                 throw m_blockedWorkFailure;
+            }
             if (m_disposed || m_stopping)
+            {
                 return;
+            }
             m_stopping = true;
             m_canceling = true;
         }
@@ -192,45 +208,57 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         catch (Exception exception) when (RetirementPendingException.Find(exception) is not null)
         {
             lock (m_sync)
+            {
                 m_blockedWorkFailure = exception;
+            }
             throw;
         }
         catch (Exception exception)
         {
             lock (m_sync)
+            {
                 RetirementPendingException.CollectCompletedFailures(exception, m_retirementFailures);
+            }
             throw;
         }
         finally
         {
             lock (m_sync)
+            {
                 m_canceling = false;
+            }
         }
     }
 
     /// <summary>
     /// Releases a quiescent lifetime in reverse registration order, continuing after ordinary cleanup failures.
     /// </summary>
-    /// <remarks>
-    /// Pending retirement retains the current resource and all remaining dependencies for a later attempt.
-    /// Concurrent or reentrant retirement reports pending work without invoking a resource twice.
-    /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// Tracked work remains active; drain it before retrying.
     /// </exception>
     /// <exception cref="AggregateException">
     /// Cancellation, work or resource retirement fails.
     /// </exception>
+    /// <remarks>
+    /// Pending retirement retains the current resource and all remaining dependencies for a later attempt.
+    /// Concurrent or reentrant retirement reports pending work without invoking a resource twice.
+    /// </remarks>
     public void Dispose()
     {
         lock (m_sync)
         {
             if (m_blockedWorkFailure is not null)
+            {
                 throw m_blockedWorkFailure;
+            }
             if (m_disposed)
+            {
                 return;
+            }
             if (m_disposing)
+            {
                 throw new RetirementPendingException("Another retirement attempt still owns this lifetime's resources.");
+            }
             m_disposing = true;
         }
         try
@@ -243,29 +271,34 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
             {
                 throw;
             }
-            catch (Exception) { /* Cancel retained ordinary callback failures for the final report. */ }
+            catch (Exception)
+            {
+                // Cancel retained ordinary callback failures for the final report.
+            }
             RetireResources();
         }
         finally
         {
             lock (m_sync)
+            {
                 m_disposing = false;
+            }
         }
     }
 
     /// <summary>
     /// Cancels and asynchronously drains tracked work before reverse-order release.
     /// </summary>
-    /// <remarks>
-    /// Only use asynchronous disposal for thread-neutral resources. Control-thread owners must await their work
-    /// and call synchronous disposal at their own safe point; this method does not marshal to an owner thread.
-    /// </remarks>
     /// <returns>
     /// A task that completes only after work and resource retirement finish.
     /// </returns>
     /// <exception cref="AggregateException">
     /// Cancellation, work or resource retirement fails.
     /// </exception>
+    /// <remarks>
+    /// Only use asynchronous disposal for thread-neutral resources. Control-thread owners must await their work
+    /// and call synchronous disposal at their own safe point; this method does not marshal to an owner thread.
+    /// </remarks>
     public async ValueTask DisposeAsync()
     {
         try
@@ -276,15 +309,23 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         {
             throw;
         }
-        catch (Exception) { /* Cancel retained ordinary callback failures for the final report. */ }
+        catch (Exception)
+        {
+            // Cancel retained ordinary callback failures for the final report.
+        }
         Task[] pending;
         lock (m_sync)
+        {
             pending = m_tasks.ToArray();
+        }
         try
         {
             await Task.WhenAll(pending).ConfigureAwait(false);
         }
-        catch { /* Dispose observes every fault after all work has completed. */ }
+        catch (Exception)
+        {
+            // Dispose observes every fault after all work has completed.
+        }
         Dispose();
     }
 
@@ -293,9 +334,13 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         lock (m_sync)
         {
             if (m_disposed)
+            {
                 return;
+            }
             if (m_canceling || m_tasks.Any(static task => !task.IsCompleted))
+            {
                 throw new RetirementPendingException("Lifetime work is still active. Drain it before releasing its resources.");
+            }
             foreach (Task task in m_tasks)
             {
                 if (task.Exception is not null)
@@ -316,7 +361,9 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
             lock (m_sync)
             {
                 if (m_resources.Count == 0)
+                {
                     break;
+                }
                 resource = m_resources[^1];
             }
             try
@@ -333,14 +380,21 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
                 m_retirementFailures.Add(exception);
             }
             lock (m_sync)
+            {
                 m_resources.RemoveAt(m_resources.Count - 1);
+            }
         }
         lock (m_sync)
+        {
             m_disposed = true;
+        }
         m_cancellation.Dispose();
         if (m_retirementFailures.Count > 0)
         {
-            var failure = new AggregateException("Lifetime retirement failed after all resources were attempted.", m_retirementFailures);
+            var failure = new AggregateException(
+                "Lifetime retirement failed after all resources were attempted.",
+                m_retirementFailures
+            );
             m_retirementFailures.Clear();
             throw failure;
         }
@@ -356,18 +410,26 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
             EnsureAccepting();
             m_tasks.RemoveAll(static completed => completed.IsCompletedSuccessfully || completed.IsCanceled);
             if (m_tasks.Contains(task))
+            {
                 return;
+            }
             if (m_tasks.Count >= m_maxTrackedWork)
             {
                 m_rejectedWork++;
-                throw new InvalidOperationException("The lifetime's asynchronous work capacity has been reached; ownership was not transferred.");
+                throw new InvalidOperationException(
+                    "The lifetime's asynchronous work capacity has been reached; ownership was not transferred."
+                );
             }
             m_tasks.Add(task);
             m_peakTrackedWork = Math.Max(m_peakTrackedWork, m_tasks.Count);
             if (!observeCompletion)
+            {
                 return;
+            }
             if (ExecutionContext.IsFlowSuppressed())
+            {
                 ObserveCompletion(task);
+            }
             else
             {
                 using AsyncFlowControl flow = ExecutionContext.SuppressFlow();
@@ -383,28 +445,38 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         ) =>
         {
             if (!completed.IsCompletedSuccessfully && !completed.IsCanceled)
+            {
                 return;
-            var owner = (LifetimeScope)state!;
+            }
+            LifetimeScope owner = (LifetimeScope)state!;
             lock (owner.m_sync)
+            {
                 owner.m_tasks.Remove(completed);
+            }
         }, this, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 
     private void EnsureAccepting()
     {
         if (m_stopping || m_disposed)
+        {
             throw new InvalidOperationException("A retiring lifetime cannot accept resources or work.");
+        }
     }
 
     private async Task CompleteOperationAsync<TResult>(
         Func<CancellationToken, ValueTask<TResult>> operation,
-        CancellationToken cancellationToken,
-        TaskCompletionSource<TResult> completion
+        TaskCompletionSource<TResult> completion,
+        CancellationToken cancellationToken
     ) {
         try
         {
             TResult result;
-            using (var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, m_cancellation.Token))
+            using (CancellationTokenSource linked = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken,
+                m_cancellation.Token
+            )) {
                 result = await operation(linked.Token).ConfigureAwait(false);
+            }
             lock (m_sync)
             {
                 completion.SetResult(result);

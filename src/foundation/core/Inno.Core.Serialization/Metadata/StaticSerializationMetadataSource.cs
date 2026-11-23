@@ -29,30 +29,37 @@ public sealed class StaticSerializationMetadataSource : ISerializationMetadataSo
         }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public SerializationTypeMetadata GetMetadata(Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
-        return m_metadata.TryGetValue(type, out SerializationTypeMetadata? metadata) ? metadata
-            : throw new InvalidOperationException($"Serialization type '{type}' has no generated closed shape.");
+        return m_metadata.TryGetValue(type, out SerializationTypeMetadata? metadata)
+               ? metadata
+               : throw new InvalidOperationException($"Serialization type '{type}' has no generated closed shape.");
     }
 
     private void Register(SerializationTypeMetadata metadata)
     {
         ArgumentNullException.ThrowIfNull(metadata);
         if (m_metadata.TryAdd(metadata.type, metadata))
+        {
             return;
+        }
         SerializationTypeMetadata existing = m_metadata[metadata.type];
         if (existing.requiresConverter != metadata.requiresConverter || existing.members.Count != metadata.members.Count
             || existing.collection?.elementType != metadata.collection?.elementType
-            || existing.collection?.keyType != metadata.collection?.keyType)
+            || existing.collection?.keyType != metadata.collection?.keyType
+        ) {
             throw new ArgumentException($"Generated serialization shape '{metadata.type}' is inconsistent.");
+        }
         for (int index = 0; index < existing.members.Count; index++)
         {
             SerializationMemberMetadata left = existing.members[index];
             SerializationMemberMetadata right = metadata.members[index];
             if (left.name != right.name || left.type != right.type || left.visibility != right.visibility)
+            {
                 throw new ArgumentException($"Generated serialization member '{metadata.type}.{left.name}' is inconsistent.");
+            }
         }
     }
 }

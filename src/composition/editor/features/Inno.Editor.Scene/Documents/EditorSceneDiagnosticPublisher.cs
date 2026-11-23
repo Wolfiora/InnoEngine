@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Core.Diagnostics;
 using Inno.Scene;
 
@@ -17,6 +16,22 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
     private readonly Dictionary<Guid, string> m_dirtyCheckStates = [];
     private string m_restoreState = string.Empty;
 
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose()
+    {
+        ResolveRestore();
+        foreach (Guid sceneID in m_synchronizationStates.Keys.ToArray())
+        {
+            ResolveSynchronization(sceneID);
+        }
+        foreach (Guid sceneID in m_dirtyCheckStates.Keys.ToArray())
+        {
+            ResolveDirtyCheck(sceneID);
+        }
+    }
+
     internal bool PublishRestoreFailure(
         string code,
         string message
@@ -25,7 +40,9 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(message);
         string state = $"{code}:{message}";
         if (string.Equals(m_restoreState, state, StringComparison.Ordinal))
+        {
             return false;
+        }
         Diagnostics.Set(C_RESTORE_GROUP, Diagnostic.Error(code, message));
         m_restoreState = state;
         return true;
@@ -34,7 +51,9 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
     internal void ResolveRestore()
     {
         if (string.IsNullOrEmpty(m_restoreState))
+        {
             return;
+        }
         Diagnostics.Clear(C_RESTORE_GROUP);
         m_restoreState = string.Empty;
     }
@@ -45,19 +64,20 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
     ) {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(exception);
-        Guid targetId = scene.identity.persistentId;
+        Guid targetID = scene.identity.persistentID;
         string state = exception.ToString();
-        if (m_synchronizationStates.TryGetValue(targetId, out string? previous) &&
-            string.Equals(previous, state, StringComparison.Ordinal))
-        {
+        if (m_synchronizationStates.TryGetValue(targetID, out string? previous)
+            && string.Equals(previous, state, StringComparison.Ordinal)
+        ) {
             return false;
         }
         Diagnostics.Set(
-            targetId,
+            targetID,
             C_SYNCHRONIZATION_GROUP,
             Diagnostic.Error("SCENE-SYNCHRONIZATION", exception.Message),
-            scene.name);
-        m_synchronizationStates[targetId] = state;
+            scene.name
+        );
+        m_synchronizationStates[targetID] = state;
         return true;
     }
 
@@ -65,21 +85,32 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
         GameScene scene,
         string sourcePath
     ) {
-        Guid sceneId = scene.identity.persistentId;
+        Guid sceneID = scene.identity.persistentID;
         string state = "SCENE-SOURCE-MISSING:" + sourcePath;
-        if (m_synchronizationStates.TryGetValue(sceneId, out string? previous) &&
-            string.Equals(previous, state, StringComparison.Ordinal))
+        if (m_synchronizationStates.TryGetValue(sceneID, out string? previous)
+            && string.Equals(previous, state, StringComparison.Ordinal)
+        ) {
             return;
-        Diagnostics.Set(sceneId, C_SYNCHRONIZATION_GROUP,
-            Diagnostic.Warning("SCENE-SOURCE-MISSING", $"Scene source '{sourcePath}' is unavailable; its assignment and current edits are preserved."), scene.name);
-        m_synchronizationStates[sceneId] = state;
+        }
+        Diagnostics.Set(
+            sceneID,
+            C_SYNCHRONIZATION_GROUP,
+            Diagnostic.Warning(
+                "SCENE-SOURCE-MISSING",
+                $"Scene source '{sourcePath}' is unavailable; its assignment and current edits are preserved."
+            ),
+            scene.name
+        );
+        m_synchronizationStates[sceneID] = state;
     }
 
-    internal void ResolveSynchronization(Guid sceneId)
+    internal void ResolveSynchronization(Guid sceneID)
     {
-        if (!m_synchronizationStates.Remove(sceneId))
+        if (!m_synchronizationStates.Remove(sceneID))
+        {
             return;
-        Diagnostics.Clear(sceneId, C_SYNCHRONIZATION_GROUP);
+        }
+        Diagnostics.Clear(sceneID, C_SYNCHRONIZATION_GROUP);
     }
 
     internal bool PublishDirtyCheckFailure(
@@ -88,48 +119,48 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
     ) {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(exception);
-        Guid targetId = scene.identity.persistentId;
+        Guid targetID = scene.identity.persistentID;
         string state = exception.ToString();
-        if (m_dirtyCheckStates.TryGetValue(targetId, out string? previous) &&
-            string.Equals(previous, state, StringComparison.Ordinal))
+        if (m_dirtyCheckStates.TryGetValue(targetID, out string? previous)
+            && string.Equals(previous, state, StringComparison.Ordinal)
+        ) {
             return false;
-        Diagnostics.Set(targetId, C_DIRTY_CHECK_GROUP,
-            Diagnostic.Error("SCENE-DIRTY-CHECK", exception.Message), scene.name);
-        m_dirtyCheckStates[targetId] = state;
+        }
+        Diagnostics.Set(
+            targetID,
+            C_DIRTY_CHECK_GROUP,
+            Diagnostic.Error("SCENE-DIRTY-CHECK", exception.Message),
+            scene.name
+        );
+        m_dirtyCheckStates[targetID] = state;
         return true;
     }
 
-    internal void ResolveDirtyCheck(Guid sceneId)
+    internal void ResolveDirtyCheck(Guid sceneID)
     {
-        if (!m_dirtyCheckStates.Remove(sceneId))
+        if (!m_dirtyCheckStates.Remove(sceneID))
+        {
             return;
-        Diagnostics.Clear(sceneId, C_DIRTY_CHECK_GROUP);
+        }
+        Diagnostics.Clear(sceneID, C_DIRTY_CHECK_GROUP);
     }
 
-    internal void RetainSynchronizationTargets(IReadOnlySet<Guid> sceneIds)
+    internal void RetainSynchronizationTargets(IReadOnlySet<Guid> sceneIDs)
     {
-        ArgumentNullException.ThrowIfNull(sceneIds);
+        ArgumentNullException.ThrowIfNull(sceneIDs);
         Guid[] removed = m_synchronizationStates.Keys
-            .Where(id => !sceneIds.Contains(id))
+            .Where(id => !sceneIDs.Contains(id))
             .ToArray();
         for (int i = 0; i < removed.Length; i++)
+        {
             ResolveSynchronization(removed[i]);
+        }
         Guid[] removedDirtyChecks = m_dirtyCheckStates.Keys
-            .Where(id => !sceneIds.Contains(id))
+            .Where(id => !sceneIDs.Contains(id))
             .ToArray();
         for (int i = 0; i < removedDirtyChecks.Length; i++)
+        {
             ResolveDirtyCheck(removedDirtyChecks[i]);
-    }
-
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose()
-    {
-        ResolveRestore();
-        foreach (Guid sceneId in m_synchronizationStates.Keys.ToArray())
-            ResolveSynchronization(sceneId);
-        foreach (Guid sceneId in m_dirtyCheckStates.Keys.ToArray())
-            ResolveDirtyCheck(sceneId);
+        }
     }
 }

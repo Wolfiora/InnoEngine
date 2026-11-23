@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-
 using Inno.Extensibility.Catalogs;
 
 namespace Inno.Extensibility.Types;
@@ -15,10 +14,12 @@ namespace Inno.Extensibility.Types;
 /// </summary>
 internal sealed class TypeIdentityRegistry
 {
-    // RFC 4122 DNS namespace UUID, used to build deterministic UUIDv5 for auto stable ids.
-    private static readonly Guid C_STABLE_NAMESPACE_GUID = Guid.Parse("6ba7b810-9dad-11d1-80b4-00c04fd430c8");
     private const string C_GENERATED_STABLE_TYPE_METADATA_KEY = "Inno.StableTypeId";
-    private static int S_NEXT_RUNTIME_TYPE_ID;
+
+    // RFC 4122 DNS namespace UUID, used to build deterministic UUIDv5 for auto stable ids.
+    private static readonly Guid STABLE_NAMESPACE_GUID = Guid.Parse("6ba7b810-9dad-11d1-80b4-00c04fd430c8");
+
+    private static int s_nextRuntimeTypeID;
 
     private readonly Lock m_sync = new();
     private Dictionary<Type, Guid> m_stableByType = [];
@@ -75,47 +76,51 @@ internal sealed class TypeIdentityRegistry
 
         var stableByType = new Dictionary<Type, Guid>();
         var typeByStable = new Dictionary<Guid, Type>();
-        IReadOnlyDictionary<Assembly, IReadOnlyDictionary<string, GeneratedStableTypeMapping>> mappings =
-            BuildGeneratedMappings(sourceTypes);
+        IReadOnlyDictionary<Assembly, IReadOnlyDictionary<string, GeneratedStableTypeMapping>> mappings = BuildGeneratedMappings(
+            sourceTypes
+        );
 
         foreach (Type type in sourceTypes)
         {
-            StableTypeIdAttribute? attr = metadata[type].declaredAttributes.OfType<StableTypeIdAttribute>().SingleOrDefault();
+            StableTypeIDAttribute? attr = metadata[type].declaredAttributes.OfType<StableTypeIDAttribute>().SingleOrDefault();
             GeneratedStableTypeMapping? mapping = null;
-            Guid stableId;
+            Guid stableID;
             if (attr is not null)
             {
-                if (!Guid.TryParse(attr.id, out stableId))
+                if (!Guid.TryParse(attr.id, out stableID))
                 {
                     throw new InvalidOperationException(
-                        $"Type '{type.FullName}' has invalid StableTypeId '{attr.id}'.");
+                        $"Type '{type.FullName}' has invalid StableTypeID '{attr.id}'."
+                    );
                 }
             }
-            else if (mappings.TryGetValue(type.Assembly, out IReadOnlyDictionary<string, GeneratedStableTypeMapping>? assemblyMappings) &&
-                     assemblyMappings.TryGetValue(type.FullName ?? type.Name, out mapping))
-            {
-                if (!Guid.TryParse(mapping.id, out stableId))
+            else if (mappings.TryGetValue(type.Assembly, out IReadOnlyDictionary<string, GeneratedStableTypeMapping>? assemblyMappings)
+                     && assemblyMappings.TryGetValue(type.FullName ?? type.Name, out mapping)
+            ) {
+                if (!Guid.TryParse(mapping.id, out stableID))
                 {
                     throw new InvalidOperationException(
-                        $"Type '{type.FullName}' has invalid generated StableTypeId '{mapping.id}'.");
+                        $"Type '{type.FullName}' has invalid generated StableTypeID '{mapping.id}'."
+                    );
                 }
             }
             else
             {
-                stableId = CreateDeterministicStableId(type);
+                stableID = CreateDeterministicStableID(type);
             }
 
-            if (!typeByStable.TryAdd(stableId, type))
+            if (!typeByStable.TryAdd(stableID, type))
             {
-                Type existing = typeByStable[stableId];
+                Type existing = typeByStable[stableID];
                 throw new InvalidOperationException(
-                    $"StableTypeId '{stableId}' conflicts between '{existing.FullName}' and '{type.FullName}'.");
+                    $"StableTypeID '{stableID}' conflicts between '{existing.FullName}' and '{type.FullName}'."
+                );
             }
 
-            stableByType[type] = stableId;
+            stableByType[type] = stableID;
         }
 
-        var orderedTypes = sourceTypes
+        Type[] orderedTypes = sourceTypes
             .OrderBy(t => t.Assembly.GetName().Name, StringComparer.Ordinal)
             .ThenBy(t => t.FullName, StringComparer.Ordinal)
             .ToArray();
@@ -124,7 +129,9 @@ internal sealed class TypeIdentityRegistry
         if (previous is not null)
         {
             lock (previous.m_sync)
+            {
                 previousRuntimeByType = new Dictionary<Type, int>(previous.m_runtimeByType);
+            }
         }
 
         var runtimeByType = new Dictionary<Type, int>(orderedTypes.Length);
@@ -132,12 +139,14 @@ internal sealed class TypeIdentityRegistry
         for (int i = 0; i < orderedTypes.Length; i++)
         {
             Type type = orderedTypes[i];
-            int runtimeId;
-            if (!previousRuntimeByType.TryGetValue(type, out runtimeId))
-                runtimeId = AllocateRuntimeTypeId();
+            int runtimeID;
+            if (!previousRuntimeByType.TryGetValue(type, out runtimeID))
+            {
+                runtimeID = AllocateRuntimeTypeID();
+            }
 
-            runtimeByType[type] = runtimeId;
-            typeByRuntime[runtimeId] = type;
+            runtimeByType[type] = runtimeID;
+            typeByRuntime[runtimeID] = type;
         }
 
         lock (m_sync)
@@ -156,21 +165,21 @@ internal sealed class TypeIdentityRegistry
     /// <param name="type">
     /// The type consumed by try get stable type id; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <param name="stableTypeId">
+    /// <param name="stableTypeID">
     /// The stable type id consumed by try get stable type id; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool TryGetStableTypeId(
+    public bool TryGetStableTypeID(
         Type type,
-        out Guid stableTypeId
+        out Guid stableTypeID
     ) {
         ArgumentNullException.ThrowIfNull(type);
 
         lock (m_sync)
         {
-            return m_stableByType.TryGetValue(type, out stableTypeId);
+            return m_stableByType.TryGetValue(type, out stableTypeID);
         }
     }
 
@@ -194,10 +203,10 @@ internal sealed class TypeIdentityRegistry
 
         lock (m_sync)
         {
-            if (m_stableByType.TryGetValue(type, out Guid stableId) &&
-                m_runtimeByType.TryGetValue(type, out int runtimeId))
-            {
-                typeRef = new TypeRef(stableId, runtimeId);
+            if (m_stableByType.TryGetValue(type, out Guid stableID)
+                && m_runtimeByType.TryGetValue(type, out int runtimeID)
+            ) {
+                typeRef = new TypeRef(stableID, runtimeID);
                 return true;
             }
         }
@@ -218,14 +227,16 @@ internal sealed class TypeIdentityRegistry
     public TypeRef GetTypeRef(Type type)
     {
         if (TryGetTypeRef(type, out TypeRef typeRef))
+        {
             return typeRef;
+        }
         throw new InvalidOperationException($"Type '{type.FullName}' does not belong to this type-cache snapshot.");
     }
 
     /// <summary>
     /// Attempts to resolve type without changing state when the operation cannot complete.
     /// </summary>
-    /// <param name="stableTypeId">
+    /// <param name="stableTypeID">
     /// The stable type id consumed by try resolve type; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     /// <param name="type">
@@ -235,92 +246,12 @@ internal sealed class TypeIdentityRegistry
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool TryResolveType(
-        Guid stableTypeId,
+        Guid stableTypeID,
         out Type? type
     ) {
         lock (m_sync)
         {
-            if (m_typeByStable.TryGetValue(stableTypeId, out Type? resolved))
-            {
-                type = resolved;
-                return true;
-            }
-        }
-
-        type = null;
-        return false;
-    }
-
-    /// <summary>
-    /// Attempts to get runtime type id without changing state when the operation cannot complete.
-    /// </summary>
-    /// <param name="type">
-    /// The type consumed by try get runtime type id; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <param name="runtimeTypeId">
-    /// The runtime type id consumed by try get runtime type id; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public bool TryGetRuntimeTypeId(
-        Type type,
-        out int runtimeTypeId
-    ) {
-        ArgumentNullException.ThrowIfNull(type);
-
-        lock (m_sync)
-        {
-            return m_runtimeByType.TryGetValue(type, out runtimeTypeId);
-        }
-    }
-
-    /// <summary>
-    /// Retrieves the requested or add runtime type id value from current authoritative state.
-    /// </summary>
-    /// <param name="type">
-    /// The type consumed by get or add runtime type id; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <returns>
-    /// The scalar result calculated from the supplied inputs.
-    /// </returns>
-    public int GetOrAddRuntimeTypeId(Type type)
-    {
-        ArgumentNullException.ThrowIfNull(type);
-
-        lock (m_sync)
-        {
-            if (m_runtimeByType.TryGetValue(type, out int existing))
-            {
-                return existing;
-            }
-
-            int runtimeId = AllocateRuntimeTypeId();
-            m_runtimeByType[type] = runtimeId;
-            m_typeByRuntime[runtimeId] = type;
-            return runtimeId;
-        }
-    }
-
-    /// <summary>
-    /// Attempts to resolve runtime type without changing state when the operation cannot complete.
-    /// </summary>
-    /// <param name="runtimeTypeId">
-    /// The runtime type id consumed by try resolve runtime type; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <param name="type">
-    /// The type consumed by try resolve runtime type; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
-    public bool TryResolveRuntimeType(
-        int runtimeTypeId,
-        out Type? type
-    ) {
-        lock (m_sync)
-        {
-            if (m_typeByRuntime.TryGetValue(runtimeTypeId, out Type? resolved))
+            if (m_typeByStable.TryGetValue(stableTypeID, out Type? resolved))
             {
                 type = resolved;
                 return true;
@@ -349,20 +280,20 @@ internal sealed class TypeIdentityRegistry
     ) {
         lock (m_sync)
         {
-            if (typeRef.stableId == Guid.Empty)
+            if (typeRef.stableID == Guid.Empty)
             {
                 type = null;
                 return false;
             }
-            if (typeRef.runtimeId > 0 &&
-                m_typeByRuntime.TryGetValue(typeRef.runtimeId, out Type? runtimeType) &&
-                m_stableByType.TryGetValue(runtimeType, out Guid runtimeStableId) &&
-                runtimeStableId == typeRef.stableId)
-            {
+            if (typeRef.runtimeID > 0
+                && m_typeByRuntime.TryGetValue(typeRef.runtimeID, out Type? runtimeType)
+                && m_stableByType.TryGetValue(runtimeType, out Guid runtimeStableID)
+                && runtimeStableID == typeRef.stableID
+            ) {
                 type = runtimeType;
                 return true;
             }
-            if (m_typeByStable.TryGetValue(typeRef.stableId, out Type? stableType))
+            if (m_typeByStable.TryGetValue(typeRef.stableID, out Type? stableType))
             {
                 type = stableType;
                 return true;
@@ -373,12 +304,84 @@ internal sealed class TypeIdentityRegistry
         return false;
     }
 
-    private static int AllocateRuntimeTypeId()
+    /// <summary>
+    /// Attempts to get runtime type id without changing state when the operation cannot complete.
+    /// </summary>
+    /// <param name="type">
+    /// The type consumed by try get runtime type id; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="runtimeTypeID">
+    /// The runtime type id consumed by try get runtime type id; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    public bool TryGetRuntimeTypeID(
+        Type type,
+        out int runtimeTypeID
+    ) {
+        ArgumentNullException.ThrowIfNull(type);
+
+        lock (m_sync)
+        {
+            return m_runtimeByType.TryGetValue(type, out runtimeTypeID);
+        }
+    }
+
+    /// <summary>
+    /// Retrieves the requested or add runtime type id value from current authoritative state.
+    /// </summary>
+    /// <param name="type">
+    /// The type consumed by get or add runtime type id; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <returns>
+    /// The scalar result calculated from the supplied inputs.
+    /// </returns>
+    public int GetOrAddRuntimeTypeID(Type type)
     {
-        int runtimeId = Interlocked.Increment(ref S_NEXT_RUNTIME_TYPE_ID);
-        if (runtimeId <= 0)
-            throw new InvalidOperationException("The process-wide runtime type identity space is exhausted.");
-        return runtimeId;
+        ArgumentNullException.ThrowIfNull(type);
+
+        lock (m_sync)
+        {
+            if (m_runtimeByType.TryGetValue(type, out int existing))
+            {
+                return existing;
+            }
+
+            int runtimeID = AllocateRuntimeTypeID();
+            m_runtimeByType[type] = runtimeID;
+            m_typeByRuntime[runtimeID] = type;
+            return runtimeID;
+        }
+    }
+
+    /// <summary>
+    /// Attempts to resolve runtime type without changing state when the operation cannot complete.
+    /// </summary>
+    /// <param name="runtimeTypeID">
+    /// The runtime type id consumed by try resolve runtime type; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <param name="type">
+    /// The type consumed by try resolve runtime type; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
+    public bool TryResolveRuntimeType(
+        int runtimeTypeID,
+        out Type? type
+    ) {
+        lock (m_sync)
+        {
+            if (m_typeByRuntime.TryGetValue(runtimeTypeID, out Type? resolved))
+            {
+                type = resolved;
+                return true;
+            }
+        }
+
+        type = null;
+        return false;
     }
 
     /// <summary>
@@ -392,10 +395,10 @@ internal sealed class TypeIdentityRegistry
         lock (m_sync)
         {
             var snapshot = new SortedDictionary<string, Guid>(StringComparer.Ordinal);
-            foreach ((Type type, Guid stableId) in m_stableByType)
+            foreach ((Type type, Guid stableID) in m_stableByType)
             {
                 string typeKey = GetTypeLockKey(type);
-                snapshot[typeKey] = stableId;
+                snapshot[typeKey] = stableID;
             }
 
             return snapshot;
@@ -418,10 +421,20 @@ internal sealed class TypeIdentityRegistry
         return $"{assemblyName}:{typeName}";
     }
 
-    private static Guid CreateDeterministicStableId(Type type)
+    private static int AllocateRuntimeTypeID()
+    {
+        int runtimeID = Interlocked.Increment(ref s_nextRuntimeTypeID);
+        if (runtimeID <= 0)
+        {
+            throw new InvalidOperationException("The process-wide runtime type identity space is exhausted.");
+        }
+        return runtimeID;
+    }
+
+    private static Guid CreateDeterministicStableID(Type type)
     {
         string key = GetTypeLockKey(type);
-        return CreateGuidV5(C_STABLE_NAMESPACE_GUID, key);
+        return CreateGuidV5(STABLE_NAMESPACE_GUID, key);
     }
 
     private static IReadOnlyDictionary<Assembly, IReadOnlyDictionary<string, GeneratedStableTypeMapping>>
@@ -435,32 +448,38 @@ internal sealed class TypeIdentityRegistry
                 .Where(static attribute => string.Equals(
                     attribute.Key,
                     C_GENERATED_STABLE_TYPE_METADATA_KEY,
-                    StringComparison.Ordinal))
+                    StringComparison.Ordinal
+                ))
                 .ToArray();
             if (attributes.Length == 0)
+            {
                 continue;
+            }
 
-            var availableTypes = group.ToDictionary(
-                static type => type.FullName ?? type.Name,
-                StringComparer.Ordinal);
+            Dictionary<string, Type> availableTypes = group.ToDictionary(static type => type.FullName ?? type.Name, StringComparer.Ordinal);
             var mappings = new Dictionary<string, GeneratedStableTypeMapping>(StringComparer.Ordinal);
             foreach (AssemblyMetadataAttribute attribute in attributes)
             {
                 GeneratedStableTypeMapping mapping = ParseGeneratedMapping(
                     group.Key.GetName().Name ?? string.Empty,
-                    attribute.Value);
+                    attribute.Value
+                );
                 if (string.IsNullOrWhiteSpace(mapping.typeName))
-                    throw new InvalidOperationException("A generated StableTypeId mapping requires a type name.");
+                {
+                    throw new InvalidOperationException("A generated StableTypeID mapping requires a type name.");
+                }
                 if (!availableTypes.ContainsKey(mapping.typeName))
                 {
                     throw new InvalidOperationException(
-                        $"Generated StableTypeId mapping refers to missing type '{mapping.typeName}' " +
-                        $"in assembly '{group.Key.GetName().Name}'.");
+                        $"Generated StableTypeID mapping refers to missing type '{mapping.typeName}' "
+                        + $"in assembly '{group.Key.GetName().Name}'."
+                    );
                 }
                 if (!mappings.TryAdd(mapping.typeName, mapping))
                 {
                     throw new InvalidOperationException(
-                        $"Type '{mapping.typeName}' has more than one generated StableTypeId mapping.");
+                        $"Type '{mapping.typeName}' has more than one generated StableTypeID mapping."
+                    );
                 }
             }
             result.Add(group.Key, mappings);
@@ -476,20 +495,21 @@ internal sealed class TypeIdentityRegistry
         if (parts.Length != 2)
         {
             throw new InvalidOperationException(
-                $"Assembly '{assemblyName}' has invalid generated StableTypeId metadata '{value}'.");
+                $"Assembly '{assemblyName}' has invalid generated StableTypeID metadata '{value}'."
+            );
         }
         return new GeneratedStableTypeMapping(parts[1], parts[0]);
     }
 
     private static Guid CreateGuidV5(
-        Guid namespaceId,
+        Guid namespaceID,
         string name
     ) {
-        byte[] ns = namespaceId.ToByteArray();
+        byte[] ns = namespaceID.ToByteArray();
         SwapGuidByteOrder(ns);
 
         byte[] nameBytes = Encoding.UTF8.GetBytes(name);
-        byte[] data = new byte[ns.Length + nameBytes.Length];
+        var data = new byte[ns.Length + nameBytes.Length];
         Buffer.BlockCopy(ns, 0, data, 0, ns.Length);
         Buffer.BlockCopy(nameBytes, 0, data, ns.Length, nameBytes.Length);
 

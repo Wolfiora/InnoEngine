@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -46,6 +47,46 @@ public sealed class PlayerSupportPackPreparationIdentity
     /// Gets the frozen optional native dependency selection used by this preparation.
     /// </summary>
     public string? nativeDependencies => m_properties.GetValueOrDefault("InnoNativeDependencyManifest");
+
+    /// <summary>
+    /// Creates the exclusively owned fixed managed execution planned by this preparation identity.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// Cancels materialization without changing any installed Pack.
+    /// </param>
+    /// <returns>
+    /// Caller-owned input copies for compilation and source extraction.
+    /// </returns>
+    public ValueTask<ManagedBuildExecution> CreateExecutionAsync(CancellationToken cancellationToken = default)
+        => (m_managed
+            ?? throw new InvalidOperationException("Managed preparation was not captured.")).CreateExecutionAsync(cancellationToken);
+
+    /// <summary>
+    /// Freshly verifies the complete current source input closure after waiting or preparing output.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// Cancels verification before cache acceptance or publication.
+    /// </param>
+    /// <returns>
+    /// Completion when the current graph and bytes still match the frozen preparation identity.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Preparation inputs changed; no candidate may be selected.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// Verification was canceled.
+    /// </exception>
+    public async ValueTask VerifyAsync(CancellationToken cancellationToken = default)
+    {
+        string current = await ComputeAsync(
+            m_context.BeginInputVerification("support-pack-inputs"),
+            cancellationToken
+        ).ConfigureAwait(false);
+        if (current != fingerprint)
+        {
+            throw new InvalidOperationException("Support Pack inputs changed after planning; the candidate cannot be selected.");
+        }
+    }
 
     /// <summary>
     /// Captures Native declarations, selected binding inputs, the managed graph and explicit packaging inputs.
@@ -98,87 +139,98 @@ public sealed class PlayerSupportPackPreparationIdentity
         ArgumentNullException.ThrowIfNull(properties);
         ArgumentNullException.ThrowIfNull(preparationInputs);
         ArgumentException.ThrowIfNullOrWhiteSpace(project);
-        var frozen = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(
-            properties.ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.OrdinalIgnoreCase));
-        var result = new PlayerSupportPackPreparationIdentity(context, nativePlan, sdk, project, frozen,
-            Array.AsReadOnly(preparationInputs.ToArray()));
+        var frozen = new ReadOnlyDictionary<string, string>(
+            properties.ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.OrdinalIgnoreCase)
+        );
+        var result = new PlayerSupportPackPreparationIdentity(
+            context,
+            nativePlan,
+            sdk,
+            project,
+            frozen,
+            Array.AsReadOnly(preparationInputs.ToArray())
+        );
         result.fingerprint = await result.ComputeAsync(context, cancellationToken).ConfigureAwait(false);
         return result;
     }
 
-    /// <summary>
-    /// Creates the exclusively owned fixed managed execution planned by this preparation identity.
-    /// </summary>
-    /// <param name="cancellationToken">
-    /// Cancels materialization without changing any installed Pack.
-    /// </param>
-    /// <returns>
-    /// Caller-owned input copies for compilation and source extraction.
-    /// </returns>
-    public ValueTask<ManagedBuildExecution> CreateExecutionAsync(CancellationToken cancellationToken = default)
-        => (m_managed ?? throw new InvalidOperationException("Managed preparation was not captured.")).CreateExecutionAsync(cancellationToken);
-
-    /// <summary>
-    /// Freshly verifies the complete current source input closure after waiting or preparing output.
-    /// </summary>
-    /// <param name="cancellationToken">
-    /// Cancels verification before cache acceptance or publication.
-    /// </param>
-    /// <returns>
-    /// Completion when the current graph and bytes still match the frozen preparation identity.
-    /// </returns>
-    /// <exception cref="InvalidOperationException">
-    /// Preparation inputs changed; no candidate may be selected.
-    /// </exception>
-    /// <exception cref="OperationCanceledException">
-    /// Verification was canceled.
-    /// </exception>
-    public async ValueTask VerifyAsync(CancellationToken cancellationToken = default)
-    {
-        string current = await ComputeAsync(m_context.BeginInputVerification("support-pack-inputs"), cancellationToken).ConfigureAwait(false);
-        if (current != fingerprint)
-            throw new InvalidOperationException("Support Pack inputs changed after planning; the candidate cannot be selected.");
-    }
-
     private async ValueTask<string> ComputeAsync(
         NativeBuildContext context,
-        CancellationToken cancellation
+        CancellationToken cancellationToken
     ) {
-        cancellation.ThrowIfCancellationRequested();
-        var declarations = new List<string> { "support-pack-preparation", m_nativePlan.productId };
+        cancellationToken.ThrowIfCancellationRequested();
+        List<string> declarations = ["support-pack-preparation", m_nativePlan.productID];
         if (m_properties.TryGetValue("InnoNativeDependencyManifest", out string? manifest))
         {
-            IReadOnlyList<NativeDependencyAsset> assets = await NativeDependencyManifest.SelectAsync(context.engineRoot,
-                manifest, m_properties["InnoNativeTarget"], context.configuration, m_nativePlan, cancellation).ConfigureAwait(false);
-            declarations.AddRange(assets.OrderBy(static asset => asset.asset, StringComparer.Ordinal)
-                .Select(static asset => asset.asset + "=" + asset.sha256));
+            IReadOnlyList<NativeDependencyAsset> assets = await NativeDependencyManifest.SelectAsync(
+                context.engineRoot,
+                manifest,
+                m_properties["InnoNativeTarget"],
+                context.configuration,
+                m_nativePlan,
+                cancellationToken
+            ).ConfigureAwait(false);
+            declarations.AddRange(
+                assets.OrderBy(static asset => asset.asset, StringComparer.Ordinal)
+                    .Select(static asset => asset.asset + "=" + asset.sha256)
+            );
         }
         else
         {
             IReadOnlyList<NativeBuildRecipe> recipes = m_nativePlan.CreateRecipes(context);
-            declarations.Add(context.RequireToolchain().targetId);
+            declarations.Add(context.RequireToolchain().targetID);
             foreach (NativeBuildRecipe recipe in recipes)
-                declarations.Add(recipe.component + "=" + NativeBuildFingerprint.Create(context, recipe.declarations, recipe.inputs, cancellation));
-            NativeComponentDescriptor[] generated = m_nativePlan.steps.Select(static step => step.component)
-                .Where(static component => component.bindingDefinition is not null).DistinctBy(static component => component.nativeProject).ToArray();
-            if (generated.Length > 0)
-                declarations.Add("bindings=" + await context.RequireBindingGenerator().ComputeInputFingerprintAsync(context,
-                    new NativeBindingGenerationRequest(generated, context.RequireToolchain().targetId, NativeBindingOutputMode.TargetArtifacts,
-                        componentOptions: m_nativePlan.steps.Where(static step => step.component.bindingDefinition is not null)
-                            .GroupBy(static step => step.component.nativeProject, StringComparer.Ordinal)
-                            .ToDictionary(static group => group.Key, static group => group.First().options, StringComparer.Ordinal)),
-                    cancellation).ConfigureAwait(false));
+            {
+                declarations.Add(
+                    recipe.component + "=" + NativeBuildFingerprint.Create(context, recipe.declarations, recipe.inputs, cancellationToken)
+                );
             }
-        ManagedBuildInputSnapshot managed = await ManagedBuildInputSnapshot.CaptureAsync(context, m_sdk, m_project,
-            m_properties, cancellation).ConfigureAwait(false);
+            NativeComponentDescriptor[] generated = m_nativePlan.steps.Select(static step => step.component)
+                .Where(static component => component.bindingDefinition is not null)
+                .DistinctBy(static component => component.nativeProject)
+                .ToArray();
+            if (generated.Length > 0)
+            {
+                declarations.Add(
+                    "bindings=" + await context.RequireBindingGenerator().ComputeInputFingerprintAsync(
+                        context,
+                        new NativeBindingGenerationRequest(
+                            generated,
+                            context.RequireToolchain().targetID,
+                            NativeBindingOutputMode.TargetArtifacts,
+                            componentOptions: m_nativePlan.steps.Where(static step => step.component.bindingDefinition is not null)
+                                .GroupBy(static step => step.component.nativeProject, StringComparer.Ordinal)
+                                .ToDictionary(static group => group.Key, static group => group.First().options, StringComparer.Ordinal)
+                        ),
+                        cancellationToken
+                    ).ConfigureAwait(false)
+                );
+            }
+            }
+        ManagedBuildInputSnapshot managed = await ManagedBuildInputSnapshot.CaptureAsync(
+            context,
+            m_sdk,
+            m_project,
+            m_properties,
+            cancellationToken
+        ).ConfigureAwait(false);
         m_managed ??= managed;
         declarations.Add("managed=" + managed.fingerprint);
         string root = Path.Combine(context.engineRoot, "build", "support", "Inno.Build.SupportPacks.Core");
-        IEnumerable<string> inputs = m_inputs.Concat(new[] { "FilePlayerSupportPackPreparation.cs", "PlayerSupportPackFiles.cs",
-            "PlayerSupportPackPreparationIdentity.cs", "PlayerSupportPackPublisher.cs", "PlayerSupportPackPreparationIndex.cs",
-            "PlayerSupportPackPlan.cs", "Inno.Build.SupportPacks.Core.csproj" }.Select(file => Path.Combine(root, file)))
-            .Append(Path.Combine(context.engineRoot, "build", "toolchains", "Inno.Build.Toolchains", "Native", "ProductNativeDeployment.cs"));
-        return NativeBuildFingerprint.Create(context, declarations,
-            inputs.Select(path => NativeBuildInput.FromPath(context.engineRoot, path)), cancellation);
+        IEnumerable<string> inputs = m_inputs
+            .Concat(
+                new[] { "FilePlayerSupportPackPreparation.cs", "PlayerSupportPackFiles.cs",
+                    "PlayerSupportPackPreparationIdentity.cs", "PlayerSupportPackPublisher.cs", "PlayerSupportPackPreparationIndex.cs",
+                    "PlayerSupportPackPlan.cs", "Inno.Build.SupportPacks.Core.csproj" }.Select(file => Path.Combine(root, file))
+            )
+            .Append(
+                Path.Combine(context.engineRoot, "build", "toolchains", "Inno.Build.Toolchains", "Native", "ProductNativeDeployment.cs")
+            );
+        return NativeBuildFingerprint.Create(
+            context,
+            declarations,
+            inputs.Select(path => NativeBuildInput.FromPath(context.engineRoot, path)),
+            cancellationToken
+        );
     }
 }

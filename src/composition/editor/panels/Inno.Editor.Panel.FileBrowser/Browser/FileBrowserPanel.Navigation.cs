@@ -1,8 +1,3 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Inno.Editor.Assets;
-using Inno.Core.Identity;
-using Inno.Editor.Interactions;
-using Inno.Editor.Assets.ImGui;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,13 +5,21 @@ using System.Linq;
 using System.Numerics;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Identity;
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+using Inno.Editor.Interactions;
+
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
-using Ui = Inno.Editor.ImGui.ImGui;
+
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
+
 internal sealed partial class FileBrowserPanel
 {
     private int CollectPreservedEntryRows(
@@ -27,13 +30,17 @@ internal sealed partial class FileBrowserPanel
         RuntimeIdentity? editing = m_rename.activeTarget;
         RuntimeIdentity? dragging = m_assets.edits.interactions.TryGetActiveDragIdentity(out RuntimeIdentity source) ? source : null;
         if (editing is null && dragging is null && m_drawKeyboardFocus is null)
+        {
             return 0;
+        }
         int count = 0;
         for (int index = 0; index < entries.Count; index++)
         {
             RuntimeIdentity identity = entries[index].identity;
             if (identity == editing || identity == dragging || identity == m_drawKeyboardFocus)
+            {
                 rows[count++] = index / columns;
+            }
         }
         return count;
     }
@@ -47,42 +54,48 @@ internal sealed partial class FileBrowserPanel
     private void DrawNavigationBar(EditorContext context)
     {
         string current = m_assets.browser.currentDirectory;
-        Ui.PushStyleVar((ImGuiStyleVar.FramePadding), EditorUI.current.widgets.style.breadcrumbFramePadding);
+        Gui.PushStyleVar((ImGuiStyleVar.FramePadding), EditorUI.current.widgets.style.breadcrumbFramePadding);
         bool canGoBack = m_navigation.canGoBack;
         PushButtonColors(canGoBack ? EditorPalette.contentAccent : EditorPalette.contentBorderSoft);
-        Ui.BeginDisabled(!canGoBack);
-        if (Ui.SmallButton($"{ImGuiIcon.AngleLeft}##Back"))
+        Gui.BeginDisabled(!canGoBack);
+        if (Gui.SmallButton($"{ImGuiIcon.C_ANGLE_LEFT}##Back"))
+        {
             m_navigation.GoBack(context);
-        Ui.EndDisabled();
-        Ui.PopStyleColor(3);
-        Ui.SameLine(0f, EditorUI.current.widgets.style.toolbarTightSpacing);
+        }
+        Gui.EndDisabled();
+        Gui.PopStyleColor(3);
+        Gui.SameLine(0f, EditorUI.current.widgets.style.toolbarTightSpacing);
         bool canGoForward = m_navigation.canGoForward;
         PushButtonColors(canGoForward ? EditorPalette.contentAccent : EditorPalette.contentBorderSoft);
-        Ui.BeginDisabled(!canGoForward);
-        if (Ui.SmallButton($"{ImGuiIcon.AngleRight}##Forward"))
+        Gui.BeginDisabled(!canGoForward);
+        if (Gui.SmallButton($"{ImGuiIcon.C_ANGLE_RIGHT}##Forward"))
+        {
             m_navigation.GoForward(context);
-        Ui.EndDisabled();
-        Ui.PopStyleColor(3);
-        Ui.SameLine(0f, EditorUI.current.widgets.style.toolbarSectionSpacing);
-        Ui.PushStyleColor((ImGuiCol.Text), EditorPalette.contentText);
-        Ui.Text(GetDirectoryLabel(m_assets.browser.root, current));
-        Ui.PopStyleColor();
-        Ui.PopStyleVar();
+        }
+        Gui.EndDisabled();
+        Gui.PopStyleColor(3);
+        Gui.SameLine(0f, EditorUI.current.widgets.style.toolbarSectionSpacing);
+        Gui.PushStyleColor((ImGuiCol.Text), EditorPalette.contentText);
+        Gui.Text(GetDirectoryLabel(m_assets.browser.root, current));
+        Gui.PopStyleColor();
+        Gui.PopStyleVar();
     }
 
     private void DrawViewAndSearchBar()
     {
-        Ui.PushStyleVar((ImGuiStyleVar.FramePadding), EditorUI.current.widgets.style.toolbarFramePadding);
+        Gui.PushStyleVar((ImGuiStyleVar.FramePadding), EditorUI.current.widgets.style.toolbarFramePadding);
         PushButtonColors(EditorPalette.contentAccent);
-        if (Ui.SmallButton($"{m_viewMode}##ViewMode"))
+        if (Gui.SmallButton($"{m_viewMode}##ViewMode"))
+        {
             m_viewMode = m_viewMode == ViewMode.List ? ViewMode.Grid : ViewMode.List;
-        Ui.PopStyleColor(3);
-        Ui.SameLine(0f, EditorUI.current.widgets.style.toolbarSpacing);
+        }
+        Gui.PopStyleColor(3);
+        Gui.SameLine(0f, EditorUI.current.widgets.style.toolbarSpacing);
         DrawEntryFilterCombo();
-        Ui.SameLine(0f, EditorUI.current.widgets.style.toolbarSpacing);
-        Ui.SetNextItemWidth(-1f);
+        Gui.SameLine(0f, EditorUI.current.widgets.style.toolbarSpacing);
+        Gui.SetNextItemWidth(-1f);
         DrawSearchInput();
-        Ui.PopStyleVar();
+        Gui.PopStyleVar();
     }
 
     private void HandleEntryActivation(
@@ -93,7 +106,7 @@ internal sealed partial class FileBrowserPanel
     ) {
         m_rename.MarkInteraction(presentation);
         m_keyboardFocus = entry.identity.runtimeIdentity;
-        m_assets.edits.interactions.For(FileBrowserInteractionIds.C_AREA, entry).Focus();
+        m_assets.edits.interactions.For(FileBrowserInteractionIDs.C_AREA, entry).Focus();
         if (doubleClicked)
         {
             m_pendingActivation = entry.identity.runtimeIdentity;
@@ -118,17 +131,23 @@ internal sealed partial class FileBrowserPanel
                 break;
             }
             if (candidate == selected)
+            {
                 selectedIndex = i;
+            }
         }
         if (focus < 0)
+        {
             focus = selectedIndex;
+        }
         ListNavigationResult navigation = m_ui.widgets.NavigateList(interactions, m_visibleSelection.Count, focus, pageSize);
         m_keyboardHandled = navigation.focusChanged || navigation.selectionRequested || navigation.activate || navigation.cancel;
         if (navigation.focusedIndex >= 0 && m_keyboardHandled)
         {
             RuntimeIdentity identity = m_visibleSelection[navigation.focusedIndex];
             if (!interactions.TryResolveIdentity(identity, out IdentityObject? target) || target is null)
+            {
                 return;
+            }
             m_keyboardFocus = identity;
             if (navigation.focusChanged)
             {
@@ -138,24 +157,36 @@ internal sealed partial class FileBrowserPanel
             if (navigation.selectionRequested)
             {
                 if (navigation.extendRange)
+                {
                     interactions.SelectRange(m_visibleSelection, target, navigation.additive);
+                }
                 else if (navigation.toggle)
+                {
                     interactions.ToggleSelection(target);
+                }
                 else
+                {
                     interactions.SetSelection(target);
+                }
             }
-            interactions.For(FileBrowserInteractionIds.C_AREA, interactions.selection.selectedTarget).Focus();
+            interactions.For(FileBrowserInteractionIDs.C_AREA, interactions.selection.selectedTarget).Focus();
             if (navigation.activate)
+            {
                 m_pendingActivation = m_keyboardFocus;
+            }
         }
         if (navigation.cancel)
+        {
             m_keyboardFocus = null;
+        }
     }
 
     private void RequestEntryKeyboardFocus(AssetFileEntry entry)
     {
-        if (entry.identity.runtimeIdentity == m_drawKeyboardFocus && Ui.IsWindowFocused(ImGuiFocusedFlags.ChildWindows))
-            Ui.FocusNextItem();
+        if (entry.identity.runtimeIdentity == m_drawKeyboardFocus && Gui.IsWindowFocused(ImGuiFocusedFlags.ChildWindows))
+        {
+            Gui.FocusNextItem();
+        }
     }
 
     private void DrawBreadcrumbBar(
@@ -165,42 +196,46 @@ internal sealed partial class FileBrowserPanel
         IReadOnlyList<BreadcrumbPart> parts = BuildBreadcrumbParts(m_assets.browser.root, m_assets.browser.currentDirectory);
         Vector2 framePadding = EditorUI.current.widgets.style.breadcrumbFramePadding;
         float contentWidth = CalculateBreadcrumbContentWidth(parts, framePadding);
-        float availableWidth = Ui.GetContentRegionAvailable().X;
+        float availableWidth = Gui.GetContentRegionAvailable().X;
         bool hasHorizontalOverflow = contentWidth > availableWidth;
-        Ui.SetNextWindowContentSize(new Vector2(hasHorizontalOverflow ? contentWidth : 0f, 0f));
-        Ui.PushStyleVar((ImGuiStyleVar.WindowPadding), Vector2.Zero);
-        if (Ui.BeginChild("##BreadcrumbBar", new Vector2(0f, height), (ImGuiChildFlags.None), (ImGuiWindowFlags.HorizontalScrollbar)))
+        Gui.SetNextWindowContentSize(new Vector2(hasHorizontalOverflow ? contentWidth : 0f, 0f));
+        Gui.PushStyleVar((ImGuiStyleVar.WindowPadding), Vector2.Zero);
+        if (Gui.BeginChild("##BreadcrumbBar", new Vector2(0f, height), (ImGuiChildFlags.None), (ImGuiWindowFlags.HorizontalScrollbar)))
         {
             DrawBreadcrumbTopSeparator();
-            float contentHeight = hasHorizontalOverflow ? height - Ui.GetLayout().scrollbarSize : height;
+            float contentHeight = hasHorizontalOverflow ? height - Gui.GetLayout().scrollbarSize : height;
             float itemHeight = EditorUI.current.widgets.GetClickableTextSize("A", framePadding).Y;
-            Ui.SetCursorPosY(MathF.Max(0f, (contentHeight - itemHeight) * 0.5f));
-            Ui.PushStyleColor((ImGuiCol.Text), EditorPalette.contextText);
+            Gui.SetCursorPosY(MathF.Max(0f, (contentHeight - itemHeight) * 0.5f));
+            Gui.PushStyleColor((ImGuiCol.Text), EditorPalette.contextText);
             for (int i = 0; i < parts.Count; i++)
             {
                 BreadcrumbPart part = parts[i];
                 if (i > 0)
                 {
-                    Ui.SameLine(0f, CurrentBrowserStyle.breadcrumbSpacing);
-                    EditorUI.current.widgets.CenteredText(">", new Vector2(Ui.MeasureText(">").X, itemHeight));
-                    Ui.SameLine(0f, CurrentBrowserStyle.breadcrumbSpacing);
+                    Gui.SameLine(0f, currentBrowserStyle.breadcrumbSpacing);
+                    EditorUI.current.widgets.CenteredText(">", new Vector2(Gui.MeasureText(">").X, itemHeight));
+                    Gui.SameLine(0f, currentBrowserStyle.breadcrumbSpacing);
                 }
 
                 Vector2 itemSize = EditorUI.current.widgets.GetClickableTextSize(part.label, framePadding);
                 if (EditorUI.current.widgets.ClickableText($"crumb_{part.root}_{part.directory}", part.label, itemSize))
                 {
                     if (string.IsNullOrEmpty(part.directory))
+                    {
                         m_navigation.NavigateToRoot(context, part.root);
+                    }
                     else
+                    {
                         m_navigation.NavigateTo(context, part.directory);
+                    }
                 }
             }
 
-            Ui.PopStyleColor();
+            Gui.PopStyleColor();
         }
 
-        Ui.EndChild();
-        Ui.PopStyleVar();
+        Gui.EndChild();
+        Gui.PopStyleVar();
     }
 
     private static float GetBreadcrumbBarHeight(
@@ -208,14 +243,14 @@ internal sealed partial class FileBrowserPanel
         string currentDirectory
     ) {
         IReadOnlyList<BreadcrumbPart> parts = BuildBreadcrumbParts(root, currentDirectory);
-        EditorUiLayout style = Ui.GetLayout();
+        EditorUILayout style = Gui.GetLayout();
         float itemHeight = EditorUI.current.widgets.GetClickableTextSize("A", EditorUI.current.widgets.style.breadcrumbFramePadding).Y;
         float contentHeight = MathF.Max(
-            CurrentBrowserStyle.breadcrumbHeight,
+            currentBrowserStyle.breadcrumbHeight,
             MathF.Ceiling(itemHeight + style.itemSpacing.Y * 2f + EditorUI.current.widgets.style.borderSize)
         );
         float contentWidth = CalculateBreadcrumbContentWidth(parts, EditorUI.current.widgets.style.breadcrumbFramePadding);
-        return contentWidth > Ui.GetContentRegionAvailable().X ? contentHeight + style.scrollbarSize : contentHeight;
+        return contentWidth > Gui.GetContentRegionAvailable().X ? contentHeight + style.scrollbarSize : contentHeight;
     }
 
     private static float CalculateBreadcrumbContentWidth(
@@ -223,14 +258,18 @@ internal sealed partial class FileBrowserPanel
         Vector2 framePadding
     ) {
         if (parts.Count == 0)
+        {
             return 0f;
+        }
         float width = 0f;
-        float separatorWidth = Ui.MeasureText(">").X;
+        float separatorWidth = Gui.MeasureText(">").X;
         for (int i = 0; i < parts.Count; i++)
         {
             if (i > 0)
-                width += separatorWidth + CurrentBrowserStyle.breadcrumbSpacing * 2f;
-            width += Ui.MeasureText(parts[i].label).X + framePadding.X * 2f;
+            {
+                width += separatorWidth + currentBrowserStyle.breadcrumbSpacing * 2f;
+            }
+            width += Gui.MeasureText(parts[i].label).X + framePadding.X * 2f;
         }
 
         return MathF.Ceiling(width);

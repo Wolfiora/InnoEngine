@@ -11,8 +11,8 @@ namespace Inno.Adapter.Modules.DotNet;
 internal sealed class ModuleLoadContext : AssemblyLoadContext
 {
     private readonly AssemblyDependencyResolver m_resolver;
-    private IReadOnlyDictionary<string, Assembly> m_sharedAssemblies;
     private readonly IReadOnlyDictionary<string, string> m_moduleAssemblyPaths;
+    private IReadOnlyDictionary<string, Assembly> m_sharedAssemblies;
 
     internal ModuleLoadContext(
         string name,
@@ -20,17 +20,19 @@ internal sealed class ModuleLoadContext : AssemblyLoadContext
         bool collectible,
         IReadOnlyDictionary<string, Assembly> sharedAssemblies,
         IEnumerable<string> moduleAssemblyPaths
-    )
-        : base(name, collectible)
+    ) : base(name, collectible)
     {
         m_resolver = new AssemblyDependencyResolver(mainAssemblyPath);
         m_sharedAssemblies = sharedAssemblies;
         m_moduleAssemblyPaths = moduleAssemblyPaths.ToDictionary(
-            static path => AssemblyName.GetAssemblyName(path).Name
-                ?? throw new InvalidOperationException($"Assembly '{path}' has no simple name."),
+            static path => (
+                AssemblyName.GetAssemblyName(path).Name
+                ?? throw new InvalidOperationException($"Assembly '{path}' has no simple name.")
+            ),
             static path => path,
-            StringComparer.OrdinalIgnoreCase);
-        Unloading += ReleaseSharedAssemblies;
+            StringComparer.OrdinalIgnoreCase
+        );
+        this.Unloading += ReleaseSharedAssemblies;
     }
 
     /// <summary>
@@ -51,37 +53,11 @@ internal sealed class ModuleLoadContext : AssemblyLoadContext
             return sharedAssembly;
         }
         if (m_moduleAssemblyPaths.TryGetValue(simpleName, out string? modulePath))
-            return LoadFromAssemblyPath(modulePath);
-
-        return null;
-    }
-
-    private static void ReleaseSharedAssemblies(AssemblyLoadContext context)
-    {
-        // The runtime retains an unloading context until its loader allocator can retire. Keeping
-        // another collectible assembly in this resolver can turn cross-context generic dependencies
-        // into a retention cycle, even after every engine registry has released its generation.
-        ((ModuleLoadContext)context).m_sharedAssemblies = FrozenDictionary<string, Assembly>.Empty;
-    }
-
-    private static void ValidateSharedIdentity(
-        AssemblyName requested,
-        AssemblyName shared
-    ) {
-        bool versionMatches = requested.Version is null || requested.Version == shared.Version;
-        string requestedCulture = requested.CultureName ?? string.Empty;
-        string sharedCulture = shared.CultureName ?? string.Empty;
-        byte[] requestedToken = requested.GetPublicKeyToken() ?? [];
-        byte[] sharedToken = shared.GetPublicKeyToken() ?? [];
-        if (versionMatches &&
-            string.Equals(requestedCulture, sharedCulture, StringComparison.OrdinalIgnoreCase) &&
-            requestedToken.SequenceEqual(sharedToken))
         {
-            return;
+            return LoadFromAssemblyPath(modulePath);
         }
 
-        throw new FileLoadException(
-            $"Module dependency '{requested.FullName}' is incompatible with shared engine assembly '{shared.FullName}'.");
+        return null;
     }
 
     /// <summary>
@@ -93,9 +69,36 @@ internal sealed class ModuleLoadContext : AssemblyLoadContext
     /// <returns>
     /// The validated int ptr that represents the completed operation.
     /// </returns>
-    protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
+    protected override nint LoadUnmanagedDll(string unmanagedDllName)
     {
         string? dependencyPath = m_resolver.ResolveUnmanagedDllToPath(unmanagedDllName);
-        return dependencyPath is null ? IntPtr.Zero : LoadUnmanagedDllFromPath(dependencyPath);
+        return dependencyPath is null ? nint.Zero : LoadUnmanagedDllFromPath(dependencyPath);
+    }
+
+    private static void ReleaseSharedAssemblies(AssemblyLoadContext context) =>
+        // The runtime retains an unloading context until its loader allocator can retire. Keeping
+        // another collectible assembly in this resolver can turn cross-context generic dependencies
+        // into a retention cycle, even after every engine registry has released its generation.
+        ((ModuleLoadContext)context).m_sharedAssemblies = FrozenDictionary<string, Assembly>.Empty;
+
+    private static void ValidateSharedIdentity(
+        AssemblyName requested,
+        AssemblyName shared
+    ) {
+        bool versionMatches = requested.Version is null || requested.Version == shared.Version;
+        string requestedCulture = requested.CultureName ?? string.Empty;
+        string sharedCulture = shared.CultureName ?? string.Empty;
+        byte[] requestedToken = requested.GetPublicKeyToken() ?? [];
+        byte[] sharedToken = shared.GetPublicKeyToken() ?? [];
+        if (versionMatches
+            && string.Equals(requestedCulture, sharedCulture, StringComparison.OrdinalIgnoreCase)
+            && requestedToken.SequenceEqual(sharedToken)
+        ) {
+            return;
+        }
+
+        throw new FileLoadException(
+            $"Module dependency '{requested.FullName}' is incompatible with shared engine assembly '{shared.FullName}'."
+        );
     }
 }

@@ -10,7 +10,7 @@ namespace Inno.Adapter.Text;
 /// </summary>
 public sealed class TextBackendCatalog : ITextBackendFactory
 {
-    private readonly Dictionary<TextBackendId, TextBackendProvider> m_providers = [];
+    private readonly Dictionary<TextBackendID, TextBackendProvider> m_providers = [];
 
     /// <summary>
     /// Validates and captures a complete provider set without creating any service.
@@ -30,23 +30,27 @@ public sealed class TextBackendCatalog : ITextBackendFactory
         foreach (TextBackendProvider provider in providers)
         {
             if (provider is null || !provider.id.isValid || !m_providers.TryAdd(provider.id, provider))
+            {
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
+            }
         }
-        supportedBackends = new ReadOnlyCollection<TextBackendId>(new List<TextBackendId>(m_providers.Keys));
+        this.supportedBackends = new ReadOnlyCollection<TextBackendID>([.. m_providers.Keys]);
     }
 
-    /// <inheritdoc />
-    public IReadOnlyList<TextBackendId> supportedBackends { get; }
+    /// <inheritdoc/>
+    public IReadOnlyList<TextBackendID> supportedBackends { get; }
 
-    /// <inheritdoc />
     /// <exception cref="InvalidOperationException">
     /// The selected provider returned no service.
     /// </exception>
-    public ITextBackend CreateBackend(TextBackendId backend) {
+    /// <inheritdoc/>
+    public ITextBackend CreateBackend(TextBackendID backend)
+    {
         if (!m_providers.TryGetValue(backend, out TextBackendProvider? provider))
+        {
             throw new NotSupportedException("Text backend '" + backend + "' is not registered.");
+        }
         return provider.CreateBackend()
-            ?? throw new InvalidOperationException("Text provider '" + backend + "' returned no service.");
+               ?? throw new InvalidOperationException("Text provider '" + backend + "' returned no service.");
     }
 }
-

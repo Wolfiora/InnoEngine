@@ -21,7 +21,7 @@ public sealed record MiniAudioDeviceOptions
     /// <summary>
     /// Gets or initializes the output sample rate in frames per second.
     /// </summary>
-    public int sampleRate { get; init; } = 48000;
+    public int sampleRate { get; init; } = 48_000;
 
     /// <summary>
     /// Gets or initializes the maximum listener count exposed by this backend generation.
@@ -39,7 +39,9 @@ public sealed record MiniAudioDeviceOptions
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(channels);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sampleRate);
         if (listenerCount is < 1 or > 4)
+        {
             throw new ArgumentOutOfRangeException(nameof(listenerCount), "MiniAudio supports between one and four listeners.");
+        }
         return this;
     }
 }

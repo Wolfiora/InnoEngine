@@ -14,16 +14,24 @@ public sealed class BuildArtifactReadLease : IDisposable
 {
     private CoordinatedFileLease? m_lease;
 
-    private BuildArtifactReadLease(CoordinatedFileLease lease) => m_lease = lease;
+    private BuildArtifactReadLease(CoordinatedFileLease lease)
+    {
+        m_lease = lease;
+    }
+
+    /// <summary>
+    /// Ends artifact access and allows repair or retirement; repeated disposal has no effect.
+    /// </summary>
+    public void Dispose() => Interlocked.Exchange(ref m_lease, null)?.Dispose();
 
     /// <summary>
     /// Acquires reading ownership and verifies the complete artifact before exposing it to a consumer.
     /// </summary>
-    /// <param name="ownerDirectory">
-    /// The exact publisher root retaining the persistent owner.lock gate.
-    /// </param>
     /// <param name="directory">
     /// The absolute artifact directory owned by its publisher; its persistent lease is stored alongside it.
+    /// </param>
+    /// <param name="ownerDirectory">
+    /// The exact publisher root retaining the persistent owner.lock gate.
     /// </param>
     /// <param name="fingerprint">
     /// The exact input identity required by the consumer.
@@ -31,11 +39,11 @@ public sealed class BuildArtifactReadLease : IDisposable
     /// <param name="outputDirectories">
     /// The complete relative output roots declared by the publisher.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels ownership acquisition without releasing another reader's protection.
-    /// </param>
     /// <param name="statistics">
     /// Optional borrowed operation receiving output-integrity read statistics; its input cache is not used.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels ownership acquisition without releasing another reader's protection.
     /// </param>
     /// <returns>
     /// Reading ownership which the caller must retain until all artifact access completes.
@@ -57,15 +65,17 @@ public sealed class BuildArtifactReadLease : IDisposable
         string ownerDirectory,
         string fingerprint,
         IReadOnlyList<string> outputDirectories,
-        CancellationToken cancellationToken = default,
-        NativeBuildContext? statistics = null
-    ) => await TryAcquireAsync(directory, ownerDirectory, fingerprint, outputDirectories, statistics, cancellationToken).ConfigureAwait(false)
-        ?? throw new InvalidDataException($"Build artifact '{directory}' is missing, damaged or has a different identity.");
-
-    /// <summary>
-    /// Ends artifact access and allows repair or retirement; repeated disposal has no effect.
-    /// </summary>
-    public void Dispose() => Interlocked.Exchange(ref m_lease, null)?.Dispose();
+        NativeBuildContext? statistics = null,
+        CancellationToken cancellationToken = default
+    ) => await TryAcquireAsync(
+        directory,
+        ownerDirectory,
+        fingerprint,
+        outputDirectories,
+        statistics,
+        cancellationToken
+    ).ConfigureAwait(false)
+         ?? throw new InvalidDataException($"Build artifact '{directory}' is missing, damaged or has a different identity.");
 
     internal static async ValueTask<BuildArtifactReadLease?> TryAcquireAsync(
         string directory,
@@ -79,11 +89,18 @@ public sealed class BuildArtifactReadLease : IDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(fingerprint);
         ArgumentNullException.ThrowIfNull(outputDirectories);
         if (!Path.IsPathFullyQualified(directory))
+        {
             throw new ArgumentException("Artifact reading requires an absolute owner path.", nameof(directory));
+        }
         string path = GetLeasePath(directory);
         BuildCacheCleanupPlan.RequireChild(ownerDirectory, directory);
-        CoordinatedFileLease lease = await CoordinatedFileLease.AcquireAsync(Path.Combine(ownerDirectory, "owner.lock"),
-            path, TimeSpan.FromSeconds(30), shared: true, cancellationToken: cancellationToken).ConfigureAwait(false);
+        CoordinatedFileLease lease = await CoordinatedFileLease.AcquireAsync(
+            Path.Combine(ownerDirectory, "owner.lock"),
+            path,
+            TimeSpan.FromSeconds(30),
+            shared: true,
+            cancellationToken: cancellationToken
+        ).ConfigureAwait(false);
         try
         {
             cancellationToken.ThrowIfCancellationRequested();

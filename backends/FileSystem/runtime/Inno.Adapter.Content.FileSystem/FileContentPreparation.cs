@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,26 +48,43 @@ public static class FileContentPreparation
         string cache = Path.Combine(options.applicationCacheRoot, "Content", source.descriptor.contentHash);
         PathBoundary.RequireUnlinkedPath(options.applicationCacheRoot, cache);
         PathBoundary.RequireUnlinkedPath(cache, Path.Combine(cache, "install.lock"));
-        using FileLease writer = await FileLease.AcquireAsync(Path.Combine(cache, "install.lock"),
-            options.lockTimeout, cancellationToken).ConfigureAwait(false);
+        using FileLease writer = await FileLease.AcquireAsync(
+            Path.Combine(cache, "install.lock"),
+            options.lockTimeout,
+            cancellationToken
+        ).ConfigureAwait(false);
         foreach (string entry in new[] { "generations", "staging", "leases", "current" })
+        {
             PathBoundary.RequireUnlinkedPath(cache, Path.Combine(cache, entry));
+        }
         Directory.CreateDirectory(Path.Combine(cache, "generations"));
         string? current = ReadCurrent(cache);
         bool valid = current is not null
-            && File.Exists(PathBoundary.RequireUnlinkedPath(cache, Path.Combine(cache, "leases", current + ".lock")))
-            && await Task.Run(() => ContentCacheValidator.Validate(
-            Path.Combine(cache, "generations", current), source.index, cancellationToken), cancellationToken).ConfigureAwait(false);
+                     && File.Exists(PathBoundary.RequireUnlinkedPath(cache, Path.Combine(cache, "leases", current + ".lock")))
+                     && await Task.Run(() => ContentCacheValidator.Validate(
+                         Path.Combine(cache, "generations", current),
+                         source.index,
+                         cancellationToken
+                     ), cancellationToken).ConfigureAwait(false);
         if (!valid)
+        {
             current = await ContentCachePublication.PublishAsync(cache, source, cancellationToken).ConfigureAwait(false);
-        FileLease reader = await FileLease.AcquireSharedAsync(Path.Combine(cache, "leases", current + ".lock"),
-            options.lockTimeout, cancellationToken).ConfigureAwait(false);
+        }
+        FileLease reader = await FileLease.AcquireSharedAsync(
+            Path.Combine(cache, "leases", current + ".lock"),
+            options.lockTimeout,
+            cancellationToken
+        ).ConfigureAwait(false);
         try
         {
-            var diagnostics = await ContentCacheRetirement.RetireAsync(cache, current!).ConfigureAwait(false);
+            IReadOnlyList<string> diagnostics = await ContentCacheRetirement.RetireAsync(cache, current!).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
-            return new FileContentStore(source.descriptor, source.index,
-                new ContentCacheGeneration(Path.Combine(cache, "generations", current!), reader), diagnostics);
+            return new FileContentStore(
+                source.descriptor,
+                source.index,
+                new ContentCacheGeneration(Path.Combine(cache, "generations", current!), reader),
+                diagnostics
+            );
         }
         catch
         {
@@ -81,7 +99,9 @@ public static class FileContentPreparation
         try
         {
             if (new FileInfo(pointer).Length != 32)
+            {
                 return null;
+            }
             string value = File.ReadAllText(pointer);
             return Guid.TryParseExact(value, "N", out _) ? value : null;
         }

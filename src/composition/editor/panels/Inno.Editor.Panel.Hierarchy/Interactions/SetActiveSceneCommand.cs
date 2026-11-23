@@ -4,8 +4,8 @@ using Inno.Scene;
 
 namespace Inno.Editor.Panel.Hierarchy;
 
-[EditorAction(HierarchyInteractionIds.C_SET_ACTIVE_SCENE)]
-[EditorMenu(HierarchyInteractionIds.C_AREA, "Set Active Scene", order: 100)]
+[EditorAction(HierarchyInteractionIDs.C_SET_ACTIVE_SCENE)]
+[EditorMenu(HierarchyInteractionIDs.C_AREA, "Set Active Scene", order: 100)]
 internal sealed class SetActiveSceneCommand(IEditorSceneWorkspace workspace) : EditorAction<GameScene>
 {
     /// <summary>
@@ -19,8 +19,8 @@ internal sealed class SetActiveSceneCommand(IEditorSceneWorkspace workspace) : E
     /// </returns>
     protected override EditorActionState Query(EditorActionContext<GameScene> context)
         => context.target.isLoaded
-            ? new EditorActionState(true, !ReferenceEquals(context.target, workspace.activeScene))
-            : EditorActionState.hidden;
+           ? new EditorActionState(true, !ReferenceEquals(context.target, workspace.activeScene))
+           : EditorActionState.hidden;
 
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.

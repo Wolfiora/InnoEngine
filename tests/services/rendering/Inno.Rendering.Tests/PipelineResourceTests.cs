@@ -1,0 +1,258 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Xunit;
+using Inno.Rendering;
+
+namespace Inno.Rendering.Tests;
+
+public sealed class PipelineResourceTests
+{
+    [Fact]
+    public void PipelineBindingSnapshotsRejectMutationOfPublishedStorage()
+    {
+        var binding = new RenderShaderBindingDescriptor(
+            new RenderBindingID("original"),
+            RenderShaderBindingKind.Uniform
+        );
+        var changed = new RenderShaderBindingDescriptor(
+            new RenderBindingID("changed"),
+            RenderShaderBindingKind.Uniform
+        );
+        RenderShaderBindingDescriptor[] input = [binding];
+        var graphics = new GraphicsPipelineDescriptor([1], [2], input, null);
+        var compute = new ComputePipelineDescriptor([1], input);
+        input[0] = changed;
+        Assert.Same(binding, graphics.bindings[0]);
+        Assert.Same(binding, compute.bindings[0]);
+        Assert.Throws<NotSupportedException>(
+            () => ((IList<RenderShaderBindingDescriptor>)graphics.bindings)[0] = changed
+        );
+        Assert.Throws<NotSupportedException>(
+            () => ((IList<RenderShaderBindingDescriptor>)compute.bindings)[0] = changed
+        );
+    }
+
+    [Fact]
+    public void VertexLayoutAcceptsAllPortableSemanticChannels()
+    {
+        RenderVertexSemantic[] semantics = Enum.GetValues<RenderVertexSemantic>();
+        var layout = new RenderVertexLayout(
+            semantics.Select(static semantic =>
+                new RenderVertexAttribute(semantic, RenderVertexFormat.Float4)).ToArray()
+        );
+
+        Assert.Equal(semantics.Length, layout.attributes.Count);
+        Assert.Equal(semantics.Length * 16, layout.stride);
+        Assert.Throws<NotSupportedException>(() => ((IList<RenderVertexAttribute>)layout.attributes)[0] = default);
+    }
+
+    [Fact]
+    public void VertexLayoutRejectsDuplicateSemantic() => Assert.Throws<ArgumentException>(() => new RenderVertexLayout(
+        [
+            new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3),
+            new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float2)
+        ]
+    ));
+
+    [Fact]
+    public void VertexLayoutPreservesExplicitOffsetsAndTrailingPadding()
+    {
+        var layout = new RenderVertexLayout(
+            [
+                new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3, 0),
+                new RenderVertexAttribute(RenderVertexSemantic.Color0, RenderVertexFormat.UInt8Normalized4, 16),
+                new RenderVertexAttribute(RenderVertexSemantic.TextureCoordinate0, RenderVertexFormat.Half2)
+            ],
+            stride: 32
+        );
+
+        Assert.Equal([0, 16, 20], layout.attributes.Select(static attribute => attribute.byteOffset));
+        Assert.Equal(32, layout.stride);
+    }
+
+    [Fact]
+    public void VertexLayoutEqualityIncludesTrailingStride()
+    {
+        RenderVertexAttribute[] attributes =
+        [
+            new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3, 0)
+        ];
+        var tightlyPacked = new RenderVertexLayout(attributes, stride: 12);
+        var padded = new RenderVertexLayout(attributes, stride: 16);
+
+        Assert.NotEqual(tightlyPacked, padded);
+        Assert.NotEqual(tightlyPacked.GetHashCode(), padded.GetHashCode());
+    }
+
+    [Fact]
+    public void VertexLayoutRejectsOverlappingAttributesAndShortStride()
+    {
+        Assert.Throws<ArgumentException>(() => new RenderVertexLayout(
+            [
+                new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3, 0),
+                new RenderVertexAttribute(RenderVertexSemantic.Color0, RenderVertexFormat.UInt8Normalized4, 8)
+            ]
+        ));
+        Assert.Throws<ArgumentException>(() => new RenderVertexLayout(
+            [
+                new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3)
+            ],
+            stride: 8
+        ));
+    }
+
+    [Fact]
+    public void PersistentVertexBufferRequiresMatchingLayout()
+    {
+        var buffer = new RenderBufferDescriptor(3, 12, RenderBufferUsage.Vertex);
+        var mismatched = new RenderVertexLayout(
+            [
+                new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float4)
+            ]
+        );
+
+        Assert.Throws<ArgumentException>(() => new PersistentBufferDescriptor(buffer, mismatched));
+    }
+
+    [Fact]
+    public void TextureDescriptorModelsVolumeAndCubemapSubresourcesWithoutBackendTypes()
+    {
+        var volume = new RenderTextureDescriptor(
+            16,
+            8,
+            RenderTextureFormat.RGBA8,
+            RenderTextureUsage.Sampled,
+            mipCount: 3,
+            dimension: RenderTextureDimension.Texture3D,
+            depth: 8
+        );
+        var cubemapArray = new RenderTextureDescriptor(
+            32,
+            32,
+            RenderTextureFormat.RGBA16Float,
+            RenderTextureUsage.Sampled,
+            arrayLayers: 2,
+            dimension: RenderTextureDimension.Cube
+        );
+
+        Assert.Equal(8, volume.GetSubresourceLayerCount(0));
+        Assert.Equal(2, volume.GetSubresourceLayerCount(2));
+        Assert.Equal(12, cubemapArray.GetSubresourceLayerCount(0));
+        Assert.NotEqual(
+            volume,
+            new RenderTextureDescriptor(16, 8, RenderTextureFormat.RGBA8, RenderTextureUsage.Sampled, mipCount: 3)
+        );
+    }
+
+    [Fact]
+    public void TextureDescriptorRejectsContradictoryDimensions()
+    {
+        Assert.Throws<ArgumentException>(() => new RenderTextureDescriptor(
+            16,
+            8,
+            RenderTextureFormat.RGBA8,
+            RenderTextureUsage.Sampled,
+            dimension: RenderTextureDimension.Cube
+        ));
+        Assert.Throws<ArgumentException>(() => new RenderTextureDescriptor(
+            16,
+            16,
+            RenderTextureFormat.RGBA8,
+            RenderTextureUsage.Sampled,
+            arrayLayers: 2,
+            dimension: RenderTextureDimension.Texture3D,
+            depth: 4
+        ));
+        Assert.Throws<ArgumentException>(() => new RenderTextureDescriptor(
+            16,
+            16,
+            RenderTextureFormat.RGBA8,
+            RenderTextureUsage.Sampled,
+            sampleCount: 4,
+            dimension: RenderTextureDimension.Texture3D,
+            depth: 4
+        ));
+    }
+
+    [Fact]
+    public void BlendStateSupportsSeparateColorAlphaEquationsAndConstantFactors()
+    {
+        var blend = new RenderBlendState
+        {
+            enabled = true,
+            colorSource = RenderBlendFactor.Constant,
+            colorDestination = RenderBlendFactor.InverseConstant,
+            colorEquation = RenderBlendEquation.ReverseSubtract,
+            alphaSource = RenderBlendFactor.One,
+            alphaDestination = RenderBlendFactor.DestinationAlpha,
+            alphaEquation = RenderBlendEquation.Maximum,
+            constantRgba = 0x8040_2010,
+            alphaToCoverage = true
+        };
+        var raster = new RenderRasterState { blend = blend };
+
+        Assert.Equal(RenderBlendFactor.Constant, raster.blend.colorSource);
+        Assert.Equal(RenderBlendEquation.Maximum, raster.blend.alphaEquation);
+        Assert.Equal(0x8040_2010u, raster.blend.constantRgba);
+        Assert.True(raster.blend.alphaToCoverage);
+    }
+
+    [Fact]
+    public void FixedFunctionStateConstructorsPreserveCompleteImmutableConfiguration()
+    {
+        var face = new RenderStencilFaceState(
+            RenderStencilCompare.NotEqual,
+            RenderStencilOperation.Zero,
+            RenderStencilOperation.IncrementWrap,
+            RenderStencilOperation.Replace
+        );
+        var stencil = new RenderStencilState(true, 7, 0x7F, 0x3F, face, face);
+        var raster = new RenderRasterState(
+            RenderCullMode.Front,
+            RenderFrontFace.Clockwise,
+            RenderDepthCompare.GreaterEqual,
+            false,
+            RenderBlendState.premultiplied,
+            0x07,
+            false,
+            RenderPrimitiveTopology.LineList
+        );
+
+        Assert.True(stencil.enabled);
+        Assert.Equal((byte)7, stencil.reference);
+        Assert.Equal((byte)0x7F, stencil.readMask);
+        Assert.Equal((byte)0x3F, stencil.writeMask);
+        Assert.Equal(RenderStencilCompare.NotEqual, stencil.front.compare);
+        Assert.Equal(RenderStencilOperation.Replace, stencil.back.pass);
+        Assert.Equal(RenderCullMode.Front, raster.cull);
+        Assert.Equal(RenderFrontFace.Clockwise, raster.frontFace);
+        Assert.Equal(RenderDepthCompare.GreaterEqual, raster.depthCompare);
+        Assert.False(raster.depthWrite);
+        Assert.Equal(RenderBlendState.premultiplied, raster.blend);
+        Assert.Equal((byte)0x07, raster.colorWriteMask);
+        Assert.False(raster.multisampling);
+        Assert.Equal(RenderPrimitiveTopology.LineList, raster.topology);
+    }
+
+    [Fact]
+    public void ShaderBindingRejectsDefaultIdentifier() => Assert.Throws<ArgumentException>(() => new RenderShaderBindingDescriptor(
+        default,
+        RenderShaderBindingKind.Uniform
+    ));
+
+    [Fact]
+    public void ShaderBindingModelsStorageTextureAccessWithoutBackendTypes()
+    {
+        var binding = new RenderShaderBindingDescriptor(
+            new RenderBindingID("u_output"),
+            RenderShaderBindingKind.StorageTexture,
+            slot: 3,
+            storageAccess: RenderStorageAccess.ReadWrite
+        );
+
+        Assert.Equal(RenderShaderBindingKind.StorageTexture, binding.kind);
+        Assert.Equal(RenderStorageAccess.ReadWrite, binding.storageAccess);
+        Assert.Equal(3, binding.slot);
+    }
+}

@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Inno.Assets.Pipeline;
-using Inno.Core.Serialization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Inno.Assets.Pipeline;
+using Inno.Core.Serialization;
 
 namespace Inno.Scripting.Compiler;
 
@@ -20,6 +19,7 @@ internal sealed class CSharpScriptImporter : AssetImporter<ScriptSourceAsset>
     /// Gets whether imported output is deployed to runtime, editor, or both domains.
     /// </summary>
     public override AssetDeploymentScope deploymentScope => AssetDeploymentScope.AuthoringOnly;
+
     /// <summary>
     /// Gets the normalized source extensions accepted by this importer.
     /// </summary>
@@ -51,7 +51,8 @@ internal sealed class CSharpScriptImporter : AssetImporter<ScriptSourceAsset>
             new CSharpParseOptions(LanguageVersion.CSharp14, DocumentationMode.Parse),
             context.assetPath.ToString(),
             Encoding.UTF8,
-            cancellationToken);
+            cancellationToken
+        );
         BaseTypeDeclarationSyntax[] declarations = tree.GetRoot(cancellationToken)
             .DescendantNodes()
             .OfType<BaseTypeDeclarationSyntax>()
@@ -67,26 +68,31 @@ internal sealed class CSharpScriptImporter : AssetImporter<ScriptSourceAsset>
             .ToArray();
         ScriptAssemblyScope scope = context.assetPath.localPath.EndsWith(
             ".editor.cs",
-            StringComparison.OrdinalIgnoreCase)
-            ? ScriptAssemblyScope.Editor
-            : ScriptAssemblyScope.Runtime;
+            StringComparison.OrdinalIgnoreCase
+        )
+                                    ? ScriptAssemblyScope.Editor
+                                    : ScriptAssemblyScope.Runtime;
         output.SetAsset(new ScriptSourceAsset(scope, declaredTypes, diagnostics));
         await output.WriteArtifactAsync(
             "source",
             Encoding.UTF8.GetBytes(source),
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken: cancellationToken
+        ).ConfigureAwait(false);
         await output.WriteArtifactAsync(
             "diagnostics",
             Encoding.UTF8.GetBytes(string.Join(Environment.NewLine, diagnostics)),
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken: cancellationToken
+        ).ConfigureAwait(false);
         var typeManifest = new ScriptSourceTypeManifest(
-            context.persistentId,
+            context.persistentID,
             context.assetPath.ToString(),
-            declarations.Select(CreateTypeDeclaration).ToArray());
+            declarations.Select(CreateTypeDeclaration).ToArray()
+        );
         await output.WriteArtifactAsync(
             "type-manifest",
             context.serialization.Serialize(typeManifest),
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken: cancellationToken
+        ).ConfigureAwait(false);
     }
 
     private static ScriptSourceTypeDeclaration CreateTypeDeclaration(BaseTypeDeclarationSyntax declaration)
@@ -97,7 +103,8 @@ internal sealed class CSharpScriptImporter : AssetImporter<ScriptSourceAsset>
             declaration.Kind().ToString(),
             declaration.Modifiers.Any(static modifier => modifier.IsKind(SyntaxKind.PartialKeyword)),
             span.StartLinePosition.Line + 1,
-            span.StartLinePosition.Character + 1);
+            span.StartLinePosition.Character + 1
+        );
     }
 
     private static string GetDeclaredTypeName(BaseTypeDeclarationSyntax declaration)
@@ -115,7 +122,7 @@ internal sealed class CSharpScriptImporter : AssetImporter<ScriptSourceAsset>
             .Select(static value => value.Name.ToString())
             .ToArray();
         return namespaces.Length == 0
-            ? nestedTypeName
-            : string.Join(".", namespaces) + "." + nestedTypeName;
+               ? nestedTypeName
+               : string.Join(".", namespaces) + "." + nestedTypeName;
     }
 }

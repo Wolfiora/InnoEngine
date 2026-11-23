@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.ExceptionServices;
 using System.Linq;
-using Inno.Extensibility.Types;
+using System.Runtime.ExceptionServices;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Types;
 using Inno.Scene;
 using Inno.Scene.Components;
 using Inno.Scene.Layers;
 
 namespace Inno.Editor.Scene;
-sealed partial class SceneEdits
+
+public sealed partial class SceneEdits
 {
     /// <summary>
     /// Adds one component and records its identity, stable type, index, and persistent properties.
@@ -46,9 +47,9 @@ sealed partial class SceneEdits
                 historyName ?? $"Add {componentType.Name}",
                 new SceneElementHistoryData(
                     SceneElementKind.Component,
-                    owner.scene.identity.persistentId,
-                    owner.identity.persistentId,
-                    component.identity.persistentId,
+                    owner.scene.identity.persistentID,
+                    owner.identity.persistentID,
+                    component.identity.persistentID,
                     typeRef,
                     beforeIndex: -1,
                     afterIndex: owner.GetComponentIndex(component),
@@ -66,7 +67,9 @@ sealed partial class SceneEdits
             RollbackAndRethrow(exception, () =>
             {
                 if (!component.isDestroyed && !owner.RemoveComponent(component))
+                {
                     throw new InvalidOperationException("The unrecorded component could not be removed.");
+                }
             });
             throw;
         }
@@ -91,7 +94,9 @@ sealed partial class SceneEdits
         ArgumentNullException.ThrowIfNull(component);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
         if (component.isDestroyed)
+        {
             return false;
+        }
         m_workspace.EnsureEditable(component.gameObject.scene);
         GameObject owner = component.gameObject;
         GameScene scene = owner.scene;
@@ -99,19 +104,21 @@ sealed partial class SceneEdits
         byte[] state = SceneElementSerialization.CaptureState(component, m_workspace.serialization, m_workspace.assets);
         SceneIncomingReferenceState[] incoming = SceneReferenceIndex.CaptureIncoming(component, scene, m_workspace);
         int index = owner.GetComponentIndex(component);
-        Guid componentId = component.identity.persistentId;
+        Guid componentID = component.identity.persistentID;
         Type componentType = component.GetType();
         try
         {
             if (!owner.RemoveComponent(component))
+            {
                 return false;
+            }
             RecordElement(
                 historyName ?? $"Remove {componentType.Name}",
                 new SceneElementHistoryData(
                     SceneElementKind.Component,
-                    scene.identity.persistentId,
-                    owner.identity.persistentId,
-                    componentId,
+                    scene.identity.persistentID,
+                    owner.identity.persistentID,
+                    componentID,
                     typeRef,
                     beforeIndex: index,
                     afterIndex: -1,
@@ -125,14 +132,22 @@ sealed partial class SceneEdits
         }
         catch (Exception exception)
         {
-            if (m_workspace.Find<GameComponent>(componentId) is not null)
+            if (m_workspace.Find<GameComponent>(componentID) is not null)
             {
                 ExceptionDispatchInfo.Capture(exception).Throw();
             }
 
             RollbackAndRethrow(exception, () =>
             {
-                GameComponent restored = SceneElementSerialization.RestoreComponent(owner, typeRef, componentId, index, state, m_workspace.serialization, m_workspace.assets);
+                GameComponent restored = SceneElementSerialization.RestoreComponent(
+                    owner,
+                    typeRef,
+                    componentID,
+                    index,
+                    state,
+                    m_workspace.serialization,
+                    m_workspace.assets
+                );
                 RequireElementRestore(restored, state);
                 RequireReferenceRestore(SceneReferenceIndex.RestoreIncoming(incoming, m_workspace));
             });
@@ -172,16 +187,18 @@ sealed partial class SceneEdits
         }
 
         if (before.AsSpan().SequenceEqual(after))
+        {
             return;
+        }
         int index = owner.GetComponentIndex(component);
         RecordWithRollback(
             () => RecordElement(
                 historyName ?? $"Reset {component.GetType().Name}",
                 new SceneElementHistoryData(
                     SceneElementKind.Component,
-                    owner.scene.identity.persistentId,
-                    owner.identity.persistentId,
-                    component.identity.persistentId,
+                    owner.scene.identity.persistentID,
+                    owner.identity.persistentID,
+                    component.identity.persistentID,
                     GetElementType(component),
                     index,
                     index,
@@ -232,15 +249,17 @@ sealed partial class SceneEdits
         }
 
         if (beforeIndex == afterIndex)
+        {
             return;
+        }
         RecordWithRollback(
             () => RecordElement(
                 historyName,
                 new SceneElementHistoryData(
                     SceneElementKind.Component,
-                    owner.scene.identity.persistentId,
-                    owner.identity.persistentId,
-                    component.identity.persistentId,
+                    owner.scene.identity.persistentID,
+                    owner.identity.persistentID,
+                    component.identity.persistentID,
                     GetElementType(component),
                     beforeIndex,
                     afterIndex,
@@ -286,9 +305,9 @@ sealed partial class SceneEdits
                 historyName ?? $"Add {systemType.Name}",
                 new SceneElementHistoryData(
                     SceneElementKind.System,
-                    scene.identity.persistentId,
+                    scene.identity.persistentID,
                     Guid.Empty,
-                    system.identity.persistentId,
+                    system.identity.persistentID,
                     GetTypeRef(systemType),
                     beforeIndex: -1,
                     afterIndex: scene.GetSystemIndex(system),
@@ -306,7 +325,9 @@ sealed partial class SceneEdits
             RollbackAndRethrow(exception, () =>
             {
                 if (!system.isDestroyed && !scene.RemoveSystem(system))
+                {
                     throw new InvalidOperationException("The unrecorded system could not be removed.");
+                }
             });
             throw;
         }
@@ -330,29 +351,35 @@ sealed partial class SceneEdits
     ) {
         ArgumentNullException.ThrowIfNull(system);
         if (system.isDestroyed)
+        {
             return false;
+        }
         GameScene scene = ResolveOwnerScene(system);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
         m_workspace.EnsureEditable(scene);
         if (system.isDestroyed)
+        {
             return false;
+        }
         byte[] state = SceneElementSerialization.CaptureState(system, m_workspace.serialization, m_workspace.assets);
         SceneIncomingReferenceState[] incoming = SceneReferenceIndex.CaptureIncoming(system, scene, m_workspace);
         int index = scene.GetSystemIndex(system);
-        Guid systemId = system.identity.persistentId;
+        Guid systemID = system.identity.persistentID;
         TypeRef typeRef = GetElementType(system);
         Type systemType = system.GetType();
         try
         {
             if (!scene.RemoveSystem(system))
+            {
                 return false;
+            }
             RecordElement(
                 historyName ?? $"Remove {systemType.Name}",
                 new SceneElementHistoryData(
                     SceneElementKind.System,
-                    scene.identity.persistentId,
+                    scene.identity.persistentID,
                     Guid.Empty,
-                    systemId,
+                    systemID,
                     typeRef,
                     beforeIndex: index,
                     afterIndex: -1,
@@ -366,14 +393,22 @@ sealed partial class SceneEdits
         }
         catch (Exception exception)
         {
-            if (m_workspace.Find<GameSystem>(systemId) is not null)
+            if (m_workspace.Find<GameSystem>(systemID) is not null)
             {
                 ExceptionDispatchInfo.Capture(exception).Throw();
             }
 
             RollbackAndRethrow(exception, () =>
             {
-                GameSystem restored = SceneElementSerialization.RestoreSystem(scene, typeRef, systemId, index, state, m_workspace.serialization, m_workspace.assets);
+                GameSystem restored = SceneElementSerialization.RestoreSystem(
+                    scene,
+                    typeRef,
+                    systemID,
+                    index,
+                    state,
+                    m_workspace.serialization,
+                    m_workspace.assets
+                );
                 RequireElementRestore(restored, state);
                 RequireReferenceRestore(SceneReferenceIndex.RestoreIncoming(incoming, m_workspace));
             });
@@ -413,16 +448,18 @@ sealed partial class SceneEdits
         }
 
         if (before.AsSpan().SequenceEqual(after))
+        {
             return;
+        }
         int index = scene.GetSystemIndex(system);
         RecordWithRollback(
             () => RecordElement(
                 historyName ?? $"Reset {system.GetType().Name}",
                 new SceneElementHistoryData(
                     SceneElementKind.System,
-                    scene.identity.persistentId,
+                    scene.identity.persistentID,
                     Guid.Empty,
-                    system.identity.persistentId,
+                    system.identity.persistentID,
                     GetElementType(system),
                     index,
                     index,
@@ -477,15 +514,17 @@ sealed partial class SceneEdits
         }
 
         if (beforeIndex == afterIndex)
+        {
             return;
+        }
         RecordWithRollback(
             () => RecordElement(
                 historyName,
                 new SceneElementHistoryData(
                     SceneElementKind.System,
-                    scene.identity.persistentId,
+                    scene.identity.persistentID,
                     Guid.Empty,
-                    system.identity.persistentId,
+                    system.identity.persistentID,
                     GetElementType(system),
                     beforeIndex,
                     afterIndex,
@@ -500,11 +539,14 @@ sealed partial class SceneEdits
         );
     }
 
-    private TypeRef GetElementType(EngineObject element) => element switch
+    private TypeRef GetElementType(EngineObject element)
+        => element switch
     {
         MissingGameComponent missing => missing.missingType,
         MissingGameSystem missing => missing.missingType,
-        _ => GetTypeRef(element.GetType())};
+        _ => GetTypeRef(element.GetType())
+    };
+
     private void RequireElementRestore(
         EngineObject element,
         ReadOnlySpan<byte> data

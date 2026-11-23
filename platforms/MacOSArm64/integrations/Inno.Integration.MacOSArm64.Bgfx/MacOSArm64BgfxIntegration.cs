@@ -40,6 +40,6 @@ public static class MacOSArm64BgfxIntegration
             assets,
             serialization,
             types
-        ) => new BgfxGameContentCompiler(assets, serialization, types, shaderProfile, [GraphicsApi.Metal], tools);
+        ) => new BgfxGameContentCompiler(assets, serialization, types, shaderProfile, [GraphicsApi.metal], tools);
     }
 }

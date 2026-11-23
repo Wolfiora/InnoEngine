@@ -18,15 +18,19 @@ internal static partial class PosixFilePublication
         }
         catch (Exception exception) when (exception is DllNotFoundException or EntryPointNotFoundException or PlatformNotSupportedException)
         {
-            throw new PlatformNotSupportedException("The host does not provide atomic create-only file publication through POSIX link.", exception);
+            throw new PlatformNotSupportedException(
+                "The host does not provide atomic create-only file publication through POSIX link.",
+                exception
+            );
         }
         if (result != 0)
         {
             int error = Marshal.GetLastPInvokeError();
             throw new IOException(
-                $"Atomic create-only publication of '{source}' at '{destination}' failed (errno {error}). " +
-                "The destination was not replaced; the filesystem must support same-directory hard links.",
-                new Win32Exception(error));
+                $"Atomic create-only publication of '{source}' at '{destination}' failed (errno {error}). "
+                + "The destination was not replaced; the filesystem must support same-directory hard links.",
+                new Win32Exception(error)
+            );
         }
 
         try

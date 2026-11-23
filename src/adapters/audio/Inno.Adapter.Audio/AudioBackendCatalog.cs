@@ -10,7 +10,7 @@ namespace Inno.Adapter.Audio;
 /// </summary>
 public sealed class AudioBackendCatalog : IAudioBackendFactory
 {
-    private readonly Dictionary<AudioBackendId, AudioBackendProvider> m_providers = [];
+    private readonly Dictionary<AudioBackendID, AudioBackendProvider> m_providers = [];
 
     /// <summary>
     /// Validates and captures a complete provider set without creating any service.
@@ -30,26 +30,29 @@ public sealed class AudioBackendCatalog : IAudioBackendFactory
         foreach (AudioBackendProvider provider in providers)
         {
             if (provider is null || !provider.id.isValid || !m_providers.TryAdd(provider.id, provider))
+            {
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
+            }
         }
-        supportedBackends = new ReadOnlyCollection<AudioBackendId>(new List<AudioBackendId>(m_providers.Keys));
+        this.supportedBackends = new ReadOnlyCollection<AudioBackendID>([.. m_providers.Keys]);
     }
 
-    /// <inheritdoc />
-    public IReadOnlyList<AudioBackendId> supportedBackends { get; }
+    /// <inheritdoc/>
+    public IReadOnlyList<AudioBackendID> supportedBackends { get; }
 
-    /// <inheritdoc />
     /// <exception cref="InvalidOperationException">
     /// The selected provider returned no service.
     /// </exception>
+    /// <inheritdoc/>
     public IAudioDevice CreateDevice(
-        AudioBackendId backend,
+        AudioBackendID backend,
         AudioBackendOptions options
     ) {
         if (!m_providers.TryGetValue(backend, out AudioBackendProvider? provider))
+        {
             throw new NotSupportedException("Audio backend '" + backend + "' is not registered.");
+        }
         return provider.CreateDevice(options)
-            ?? throw new InvalidOperationException("Audio provider '" + backend + "' returned no service.");
+               ?? throw new InvalidOperationException("Audio provider '" + backend + "' returned no service.");
     }
 }
-

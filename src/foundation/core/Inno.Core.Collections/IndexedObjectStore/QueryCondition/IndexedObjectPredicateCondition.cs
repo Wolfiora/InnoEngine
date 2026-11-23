@@ -10,7 +10,8 @@ namespace Inno.Core.Collections;
 /// <typeparam name="T">
 /// The stored reference type.
 /// </typeparam>
-public sealed class IndexedObjectPredicateCondition<T> : IIndexedObjectQueryCondition<T> where T : class
+public sealed class IndexedObjectPredicateCondition<T> : IIndexedObjectQueryCondition<T>
+    where T : class
 {
     private readonly Func<T, bool> m_predicate;
 
@@ -76,12 +77,12 @@ public sealed class IndexedObjectPredicateCondition<T> : IIndexedObjectQueryCond
     /// <param name="store">
     /// The store consumed by validate; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
     /// <param name="item">
     /// The stored item associated with the validated handle.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Validate(
         IndexedObjectStore<T> store,

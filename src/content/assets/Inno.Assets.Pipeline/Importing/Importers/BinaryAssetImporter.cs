@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 
@@ -39,7 +38,7 @@ internal sealed class BinaryAssetImporter : AssetImporter<BinaryAsset>
         byte[] payload = context.sourceBytes.ToArray();
         var asset = new BinaryAsset(payload.Length);
         output.SetAsset(asset);
-        await output.WriteArtifactAsync("runtime", payload, cancellationToken).ConfigureAwait(false);
+        await output.WriteArtifactAsync("runtime", payload, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -61,6 +60,5 @@ internal sealed class BinaryAssetImporter : AssetImporter<BinaryAsset>
         AssetExportContext context,
         BinaryAsset asset,
         CancellationToken cancellationToken
-    )
-        => ValueTask.FromResult<ReadOnlyMemory<byte>?>(asset.runtimePayload);
+    ) => ValueTask.FromResult<ReadOnlyMemory<byte>?>(asset.runtimePayload);
 }

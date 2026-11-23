@@ -1,22 +1,21 @@
-using Inno.Build.Composition;
-using Inno.Build.Toolchains.Bgfx.Tools;
-using Inno.Core.IO;
-using Inno.Extensibility.Modules;
-using Inno.Adapter.Modules.DotNet;
-using Inno.Adapter.Serialization.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Build;
+using Inno.Build.Composition;
+using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Core.Execution;
+using Inno.Core.IO;
 using Inno.Core.Identity;
 using Inno.Core.Settings;
+using Inno.Extensibility.Modules;
 using Inno.Plugins.Authoring;
 using Inno.Runtime;
 using Inno.Scene;
@@ -49,7 +48,18 @@ internal sealed class BuildWorkspace : IDisposable
         m_projectDirectory = projectDirectory;
     }
 
-    internal ProjectId projectId => m_settings.projectId;
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose()
+    {
+        m_plugins.Dispose();
+        m_assets.Dispose();
+        m_settings.Dispose();
+        m_engine.Dispose();
+    }
+
+    internal ProjectID projectID => m_settings.projectID;
 
     internal BuildPipeline CreatePipeline(
         BuildCompositionContext context,
@@ -76,11 +86,19 @@ internal sealed class BuildWorkspace : IDisposable
             ) =>
             {
                 ScriptCompilationResult result = await m_compiler.CompileAuthoringGenerationAsync(
-                    cancellationToken: cancellationToken, sourceSnapshot: sources).ConfigureAwait(false);
+                    sourceSnapshot: sources,
+                    cancellationToken: cancellationToken
+                ).ConfigureAwait(false);
                 if (!result.success)
-                    throw new InvalidOperationException("Sample script preflight failed:" + Environment.NewLine
-                        + string.Join(Environment.NewLine,
-                            result.diagnostics.Select(static diagnostic => diagnostic.message)));
+                {
+                    throw new InvalidOperationException(
+                        "Sample script preflight failed:" + Environment.NewLine
+                        + string.Join(
+                            Environment.NewLine,
+                            result.diagnostics.Select(static diagnostic => diagnostic.message)
+                        )
+                    );
+                }
             });
             while (!import.isValidationComplete)
             {
@@ -104,24 +122,31 @@ internal sealed class BuildWorkspace : IDisposable
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(outputDirectory);
         ScriptCompilationResult result = m_compiler.CompileAuthoringGenerationAsync(cancellationToken: cancellationToken)
-            .GetAwaiter().GetResult();
+            .GetAwaiter()
+            .GetResult();
         if (!result.success)
-            throw new InvalidOperationException("Project script compilation failed:" + Environment.NewLine
-                + string.Join(Environment.NewLine,
-                    result.diagnostics.Select(static diagnostic => diagnostic.message)));
+        {
+            throw new InvalidOperationException(
+                "Project script compilation failed:" + Environment.NewLine
+                + string.Join(Environment.NewLine, result.diagnostics.Select(static diagnostic => diagnostic.message))
+            );
+        }
         if (generateIdeProjects)
+        {
             m_compiler.GenerateProjectFiles();
+        }
         cancellationToken.ThrowIfCancellationRequested();
         string[] assemblies = result.moduleDeployments
-            .Where(static request => request.domain == Inno.Extensibility.Modules.AssemblyDomain.InnoScripting)
-            .SelectMany(static request => new[] { request.mainAssemblyPath }
-                .Concat(request.preloadAssemblyPaths))
+            .Where(static request => request.domain == AssemblyDomain.InnoScripting)
+            .SelectMany(static request => new[] { request.mainAssemblyPath }.Concat(request.preloadAssemblyPaths))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         string destination = Path.GetFullPath(outputDirectory);
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
         using ProcessOwnedDirectory stagingOwner = ProcessOwnedDirectory.CreateAsync(Path.GetDirectoryName(destination)!, cancellationToken)
-            .AsTask().GetAwaiter().GetResult();
+            .AsTask()
+            .GetAwaiter()
+            .GetResult();
         string staging = stagingOwner.directory;
         try
         {
@@ -131,7 +156,9 @@ internal sealed class BuildWorkspace : IDisposable
                 File.Copy(assembly, Path.Combine(staging, Path.GetFileName(assembly)));
                 string symbols = Path.ChangeExtension(assembly, ".pdb");
                 if (File.Exists(symbols))
+                {
                     File.Copy(symbols, Path.Combine(staging, Path.GetFileName(symbols)));
+                }
             }
             try
             {
@@ -150,6 +177,31 @@ internal sealed class BuildWorkspace : IDisposable
         return destination;
     }
 
+    internal BuildProfile LoadGameProfile(
+        string? path,
+        BuildTargetID defaultTarget
+    ) {
+        if (!string.IsNullOrWhiteSpace(path))
+        {
+            string profilePath = Path.GetFullPath(path, m_projectDirectory);
+            BuildProfile profile = new BuildProfileStore(profilePath, m_engine.serialization).Load();
+            profile.applicationId = projectID.value;
+            return profile;
+        }
+
+        BuildSettings defaults = BuildSettings.CreateDefault(
+            Path.GetFileName(Path.TrimEndingDirectorySeparator(m_projectDirectory)),
+            FindDefaultStartupScene(),
+            defaultTarget
+        );
+        var settings = new BuildSettingsStore(
+            Path.Combine(m_projectDirectory, SettingsFileNames.C_BUILD),
+            m_engine.serialization,
+            defaults
+        );
+        return settings.Load().CreateGameProfile(projectID);
+    }
+
     internal static BuildWorkspace Open(
         string projectDirectory,
         string dotnetHost,
@@ -161,7 +213,9 @@ internal sealed class BuildWorkspace : IDisposable
         string pluginsRoot = Path.Combine(projectRoot, "Plugins");
         string libraryRoot = Path.Combine(projectRoot, "Library");
         if (!Directory.Exists(assetsRoot))
+        {
             throw new DirectoryNotFoundException($"Project Assets directory '{assetsRoot}' does not exist.");
+        }
         Directory.CreateDirectory(pluginsRoot);
         Directory.CreateDirectory(libraryRoot);
 
@@ -172,14 +226,18 @@ internal sealed class BuildWorkspace : IDisposable
         try
         {
             engine = new EngineHostBuilder()
-                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(BuildWorkspace).Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
+                .UseMetadataSources(
+                    new DotNetAssemblyCatalogSource(typeof(BuildWorkspace).Assembly),
+                    new ReflectionTypeCatalogSource(),
+                    new ReflectionSerializationMetadataSource()
+                )
                 .Build();
             var sources = new PluginSourceService(engine.serialization, pluginsRoot, libraryRoot);
             PluginScanResult scan = sources.Scan();
             AssetPipelineOptions options = AssetPipelineOptions.Create(assetsRoot, libraryRoot);
-            AssetSourceMount projectMount = options.sourceMounts!.Single(static mount =>
-                mount.id == AssetSourceId.project);
+            AssetSourceMount projectMount = options.sourceMounts!.Single(static mount => (
+                mount.id == AssetSourceID.project
+            ));
             assets = new AssetPipeline(
                 engine.modules,
                 engine.types,
@@ -196,13 +254,15 @@ internal sealed class BuildWorkspace : IDisposable
                         projectMount,
                         .. PluginSourceService.GetActivatableMounts(scan)
                     ]
-                });
+                }
+            );
             settings = new ProjectSettingsStore(
-                new FileByteDocumentStore(Path.GetFullPath(Path.Combine(projectRoot, SettingsFileNames.project))),
+                new FileByteDocumentStore(Path.GetFullPath(Path.Combine(projectRoot, SettingsFileNames.C_PROJECT))),
                 engine.types,
                 engine.serialization,
-                ProjectId.FromName(new DirectoryInfo(projectRoot).Name),
-                AssetSerializationContext.Create(assets));
+                ProjectID.FromName(new DirectoryInfo(projectRoot).Name),
+                AssetSerializationContext.Create(assets)
+            );
             plugins = new PluginEnvironment(
                 assets,
                 settings,
@@ -210,13 +270,19 @@ internal sealed class BuildWorkspace : IDisposable
                 pluginsRoot,
                 libraryRoot,
                 scan,
-                engine.modules.generations);
+                engine.modules.generations
+            );
             if (plugins.discovery.diagnostics.Count != 0
-                || plugins.activePlugins.Count != scan.candidates.Count)
-            {
-                throw new InvalidOperationException("Installed Plugin activation failed:" + Environment.NewLine
-                    + string.Join(Environment.NewLine, plugins.discovery.diagnostics.Select(static diagnostic =>
-                        $"{diagnostic.sourcePath}: {diagnostic.message}")));
+                || plugins.activePlugins.Count != scan.candidates.Count
+            ) {
+                throw new InvalidOperationException(
+                    "Installed Plugin activation failed:" + Environment.NewLine
+                    + string.Join(
+                        Environment.NewLine,
+                        plugins.discovery.diagnostics.Select(static diagnostic =>
+                            $"{diagnostic.sourcePath}: {diagnostic.message}")
+                    )
+                );
             }
             var compiler = new ScriptCompiler(
                 new ScriptCompilerOptions
@@ -225,7 +291,8 @@ internal sealed class BuildWorkspace : IDisposable
                     compilationEnvironment = new SdkScriptCompilationEnvironment(dotnetHost, projectRoot)
                 },
                 assets,
-                plugins);
+                plugins
+            );
             ActivateAuthoring(engine, plugins, compiler, Path.Combine(libraryRoot, "Build", "Metadata"), cancellationToken);
             engine.generations.Wait();
             assets.CompleteExtensionDiscovery();
@@ -242,22 +309,36 @@ internal sealed class BuildWorkspace : IDisposable
         }
     }
 
+    private string FindDefaultStartupScene()
+    {
+        foreach (AssetFileEntry entry in m_assets.GetFileSystemEntries(includeDirectories: false)
+            .Where(static entry => entry.source == AssetSourceID.project)
+            .Where(static entry => !AssetSample.IsRuntimeExcluded(entry.assetPath, isDirectory: false))
+            .OrderBy(static entry => entry.assetPath.localPath, StringComparer.Ordinal)
+        ) {
+            if (m_assets.TryGetAssetType(entry.assetPath, out Type? type) && type == typeof(SceneAsset))
+            {
+                return entry.assetPath.ToString();
+            }
+        }
+        return string.Empty;
+    }
+
     private static IModuleSource CreateScriptModuleSource(
         ScriptModuleDeployment deployment,
         string artifactRootDirectory
-    )
-        => new DotNetModuleSource
-        {
-            artifactRootDirectory = artifactRootDirectory,
-            moduleName = deployment.moduleName,
-            mainAssemblyPath = deployment.mainAssemblyPath,
-            domain = deployment.domain,
-            scope = deployment.scope,
-            preloadAssemblyPaths = deployment.preloadAssemblyPaths,
-            upstreamModuleNames = deployment.upstreamModuleNames,
-            assemblyScopes = deployment.assemblyScopes,
-            collectible = true
-        };
+    ) => new DotNetModuleSource
+    {
+        artifactRootDirectory = artifactRootDirectory,
+        moduleName = deployment.moduleName,
+        mainAssemblyPath = deployment.mainAssemblyPath,
+        domain = deployment.domain,
+        scope = deployment.scope,
+        preloadAssemblyPaths = deployment.preloadAssemblyPaths,
+        upstreamModuleNames = deployment.upstreamModuleNames,
+        assemblyScopes = deployment.assemblyScopes,
+        collectible = true
+    };
 
     private static void ActivateAuthoring(
         EngineHost engine,
@@ -268,60 +349,20 @@ internal sealed class BuildWorkspace : IDisposable
     ) {
         // Asset importers and graph extensions belong to the authoring generation, including in a
         // headless build. Compiling only Player scripts would export unresolved/last-good asset state.
-        ScriptCompilationResult result = compiler.CompileAuthoringGenerationAsync(cancellationToken: cancellationToken).GetAwaiter().GetResult();
+        ScriptCompilationResult result = compiler
+            .CompileAuthoringGenerationAsync(cancellationToken: cancellationToken)
+            .GetAwaiter()
+            .GetResult();
         if (!result.success)
-            throw new InvalidOperationException("Build authoring compilation failed:" + Environment.NewLine
-                + string.Join(Environment.NewLine, result.diagnostics.Select(static diagnostic => diagnostic.message)));
-        using Inno.Extensibility.Modules.AssemblyReloadSession reload = engine.modules.BeginReload(
-            result.moduleDeployments.Select(deployment => CreateScriptModuleSource(deployment, artifactRootDirectory)).ToArray());
+        {
+            throw new InvalidOperationException(
+                "Build authoring compilation failed:" + Environment.NewLine
+                + string.Join(Environment.NewLine, result.diagnostics.Select(static diagnostic => diagnostic.message))
+            );
+        }
+        using AssemblyReloadSession reload = engine.modules.BeginReload(
+            result.moduleDeployments.Select(deployment => CreateScriptModuleSource(deployment, artifactRootDirectory)).ToArray()
+        );
         _ = engine.generations.Execute("Build authoring generation", reload, [plugins.CreateReloadChange()]);
     }
-
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose()
-    {
-        m_plugins.Dispose();
-        m_assets.Dispose();
-        m_settings.Dispose();
-        m_engine.Dispose();
-    }
-
-    internal BuildProfile LoadGameProfile(
-        string? path,
-        BuildTargetId defaultTarget
-    ) {
-        if (!string.IsNullOrWhiteSpace(path))
-        {
-            string profilePath = Path.GetFullPath(path, m_projectDirectory);
-            BuildProfile profile = new BuildProfileStore(profilePath, m_engine.serialization).Load();
-            profile.applicationId = projectId.value;
-            return profile;
-        }
-
-        BuildSettings defaults = BuildSettings.CreateDefault(
-            Path.GetFileName(Path.TrimEndingDirectorySeparator(m_projectDirectory)),
-            FindDefaultStartupScene(),
-            defaultTarget);
-        var settings = new BuildSettingsStore(
-            Path.Combine(m_projectDirectory, SettingsFileNames.build),
-            m_engine.serialization,
-            defaults);
-        return settings.Load().CreateGameProfile(projectId);
-    }
-
-    private string FindDefaultStartupScene()
-    {
-        foreach (AssetFileEntry entry in m_assets.GetFileSystemEntries(includeDirectories: false)
-                     .Where(static entry => entry.source == AssetSourceId.project)
-                     .Where(static entry => !AssetSample.IsRuntimeExcluded(entry.assetPath, isDirectory: false))
-                     .OrderBy(static entry => entry.assetPath.localPath, StringComparer.Ordinal))
-        {
-            if (m_assets.TryGetAssetType(entry.assetPath, out Type? type) && type == typeof(SceneAsset))
-                return entry.assetPath.ToString();
-        }
-        return string.Empty;
-    }
 }
-

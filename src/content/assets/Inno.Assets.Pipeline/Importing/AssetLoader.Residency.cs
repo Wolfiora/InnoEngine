@@ -7,24 +7,23 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Collections;
 using Inno.Core.Diagnostics;
-using Inno.Core.Identity;
-using Inno.References;
 using Inno.Core.Execution;
 using Inno.Core.IO;
+using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
-using Inno.Core.Collections;
+using Inno.Extensibility.Types;
+using Inno.References;
 
 using IOFile = System.IO.File;
 
 namespace Inno.Assets.Pipeline;
 
-sealed partial class AssetLoader
+public sealed partial class AssetLoader
 {
     /// <summary>
     /// Collects unreachable content-addressed artifacts.
@@ -41,25 +40,25 @@ sealed partial class AssetLoader
     public int CollectArtifacts(
         TimeSpan gracePeriod,
         long maximumSizeBytes
-    ) {
-        return Execute(() =>
+    ) => Execute(() =>
+    {
+        HashSet<string> reachable = [];
+        foreach (AssetArtifactKey retained in m_artifactRetention.GetRetainedKeys())
         {
-            HashSet<string> reachable = [];
-            foreach (AssetArtifactKey retained in m_artifactRetention.GetRetainedKeys())
-                AddArtifactKey(reachable, retained.value);
-            foreach (AssetRecord record in m_recordsByPath.Values)
-            {
-                AddArtifactKey(reachable, record.meta.artifactKey);
-                AddArtifactKey(reachable, record.meta.lastSuccessfulArtifactKey);
-            }
-            return m_artifacts.Collect(reachable, gracePeriod, maximumSizeBytes);
-        });
-    }
+            AddArtifactKey(reachable, retained.value);
+        }
+        foreach (AssetRecord record in m_recordsByPath.Values)
+        {
+            AddArtifactKey(reachable, record.meta.artifactKey);
+            AddArtifactKey(reachable, record.meta.lastSuccessfulArtifactKey);
+        }
+        return m_artifacts.Collect(reachable, gracePeriod, maximumSizeBytes);
+    });
 
     /// <summary>
     /// Tries to resolve a named output from the current artifact bundle.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The stable persistent identity used for lookup.
     /// </param>
     /// <param name="outputName">
@@ -72,20 +71,23 @@ sealed partial class AssetLoader
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool TryGetArtifact(
-        Guid persistentId,
+        Guid persistentID,
         string outputName,
         out AssetArtifactInfo? artifact
     ) {
         AssetArtifactInfo? result = Execute(() =>
         {
-            if (!m_recordsById.TryGetValue(persistentId, out AssetRecord? record))
+            if (!m_recordsByID.TryGetValue(persistentID, out AssetRecord? record))
+            {
                 return null;
+            }
             return m_artifacts.TryGet(
                 new AssetArtifactKey(record.meta.artifactKey),
                 outputName,
-                out AssetArtifactInfo? found)
-                ? found
-                : null;
+                out AssetArtifactInfo? found
+            )
+                   ? found
+                   : null;
         });
         artifact = result;
         return result is not null;
@@ -94,7 +96,7 @@ sealed partial class AssetLoader
     /// <summary>
     /// Acquires an immutable output while excluding concurrent artifact collection.
     /// </summary>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The source asset's persistent identity.
     /// </param>
     /// <param name="outputName">
@@ -107,15 +109,16 @@ sealed partial class AssetLoader
     /// No current output can be resolved.
     /// </exception>
     public ArtifactLease AcquireArtifact(
-        Guid persistentId,
+        Guid persistentID,
         string outputName
-    )
-        => Execute(() =>
+    ) => Execute(() =>
+    {
+        if (!TryGetArtifact(persistentID, outputName, out AssetArtifactInfo? artifact) || artifact is null)
         {
-            if (!TryGetArtifact(persistentId, outputName, out AssetArtifactInfo? artifact) || artifact is null)
-                throw new InvalidOperationException($"Asset '{persistentId:D}' has no output '{outputName}'.");
-            return m_artifactRetention.Retain(artifact, m_artifacts.CreateReadFactory(artifact));
-        });
+            throw new InvalidOperationException($"Asset '{persistentID:D}' has no output '{outputName}'.");
+        }
+        return m_artifactRetention.Retain(artifact, m_artifacts.CreateReadFactory(artifact));
+    });
 
     /// <summary>
     /// Collects canonical assets that have no external managed references.
@@ -130,7 +133,9 @@ sealed partial class AssetLoader
     {
         SweepCandidate[] candidates = DetachSweepCandidatesLocked();
         if (candidates.Length == 0)
+        {
             return 0;
+        }
         GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
         GC.WaitForPendingFinalizers();
         GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
@@ -153,11 +158,13 @@ sealed partial class AssetLoader
     [MethodImpl(MethodImplOptions.NoInlining)]
     private SweepCandidate[] DetachSweepCandidatesLocked()
     {
-        var result = new List<SweepCandidate>();
+        List<SweepCandidate> result = [];
         foreach (AssetRecord record in m_recordsByPath.Values)
         {
             if (record.asset is null)
+            {
                 continue;
+            }
             result.Add(new SweepCandidate(record, new WeakReference<AssetObject>(record.asset)));
             record.asset = null;
         }
@@ -169,12 +176,13 @@ sealed partial class AssetLoader
         string value
     ) {
         if (!string.IsNullOrWhiteSpace(value))
+        {
             reachable.Add(value.ToUpperInvariant());
+        }
     }
 
     private readonly record struct SweepCandidate(
         AssetRecord record,
         WeakReference<AssetObject> reference
     );
-
 }

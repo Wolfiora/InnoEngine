@@ -1,18 +1,18 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
 /// <summary>
 /// Stores one persistent material property entry.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("f4c298ba-cda4-5155-a050-d33f70175c7c")]
+[StableTypeID("f4c298ba-cda4-5155-a050-d33f70175c7c")]
 public struct MaterialPropertyEntry
 {
     /// <summary>
@@ -25,11 +25,13 @@ public struct MaterialPropertyEntry
     /// Neutral material value.
     /// </param>
     public MaterialPropertyEntry(
-        ShaderPropertyId id,
+        ShaderPropertyID id,
         MaterialValue value
     ) {
         if (!id.isValid)
+        {
             throw new ArgumentException("A material property ID must be valid.", nameof(id));
+        }
         this.id = id;
         this.value = value;
     }
@@ -37,11 +39,10 @@ public struct MaterialPropertyEntry
     /// <summary>
     /// Gets or sets the stable shader property identifier.
     /// </summary>
-    public ShaderPropertyId id { get; set; }
+    public ShaderPropertyID id { get; set; }
 
     /// <summary>
     /// Gets or sets the neutral material value.
     /// </summary>
     public MaterialValue value { get; set; }
 }
-

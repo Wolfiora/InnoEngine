@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-
 using Inno.Scene;
 
 namespace Inno.Editor.Scene;

@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Assets;
 
 namespace Inno.Scene;
@@ -10,8 +9,8 @@ namespace Inno.Scene;
 public sealed class PrefabInstanceInfo
 {
     internal PrefabInstanceInfo(
-        Guid sourceAssetId,
-        Guid sourceObjectId,
+        Guid sourceAssetID,
+        Guid sourceObjectID,
         GameObject instanceRoot,
         bool isRoot,
         bool isVariant,
@@ -20,26 +19,27 @@ public sealed class PrefabInstanceInfo
         int orphanedOverrideCount,
         AssetObject sourceAsset
     ) {
-        this.sourceAssetId = sourceAssetId;
-        this.sourceObjectId = sourceObjectId;
+        ArgumentNullException.ThrowIfNull(sourceAsset);
+        this.sourceAssetID = sourceAssetID;
+        this.sourceObjectID = sourceObjectID;
         this.instanceRoot = instanceRoot;
         this.isRoot = isRoot;
         this.isVariant = isVariant;
         this.isMissing = isMissing;
         this.overrideCount = overrideCount;
         this.orphanedOverrideCount = orphanedOverrideCount;
-        this.sourceAsset = sourceAsset ?? throw new ArgumentNullException(nameof(sourceAsset));
+        this.sourceAsset = sourceAsset;
     }
 
     /// <summary>
     /// Gets the persistent identity of the source prefab asset.
     /// </summary>
-    public Guid sourceAssetId { get; }
+    public Guid sourceAssetID { get; }
 
     /// <summary>
     /// Gets the source-local identity represented by this object.
     /// </summary>
-    public Guid sourceObjectId { get; }
+    public Guid sourceObjectID { get; }
 
     /// <summary>
     /// Gets the root object of this prefab instance connection.

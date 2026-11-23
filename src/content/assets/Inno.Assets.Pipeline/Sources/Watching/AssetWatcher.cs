@@ -11,7 +11,7 @@ namespace Inno.Assets.Pipeline;
 /// </summary>
 internal sealed class AssetWatcher : IDisposable
 {
-    private static readonly TimeSpan S_DEFAULT_IDLE_WAIT_TIMEOUT = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan DEFAULT_IDLE_WAIT_TIMEOUT = TimeSpan.FromSeconds(10);
 
     private readonly string m_root;
     private readonly FileSystemWatcher m_watcher;
@@ -27,7 +27,8 @@ internal sealed class AssetWatcher : IDisposable
         string assetRoot,
         int flushDelayMs
     ) {
-        m_root = assetRoot ?? throw new ArgumentNullException(nameof(assetRoot));
+        ArgumentNullException.ThrowIfNull(assetRoot);
+        m_root = assetRoot;
         m_flushDelayMs = Math.Max(flushDelayMs, 1);
         m_watcher = new FileSystemWatcher(assetRoot)
         {
@@ -41,6 +42,30 @@ internal sealed class AssetWatcher : IDisposable
         m_watcher.Error += OnError;
     }
 
+    /// <summary>
+    /// Releases the resources owned by this instance.
+    /// </summary>
+    public void Dispose()
+    {
+        if (m_disposed)
+        {
+            return;
+        }
+        m_disposed = true;
+        m_watcher.EnableRaisingEvents = false;
+        m_watcher.Changed -= OnChanged;
+        m_watcher.Created -= OnChanged;
+        m_watcher.Deleted -= OnChanged;
+        m_watcher.Renamed -= OnRenamed;
+        m_watcher.Error -= OnError;
+        m_watcher.Dispose();
+        lock (m_sync)
+        {
+            m_pending.Clear();
+            m_requiresFullRescan = false;
+        }
+    }
+
     internal bool isWatching => m_watcher.EnableRaisingEvents;
 
     internal void Start()
@@ -52,7 +77,9 @@ internal sealed class AssetWatcher : IDisposable
     internal void Stop()
     {
         if (!m_disposed)
+        {
             m_watcher.EnableRaisingEvents = false;
+        }
     }
 
     internal WatcherPollResult Poll(bool force)
@@ -63,7 +90,9 @@ internal sealed class AssetWatcher : IDisposable
         lock (m_sync)
         {
             if (!force && m_pending.Count > 0 && !HasQuietPeriodElapsed())
-                return new WatcherPollResult(Array.Empty<AssetChangedEvent>(), false);
+            {
+                return new WatcherPollResult([], false);
+            }
             raw = m_pending.ToArray();
             m_pending.Clear();
             requiresFullRescan = m_requiresFullRescan;
@@ -82,39 +111,21 @@ internal sealed class AssetWatcher : IDisposable
             lock (m_sync)
             {
                 if ((m_pending.Count > 0 || m_requiresFullRescan) && HasQuietPeriodElapsed())
-                    return PollWhileLocked();
-                if (m_pending.Count == 0 &&
-                    !m_requiresFullRescan &&
-                    stopwatch.ElapsedMilliseconds >= Math.Max(m_flushDelayMs * 2L, 50L))
                 {
-                    return new WatcherPollResult(Array.Empty<AssetChangedEvent>(), false);
+                    return PollWhileLocked();
+                }
+                if (m_pending.Count == 0
+                    && !m_requiresFullRescan
+                    && stopwatch.ElapsedMilliseconds >= Math.Max(m_flushDelayMs * 2L, 50L)
+                ) {
+                    return new WatcherPollResult([], false);
                 }
             }
-            if (stopwatch.Elapsed > S_DEFAULT_IDLE_WAIT_TIMEOUT)
+            if (stopwatch.Elapsed > DEFAULT_IDLE_WAIT_TIMEOUT)
+            {
                 throw new TimeoutException("Timed out waiting for AssetWatcher to become idle.");
+            }
             Thread.Sleep(Math.Min(m_flushDelayMs, 20));
-        }
-    }
-
-    /// <summary>
-    /// Releases the resources owned by this instance.
-    /// </summary>
-    public void Dispose()
-    {
-        if (m_disposed)
-            return;
-        m_disposed = true;
-        m_watcher.EnableRaisingEvents = false;
-        m_watcher.Changed -= OnChanged;
-        m_watcher.Created -= OnChanged;
-        m_watcher.Deleted -= OnChanged;
-        m_watcher.Renamed -= OnRenamed;
-        m_watcher.Error -= OnError;
-        m_watcher.Dispose();
-        lock (m_sync)
-        {
-            m_pending.Clear();
-            m_requiresFullRescan = false;
         }
     }
 
@@ -124,9 +135,7 @@ internal sealed class AssetWatcher : IDisposable
         m_pending.Clear();
         bool requiresFullRescan = m_requiresFullRescan;
         m_requiresFullRescan = false;
-        return new WatcherPollResult(
-            AssetChangeBatchNormalizer.Normalize(m_root, raw),
-            requiresFullRescan);
+        return new WatcherPollResult(AssetChangeBatchNormalizer.Normalize(m_root, raw), requiresFullRescan);
     }
 
     private bool HasQuietPeriodElapsed()
@@ -155,7 +164,9 @@ internal sealed class AssetWatcher : IDisposable
         lock (m_sync)
         {
             if (m_disposed)
+            {
                 return;
+            }
             m_requiresFullRescan = true;
             m_lastEventTimestamp = Stopwatch.GetTimestamp();
         }
@@ -167,37 +178,31 @@ internal sealed class AssetWatcher : IDisposable
         string oldRelativePath = ""
     ) {
         if (m_disposed)
+        {
             return;
+        }
         string relativePath = NormalizeRelativePath(Path.GetRelativePath(m_root, fullPath));
-        if (AssetSourcePolicy.IsGeneratedPath(relativePath) &&
-            !relativePath.EndsWith(".imeta", StringComparison.OrdinalIgnoreCase))
+        if (AssetSourcePolicy.IsGeneratedPath(relativePath)
+            && !relativePath.EndsWith(".imeta", StringComparison.OrdinalIgnoreCase)
+        ) {
             return;
+        }
         lock (m_sync)
         {
             if (m_disposed)
+            {
                 return;
+            }
             m_pending.Add(new AssetChangedEvent(relativePath, changeType, oldRelativePath));
             m_lastEventTimestamp = Stopwatch.GetTimestamp();
         }
     }
 
-    private void ThrowIfDisposed()
-    {
-        if (m_disposed)
-            throw new ObjectDisposedException(nameof(AssetWatcher));
-    }
+    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(m_disposed, this);
 
     private static string NormalizeRelativePath(string relativePath)
     {
         string path = relativePath.Replace('\\', '/').Trim('/');
         return path == "." ? string.Empty : path;
     }
-}
-
-internal readonly struct WatcherPollResult(
-    IReadOnlyList<AssetChangedEvent> changes,
-    bool requiresFullRescan
-) {
-    internal IReadOnlyList<AssetChangedEvent> changes { get; } = changes ?? Array.Empty<AssetChangedEvent>();
-    internal bool requiresFullRescan { get; } = requiresFullRescan;
 }

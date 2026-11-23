@@ -18,19 +18,26 @@ internal static class ContentCacheRetirement
         {
             string name = Path.GetFileName(directory);
             if (name == current)
+            {
                 continue;
+            }
             try
             {
                 if (!Guid.TryParseExact(name, "N", out _))
+                {
                     throw new IOException("An unrecognized directory cannot be retired as a cache generation.");
+                }
                 PathBoundary.RequireUnlinkedPath(cache, directory);
                 string lockPath = PathBoundary.RequireUnlinkedPath(cache, Path.Combine(cache, "leases", name + ".lock"));
                 if (!File.Exists(lockPath))
+                {
                     throw new IOException("The generation lease is missing; existing reader ownership cannot be proven.");
-                using FileLease lease = await FileLease.AcquireAsync(lockPath,
-                    TimeSpan.Zero).ConfigureAwait(false);
+                }
+                using FileLease lease = await FileLease.AcquireAsync(lockPath, TimeSpan.Zero).ConfigureAwait(false);
                 foreach (string file in PathBoundary.EnumerateFiles(directory))
+                {
                     _ = file;
+                }
                 Directory.Delete(directory, recursive: true);
             }
             catch (TimeoutException)

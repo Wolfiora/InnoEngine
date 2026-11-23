@@ -1,13 +1,15 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Inno.Core.Serialization;
 using Inno.Editor.ImGui;
-using Ui = Inno.Editor.ImGui.ImGui;
+
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
+
 [PropertyDrawer(typeof(IEnumerable<>), useForChildren: true, priority: -20)]
 [PropertyDrawer(typeof(IDictionary<, >), useForChildren: true, priority: 20)]
 [PropertyDrawer(typeof(IReadOnlyDictionary<, >), useForChildren: true, priority: 20)]
@@ -33,7 +35,7 @@ internal sealed class CollectionPropertyDrawer : IPropertyDrawer
             return;
         }
 
-        Ui.Text($"Unsupported collection: {context.propertyType.Name}");
+        Gui.Text($"Unsupported collection: {context.propertyType.Name}");
     }
 
     private static void DrawSequence(
@@ -41,12 +43,12 @@ internal sealed class CollectionPropertyDrawer : IPropertyDrawer
         Type elementType
     ) {
         List<object?> values = EditorCollectionUtility.EnumerateSequence(context.GetValue());
-        if (!Ui.TreeNode($"Count: {values.Count}##{context.path}_sequence", (ImGuiTreeNodeFlags.SpanAvailWidth)))
+        if (!Gui.TreeNode($"Count: {values.Count}##{context.path}_sequence", (ImGuiTreeNodeFlags.SpanAvailWidth)))
         {
             return;
         }
 
-        if (!context.isReadOnly && Ui.SmallButton($"+##{context.path}_add"))
+        if (!context.isReadOnly && Gui.SmallButton($"+##{context.path}_add"))
         {
             values.Add(CreateDefault(elementType));
             context.SetValue(EditorCollectionUtility.BuildSequence(context.propertyType, elementType, values));
@@ -60,15 +62,20 @@ internal sealed class CollectionPropertyDrawer : IPropertyDrawer
                 break;
             }
 
-            context.DrawChild($"Element {index}", elementType, () => EditorCollectionUtility.EnumerateSequence(context.GetValue())[index], value =>
-            {
-                List<object?> updated = EditorCollectionUtility.EnumerateSequence(context.GetValue());
-                updated[index] = value;
-                context.SetValue(EditorCollectionUtility.BuildSequence(context.propertyType, elementType, updated));
-            });
+            context.DrawChild(
+                $"Element {index}",
+                elementType,
+                () => EditorCollectionUtility.EnumerateSequence(context.GetValue())[index],
+                value =>
+                {
+                    List<object?> updated = EditorCollectionUtility.EnumerateSequence(context.GetValue());
+                    updated[index] = value;
+                    context.SetValue(EditorCollectionUtility.BuildSequence(context.propertyType, elementType, updated));
+                }
+            );
         }
 
-        Ui.TreePop();
+        Gui.TreePop();
     }
 
     private static bool DrawSequenceActions(
@@ -78,7 +85,7 @@ internal sealed class CollectionPropertyDrawer : IPropertyDrawer
         int count
     ) {
         bool changed = false;
-        if (Ui.SmallButton($"Up##{context.path}_{index}_up") && index > 0)
+        if (Gui.SmallButton($"Up##{context.path}_{index}_up") && index > 0)
         {
             List<object?> updated = EditorCollectionUtility.EnumerateSequence(context.GetValue());
             (updated[index - 1], updated[index]) = (updated[index], updated[index - 1]);
@@ -86,8 +93,8 @@ internal sealed class CollectionPropertyDrawer : IPropertyDrawer
             changed = true;
         }
 
-        Ui.SameLine(0f, -1f);
-        if (Ui.SmallButton($"Down##{context.path}_{index}_down") && index < count - 1)
+        Gui.SameLine(0f, -1f);
+        if (Gui.SmallButton($"Down##{context.path}_{index}_down") && index < count - 1)
         {
             List<object?> updated = EditorCollectionUtility.EnumerateSequence(context.GetValue());
             (updated[index + 1], updated[index]) = (updated[index], updated[index + 1]);
@@ -95,8 +102,8 @@ internal sealed class CollectionPropertyDrawer : IPropertyDrawer
             changed = true;
         }
 
-        Ui.SameLine(0f, -1f);
-        if (Ui.SmallButton($"Remove##{context.path}_{index}_remove"))
+        Gui.SameLine(0f, -1f);
+        if (Gui.SmallButton($"Remove##{context.path}_{index}_remove"))
         {
             List<object?> updated = EditorCollectionUtility.EnumerateSequence(context.GetValue());
             updated.RemoveAt(index);
@@ -113,12 +120,12 @@ internal sealed class CollectionPropertyDrawer : IPropertyDrawer
         Type valueType
     ) {
         List<KeyValuePair<object?, object?>> entries = EnumerateMap(context);
-        if (!Ui.TreeNode($"Count: {entries.Count}##{context.path}_map", (ImGuiTreeNodeFlags.SpanAvailWidth)))
+        if (!Gui.TreeNode($"Count: {entries.Count}##{context.path}_map", (ImGuiTreeNodeFlags.SpanAvailWidth)))
         {
             return;
         }
 
-        if (!context.isReadOnly && Ui.SmallButton($"+##{context.path}_map_add"))
+        if (!context.isReadOnly && Gui.SmallButton($"+##{context.path}_map_add"))
         {
             object? defaultKey = CreateDefault(keyType);
             if (defaultKey is not null && !entries.Any(entry => Equals(entry.Key, defaultKey)))
@@ -160,7 +167,7 @@ internal sealed class CollectionPropertyDrawer : IPropertyDrawer
                 updated[index] = new KeyValuePair<object?, object?>(updated[index].Key, value);
                 context.SetValue(EditorCollectionUtility.BuildMap(context.propertyType, keyType, valueType, updated));
             });
-            if (!context.isReadOnly && Ui.SmallButton($"Remove##{context.path}_{index}_map_remove"))
+            if (!context.isReadOnly && Gui.SmallButton($"Remove##{context.path}_{index}_map_remove"))
             {
                 List<KeyValuePair<object?, object?>> updated = EnumerateMap(context);
                 updated.RemoveAt(index);
@@ -170,13 +177,16 @@ internal sealed class CollectionPropertyDrawer : IPropertyDrawer
             }
         }
 
-        Ui.TreePop();
+        Gui.TreePop();
     }
 
     private static List<KeyValuePair<object?, object?>> EnumerateMap(PropertyDrawContext context)
     {
-        if (EditorCollectionUtility.TryEnumerateMap(context.GetValue(), context.propertyType, out List<KeyValuePair<object?, object?>> entries))
-        {
+        if (EditorCollectionUtility.TryEnumerateMap(
+            context.GetValue(),
+            context.propertyType,
+            out List<KeyValuePair<object?, object?>> entries
+        )) {
             return entries;
         }
 

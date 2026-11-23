@@ -8,7 +8,7 @@ internal sealed unsafe partial class BgfxCommandEncoder : RenderCommandEncoder
 {
     private readonly BgfxDevice m_device;
     private readonly bgfx.Encoder* m_encoder;
-    private readonly ushort m_viewId;
+    private readonly ushort m_viewID;
 
     private BgfxPipelineResource? m_pipeline;
     private BgfxBufferResource? m_vertexBuffer;
@@ -28,17 +28,16 @@ internal sealed unsafe partial class BgfxCommandEncoder : RenderCommandEncoder
     /// <param name="encoder">
     /// The encoder consumed by bgfx command encoder; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    /// <param name="viewId">
+    /// <param name="viewID">
     /// The view id consumed by bgfx command encoder; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public BgfxCommandEncoder(
         BgfxDevice device,
         bgfx.Encoder* encoder,
-        ushort viewId
+        ushort viewID
     ) {
         m_device = device;
         m_encoder = encoder;
-        m_viewId = viewId;
+        m_viewID = viewID;
     }
-
 }

@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-
 namespace Inno.Build.Toolchains;
 
 /// <summary>
@@ -14,359 +13,6 @@ namespace Inno.Build.Toolchains;
 /// </summary>
 public static class ToolchainEnvironment
 {
-    /// <summary>
-    /// Executes a declared absolute tool with an explicitly resolved SDK environment and records the operation cost.
-    /// </summary>
-    /// <param name="context">
-    /// The operation owning execution statistics and frozen recipe inputs.
-    /// </param>
-    /// <param name="fileName">
-    /// The absolute executable declared by the recipe; no host-native SDK is inferred.
-    /// </param>
-    /// <param name="arguments">
-    /// Individual arguments passed without shell interpretation.
-    /// </param>
-    /// <param name="workingDirectory">
-    /// The owned source or intermediate directory.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels execution and drains the complete process tree.
-    /// </param>
-    /// <param name="environment">
-    /// The frozen environment supplied by the selected SDK resolver.
-    /// </param>
-    /// <returns>
-    /// Completion after successful exit and output delivery.
-    /// </returns>
-    /// <exception cref="ArgumentException">
-    /// The executable is not an absolute declared tool path.
-    /// </exception>
-    /// <exception cref="InvalidOperationException">
-    /// The process fails to start or exits unsuccessfully.
-    /// </exception>
-    /// <exception cref="OperationCanceledException">
-    /// Execution was canceled.
-    /// </exception>
-    public static Task RunAsync(
-        NativeBuildContext context,
-        string fileName,
-        IReadOnlyList<string> arguments,
-        string workingDirectory,
-        CancellationToken cancellationToken,
-        IReadOnlyDictionary<string, string> environment
-    ) {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(environment);
-        if (!Path.IsPathFullyQualified(fileName))
-            throw new ArgumentException("An explicit SDK tool must have an absolute path.", nameof(fileName));
-        context.inputState.RecordProcess();
-        return RunAsync(fileName, arguments, workingDirectory, cancellationToken, CaptureEnvironmentOverrides(environment));
-    }
-
-    /// <summary>
-    /// Runs a host-native process with the context's frozen compiler and SDK selection.
-    /// </summary>
-    /// <param name="context">
-    /// A context resolved by NativeToolchainSelection before artifact fingerprinting.
-    /// </param>
-    /// <param name="fileName">
-    /// A selected build command or an absolute executable declared as a component input.
-    /// </param>
-    /// <param name="arguments">
-    /// Individual arguments passed without shell interpretation.
-    /// </param>
-    /// <param name="workingDirectory">
-    /// The source snapshot or intermediate directory owned by the operation.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels and retires the complete process tree.
-    /// </param>
-    /// <returns>
-    /// Completion after successful exit and complete output delivery.
-    /// </returns>
-    /// <exception cref="InvalidOperationException">
-    /// Host tools were not resolved, a command is unavailable or a process fails.
-    /// </exception>
-    /// <exception cref="OperationCanceledException">
-    /// The operation was canceled.
-    /// </exception>
-    public static Task RunAsync(
-        NativeBuildContext context,
-        string fileName,
-        IReadOnlyList<string> arguments,
-        string workingDirectory,
-        CancellationToken cancellationToken
-    ) {
-        NativeToolchainSelection tools = context.toolchain
-            ?? throw new InvalidOperationException("Host native tools must be resolved before execution.");
-        string executable = Path.IsPathFullyQualified(fileName) ? fileName : tools.ResolveExecutable(fileName);
-        context.inputState.RecordProcess();
-        return RunAsync(executable, arguments, workingDirectory, cancellationToken, CaptureEnvironmentOverrides(tools.environment));
-    }
-
-    /// <summary>
-    /// Runs a quoted host command with a frozen compiler and SDK environment.
-    /// </summary>
-    /// <param name="context">
-    /// The context resolved before artifact fingerprinting.
-    /// </param>
-    /// <param name="fileName">
-    /// A selected command or an absolute executable declared in the component inputs.
-    /// </param>
-    /// <param name="arguments">
-    /// Arguments quoted for the selected executable's command-line parser.
-    /// </param>
-    /// <param name="workingDirectory">
-    /// The operation's source snapshot or intermediate directory.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels and retires the complete process tree.
-    /// </param>
-    /// <returns>
-    /// Completion after the command exits successfully and its streams drain.
-    /// </returns>
-    /// <exception cref="InvalidOperationException">
-    /// Tools are unresolved or execution fails.
-    /// </exception>
-    /// <exception cref="OperationCanceledException">
-    /// The operation was canceled.
-    /// </exception>
-    public static Task RunAsync(
-        NativeBuildContext context,
-        string fileName,
-        string arguments,
-        string workingDirectory,
-        CancellationToken cancellationToken
-    ) {
-        NativeToolchainSelection tools = context.toolchain
-            ?? throw new InvalidOperationException("Host native tools must be resolved before execution.");
-        string executable = Path.IsPathFullyQualified(fileName) ? fileName : tools.ResolveExecutable(fileName);
-        var start = new ProcessStartInfo(executable) { Arguments = arguments, WorkingDirectory = workingDirectory };
-        context.inputState.RecordProcess();
-        return RunProcessAsync(start, cancellationToken, CaptureEnvironmentOverrides(tools.environment), Console.Out);
-    }
-
-    /// <summary>
-    /// Resolves one explicitly selected executable before it becomes a build input.
-    /// </summary>
-    /// <param name="name">
-    /// An executable path or a command name available on the current process PATH.
-    /// </param>
-    /// <returns>
-    /// The absolute executable path used for process execution and artifact identity.
-    /// </returns>
-    /// <exception cref="ArgumentException">
-    /// The name is empty.
-    /// </exception>
-    /// <exception cref="FileNotFoundException">
-    /// The executable is unavailable at the supplied path or on PATH.
-    /// </exception>
-    public static string ResolveExecutable(string name)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        if (File.Exists(name))
-            return Path.GetFullPath(name);
-        if (Path.IsPathRooted(name) || name.Contains(Path.DirectorySeparatorChar)
-            || name.Contains(Path.AltDirectorySeparatorChar))
-            throw new FileNotFoundException($"Cannot locate toolchain executable '{name}'.", name);
-
-        string fileName = OperatingSystem.IsWindows() && !Path.HasExtension(name) ? name + ".exe" : name;
-        foreach (string directory in (Environment.GetEnvironmentVariable("PATH") ?? string.Empty).Split(Path.PathSeparator))
-        {
-            if (string.IsNullOrWhiteSpace(directory))
-                continue;
-            string candidate = Path.Combine(directory.Trim('"'), fileName);
-            if (File.Exists(candidate))
-                return Path.GetFullPath(candidate);
-        }
-        throw new FileNotFoundException($"Cannot locate toolchain executable '{name}'.", name);
-    }
-
-    /// <summary>
-    /// Runs a child build with structured arguments, cancellation and hidden windows.
-    /// </summary>
-    /// <param name="fileName">
-    /// The executable to launch.
-    /// </param>
-    /// <param name="arguments">
-    /// The individual arguments, passed without shell interpretation.
-    /// </param>
-    /// <param name="workingDirectory">
-    /// The repository or staging directory owned by the operation.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels the child process and its complete process tree.
-    /// </param>
-    /// <param name="environment">
-    /// Optional process-local toolchain variables; the parent environment is unchanged.
-    /// Null values remove inherited variables, while empty values remain explicitly empty.
-    /// </param>
-    /// <returns>
-    /// Completion after both output streams have drained and the process succeeds.
-    /// </returns>
-    /// <exception cref="InvalidOperationException">
-    /// The process fails to start or exits unsuccessfully.
-    /// </exception>
-    /// <exception cref="OperationCanceledException">
-    /// The operation was canceled.
-    /// </exception>
-    /// <exception cref="IOException">
-    /// Redirected output cannot be read or forwarded; the process tree is terminated before failure returns.
-    /// </exception>
-    public static Task RunAsync(
-        string fileName,
-        IReadOnlyList<string> arguments,
-        string workingDirectory,
-        CancellationToken cancellationToken,
-        IReadOnlyDictionary<string, string?>? environment = null
-    ) => RunCoreAsync(fileName, arguments, workingDirectory, cancellationToken, environment, Console.Out);
-
-    /// <summary>
-    /// Runs a child build with caller-owned output destinations and the shared process retirement protocol.
-    /// </summary>
-    /// <param name="fileName">
-    /// The executable selected by the build composition.
-    /// </param>
-    /// <param name="arguments">
-    /// Structured arguments passed without shell interpretation.
-    /// </param>
-    /// <param name="workingDirectory">
-    /// The project directory controlling SDK and workload resolution.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels the complete process tree and drains both output streams.
-    /// </param>
-    /// <param name="environment">
-    /// Optional child-only toolchain variables. Null values remove inherited variables;
-    /// empty values remain explicitly empty.
-    /// </param>
-    /// <param name="standardOutput">
-    /// The caller-owned standard output destination; the runner does not dispose it.
-    /// </param>
-    /// <param name="standardError">
-    /// The caller-owned standard error destination; the runner does not dispose it.
-    /// </param>
-    /// <returns>
-    /// Completion after successful exit and complete output delivery; failures propagate.
-    /// </returns>
-    /// <exception cref="InvalidOperationException">
-    /// The executable cannot start or exits unsuccessfully.
-    /// </exception>
-    /// <exception cref="IOException">
-    /// An output destination fails; the owned process tree is terminated before failure returns.
-    /// </exception>
-    /// <exception cref="OperationCanceledException">
-    /// The operation was canceled after retiring its owned process tree.
-    /// </exception>
-    public static Task RunAsync(
-        string fileName,
-        IReadOnlyList<string> arguments,
-        string workingDirectory,
-        CancellationToken cancellationToken,
-        IReadOnlyDictionary<string, string?>? environment,
-        TextWriter standardOutput,
-        TextWriter standardError
-    ) {
-        ArgumentNullException.ThrowIfNull(standardOutput);
-        ArgumentNullException.ThrowIfNull(standardError);
-        var start = new ProcessStartInfo(fileName) { WorkingDirectory = workingDirectory };
-        foreach (string argument in arguments)
-            start.ArgumentList.Add(argument);
-        return RunProcessAsync(start, cancellationToken, environment, standardOutput, standardError);
-    }
-
-    /// <summary>
-    /// Captures a tool's standard output while forwarding errors and preserving the common process lifecycle.
-    /// </summary>
-    /// <param name="fileName">
-    /// The executable to launch.
-    /// </param>
-    /// <param name="arguments">
-    /// Structured arguments passed without shell interpretation.
-    /// </param>
-    /// <param name="workingDirectory">
-    /// The directory used for project and SDK resolution.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels the child process tree and waits for its complete exit.
-    /// </param>
-    /// <param name="environment">
-    /// Optional child-only environment variables. Null values remove inherited variables;
-    /// empty values remain explicitly empty.
-    /// </param>
-    /// <returns>
-    /// The complete standard output after successful exit. Unsuccessful exits retain captured output in the exception.
-    /// </returns>
-    /// <exception cref="InvalidOperationException">
-    /// The tool fails to start or exits unsuccessfully.
-    /// </exception>
-    /// <exception cref="OperationCanceledException">
-    /// The operation was canceled.
-    /// </exception>
-    /// <exception cref="IOException">
-    /// Redirected output cannot be read or forwarded; the process tree is terminated before failure returns.
-    /// </exception>
-    public static async Task<string> CaptureOutputAsync(
-        string fileName,
-        IReadOnlyList<string> arguments,
-        string workingDirectory,
-        CancellationToken cancellationToken,
-        IReadOnlyDictionary<string, string?>? environment = null
-    ) {
-        using var output = new StringWriter();
-        try
-        {
-            await RunCoreAsync(fileName, arguments, workingDirectory, cancellationToken, environment, output).ConfigureAwait(false);
-        }
-        catch (InvalidOperationException failure)
-        {
-            throw new InvalidOperationException(failure.Message + Environment.NewLine + output, failure);
-        }
-        return output.ToString();
-    }
-
-    /// <summary>
-    /// Validates the configuration shared by all native component builds.
-    /// </summary>
-    /// <param name="configuration">
-    /// The debug or release token supplied by the build workflow.
-    /// </param>
-    /// <exception cref="ArgumentException">
-    /// The configuration is unsupported.
-    /// </exception>
-    public static void ValidateConfiguration(string configuration)
-    {
-        if (configuration is not (ToolchainLayout.C_DEBUG_CONFIGURATION or ToolchainLayout.C_RELEASE_CONFIGURATION))
-            throw new ArgumentException("Native configuration must be 'debug' or 'release'.", nameof(configuration));
-    }
-
-    /// <summary>
-    /// Resolves the repository containing the currently executing toolchain assembly.
-    /// </summary>
-    /// <returns>
-    /// The absolute path of the repository root.
-    /// </returns>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown when no repository marker exists above the toolchain assembly directory.
-    /// </exception>
-    public static string FindRepoRoot()
-    {
-        string location = typeof(ToolchainEnvironment).Assembly.Location;
-        string outputRoot = string.IsNullOrEmpty(location) ? AppContext.BaseDirectory : Path.GetDirectoryName(location)!;
-        var dir = new DirectoryInfo(outputRoot);
-        while (dir != null)
-        {
-            if (File.Exists(Path.Combine(dir.FullName, ToolchainLayout.C_REPOSITORY_MARKER_FILE)))
-            {
-                return dir.FullName;
-            }
-
-            dir = dir.Parent;
-        }
-
-        throw new InvalidOperationException("Could not locate repo root (InnoEngine.sln not found).");
-    }
-
     /// <summary>
     /// Runs a child build using a complete argument string, without a shell.
     /// </summary>
@@ -406,7 +52,396 @@ public static class ToolchainEnvironment
             Arguments = arguments,
             WorkingDirectory = workingDirectory
         };
-        return RunProcessAsync(start, cancellationToken, null, Console.Out);
+        return RunProcessAsync(start, null, Console.Out, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Runs a host-native process with the context's frozen compiler and SDK selection.
+    /// </summary>
+    /// <param name="context">
+    /// A context resolved by NativeToolchainSelection before artifact fingerprinting.
+    /// </param>
+    /// <param name="fileName">
+    /// A selected build command or an absolute executable declared as a component input.
+    /// </param>
+    /// <param name="arguments">
+    /// Individual arguments passed without shell interpretation.
+    /// </param>
+    /// <param name="workingDirectory">
+    /// The source snapshot or intermediate directory owned by the operation.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels and retires the complete process tree.
+    /// </param>
+    /// <returns>
+    /// Completion after successful exit and complete output delivery.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Host tools were not resolved, a command is unavailable or a process fails.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// The operation was canceled.
+    /// </exception>
+    public static Task RunAsync(
+        NativeBuildContext context,
+        string fileName,
+        IReadOnlyList<string> arguments,
+        string workingDirectory,
+        CancellationToken cancellationToken
+    ) {
+        NativeToolchainSelection tools = context.toolchain
+                                         ?? throw new InvalidOperationException("Host native tools must be resolved before execution.");
+        string executable = Path.IsPathFullyQualified(fileName) ? fileName : tools.ResolveExecutable(fileName);
+        context.inputState.RecordProcess();
+        return RunAsync(executable, arguments, workingDirectory, CaptureEnvironmentOverrides(tools.environment), cancellationToken);
+    }
+
+    /// <summary>
+    /// Runs a quoted host command with a frozen compiler and SDK environment.
+    /// </summary>
+    /// <param name="context">
+    /// The context resolved before artifact fingerprinting.
+    /// </param>
+    /// <param name="fileName">
+    /// A selected command or an absolute executable declared in the component inputs.
+    /// </param>
+    /// <param name="arguments">
+    /// Arguments quoted for the selected executable's command-line parser.
+    /// </param>
+    /// <param name="workingDirectory">
+    /// The operation's source snapshot or intermediate directory.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels and retires the complete process tree.
+    /// </param>
+    /// <returns>
+    /// Completion after the command exits successfully and its streams drain.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Tools are unresolved or execution fails.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// The operation was canceled.
+    /// </exception>
+    public static Task RunAsync(
+        NativeBuildContext context,
+        string fileName,
+        string arguments,
+        string workingDirectory,
+        CancellationToken cancellationToken
+    ) {
+        NativeToolchainSelection tools = context.toolchain
+                                         ?? throw new InvalidOperationException("Host native tools must be resolved before execution.");
+        string executable = Path.IsPathFullyQualified(fileName) ? fileName : tools.ResolveExecutable(fileName);
+        var start = new ProcessStartInfo(executable) { Arguments = arguments, WorkingDirectory = workingDirectory };
+        context.inputState.RecordProcess();
+        return RunProcessAsync(start, CaptureEnvironmentOverrides(tools.environment), Console.Out, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Runs a child build with structured arguments, cancellation and hidden windows.
+    /// </summary>
+    /// <param name="fileName">
+    /// The executable to launch.
+    /// </param>
+    /// <param name="arguments">
+    /// The individual arguments, passed without shell interpretation.
+    /// </param>
+    /// <param name="workingDirectory">
+    /// The repository or staging directory owned by the operation.
+    /// </param>
+    /// <param name="environment">
+    /// Optional process-local toolchain variables; the parent environment is unchanged.
+    /// Null values remove inherited variables, while empty values remain explicitly empty.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels the child process and its complete process tree.
+    /// </param>
+    /// <returns>
+    /// Completion after both output streams have drained and the process succeeds.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// The process fails to start or exits unsuccessfully.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// The operation was canceled.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// Redirected output cannot be read or forwarded; the process tree is terminated before failure returns.
+    /// </exception>
+    public static Task RunAsync(
+        string fileName,
+        IReadOnlyList<string> arguments,
+        string workingDirectory,
+        IReadOnlyDictionary<string, string?>? environment = null,
+        CancellationToken cancellationToken = default
+    ) => RunCoreAsync(fileName, arguments, workingDirectory, environment, Console.Out, cancellationToken);
+
+    /// <summary>
+    /// Executes a declared absolute tool with an explicitly resolved SDK environment and records the operation cost.
+    /// </summary>
+    /// <param name="context">
+    /// The operation owning execution statistics and frozen recipe inputs.
+    /// </param>
+    /// <param name="fileName">
+    /// The absolute executable declared by the recipe; no host-native SDK is inferred.
+    /// </param>
+    /// <param name="arguments">
+    /// Individual arguments passed without shell interpretation.
+    /// </param>
+    /// <param name="workingDirectory">
+    /// The owned source or intermediate directory.
+    /// </param>
+    /// <param name="environment">
+    /// The frozen environment supplied by the selected SDK resolver.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels execution and drains the complete process tree.
+    /// </param>
+    /// <returns>
+    /// Completion after successful exit and output delivery.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The executable is not an absolute declared tool path.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The process fails to start or exits unsuccessfully.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// Execution was canceled.
+    /// </exception>
+    public static Task RunAsync(
+        NativeBuildContext context,
+        string fileName,
+        IReadOnlyList<string> arguments,
+        string workingDirectory,
+        IReadOnlyDictionary<string, string> environment,
+        CancellationToken cancellationToken
+    ) {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(environment);
+        if (!Path.IsPathFullyQualified(fileName))
+        {
+            throw new ArgumentException("An explicit SDK tool must have an absolute path.", nameof(fileName));
+        }
+        context.inputState.RecordProcess();
+        return RunAsync(fileName, arguments, workingDirectory, CaptureEnvironmentOverrides(environment), cancellationToken);
+    }
+
+    /// <summary>
+    /// Runs a child build with caller-owned output destinations and the shared process retirement protocol.
+    /// </summary>
+    /// <param name="fileName">
+    /// The executable selected by the build composition.
+    /// </param>
+    /// <param name="arguments">
+    /// Structured arguments passed without shell interpretation.
+    /// </param>
+    /// <param name="workingDirectory">
+    /// The project directory controlling SDK and workload resolution.
+    /// </param>
+    /// <param name="environment">
+    /// Optional child-only toolchain variables. Null values remove inherited variables;
+    /// empty values remain explicitly empty.
+    /// </param>
+    /// <param name="standardOutput">
+    /// The caller-owned standard output destination; the runner does not dispose it.
+    /// </param>
+    /// <param name="standardError">
+    /// The caller-owned standard error destination; the runner does not dispose it.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels the complete process tree and drains both output streams.
+    /// </param>
+    /// <returns>
+    /// Completion after successful exit and complete output delivery; failures propagate.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// The executable cannot start or exits unsuccessfully.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// An output destination fails; the owned process tree is terminated before failure returns.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// The operation was canceled after retiring its owned process tree.
+    /// </exception>
+    public static Task RunAsync(
+        string fileName,
+        IReadOnlyList<string> arguments,
+        string workingDirectory,
+        IReadOnlyDictionary<string, string?>? environment,
+        TextWriter standardOutput,
+        TextWriter standardError,
+        CancellationToken cancellationToken
+    ) {
+        ArgumentNullException.ThrowIfNull(standardOutput);
+        ArgumentNullException.ThrowIfNull(standardError);
+        var start = new ProcessStartInfo(fileName) { WorkingDirectory = workingDirectory };
+        foreach (string argument in arguments)
+        {
+            start.ArgumentList.Add(argument);
+        }
+        return RunProcessAsync(start, environment, standardOutput, standardError, cancellationToken);
+    }
+
+    /// <summary>
+    /// Resolves one explicitly selected executable before it becomes a build input.
+    /// </summary>
+    /// <param name="name">
+    /// An executable path or a command name available on the current process PATH.
+    /// </param>
+    /// <returns>
+    /// The absolute executable path used for process execution and artifact identity.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The name is empty.
+    /// </exception>
+    /// <exception cref="FileNotFoundException">
+    /// The executable is unavailable at the supplied path or on PATH.
+    /// </exception>
+    public static string ResolveExecutable(string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        if (File.Exists(name))
+        {
+            return Path.GetFullPath(name);
+        }
+        if (Path.IsPathRooted(name) || name.Contains(Path.DirectorySeparatorChar)
+            || name.Contains(Path.AltDirectorySeparatorChar)
+        ) {
+            throw new FileNotFoundException($"Cannot locate toolchain executable '{name}'.", name);
+        }
+
+        string fileName = OperatingSystem.IsWindows() && !Path.HasExtension(name) ? name + ".exe" : name;
+        foreach (string directory in (Environment.GetEnvironmentVariable("PATH") ?? string.Empty).Split(Path.PathSeparator))
+        {
+            if (string.IsNullOrWhiteSpace(directory))
+            {
+                continue;
+            }
+            string candidate = Path.Combine(directory.Trim('"'), fileName);
+            if (File.Exists(candidate))
+            {
+                return Path.GetFullPath(candidate);
+            }
+        }
+        throw new FileNotFoundException($"Cannot locate toolchain executable '{name}'.", name);
+    }
+
+    /// <summary>
+    /// Captures platform tool discovery through the same cancellable process lifecycle as builds.
+    /// </summary>
+    /// <param name="start">
+    /// The prepared discovery command, including any platform-specific argument quoting.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels discovery and waits for its process tree to exit.
+    /// </param>
+    /// <returns>
+    /// Complete standard output after successful discovery; errors and cancellation propagate.
+    /// </returns>
+    public static async Task<string> CaptureOutputAsync(
+        ProcessStartInfo start,
+        CancellationToken cancellationToken
+    ) {
+        ArgumentNullException.ThrowIfNull(start);
+        using var output = new StringWriter();
+        await RunProcessAsync(start, null, output, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return output.ToString();
+    }
+
+    /// <summary>
+    /// Captures a tool's standard output while forwarding errors and preserving the common process lifecycle.
+    /// </summary>
+    /// <param name="fileName">
+    /// The executable to launch.
+    /// </param>
+    /// <param name="arguments">
+    /// Structured arguments passed without shell interpretation.
+    /// </param>
+    /// <param name="workingDirectory">
+    /// The directory used for project and SDK resolution.
+    /// </param>
+    /// <param name="environment">
+    /// Optional child-only environment variables. Null values remove inherited variables;
+    /// empty values remain explicitly empty.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels the child process tree and waits for its complete exit.
+    /// </param>
+    /// <returns>
+    /// The complete standard output after successful exit. Unsuccessful exits retain captured output in the exception.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// The tool fails to start or exits unsuccessfully.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// The operation was canceled.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// Redirected output cannot be read or forwarded; the process tree is terminated before failure returns.
+    /// </exception>
+    public static async Task<string> CaptureOutputAsync(
+        string fileName,
+        IReadOnlyList<string> arguments,
+        string workingDirectory,
+        IReadOnlyDictionary<string, string?>? environment = null,
+        CancellationToken cancellationToken = default
+    ) {
+        using var output = new StringWriter();
+        try
+        {
+            await RunCoreAsync(fileName, arguments, workingDirectory, environment, output, cancellationToken).ConfigureAwait(false);
+        }
+        catch (InvalidOperationException failure)
+        {
+            throw new InvalidOperationException(failure.Message + Environment.NewLine + output, failure);
+        }
+        return output.ToString();
+    }
+
+    /// <summary>
+    /// Validates the configuration shared by all native component builds.
+    /// </summary>
+    /// <param name="configuration">
+    /// The debug or release token supplied by the build workflow.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// The configuration is unsupported.
+    /// </exception>
+    public static void ValidateConfiguration(string configuration)
+    {
+        if (configuration is not (ToolchainLayout.C_DEBUG_CONFIGURATION or ToolchainLayout.C_RELEASE_CONFIGURATION))
+        {
+            throw new ArgumentException("Native configuration must be 'debug' or 'release'.", nameof(configuration));
+        }
+    }
+
+    /// <summary>
+    /// Resolves the repository containing the currently executing toolchain assembly.
+    /// </summary>
+    /// <returns>
+    /// The absolute path of the repository root.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no repository marker exists above the toolchain assembly directory.
+    /// </exception>
+    public static string FindRepoRoot()
+    {
+        string location = typeof(ToolchainEnvironment).Assembly.Location;
+        string outputRoot = string.IsNullOrEmpty(location) ? AppContext.BaseDirectory : Path.GetDirectoryName(location)!;
+        DirectoryInfo? dir = new DirectoryInfo(outputRoot);
+        while (dir is not null)
+        {
+            if (File.Exists(Path.Combine(dir.FullName, ToolchainLayout.C_REPOSITORY_MARKER_FILE)))
+            {
+                return dir.FullName;
+            }
+
+            dir = dir.Parent;
+        }
+
+        throw new InvalidOperationException("Could not locate repo root (InnoEngine.sln not found).");
     }
 
     /// <summary>
@@ -425,7 +460,7 @@ public static class ToolchainEnvironment
         string value,
         params string[] needles
     ) {
-        foreach (var needle in needles)
+        foreach (string needle in needles)
         {
             if (value.Contains(needle, StringComparison.OrdinalIgnoreCase))
             {
@@ -452,9 +487,9 @@ public static class ToolchainEnvironment
         string fileName,
         string config
     ) {
-        var ext = Path.GetExtension(fileName);
-        var baseName = Path.GetFileNameWithoutExtension(fileName);
-        var trimmed = TrimConfigSuffix(baseName);
+        string ext = Path.GetExtension(fileName);
+        string baseName = Path.GetFileNameWithoutExtension(fileName);
+        string trimmed = TrimConfigSuffix(baseName);
         return $"{trimmed}-{config}{ext}";
     }
 
@@ -504,28 +539,6 @@ public static class ToolchainEnvironment
         }
     }
 
-    /// <summary>
-    /// Captures platform tool discovery through the same cancellable process lifecycle as builds.
-    /// </summary>
-    /// <param name="start">
-    /// The prepared discovery command, including any platform-specific argument quoting.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels discovery and waits for its process tree to exit.
-    /// </param>
-    /// <returns>
-    /// Complete standard output after successful discovery; errors and cancellation propagate.
-    /// </returns>
-    public static async Task<string> CaptureOutputAsync(
-        ProcessStartInfo start,
-        CancellationToken cancellationToken
-    ) {
-        ArgumentNullException.ThrowIfNull(start);
-        using var output = new StringWriter();
-        await RunProcessAsync(start, cancellationToken, null, output).ConfigureAwait(false);
-        return output.ToString();
-    }
-
     private static IReadOnlyDictionary<string, string?> CaptureEnvironmentOverrides(IReadOnlyDictionary<string, string> environment)
         => environment.ToDictionary(static entry => entry.Key, static entry => (string?)entry.Value, StringComparer.OrdinalIgnoreCase);
 
@@ -533,22 +546,24 @@ public static class ToolchainEnvironment
         string fileName,
         IReadOnlyList<string> arguments,
         string workingDirectory,
-        CancellationToken cancellationToken,
         IReadOnlyDictionary<string, string?>? environment,
-        TextWriter standardOutput
+        TextWriter standardOutput,
+        CancellationToken cancellationToken
     ) {
         var start = new ProcessStartInfo(fileName) { WorkingDirectory = workingDirectory };
         foreach (string argument in arguments)
+        {
             start.ArgumentList.Add(argument);
-        await RunProcessAsync(start, cancellationToken, environment, standardOutput).ConfigureAwait(false);
+        }
+        await RunProcessAsync(start, environment, standardOutput, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     private static async Task RunProcessAsync(
         ProcessStartInfo start,
-        CancellationToken cancellationToken,
         IReadOnlyDictionary<string, string?>? environment,
         TextWriter standardOutput,
-        TextWriter? standardError = null
+        TextWriter? standardError = null,
+        CancellationToken cancellationToken = default
     ) {
         cancellationToken.ThrowIfCancellationRequested();
         start.UseShellExecute = false;
@@ -556,23 +571,31 @@ public static class ToolchainEnvironment
         start.RedirectStandardError = true;
         start.CreateNoWindow = true;
         if (environment is not null)
+        {
             foreach ((string name, string? value) in environment)
             {
                 if (value is null)
+                {
                     start.Environment.Remove(name);
+                }
                 else
+                {
                     start.Environment[name] = value;
+                }
             }
+        }
         cancellationToken.ThrowIfCancellationRequested();
         using var process = new Process { StartInfo = start };
         if (!process.Start())
+        {
             throw new InvalidOperationException($"Cannot start '{start.FileName}'.");
+        }
         Task output = ForwardAsync(process.StandardOutput, standardOutput);
         Task error = ForwardAsync(process.StandardError, standardError ?? Console.Error);
         Task exited = process.WaitForExitAsync(cancellationToken);
         try
         {
-            var pending = new List<Task> { exited, output, error };
+            List<Task> pending = [exited, output, error];
             while (pending.Count > 0)
             {
                 Task completed = await Task.WhenAny(pending).ConfigureAwait(false);
@@ -585,7 +608,9 @@ public static class ToolchainEnvironment
             try
             {
                 if (!process.HasExited)
+                {
                     process.Kill(entireProcessTree: true);
+                }
             }
             catch (InvalidOperationException) when (process.HasExited)
             {
@@ -596,14 +621,16 @@ public static class ToolchainEnvironment
             {
                 await Task.WhenAll(exited, output, error).ConfigureAwait(false);
             }
-            catch
+            catch (Exception)
             {
                 // Observe all pumps while preserving the failure that initiated process cleanup.
             }
             throw;
         }
         if (process.ExitCode != 0)
+        {
             throw new InvalidOperationException($"'{start.FileName}' failed with exit code {process.ExitCode}.");
+        }
     }
 
     private static async Task ForwardAsync(
@@ -611,6 +638,8 @@ public static class ToolchainEnvironment
         TextWriter destination
     ) {
         while (await source.ReadLineAsync().ConfigureAwait(false) is { } line)
+        {
             await destination.WriteLineAsync(line).ConfigureAwait(false);
+        }
     }
 }

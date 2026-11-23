@@ -13,7 +13,7 @@ public readonly struct AssetChange
     /// <param name="kind">
     /// Committed change kind.
     /// </param>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// Persistent identity affected by the change, or empty for a catalog-wide change.
     /// </param>
     /// <param name="assetPath">
@@ -24,12 +24,12 @@ public readonly struct AssetChange
     /// </param>
     public AssetChange(
         AssetChangeKind kind,
-        Guid persistentId,
+        Guid persistentID,
         AssetPath assetPath,
         AssetPath? previousAssetPath = null
     ) {
         this.kind = kind;
-        this.persistentId = persistentId;
+        this.persistentID = persistentID;
         this.assetPath = assetPath;
         this.previousAssetPath = previousAssetPath;
     }
@@ -42,7 +42,7 @@ public readonly struct AssetChange
     /// <summary>
     /// Gets the persistent identity affected by the change.
     /// </summary>
-    public Guid persistentId { get; }
+    public Guid persistentID { get; }
 
     /// <summary>
     /// Gets the current isolated source path.

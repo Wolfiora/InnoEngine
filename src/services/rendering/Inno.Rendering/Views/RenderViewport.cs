@@ -59,4 +59,3 @@ public readonly record struct RenderViewport
     /// </summary>
     public int height { get; }
 }
-

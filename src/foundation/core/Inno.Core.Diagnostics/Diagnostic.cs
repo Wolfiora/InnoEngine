@@ -7,6 +7,19 @@ namespace Inno.Core.Diagnostics;
 /// </summary>
 public sealed class Diagnostic
 {
+    private Diagnostic(
+        DiagnosticSeverity severity,
+        string code,
+        string message,
+        DiagnosticLocation? location
+    ) {
+        ArgumentNullException.ThrowIfNull(message);
+        this.severity = severity;
+        this.code = code ?? string.Empty;
+        this.message = message;
+        this.location = location;
+    }
+
     /// <summary>
     /// Creates a neutral diagnostic while keeping protocol, object and file identities distinct.
     /// </summary>
@@ -19,10 +32,10 @@ public sealed class Diagnostic
     /// <param name="severity">
     /// The common engine impact classification.
     /// </param>
-    /// <param name="semanticId">
+    /// <param name="semanticID">
     /// An optional extension or protocol identifier, never interpreted as a file path.
     /// </param>
-    /// <param name="objectId">
+    /// <param name="objectID">
     /// An optional persistent object identity, never a runtime handle.
     /// </param>
     /// <param name="location">
@@ -38,28 +51,49 @@ public sealed class Diagnostic
         string code,
         string message,
         DiagnosticSeverity severity,
-        string? semanticId = null,
-        Guid? objectId = null,
+        string? semanticID = null,
+        Guid? objectID = null,
         DiagnosticLocation? location = null
-    )
-        : this(severity, code, message, location)
+    ) : this(severity, code, message, location)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(code);
-        if (objectId == Guid.Empty)
-            throw new ArgumentException("A diagnostic object identity cannot be empty.", nameof(objectId));
-        this.semanticId = semanticId;
-        this.objectId = objectId;
+        if (objectID == Guid.Empty)
+        {
+            throw new ArgumentException("A diagnostic object identity cannot be empty.", nameof(objectID));
+        }
+        this.semanticID = semanticID;
+        this.objectID = objectID;
     }
 
     /// <summary>
     /// Gets the related protocol identifier without treating it as a source file.
     /// </summary>
-    public string? semanticId { get; }
+    public string? semanticID { get; }
 
     /// <summary>
     /// Gets the related persistent object identity, or null for a non-object issue.
     /// </summary>
-    public Guid? objectId { get; }
+    public Guid? objectID { get; }
+
+    /// <summary>
+    /// Gets the diagnostic severity.
+    /// </summary>
+    public DiagnosticSeverity severity { get; }
+
+    /// <summary>
+    /// Gets the stable producer-defined code, or an empty string when unavailable.
+    /// </summary>
+    public string code { get; }
+
+    /// <summary>
+    /// Gets the human-readable diagnostic message.
+    /// </summary>
+    public string message { get; }
+
+    /// <summary>
+    /// Gets the related source location, or <see langword="null"/> when unavailable.
+    /// </summary>
+    public DiagnosticLocation? location { get; }
 
     /// <summary>
     /// Creates an informational diagnostic value without publishing it.
@@ -83,8 +117,7 @@ public sealed class Diagnostic
         string code,
         string message,
         DiagnosticLocation? location = null
-    )
-        => new(DiagnosticSeverity.Info, code, message, location);
+    ) => new(DiagnosticSeverity.Info, code, message, location);
 
     /// <summary>
     /// Creates a warning diagnostic value without publishing it.
@@ -108,8 +141,7 @@ public sealed class Diagnostic
         string code,
         string message,
         DiagnosticLocation? location = null
-    )
-        => new(DiagnosticSeverity.Warning, code, message, location);
+    ) => new(DiagnosticSeverity.Warning, code, message, location);
 
     /// <summary>
     /// Creates an error diagnostic value without publishing it.
@@ -133,39 +165,5 @@ public sealed class Diagnostic
         string code,
         string message,
         DiagnosticLocation? location = null
-    )
-        => new(DiagnosticSeverity.Error, code, message, location);
-
-    private Diagnostic(
-        DiagnosticSeverity severity,
-        string code,
-        string message,
-        DiagnosticLocation? location
-    ) {
-        ArgumentNullException.ThrowIfNull(message);
-        this.severity = severity;
-        this.code = code ?? string.Empty;
-        this.message = message;
-        this.location = location;
-    }
-
-    /// <summary>
-    /// Gets the diagnostic severity.
-    /// </summary>
-    public DiagnosticSeverity severity { get; }
-
-    /// <summary>
-    /// Gets the stable producer-defined code, or an empty string when unavailable.
-    /// </summary>
-    public string code { get; }
-
-    /// <summary>
-    /// Gets the human-readable diagnostic message.
-    /// </summary>
-    public string message { get; }
-
-    /// <summary>
-    /// Gets the related source location, or <see langword="null"/> when unavailable.
-    /// </summary>
-    public DiagnosticLocation? location { get; }
+    ) => new(DiagnosticSeverity.Error, code, message, location);
 }

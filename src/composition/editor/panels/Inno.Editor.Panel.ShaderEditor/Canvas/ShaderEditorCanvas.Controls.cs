@@ -1,28 +1,42 @@
+using System;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Numerics;
+using Inno.Assets.Pipeline;
+using Inno.Core.Execution;
+using Inno.Core.Graphs;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using System;
-using System.Linq;
-using Inno.Assets.Pipeline;
-using Inno.Core.Graphs;
+using Inno.Editor.Interactions;
+using Inno.Editor.Rendering;
+using Inno.Editor.Shaders.ImGui;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
-using Inno.Rendering.Shaders;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
 using Inno.Rendering.Assets.Authoring;
+using Inno.Rendering.Shaders;
+
+using EditorImGui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 
 namespace Inno.Editor.Panel.ShaderEditor;
+
 internal sealed partial class ShaderEditorCanvas
 {
     private void Controls(GraphNodeRecord node)
     {
-        if (owner.drawers?.TryDraw(node.definitionId, new(node, owner.serialization, owner.context, (
-            key,
-            value,
-            continuous
-        ) => SetEncoded(node, key, value, continuous), owner.previews, m_inspection!, draft.readOnly)) == true)
+        if (owner.drawers?.TryDraw(
+            node.definitionID,
+            new ShaderNodeDrawContext(node, owner.serialization, owner.context, (
+                key,
+                value,
+                continuous
+            ) => SetEncoded(node, key, value, continuous), owner.previews, m_inspection!, draft.readOnly)
+        ) == true
+        ) {
             return;
-        switch (node.definitionId)
+        }
+        switch (node.definitionID)
         {
             case "inno.shader.constant":
                 Scalar(node);
@@ -32,7 +46,12 @@ internal sealed partial class ShaderEditorCanvas
                 Choice(node, "type", "float", ["float", "float2", "float3", "float4", "int", "uint"]);
                 break;
             case "inno.shader.construct":
-                Choice(node, "type", "float4", ["float2", "float3", "float4", "int2", "int3", "int4", "uint2", "uint3", "uint4", "float3x3", "float4x4"]);
+                Choice(
+                    node,
+                    "type",
+                    "float4",
+                    ["float2", "float3", "float4", "int2", "int3", "int4", "uint2", "uint3", "uint4", "float3x3", "float4x4"]
+                );
                 break;
             case "inno.shader.select":
                 Choice(node, "type", "float", ["float", "float2", "float3", "float4", "int", "uint", "bool"]);
@@ -42,7 +61,7 @@ internal sealed partial class ShaderEditorCanvas
                     "reroute.type",
                     "Type",
                     () => EditorUI.current.widgets.ColoredText(
-                        Inno.Editor.ImGui.EditorPalette.textDisabled,
+                        EditorPalette.textDisabled,
                         Read(node, "valueType", new ShaderGraphType { id = "float" }).CreateType().id
                     )
                 );
@@ -54,16 +73,25 @@ internal sealed partial class ShaderEditorCanvas
                 InspectorRow("extract.component", "Component", () =>
                 {
                     if (EditorImGui.InputInt("##component", ref index, 1, 100, 0) && index >= 0)
+                    {
                         Set(node, "index", index);
+                    }
                 });
                 break;
             case "inno.shader.sample":
-                Choice(node, "type", "sampled-texture2d", ["sampled-texture2d", "sampled-texture2d-array", "sampled-texture3d", "sampled-texture-cube"]);
+                Choice(
+                    node,
+                    "type",
+                    "sampled-texture2d",
+                    ["sampled-texture2d", "sampled-texture2d-array", "sampled-texture3d", "sampled-texture-cube"]
+                );
                 bool level = Read(node, "explicitLevel", false);
                 InspectorRow("sample.explicit-level", "Explicit LOD", () =>
                 {
                     if (EditorImGui.Checkbox("##explicit-level", ref level))
+                    {
                         Set(node, "explicitLevel", level);
+                    }
                 });
                 break;
             case "inno.shader.stage-input":
@@ -72,16 +100,16 @@ internal sealed partial class ShaderEditorCanvas
             case "inno.shader.source":
                 Source(node);
                 break;
-            case ShaderGraphNodes.callDefinitionId:
+            case ShaderGraphNodes.C_CALL_DEFINITION_ID:
                 GraphCall(node);
                 break;
-            case ShaderGraphNodes.inputDefinitionId:
+            case ShaderGraphNodes.C_INPUT_DEFINITION_ID:
                 GraphInputs(node);
                 break;
-            case ShaderGraphNodes.outputDefinitionId:
+            case ShaderGraphNodes.C_OUTPUT_DEFINITION_ID:
                 GraphOutputs(node);
                 break;
-            case ShaderGraphDocument.outputDefinitionId:
+            case ShaderGraphDocument.C_OUTPUT_DEFINITION_ID:
                 Output(node);
                 break;
             case "inno.shader.storage-load":
@@ -90,22 +118,31 @@ internal sealed partial class ShaderEditorCanvas
                 ShaderGraphType resource = Read(
                     node,
                     "resource",
-                    new ShaderGraphType { isStorage = true, storageElement = new() { id = "float4" }, access = RenderStorageAccess.ReadWrite }
+                    new ShaderGraphType
+                    {
+                        isStorage = true,
+                        storageElement = new() { id = "float4" },
+                        access = RenderStorageAccess.ReadWrite
+                    }
                 );
                 InspectorRow("storage.contract", "Contract", () =>
                 {
                     if (EditorImGui.Button("Storage Contract…"))
+                    {
                         EditorImGui.OpenPopup("##storage");
+                    }
                 });
                 if (StoragePopup(ref resource))
+                {
                     Set(node, "resource", resource);
+                }
                 EditorUI.current.widgets.WrappedText("Connect then → after to order memory effects.");
                 break;
             case "inno.shader.discard":
                 EditorUI.current.widgets.WrappedText("Discard fragments where condition is true.");
                 break;
             default:
-                EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, "Extension node");
+                EditorUI.current.widgets.ColoredText(EditorPalette.textDisabled, "Extension node");
                 break;
         }
     }
@@ -113,39 +150,47 @@ internal sealed partial class ShaderEditorCanvas
     private void GraphCall(GraphNodeRecord node)
     {
         Guid selected = Read(node, "sourceId", Guid.Empty);
-        string path = Read(node, "sourcePath", "");
-        ShaderGraphNodeInterface nodeInterface = Read(node, ShaderGraphNodes.interfaceKey, new ShaderGraphNodeInterface());
+        string path = Read(node, "sourcePath", string.Empty);
+        ShaderGraphNodeInterface nodeInterface = Read(node, ShaderGraphNodes.C_INTERFACE_KEY, new ShaderGraphNodeInterface());
         InspectorRow("graph-node.asset", "Node Graph", () =>
         {
-            if (!EditorUI.current.widgets.BeginBoundedCombo("##graph-node", selected == Guid.Empty ? "Choose Shader node…" : System.IO.Path.GetFileName(path)))
+            if (!EditorUI.current.widgets.BeginBoundedCombo(
+                "##graph-node",
+                selected == Guid.Empty ? "Choose Shader node…" : Path.GetFileName(path)
+            )) {
                 return;
+            }
             try
             {
-                foreach (AssetFileEntry entry in owner.assets.GetFileSystemEntries(includeDirectories: false).Where(static entry => entry.extension == ".ishader").OrderBy(
-                    static entry => entry.assetPath.ToString(),
-                    StringComparer.Ordinal
-                ))
-                {
-                    Guid id = owner.AssetId(entry);
+                foreach (AssetFileEntry entry in owner.assets
+                    .GetFileSystemEntries(includeDirectories: false)
+                    .Where(static entry => entry.extension == ".ishader")
+                    .OrderBy(static entry => entry.assetPath.ToString(), StringComparer.Ordinal)
+                ) {
+                    Guid id = owner.AssetID(entry);
                     if (id == draft.id)
+                    {
                         continue;
+                    }
                     ShaderGraphNodeInterface candidate;
                     try
                     {
                         candidate = owner.LoadGraphNodeInterface(id);
                     }
                     catch (Exception failure) when ((failure is InvalidOperationException or ArgumentException or FormatException)
-                        && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+                                                    && RetirementPendingException.Find(failure) is null)
                     {
                         continue;
                     }
 
                     if (!EditorImGui.Selectable(candidate.displayName + "  ·  " + entry.assetPath.localPath, id == selected))
+                    {
                         continue;
-                    using var transaction = owner.interactions.history.BeginTransaction("Assign Graph Node");
+                    }
+                    using EditorHistoryTransaction transaction = owner.interactions.history.BeginTransaction("Assign Graph Node");
                     Set(node, "sourceId", id);
                     Set(node, "sourcePath", entry.assetPath.ToString());
-                    Set(node, ShaderGraphNodes.interfaceKey, candidate);
+                    Set(node, ShaderGraphNodes.C_INTERFACE_KEY, candidate);
                     transaction.Commit();
                     selected = id;
                     path = entry.assetPath.ToString();
@@ -158,38 +203,52 @@ internal sealed partial class ShaderEditorCanvas
             }
         });
         EditorUI.current.widgets.DrawItemTooltip(path);
-        InspectorRow("graph-node.kind", "Kind", () => EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, nodeInterface.kind.ToString()));
-        InspectorRow("graph-node.effect", "Effect", () => EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, nodeInterface.effect.ToString()));
+        InspectorRow(
+            "graph-node.kind",
+            "Kind",
+            () => EditorUI.current.widgets.ColoredText(EditorPalette.textDisabled, nodeInterface.kind.ToString())
+        );
+        InspectorRow(
+            "graph-node.effect",
+            "Effect",
+            () => EditorUI.current.widgets.ColoredText(EditorPalette.textDisabled, nodeInterface.effect.ToString())
+        );
         if (nodeInterface.kind == ShaderGraphNodeKind.DomainOutput)
-            InspectorRow("graph-node.role", "Target Role", () => EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, nodeInterface.role));
+        {
+            InspectorRow(
+                "graph-node.role",
+                "Target Role",
+                () => EditorUI.current.widgets.ColoredText(EditorPalette.textDisabled, nodeInterface.role)
+            );
+        }
         RepairPorts(node);
     }
 
     private void GraphInputs(GraphNodeRecord node)
     {
         GraphInterfaceMetadata();
-        ShaderGraphNodeInputSettings settings = Read(node, ShaderGraphDocument.settingsKey, new ShaderGraphNodeInputSettings());
+        ShaderGraphNodeInputSettings settings = Read(node, ShaderGraphDocument.C_SETTINGS_KEY, new ShaderGraphNodeInputSettings());
         GraphPorts(node, settings.ports, inputs: true, ports =>
         {
             settings.ports = ports;
-            Set(node, ShaderGraphDocument.settingsKey, settings);
+            Set(node, ShaderGraphDocument.C_SETTINGS_KEY, settings);
         });
     }
 
     private void GraphOutputs(GraphNodeRecord node)
     {
         GraphInterfaceMetadata();
-        ShaderGraphNodeOutputSettings settings = Read(node, ShaderGraphDocument.settingsKey, new ShaderGraphNodeOutputSettings());
+        ShaderGraphNodeOutputSettings settings = Read(node, ShaderGraphDocument.C_SETTINGS_KEY, new ShaderGraphNodeOutputSettings());
         GraphPorts(node, settings.ports, inputs: false, ports =>
         {
             settings.ports = ports;
-            Set(node, ShaderGraphDocument.settingsKey, settings);
+            Set(node, ShaderGraphDocument.C_SETTINGS_KEY, settings);
         });
     }
 
     private void GraphInterfaceMetadata()
     {
-        ShaderGraphNodeSettings settings = ShaderGraphNodes.ReadSettings(Controller.document, owner.serialization, owner.context);
+        ShaderGraphNodeSettings settings = ShaderGraphNodes.ReadSettings(controller.document, owner.serialization, owner.context);
         string displayName = settings.displayName;
         InspectorRow("node-interface.name", "Node Name", () =>
         {
@@ -226,15 +285,19 @@ internal sealed partial class ShaderEditorCanvas
         InspectorRow("node-interface.kind", "Kind", () =>
         {
             if (!EditorUI.current.widgets.BeginBoundedCombo("##kind", settings.kind.ToString()))
+            {
                 return;
+            }
             try
             {
                 foreach (ShaderGraphNodeKind kind in Enum.GetValues<ShaderGraphNodeKind>())
+                {
                     if (EditorImGui.Selectable(kind.ToString(), settings.kind == kind))
                     {
                         settings.kind = kind;
                         SetGraphNodeSettings(settings);
                     }
+                }
             }
             finally
             {
@@ -246,15 +309,19 @@ internal sealed partial class ShaderEditorCanvas
             InspectorRow("node-interface.effect", "Effect", () =>
             {
                 if (!EditorUI.current.widgets.BeginBoundedCombo("##effect", settings.effect.ToString()))
+                {
                     return;
+                }
                 try
                 {
                     foreach (ShaderGraphNodeEffect effect in Enum.GetValues<ShaderGraphNodeEffect>())
+                    {
                         if (EditorImGui.Selectable(effect.ToString(), settings.effect == effect))
                         {
                             settings.effect = effect;
                             SetGraphNodeSettings(settings);
                         }
+                    }
                 }
                 finally
                 {
@@ -283,9 +350,9 @@ internal sealed partial class ShaderEditorCanvas
         ShaderGraphNodeSettings settings,
         bool continuous = false
     ) {
-        GraphDocument candidate = Controller.document.Clone();
+        GraphDocument candidate = controller.document.Clone();
         ShaderGraphNodes.WriteSettings(candidate, settings, owner.serialization, owner.context);
-        Controller.ReplaceDocument(candidate, "Edit Graph Node Interface", continuous ? draft.valueGesture : null);
+        controller.ReplaceDocument(candidate, "Edit Graph Node Interface", continuous ? draft.valueGesture : null);
         owner.Changed(draft);
     }
 
@@ -298,7 +365,7 @@ internal sealed partial class ShaderEditorCanvas
         EditorImGui.SeparatorText(inputs ? "Inputs" : "Outputs");
         for (int index = 0; index < ports.Length; index++)
         {
-            EditorImGui.PushId(index);
+            EditorImGui.PushID(index);
             try
             {
                 ShaderGraphNodePortDefinition port = ports[index];
@@ -322,7 +389,9 @@ internal sealed partial class ShaderEditorCanvas
                 InspectorRow("node-port.type", "Type", () =>
                 {
                     if (!EditorUI.current.widgets.BeginBoundedCombo("##type", port.type.id))
+                    {
                         return;
+                    }
                     try
                     {
                         foreach (string type in new[]
@@ -348,7 +417,7 @@ internal sealed partial class ShaderEditorCanvas
                             "sampled-texture-cube"
                         }
 
-                        )
+                        ) {
                             if (EditorImGui.Selectable(type, port.type.id == type))
                             {
                                 ShaderGraphNodePortDefinition[] changedPorts = ports.ToArray();
@@ -363,6 +432,7 @@ internal sealed partial class ShaderEditorCanvas
                                 };
                                 apply(changedPorts);
                             }
+                        }
                     }
                     finally
                     {
@@ -375,7 +445,9 @@ internal sealed partial class ShaderEditorCanvas
                     InspectorRow("node-port.required", "Required", () =>
                     {
                         if (!EditorImGui.Checkbox("##required", ref required))
+                        {
                             return;
+                        }
                         ShaderGraphNodePortDefinition[] changedPorts = ports.ToArray();
                         changedPorts[index] = new()
                         {
@@ -387,18 +459,22 @@ internal sealed partial class ShaderEditorCanvas
                     });
                 }
 
-                InspectorRow("node-port.remove", "", () =>
+                InspectorRow("node-port.remove", string.Empty, () =>
                 {
                     if (EditorImGui.SmallButton("Remove"))
-                        apply(ports.Where((
-                            _,
-                            item
-                        ) => item != index).ToArray());
+                    {
+                        apply(
+                            ports.Where((
+                                _,
+                                item
+                            ) => item != index).ToArray()
+                        );
+                    }
                 });
             }
             finally
             {
-                EditorImGui.PopId();
+                EditorImGui.PopID();
             }
         }
 
@@ -407,8 +483,10 @@ internal sealed partial class ShaderEditorCanvas
             string prefix = inputs ? "input" : "output";
             string id = prefix;
             for (int suffix = 2; ports.Any(port => port.id == id); suffix++)
+            {
                 id = prefix + suffix;
-            apply([..ports, new() { id = id, type = new() { id = "float" }, required = false }]);
+            }
+            apply([..ports, new ShaderGraphNodePortDefinition() { id = id, type = new() { id = "float" }, required = false }]);
         }
 
         RepairPorts(node);
@@ -420,7 +498,9 @@ internal sealed partial class ShaderEditorCanvas
         InspectorRow("constant.type", "Type", () =>
         {
             if (!EditorUI.current.widgets.BeginBoundedCombo("##constant-type", type))
+            {
                 return;
+            }
             try
             {
                 foreach (string candidate in new[]
@@ -431,10 +511,10 @@ internal sealed partial class ShaderEditorCanvas
                     "bool"
                 }
 
-                )
+                ) {
                     if (EditorImGui.Selectable(candidate, type == candidate))
                     {
-                        using var transaction = owner.interactions.history.BeginTransaction("Change Constant Type");
+                        using EditorHistoryTransaction transaction = owner.interactions.history.BeginTransaction("Change Constant Type");
                         Set(node, "type", candidate);
                         switch (candidate)
                         {
@@ -455,6 +535,7 @@ internal sealed partial class ShaderEditorCanvas
                         transaction.Commit();
                         type = candidate;
                     }
+                }
             }
             finally
             {
@@ -470,7 +551,9 @@ internal sealed partial class ShaderEditorCanvas
                     bool changed = EditorUI.current.widgets.CompactDragFloat("##value", ref number, 0.01f);
                     Gesture();
                     if (changed)
+                    {
                         Set(node, "value", number, true);
+                    }
                 });
                 break;
             case "bool":
@@ -478,7 +561,9 @@ internal sealed partial class ShaderEditorCanvas
                 InspectorRow("constant.value", "Value", () =>
                 {
                     if (EditorImGui.Checkbox("##value", ref boolean))
+                    {
                         Set(node, "value", boolean);
+                    }
                 });
                 break;
             case "int":
@@ -488,17 +573,21 @@ internal sealed partial class ShaderEditorCanvas
                     bool integerChanged = EditorImGui.InputInt("##value", ref integer, 1, 100, 0);
                     Gesture();
                     if (integerChanged)
+                    {
                         Set(node, "value", integer, true);
+                    }
                 });
                 break;
             case "uint":
-                string unsigned = Read(node, "value", 0u).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                string unsigned = Read(node, "value", 0u).ToString(CultureInfo.InvariantCulture);
                 InspectorRow("constant.value", "Value", () =>
                 {
                     bool unsignedChanged = EditorImGui.InputText("##value", ref unsigned, 32, ImGuiInputTextFlags.CharsDecimal);
                     Gesture();
                     if (unsignedChanged && uint.TryParse(unsigned, out uint value))
+                    {
                         Set(node, "value", value, true);
+                    }
                 });
                 break;
         }
@@ -507,24 +596,34 @@ internal sealed partial class ShaderEditorCanvas
     private void Source(GraphNodeRecord node)
     {
         Guid selected = Read(node, "sourceId", Guid.Empty);
-        string path = Read(node, "sourcePath", "");
-        string selectedFunction = Read(node, "function", "");
+        string path = Read(node, "sourcePath", string.Empty);
+        string selectedFunction = Read(node, "function", string.Empty);
         InspectorRow("source.library", "Library", () =>
         {
-            if (!EditorUI.current.widgets.BeginBoundedCombo("##library", selected == Guid.Empty ? "Choose source library…" : System.IO.Path.GetFileName(path)))
+            if (!EditorUI.current.widgets.BeginBoundedCombo(
+                "##library",
+                selected == Guid.Empty ? "Choose source library…" : Path.GetFileName(path)
+            )) {
                 return;
+            }
             try
             {
-                foreach (AssetFileEntry entry in owner.assets.GetFileSystemEntries(includeDirectories: false).Where(static entry => entry.assetPath.localPath.EndsWith(".ishadersource", StringComparison.OrdinalIgnoreCase)))
-                    if (EditorImGui.Selectable(entry.assetPath.ToString(), owner.AssetId(entry) == selected))
+                foreach (AssetFileEntry entry in owner.assets
+                    .GetFileSystemEntries(includeDirectories: false)
+                    .Where(static entry => entry.assetPath.localPath.EndsWith(".ishadersource", StringComparison.OrdinalIgnoreCase))
+                ) {
+                    if (EditorImGui.Selectable(entry.assetPath.ToString(), owner.AssetID(entry) == selected))
                     {
-                        using var transaction = owner.interactions.history.BeginTransaction("Assign Shader Function");
-                        Set(node, "sourceId", owner.AssetId(entry));
+                        using EditorHistoryTransaction transaction = owner.interactions.history.BeginTransaction("Assign Shader Function");
+                        Set(node, "sourceId", owner.AssetID(entry));
                         Set(node, "sourcePath", entry.assetPath.ToString());
                         if (owner.assets.TryLoad(entry.assetPath, out ShaderFunctionAsset? library) && library is not null)
-                            Set(node, "function", library.exports.FirstOrDefault() ?? "");
+                        {
+                            Set(node, "function", library.exports.FirstOrDefault() ?? string.Empty);
+                        }
                         transaction.Commit();
                     }
+                }
             }
             finally
             {
@@ -533,20 +632,33 @@ internal sealed partial class ShaderEditorCanvas
         });
         EditorUI.current.widgets.DrawItemTooltip(path);
         if (selected == Guid.Empty)
-            EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, "Choose a library and one of its explicitly exported functions.");
+        {
+            EditorUI.current.widgets.ColoredText(
+                EditorPalette.textDisabled,
+                "Choose a library and one of its explicitly exported functions."
+            );
+        }
         else
         {
             if (owner.assets.TryLoad(selected, out ShaderFunctionAsset? library) && library is not null && !library.isMissing)
             {
                 InspectorRow("source.function", "Function", () =>
                 {
-                    if (!EditorUI.current.widgets.BeginBoundedCombo("##function", selectedFunction.Length == 0 ? "Choose exported function…" : selectedFunction))
+                    if (!EditorUI.current.widgets.BeginBoundedCombo(
+                        "##function",
+                        selectedFunction.Length == 0 ? "Choose exported function…" : selectedFunction
+                    )) {
                         return;
+                    }
                     try
                     {
                         foreach (string function in library.exports)
+                        {
                             if (EditorImGui.Selectable(function, function == selectedFunction))
+                            {
                                 Set(node, "function", function);
+                            }
+                        }
                     }
                     finally
                     {
@@ -577,14 +689,18 @@ internal sealed partial class ShaderEditorCanvas
         InspectorRow("input.source", "Source", () =>
         {
             if (!EditorUI.current.widgets.BeginBoundedCombo("##source", input.kind.ToString()))
+            {
                 return;
+            }
             try
             {
                 foreach (ShaderIrInputKind kind in Enum.GetValues<ShaderIrInputKind>())
+                {
                     if (EditorImGui.Selectable(kind.ToString(), input.kind == kind))
                     {
                         input.kind = kind;
                         if (kind == ShaderIrInputKind.Storage)
+                        {
                             input.type = new()
                             {
                                 isStorage = true,
@@ -594,20 +710,25 @@ internal sealed partial class ShaderEditorCanvas
                                 },
                                 access = RenderStorageAccess.ReadWrite
                             };
+                        }
                         else if (kind == ShaderIrInputKind.SampledTexture)
+                        {
                             input.type = new()
                             {
                                 id = "sampled-texture2d"
                             };
+                        }
                         else if (input.type.isStorage || input.type.id.StartsWith("sampled-texture", StringComparison.Ordinal))
+                        {
                             input.type = new()
                             {
                                 id = "float4"
                             };
+                        }
                         if (kind == ShaderIrInputKind.Builtin)
                         {
-                            string stageId = Read(node, "stage", "");
-                            GraphNodeRecord? output = stageId.Length == 0 ? null : Controller.document.FindNode(new(stageId));
+                            string stageID = Read(node, "stage", string.Empty);
+                            GraphNodeRecord? output = stageID.Length == 0 ? null : controller.document.FindNode(new GraphNodeID(stageID));
                             if (output is not null && Read(output, "settings", new ShaderGraphStageSettings()).stage == ShaderStage.Compute)
                             {
                                 input.semantic = "global-invocation-id";
@@ -620,6 +741,7 @@ internal sealed partial class ShaderEditorCanvas
 
                         Set(node, "settings", input);
                     }
+                }
             }
             finally
             {
@@ -632,7 +754,9 @@ internal sealed partial class ShaderEditorCanvas
             InspectorRow("input.storage", "Contract", () =>
             {
                 if (EditorImGui.Button("Storage Contract…"))
+                {
                     EditorImGui.OpenPopup("##storage");
+                }
             });
             ShaderGraphType resource = input.type;
             if (StoragePopup(ref resource))
@@ -642,10 +766,13 @@ internal sealed partial class ShaderEditorCanvas
             }
         }
         else
+        {
             InspectorRow("input.type", "Type", () =>
             {
                 if (!EditorUI.current.widgets.BeginBoundedCombo("##type", type))
+                {
                     return;
+                }
                 try
                 {
                     foreach (string candidate in new[]
@@ -671,7 +798,7 @@ internal sealed partial class ShaderEditorCanvas
                         "sampled-texture-cube"
                     }
 
-                    )
+                    ) {
                         if (EditorImGui.Selectable(candidate, type == candidate))
                         {
                             input.type = new()
@@ -680,12 +807,14 @@ internal sealed partial class ShaderEditorCanvas
                             };
                             Set(node, "settings", input);
                         }
+                    }
                 }
                 finally
                 {
                     EditorUI.current.widgets.EndBoundedCombo();
                 }
             });
+        }
         string semantic = input.semantic;
         bool semanticChanged = false;
         InspectorRow("input.semantic", "Semantic", () => semanticChanged = EditorImGui.InputText("##semantic", ref semantic, 256));
@@ -696,7 +825,9 @@ internal sealed partial class ShaderEditorCanvas
             Set(node, "settings", input, true);
         }
 
-        EditorUI.current.widgets.DrawItemTooltip("Stage semantic, not a native expression. Builtins must be supported by the selected stage and target; compute invocation IDs use uint3.");
+        EditorUI.current.widgets.DrawItemTooltip(
+            "Stage semantic, not a native expression. Builtins must be supported by the selected stage and target; compute invocation IDs use uint3."
+        );
         int location = input.location;
         bool locationChanged = false;
         InspectorRow("input.location", "Location", () => locationChanged = EditorImGui.InputInt("##location", ref location, 1, 100, 0));
@@ -720,19 +851,30 @@ internal sealed partial class ShaderEditorCanvas
                 if (EditorImGui.Checkbox("##preview", ref expanded))
                 {
                     if (expanded)
+                    {
                         draft.expandedPreviews.Add(node.id);
+                    }
                     else
+                    {
                         draft.expandedPreviews.Remove(node.id);
+                    }
                 }
             });
             if (expanded)
             {
-                ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(Controller.document, owner.serialization, owner.context);
+                ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(controller.document, owner.serialization, owner.context);
                 TextureAsset? texture = definition.properties.FirstOrDefault(value => value.id.value == input.id).defaultValue.texture;
-                if (texture is not null && owner.previews.TryGetTexture(texture, out var preview))
-                    owner.previews.Draw(preview, new(120 * Canvas.zoom, 120 * Canvas.zoom));
+                if (texture is not null && owner.previews.TryGetTexture(texture, out EditorPreviewHandle preview))
+                {
+                    owner.previews.Draw(preview, new Vector2(120 * canvas.zoom, 120 * canvas.zoom));
+                }
                 else
-                    EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, texture is null ? "No default texture" : "Preparing preview…");
+                {
+                    EditorUI.current.widgets.ColoredText(
+                        EditorPalette.textDisabled,
+                        texture is null ? "No default texture" : "Preparing preview…"
+                    );
+                }
             }
         }
     }
@@ -744,26 +886,29 @@ internal sealed partial class ShaderEditorCanvas
             "output.passes",
             "Passes",
             () => EditorUI.current.widgets.ColoredText(
-                Inno.Editor.ImGui.EditorPalette.textDisabled,
+                EditorPalette.textDisabled,
                 string.Join(
                     ", ",
-                    ShaderGraphPrograms.Read(
-                        Controller.document,
-                        owner.serialization,
-                        owner.context
-                    ).Where(program => program.stages.Contains(node.id.value, StringComparer.Ordinal)).Select(static program => program.pass)
+                    ShaderGraphPrograms
+                        .Read(controller.document, owner.serialization, owner.context)
+                        .Where(program => program.stages.Contains(node.id.value, StringComparer.Ordinal))
+                        .Select(static program => program.pass)
                 )
             )
         );
         InspectorRow("output.settings", "Settings", () =>
         {
             if (EditorImGui.Button("Stage & Pass Settings…"))
+            {
                 EditorImGui.OpenPopup("##stage-settings");
+            }
         });
         StageSettingsPopup(node, stage);
         if (stage.stage == ShaderStage.Compute)
         {
-            int x = stage.threadsX, y = stage.threadsY, z = stage.threadsZ;
+            int x = stage.threadsX;
+            int y = stage.threadsY;
+            int z = stage.threadsZ;
             InspectorRow("output.threads-x", "Threads X", () =>
             {
                 if (EditorImGui.InputInt("##threads-x", ref x, 1, 100, 0) && x > 0)
@@ -801,12 +946,18 @@ internal sealed partial class ShaderEditorCanvas
         InspectorRow("choice." + key, EditorDisplayNames.Nicify(key), () =>
         {
             if (!EditorUI.current.widgets.BeginBoundedCombo("##" + key, current))
+            {
                 return;
+            }
             try
             {
                 foreach (string candidate in values)
+                {
                     if (EditorImGui.Selectable(candidate, current == candidate))
+                    {
                         Set(node, key, candidate);
+                    }
+                }
             }
             finally
             {
@@ -818,6 +969,8 @@ internal sealed partial class ShaderEditorCanvas
     private void Gesture()
     {
         if (EditorImGui.IsItemActivated())
+        {
             draft.valueGesture = Guid.NewGuid().ToString("N");
+        }
     }
 }

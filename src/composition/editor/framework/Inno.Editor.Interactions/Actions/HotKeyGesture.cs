@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Events;
 using Inno.Core.Input;
 using Inno.Editor.Core;
@@ -50,6 +49,34 @@ public readonly record struct HotKeyGesture
     public KeyModifier modifiers { get; }
 
     /// <summary>
+    /// Formats the gesture as a human-readable editor menu shortcut label.
+    /// </summary>
+    /// <returns>
+    /// A product-resolved textual representation of the gesture.
+    /// </returns>
+    public override string ToString()
+    {
+        string prefix = string.Empty;
+        if ((modifiers & KeyModifier.Control) != 0)
+        {
+            prefix += "Ctrl+";
+        }
+        if ((modifiers & KeyModifier.Super) != 0)
+        {
+            prefix += (m_superModifierLabel ?? "Super") + "+";
+        }
+        if ((modifiers & KeyModifier.Alt) != 0)
+        {
+            prefix += "Alt+";
+        }
+        if ((modifiers & KeyModifier.Shift) != 0)
+        {
+            prefix += "Shift+";
+        }
+        return prefix + key;
+    }
+
+    /// <summary>
     /// Creates a gesture that includes the product-selected primary modifier.
     /// </summary>
     /// <param name="key">
@@ -74,24 +101,9 @@ public readonly record struct HotKeyGesture
     }
 
     /// <summary>
-    /// Formats the gesture as a human-readable editor menu shortcut label.
+    /// Gets the normalized modifiers used by generation-owned shortcut indexes.
     /// </summary>
-    /// <returns>
-    /// A product-resolved textual representation of the gesture.
-    /// </returns>
-    public override string ToString()
-    {
-        string prefix = string.Empty;
-        if ((modifiers & KeyModifier.Control) != 0)
-            prefix += "Ctrl+";
-        if ((modifiers & KeyModifier.Super) != 0)
-            prefix += (m_superModifierLabel ?? "Super") + "+";
-        if ((modifiers & KeyModifier.Alt) != 0)
-            prefix += "Alt+";
-        if ((modifiers & KeyModifier.Shift) != 0)
-            prefix += "Shift+";
-        return prefix + key;
-    }
+    internal KeyModifier normalizedModifiers => Normalize(key, modifiers);
 
     /// <summary>
     /// Returns whether a non-repeating key event matches this gesture after normalizing
@@ -104,26 +116,21 @@ public readonly record struct HotKeyGesture
     /// <see langword="true"/> when the key and normalized modifiers match; otherwise, <see langword="false"/>.
     /// </returns>
     internal bool Matches(KeyPressedEvent keyEvent)
-        => !keyEvent.repeat &&
-           keyEvent.key == key &&
-           Normalize(key, keyEvent.modifiers) == Normalize(key, modifiers);
-
-    /// <summary>
-    /// Gets the normalized modifiers used by generation-owned shortcut indexes.
-    /// </summary>
-    internal KeyModifier normalizedModifiers => Normalize(key, modifiers);
+        => !keyEvent.repeat
+           && keyEvent.key == key
+           && Normalize(key, keyEvent.modifiers) == Normalize(key, modifiers);
 
     private static KeyModifier Normalize(
         KeyCode key,
         KeyModifier value
     ) {
-        KeyModifier normalized = value &
-                                 (KeyModifier.Alt |
-                                  KeyModifier.Control |
-                                  KeyModifier.Shift |
-                                  KeyModifier.Super);
+        KeyModifier normalized = value
+                                 & (KeyModifier.Alt
+                                    | KeyModifier.Control
+                                    | KeyModifier.Shift
+                                    | KeyModifier.Super);
         return key == KeyCode.Plus
-            ? normalized & ~KeyModifier.Shift
-            : normalized;
+               ? normalized & ~KeyModifier.Shift
+               : normalized;
     }
 }

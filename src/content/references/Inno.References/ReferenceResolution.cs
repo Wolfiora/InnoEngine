@@ -37,7 +37,9 @@ public sealed class ReferenceResolution
     ) {
         ArgumentNullException.ThrowIfNull(descriptor);
         if ((state == ReferenceResolutionState.Resolved) != runtimeIdentity.HasValue)
+        {
             throw new ArgumentException("Only a resolved reference can carry a runtime identity.", nameof(runtimeIdentity));
+        }
         this.descriptor = descriptor;
         this.state = state;
         this.runtimeIdentity = runtimeIdentity;

@@ -10,5 +10,5 @@ public static class AssetReferenceProtocol
     /// <summary>
     /// Gets the stable asset reference kind registered in shared reference catalogs.
     /// </summary>
-    public static ReferenceKindId id { get; } = new("inno.reference.asset");
+    public static ReferenceKindID id { get; } = new("inno.reference.asset");
 }

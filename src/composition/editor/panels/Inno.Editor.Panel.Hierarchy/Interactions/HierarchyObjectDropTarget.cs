@@ -1,6 +1,4 @@
-
 using System;
-
 using Inno.Scene;
 
 namespace Inno.Editor.Panel.Hierarchy;
@@ -21,7 +19,8 @@ public sealed class HierarchyObjectDropTarget
     /// </exception>
     public HierarchyObjectDropTarget(GameObject gameObject)
     {
-        this.gameObject = gameObject ?? throw new ArgumentNullException(nameof(gameObject));
+        ArgumentNullException.ThrowIfNull(gameObject);
+        this.gameObject = gameObject;
     }
 
     /// <summary>

@@ -1,13 +1,14 @@
-using Inno.Editor.Assets;
-using Inno.Editor.Assets.ImGui;
 using System;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Panel.FileBrowser;
-[EditorAction(FileBrowserInteractionIds.C_IMPORT_SAMPLE, FileBrowserInteractionIds.C_AREA)]
-[EditorMenu(FileBrowserInteractionIds.C_AREA, "Import Sample", order: 120)]
+
+[EditorAction(FileBrowserInteractionIDs.C_IMPORT_SAMPLE, FileBrowserInteractionIDs.C_AREA)]
+[EditorMenu(FileBrowserInteractionIDs.C_AREA, "Import Sample", order: 120)]
 internal sealed class ImportAssetSampleCommand(
     AssetBrowserModule assets,
     AssetSampleImportModule imports
@@ -25,9 +26,13 @@ internal sealed class ImportAssetSampleCommand(
     protected override EditorActionState Query(EditorActionContext<AssetFileEntry> context)
     {
         if (!context.target.isSample)
+        {
             return EditorActionState.hidden;
+        }
         if (!imports.canImport)
+        {
             return EditorActionState.disabled;
+        }
         try
         {
             AssetPath target = AssetPath.Project(AssetSample.GetImportName(context.target.assetPath));

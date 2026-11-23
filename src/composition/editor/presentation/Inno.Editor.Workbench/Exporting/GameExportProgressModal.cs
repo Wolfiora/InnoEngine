@@ -1,25 +1,31 @@
 using System.Numerics;
 using Inno.Editor.Core;
+using Inno.Editor.Exporting;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+
 namespace Inno.Editor.Workbench;
+
 [EditorModal("export.game.progress", "Exporting Game", order: 311)]
 internal sealed class GameExportProgressModal(ExportWindowModule window) : EditorModal
 {
     private DialogPresentation m_content;
     private DialogLayout m_layout;
     private long m_operation;
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public override bool isVisible => window.isGameProgressVisible;
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public override bool allowScrolling => false;
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     protected override Vector2? OnPrepare(
         EditorContext context,
         Vector2 availableContentSize
     ) {
-        var snapshot = window.progress;
-        m_operation = snapshot.operationId;
+        EditorExportProgress snapshot = window.progress;
+        m_operation = snapshot.operationID;
         m_content = new(
             string.IsNullOrEmpty(snapshot.error) ? snapshot.status : snapshot.error,
             snapshot.fraction,
@@ -28,13 +34,16 @@ internal sealed class GameExportProgressModal(ExportWindowModule window) : Edito
             actionEnabled: !snapshot.cancellationRequested,
             cancelOnEscape: true
         );
-        m_layout = EditorUiSession.current.widgets.MeasureDialog(m_content, availableContentSize);
+        m_layout = EditorUISession.current.widgets.MeasureDialog(m_content, availableContentSize);
         return m_layout.size;
     }
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     protected override void OnDraw(EditorContext context)
     {
-        if (EditorUiSession.current.widgets.DrawDialog(m_content, m_layout))
+        if (EditorUISession.current.widgets.DrawDialog(m_content, m_layout))
+        {
             window.CancelGameExport(m_operation);
+        }
     }
 }

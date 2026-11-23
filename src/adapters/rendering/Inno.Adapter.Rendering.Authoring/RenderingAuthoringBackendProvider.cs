@@ -18,17 +18,19 @@ public abstract class RenderingAuthoringBackendProvider
     /// <exception cref="ArgumentException">
     /// The identity is unassigned.
     /// </exception>
-    protected RenderingAuthoringBackendProvider(RenderingBackendId id)
+    protected RenderingAuthoringBackendProvider(RenderingBackendID id)
     {
         if (!id.isValid)
+        {
             throw new ArgumentException("A provider requires an assigned backend ID.", nameof(id));
+        }
         this.id = id;
     }
 
     /// <summary>
     /// Gets the stable runtime implementation identity served by these tools.
     /// </summary>
-    public RenderingBackendId id { get; }
+    public RenderingBackendID id { get; }
 
     /// <summary>
     /// Creates the shader toolchain for this implementation.

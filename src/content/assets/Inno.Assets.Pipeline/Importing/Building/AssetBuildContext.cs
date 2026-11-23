@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Assets;
 
 namespace Inno.Assets.Pipeline;
@@ -11,7 +10,8 @@ namespace Inno.Assets.Pipeline;
 /// <typeparam name="TDefinition">
 /// The build definition asset type.
 /// </typeparam>
-public sealed class AssetBuildContext<TDefinition> where TDefinition : AssetObject
+public sealed class AssetBuildContext<TDefinition>
+    where TDefinition : AssetObject
 {
     /// <summary>
     /// Creates a build context.
@@ -26,8 +26,10 @@ public sealed class AssetBuildContext<TDefinition> where TDefinition : AssetObje
         TDefinition definition,
         IReadOnlyList<AssetInfo> inputs
     ) {
-        this.definition = definition ?? throw new ArgumentNullException(nameof(definition));
-        this.inputs = inputs ?? throw new ArgumentNullException(nameof(inputs));
+        ArgumentNullException.ThrowIfNull(definition);
+        ArgumentNullException.ThrowIfNull(inputs);
+        this.definition = definition;
+        this.inputs = inputs;
     }
 
     /// <summary>

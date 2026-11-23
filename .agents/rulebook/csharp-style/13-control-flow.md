@@ -100,6 +100,7 @@ throw new Exception("bad version");
 ## X-04 `catch`
 
 - Catch the specific type that can be handled. When catching `Exception`, filter with `when` or rethrow with `throw;` after handling.
+- A handler at a failure boundary may catch `Exception` without a filter or a rethrow when it records the failure: it logs it, reports it as a diagnostic, stores it in a result or aggregates it for a later throw.
 - The variable is named `exception` by default. A name that states the role, such as `cleanupFailure`, is allowed when the exception is stored or aggregated. Omit the variable when it is not used.
 - A bare `catch` without a type is only for "clean up, then rethrow".
 - A `catch` block that deliberately ignores an exception contains a comment that says why.
@@ -149,7 +150,7 @@ catch (Exception ex)
 - Return `Task` or `ValueTask`. Never write `async void`.
 - The method name ends with `Async` (NM-04). `CancellationToken cancellationToken` is the last parameter and is passed down to every asynchronous call.
 - In product code (`src`, `build`, `backends`, `platforms`, `tools`, `entry`) every `await` ends with `.ConfigureAwait(false)`. Test code does not use `ConfigureAwait`.
-- Do not block on asynchronous results with `.Wait()`, `.Result` or `.GetAwaiter().GetResult()`. An entry point that must wait synchronously carries a comment that explains why.
+- Do not block on asynchronous results with `.Wait()`, `.Result` or `.GetAwaiter().GetResult()`. A member whose synchronous signature is fixed by a contract may wait at that boundary (see Exceptions). Test code awaits instead: the test method returns `async Task`.
 - On a broken `await` call, `.ConfigureAwait(false)` follows the closing parenthesis on its line.
 
 ```csharp

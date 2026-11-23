@@ -1,5 +1,5 @@
 ---
-paths: ["tests/**", "**/tests/**", "AGENTS.md", "CONTRIBUTING.md", ".agents/**"]
+paths: ["tests/**", "**/tests/**", "tools/ci/**", "AGENTS.md", "CONTRIBUTING.md", ".agents/**"]
 tags: [tests, compilation, completion, review, new-boundary, public-api, ownership, delivery, rules, skills, records]
 ---
 # Validation
@@ -8,6 +8,7 @@ tags: [tests, compilation, completion, review, new-boundary, public-api, ownersh
 
 - Changes to regression, public-contract and validation-tool tests required by the task are permitted. Preserve existing assertions and failure scenarios. Unrelated test rewrites, weaker assertions, production entry points only for tests, InternalsVisibleTo and reflection bypasses are prohibited.
 - Select tests from the actual impact graph, behavioral contracts and execution prerequisites. Test filters must not conceal native build dependencies.
+- Every test project declares the execution layer it actually needs, and its name says the same: `domain` and `contract` suites end with `.Tests`, `integration` with `.Integration.Tests`, `native` with `.Native.Tests` and `product` with `.Product.Tests`. A binding suite named `Inno.Native.*` is already native. A `domain` suite has no native preparation anywhere in its build closure; a suite that deploys a native product is `native` or `product`.
 
 ## 9. Compilation safety
 - Before ending a conversation, do not leave visible compilation errors introduced within the changed target scope, including non-test code.
@@ -15,9 +16,12 @@ tags: [tests, compilation, completion, review, new-boundary, public-api, ownersh
 
 ## 10. Tests and acceptance
 
+- Tests are functional and minimal. For every supported function, keep the smallest set of tests that proves it works through its real public contract, plus its edge cases: failure, cancellation, boundaries and lifecycle. Coverage is complete by function, not by line or by count.
+- A test must fail when the behavior it names is broken. Do not write tests that repeat the implementation, assert only on their own doubles, restate another test, or otherwise pass without exercising the behavior.
+- Hands-on acceptance on real machines belongs to the owner. Do not add automated product runs, soak checks or extra tests to stand in for it.
+- Benchmarks are not tests. Performance measurement belongs to separate benchmark tooling; test projects carry no timing or throughput assertions.
 - Use real public contracts and replaceable public boundaries.
 - InternalsVisibleTo, test backdoors, reflection bypasses and widening internal visibility for tests are prohibited.
-- Cover real success, failure, cancellation, boundary and lifecycle behavior. Do not write tests that merely repeat the implementation.
 - Native calls, AOT, trimming and platform support require actual artifact evidence.
 - Report build, test, SDK, host and device status separately. Unexecuted checks are not passes.
 

@@ -1,19 +1,19 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Scripting.Api;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
 /// <summary>
 /// Declares one contract-compatible pass mapping selectable by materials.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("461d82ac-0279-5044-b17b-776085f2ba35")]
+[StableTypeID("461d82ac-0279-5044-b17b-776085f2ba35")]
 public struct ShaderTechniqueDefinition
 {
     /// <summary>
@@ -32,15 +32,19 @@ public struct ShaderTechniqueDefinition
     /// Capabilities required by the complete technique.
     /// </param>
     public ShaderTechniqueDefinition(
-        ShaderTechniqueId id,
-        ShaderContractId contract,
+        ShaderTechniqueID id,
+        ShaderContractID contract,
         IEnumerable<ShaderTechniquePass> passes,
         GraphicsCapability requiredFeatures = GraphicsCapability.None
     ) {
         if (!id.isValid)
+        {
             throw new ArgumentException("A technique ID must be valid.", nameof(id));
+        }
         if (!contract.isValid)
+        {
             throw new ArgumentException("A shader contract ID must be valid.", nameof(contract));
+        }
         ArgumentNullException.ThrowIfNull(passes);
         this.id = id;
         this.contract = contract;
@@ -51,12 +55,12 @@ public struct ShaderTechniqueDefinition
     /// <summary>
     /// Gets or sets the stable technique identifier.
     /// </summary>
-    public ShaderTechniqueId id { get; set; }
+    public ShaderTechniqueID id { get; set; }
 
     /// <summary>
     /// Gets or sets the open rendering-provider contract.
     /// </summary>
-    public ShaderContractId contract { get; set; }
+    public ShaderContractID contract { get; set; }
 
     /// <summary>
     /// Gets or sets role-to-pass mappings.
@@ -68,4 +72,3 @@ public struct ShaderTechniqueDefinition
     /// </summary>
     public GraphicsCapability requiredFeatures { get; set; }
 }
-

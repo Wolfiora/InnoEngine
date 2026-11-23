@@ -55,11 +55,17 @@ public sealed class RuntimeContentCatalog : ISerializable
     public void Validate()
     {
         if (!IsSha256(contentHash) || !IsSha256(snapshotFingerprint))
+        {
             throw new InvalidDataException("Runtime content identities must be SHA-256 values.");
+        }
         if (!string.Equals(packFileName, $"content-{contentHash}.pack", StringComparison.Ordinal))
+        {
             throw new InvalidDataException("Runtime content pack file name does not match its content identity.");
+        }
         if (assetCount < 0 || artifactBundleCount < 0 || runtimeAssemblyCount <= 0)
+        {
             throw new InvalidDataException("Runtime content catalog contains invalid deployment counts.");
+        }
     }
 
     private static bool IsSha256(string value) => value is { Length: 64 } && value.All(static character => Uri.IsHexDigit(character));

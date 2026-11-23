@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 
@@ -15,6 +14,7 @@ internal sealed class ScriptAssemblyDefinitionImporter : AssetImporter<ScriptAss
     /// Gets whether imported output is deployed to runtime, editor, or both domains.
     /// </summary>
     public override AssetDeploymentScope deploymentScope => AssetDeploymentScope.AuthoringOnly;
+
     /// <summary>
     /// Gets the normalized source extensions accepted by this importer.
     /// </summary>
@@ -43,15 +43,22 @@ internal sealed class ScriptAssemblyDefinitionImporter : AssetImporter<ScriptAss
         ScriptAssemblyDefinitionAsset asset = NativeAssetSourceSerialization.Import<ScriptAssemblyDefinitionAsset>(
             context.sourceBytes.Span,
             context.services,
-            out IReadOnlyList<AssetDependency> dependencies);
+            out IReadOnlyList<AssetDependency> dependencies
+        );
         foreach (AssetDependency dependency in dependencies)
+        {
             output.DependsOnAsset(dependency);
+        }
         if (string.IsNullOrWhiteSpace(asset.assemblyName))
+        {
             throw new InvalidOperationException("Assembly definition name is required.");
+        }
         if (!Enum.IsDefined(asset.scope))
+        {
             throw new InvalidOperationException("Assembly definition scope must be Runtime or Editor.");
+        }
         output.SetAsset(asset);
-        await output.WriteArtifactAsync("source", context.sourceBytes, cancellationToken)
+        await output.WriteArtifactAsync("source", context.sourceBytes, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -77,9 +84,11 @@ internal sealed class ScriptAssemblyDefinitionImporter : AssetImporter<ScriptAss
     ) {
         cancellationToken.ThrowIfCancellationRequested();
         if (string.IsNullOrWhiteSpace(asset.assemblyName))
+        {
             throw new InvalidOperationException("Assembly definition name is required.");
-        return ValueTask.FromResult<ReadOnlyMemory<byte>?>(NativeAssetSourceSerialization.Export(
-            asset,
-            context.services));
+        }
+        return ValueTask.FromResult<ReadOnlyMemory<byte>?>(
+            NativeAssetSourceSerialization.Export(asset, context.services)
+        );
     }
 }

@@ -10,6 +10,11 @@ namespace Inno.Editor.Interactions;
 public interface IEditorSelectionCoordinator
 {
     /// <summary>
+    /// Gets the currently selected target, or <see langword="null"/> when selection is empty.
+    /// </summary>
+    object? selectedTarget { get; }
+
+    /// <summary>
     /// Registers the Core identity domain used by a temporary scene presentation.
     /// </summary>
     /// <param name="allocator">
@@ -29,11 +34,6 @@ public interface IEditorSelectionCoordinator
     /// </exception>
     [ScriptingApiIgnore]
     IDisposable RegisterIdentityDomain(IdentityAllocator allocator);
-
-    /// <summary>
-    /// Gets the currently selected target, or <see langword="null"/> when selection is empty.
-    /// </summary>
-    object? selectedTarget { get; }
 
     /// <summary>
     /// Replaces the current target after closing presentations owned by another target.

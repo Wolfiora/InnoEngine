@@ -1,51 +1,80 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Linq;
 using Inno.Core.Graphs;
 using Inno.Rendering.Shaders;
+
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
 using ImGuiApi = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.ShaderEditor;
+
 internal sealed partial class ShaderEditorCanvas
 {
     private void RepairPorts(GraphNodeRecord node)
     {
-        GraphEndpoint[] missing = draft.missingPorts.Where(endpoint => endpoint.nodeId == node.id).ToArray();
+        GraphEndpoint[] missing = draft.missingPorts.Where(endpoint => endpoint.nodeID == node.id).ToArray();
         if (missing.Length == 0)
+        {
             return;
+        }
         if (ImGuiApi.SmallButton("Repair Ports…"))
+        {
             ImGuiApi.OpenPopup("##repair-ports");
+        }
         if (!ImGuiApi.BeginPopup("##repair-ports"))
+        {
             return;
+        }
         try
         {
-            EditorUI.current.widgets.WrappedText("Removed ports retain their connections. Choose a replacement explicitly; occupied inputs are not overwritten.");
+            EditorUI.current.widgets.WrappedText(
+                "Removed ports retain their connections. Choose a replacement explicitly; occupied inputs are not overwritten."
+            );
             foreach (GraphEndpoint endpoint in missing)
             {
                 ShaderNodePort old = Port(endpoint);
-                ImGuiApi.PushId(endpoint.portId.value);
+                ImGuiApi.PushID(endpoint.portID.value);
                 try
                 {
-                    ImGuiApi.Text(endpoint.portId.value + " · " + old.type.id);
+                    ImGuiApi.Text(endpoint.portID.value + " · " + old.type.id);
                     if (!EditorUI.current.widgets.BeginBoundedCombo("##replacement", "Reconnect to…"))
+                    {
                         continue;
+                    }
                     foreach (ShaderNodePort replacement in draft.ports[node.id])
                     {
-                        var target = new GraphEndpoint(node.id, new(replacement.id));
+                        var target = new GraphEndpoint(node.id, new GraphPortID(replacement.id));
                         if (replacement.direction != old.direction || draft.missingPorts.Contains(target))
+                        {
                             continue;
-                        bool occupied = replacement.direction == GraphPortDirection.Input && Controller.document.edges.Any(edge => edge.input == target);
-                        bool compatible = old.type.id == "missing" || replacement.type.id == "any" || old.type.IsEquivalentTo(replacement.type);
+                        }
+                        bool occupied = replacement.direction == GraphPortDirection.Input
+                                        && controller.document.edges.Any(edge => edge.input == target);
+                        bool compatible = old.type.id == "missing"
+                                          || replacement.type.id == "any"
+                                          || old.type.IsEquivalentTo(replacement.type);
                         ImGuiApi.BeginDisabled(occupied || !compatible);
-                        bool selected = ImGuiApi.Selectable(replacement.id + (occupied ? " · connected" : !compatible ? " · different type" : ""));
+                        bool selected = ImGuiApi.Selectable(
+                            replacement.id + (occupied ? " · connected" : !compatible ? " · different type" : string.Empty)
+                        );
                         ImGuiApi.EndDisabled();
                         if (!selected)
-                            continue;
-                        GraphDocument candidate = Controller.document.Clone();
-                        foreach (GraphEdgeRecord edge in candidate.edges.Where(edge => edge.input == endpoint || edge.output == endpoint).ToArray())
                         {
+                            continue;
+                        }
+                        GraphDocument candidate = controller.document.Clone();
+                        foreach (GraphEdgeRecord edge in candidate.edges
+                            .Where(edge => edge.input == endpoint || edge.output == endpoint)
+                            .ToArray()
+                        ) {
                             candidate.RemoveEdge(edge.id);
-                            candidate.AddEdge(new(edge.id, edge.output == endpoint ? target : edge.output, edge.input == endpoint ? target : edge.input));
+                            candidate.AddEdge(
+                                new GraphEdgeRecord(
+                                    edge.id,
+                                    edge.output == endpoint ? target : edge.output,
+                                    edge.input == endpoint ? target : edge.input
+                                )
+                            );
                         }
 
                         // Keep the retired declaration in metadata for a future source restoration and Undo.
@@ -53,7 +82,7 @@ internal sealed partial class ShaderEditorCanvas
                             ShaderEditorDocuments.C_PORT_SNAPSHOT,
                             ShaderGraphDocument.Encode(draft.portSnapshots[node.id], owner.serialization, owner.context)
                         );
-                        Controller.ReplaceDocument(candidate, "Reconnect Shader Port");
+                        controller.ReplaceDocument(candidate, "Reconnect Shader Port");
                         owner.Changed(draft);
                         break;
                     }
@@ -62,7 +91,7 @@ internal sealed partial class ShaderEditorCanvas
                 }
                 finally
                 {
-                    ImGuiApi.PopId();
+                    ImGuiApi.PopID();
                 }
             }
         }

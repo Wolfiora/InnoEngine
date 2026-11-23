@@ -1,21 +1,23 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Inno.Core.Serialization;
 using Inno.Core.Logging;
+using Inno.Core.Serialization;
 using Inno.Editor.Core;
-using Inno.Editor.Inspection;
-using Inno.Editor.Interactions;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+using Inno.Editor.Inspection;
+using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
 using Inno.Editor.Settings;
 using Inno.Scene;
 using Inno.Scene.Components;
-using Ui = Inno.Editor.ImGui.ImGui;
+
+using EditorUI = Inno.Editor.ImGui.EditorUISession;
+using Gui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
+
 [InspectionDrawer(typeof(GameObject))]
 internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
 {
@@ -27,6 +29,7 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
     private readonly GameObjectLayerSelector m_layerSelector;
     private readonly EditorSettings m_settings;
     private string m_componentSearch = string.Empty;
+
     /// <summary>
     /// Creates a GameObject drawer backed by the current project classification settings.
     /// </summary>
@@ -56,19 +59,22 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
         SerializationRegistry serialization,
         LogRouter logs
     ) {
-        m_edits = edits ?? throw new ArgumentNullException(nameof(edits));
+        ArgumentNullException.ThrowIfNull(edits);
+        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(serialization);
+        m_edits = edits;
         ArgumentNullException.ThrowIfNull(classificationSettings);
         m_tagSelector = new GameObjectTagSelector(classificationSettings, edits);
         m_layerSelector = new GameObjectLayerSelector(classificationSettings, edits);
-        m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
-        m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
+        m_settings = settings;
+        m_serialization = serialization;
         m_cardControls = new InspectorCardControls(logs);
     }
 
     /// <summary>
     /// Gets the icon glyph used to represent this item in the editor.
     /// </summary>
-    public override string icon => m_settings.Get("Editor/Appearance/Icons/GameObject").GetAsString("value", ImGuiIcon.Cube)!;
+    public override string icon => m_settings.Get("Editor/Appearance/Icons/GameObject").GetAsString("value", ImGuiIcon.C_CUBE)!;
 
     /// <summary>
     /// Binds a caller-visible label to the current inspection target.
@@ -86,6 +92,7 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
         InspectionDrawContext context,
         GameObject target
     ) => (target.name, name => m_edits.RenameGameObject(target, name));
+
     /// <summary>
     /// Renders the header presentation for the current editor frame.
     /// </summary>
@@ -100,20 +107,26 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
         GameObject target
     ) {
         bool active = target.activeSelf;
-        if (EditorUI.current.widgets.CompactCheckbox($"target_active_{target.identity.persistentId:N}", ref active, tooltip: "Enable or disable this GameObject."))
-        {
+        if (EditorUI.current.widgets.CompactCheckbox(
+            $"target_active_{target.identity.persistentID:N}",
+            ref active,
+            tooltip: "Enable or disable this GameObject."
+        )) {
             m_edits.SetGameObjectActive(target, active);
         }
 
-        Ui.SameLine(0f, -1f);
-        Ui.Text("Active");
-        Ui.SameLine(0f, EditorUI.current.widgets.style.headerSectionSpacing);
-        float available = Ui.GetContentRegionAvailable().X;
+        Gui.SameLine(0f, -1f);
+        Gui.Text("Active");
+        Gui.SameLine(0f, EditorUI.current.widgets.style.headerSectionSpacing);
+        float available = Gui.GetContentRegionAvailable().X;
         float tagLabelWidth = EditorUI.current.widgets.GetLabelChipSize("Tag").X;
         float layerLabelWidth = EditorUI.current.widgets.GetLabelChipSize("Layer").X;
-        float controlWidth = MathF.Max(1f, (available - tagLabelWidth - layerLabelWidth - EditorUI.current.widgets.style.headerSectionSpacing) * 0.5f);
+        float controlWidth = MathF.Max(
+            1f,
+            (available - tagLabelWidth - layerLabelWidth - EditorUI.current.widgets.style.headerSectionSpacing) * 0.5f
+        );
         m_tagSelector.Draw([target], context.interactions, controlWidth);
-        Ui.SameLine(0f, EditorUI.current.widgets.style.headerSectionSpacing);
+        Gui.SameLine(0f, EditorUI.current.widgets.style.headerSectionSpacing);
         m_layerSelector.Draw([target], context.interactions, controlWidth);
     }
 
@@ -133,28 +146,32 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
         if (!gameObject.isRuntimeValid || !gameObject.scene.isLoaded)
         {
             _ = context.interactions.For(context.interactions.focusedArea).Select();
-            Ui.Text("Selected GameObject is not available in the active scene.");
+            Gui.Text("Selected GameObject is not available in the active scene.");
             return;
         }
 
         if (!m_layerSelector.IsLayerDefined(gameObject.layer))
         {
-            Ui.PushStyleColor((ImGuiCol.Text), EditorPalette.error);
-            EditorUI.current.widgets.WrappedText($"Layer slot {gameObject.layer.index} is not defined in the current project settings. " + "Choose Default or restore that layer definition.");
-            Ui.PopStyleColor();
-            Ui.Spacing();
+            Gui.PushStyleColor((ImGuiCol.Text), EditorPalette.error);
+            EditorUI.current.widgets.WrappedText(
+                $"Layer slot {gameObject.layer.index} is not defined in the current project settings. " + "Choose Default or restore that layer definition."
+            );
+            Gui.PopStyleColor();
+            Gui.Spacing();
         }
 
         if (!m_tagSelector.IsTagDefined(gameObject.tag))
         {
-            Ui.PushStyleColor((ImGuiCol.Text), EditorPalette.error);
-            EditorUI.current.widgets.WrappedText($"Tag '{gameObject.tag}' is not defined in the current Project Settings. " + "Choose another tag or restore that tag definition.");
-            Ui.PopStyleColor();
-            Ui.Spacing();
+            Gui.PushStyleColor((ImGuiCol.Text), EditorPalette.error);
+            EditorUI.current.widgets.WrappedText(
+                $"Tag '{gameObject.tag}' is not defined in the current Project Settings. " + "Choose another tag or restore that tag definition."
+            );
+            Gui.PopStyleColor();
+            Gui.Spacing();
         }
 
-        Ui.PushStyleVar((ImGuiStyleVar.ItemSpacing), EditorUI.current.widgets.style.compactItemSpacing);
-        Ui.PushStyleVar((ImGuiStyleVar.FramePadding), EditorUI.current.widgets.style.compactFramePadding);
+        Gui.PushStyleVar((ImGuiStyleVar.ItemSpacing), EditorUI.current.widgets.style.compactItemSpacing);
+        Gui.PushStyleVar((ImGuiStyleVar.FramePadding), EditorUI.current.widgets.style.compactFramePadding);
         try
         {
             DrawComponents(context, gameObject);
@@ -162,7 +179,7 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
         }
         finally
         {
-            Ui.PopStyleVar(2);
+            Gui.PopStyleVar(2);
         }
     }
 
@@ -176,50 +193,80 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
             GameComponent component = components[i];
             Type componentType = component.GetType();
             MissingGameComponent? missing = component as MissingGameComponent;
-            IReadOnlyList<SerializedProperty> properties = missing is null ? m_serialization.GetProperties(component) : Array.Empty<SerializedProperty>();
-            string componentId = component.identity.persistentId.ToString("N");
+            IReadOnlyList<SerializedProperty> properties = missing is null
+                                                           ? m_serialization.GetProperties(component)
+                                                           : [];
+            string componentID = component.identity.persistentID.ToString("N");
             GameBehavior? behavior = component as GameBehavior;
-            var editorTarget = component;
+            GameComponent editorTarget = component;
             string title = missing?.missingTypeName ?? componentType.Name;
             bool canRemove = componentType != typeof(Transform);
             bool dimmed = behavior is { enabled: false };
             Vector2 cardMinimum = default;
             Vector2 headerMaximum = default;
-            bool open = EditorUI.current.widgets.CollapsingCard(componentId, title, behavior is not null ? () =>
-            {
-                bool enabled = behavior.enabled;
-                if (EditorUI.current.widgets.CompactCheckbox($"enabled_{componentId}", ref enabled, tooltip: "Enable or disable this component."))
+            bool open = EditorUI.current.widgets.CollapsingCard(
+                componentID,
+                title,
+                behavior is not null
+                ? () =>
                 {
-                    _ = m_edits.ChangeProperty(behavior, "enabled", () => behavior.enabled = enabled, enabled ? "Enable Component" : "Disable Component", mergeKey: null);
+                    bool enabled = behavior.enabled;
+                    if (EditorUI.current.widgets.CompactCheckbox(
+                        $"enabled_{componentID}",
+                        ref enabled,
+                        tooltip: "Enable or disable this component."
+                    )) {
+                        _ = m_edits.ChangeProperty(
+                            behavior,
+                            "enabled",
+                            () => behavior.enabled = enabled,
+                            enabled ? "Enable Component" : "Disable Component",
+                            mergeKey: null
+                        );
+                    }
                 }
-            } : null, () => m_cardControls.DrawComponent(
-                m_edits,
-                component,
-                canRemove,
-                () => context.interactions.For(InspectorInteractionIds.C_COMPONENT_AREA, editorTarget).Enqueue(InspectorInteractionIds.C_REMOVE_COMPONENT)
-            ), dimmed: dimmed, trailingControlWidth: m_cardControls.GetWidth(canRemove), drawContextMenu: () =>
-            {
-                cardMinimum = Ui.GetItemMinimum();
-                headerMaximum = Ui.GetItemMaximum();
-                _ = EditorUI.current.menus.ContextMenu($"##component_menu_{componentId}", context.interactions.For(InspectorInteractionIds.C_COMPONENT_AREA, editorTarget));
-                m_cardControls.DrawComponentDragSource(component, title, dimmed);
-            });
+                : null,
+                () => m_cardControls.DrawComponent(
+                    m_edits,
+                    component,
+                    canRemove,
+                    () => context.interactions
+                        .For(InspectorInteractionIDs.C_COMPONENT_AREA, editorTarget)
+                        .Enqueue(InspectorInteractionIDs.C_REMOVE_COMPONENT)
+                ),
+                dimmed: dimmed,
+                trailingControlWidth: m_cardControls.GetWidth(canRemove),
+                drawContextMenu: () =>
+                {
+                    cardMinimum = Gui.GetItemMinimum();
+                    headerMaximum = Gui.GetItemMaximum();
+                    _ = EditorUI.current.menus.ContextMenu(
+                        $"##component_menu_{componentID}",
+                        context.interactions.For(InspectorInteractionIDs.C_COMPONENT_AREA, editorTarget)
+                    );
+                    m_cardControls.DrawComponentDragSource(component, title, dimmed);
+                }
+            );
             Vector2 cardMaximum = headerMaximum;
             if (open)
             {
-                Ui.Unindent();
-                EditorUI.current.widgets.CardBody(componentId, () => EditorUI.current.widgets.SectionLayout(() =>
+                Gui.Unindent();
+                EditorUI.current.widgets.CardBody(componentID, () => EditorUI.current.widgets.SectionLayout(() =>
                 {
                     if (missing is not null)
                     {
-                        Ui.PushStyleColor((ImGuiCol.Text), EditorPalette.error);
-                        EditorUI.current.widgets.WrappedText($"Missing component script ({missing.missingType.stableId:D}). " + "Its serialized state is preserved and will recover automatically when the type returns.");
-                        Ui.PopStyleColor();
+                        Gui.PushStyleColor((ImGuiCol.Text), EditorPalette.error);
+                        EditorUI.current.widgets.WrappedText(
+                            $"Missing component script ({missing.missingType.stableID:D}). " + "Its serialized state is preserved and will recover automatically when the type returns."
+                        );
+                        Gui.PopStyleColor();
                         return;
                     }
 
                     if (context.TryDrawInline(component))
+                    {
                         return;
+                    }
                     if (properties.Count == 0)
                     {
                         InspectorTypeOrigin.Draw(componentType);
@@ -228,16 +275,21 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
 
                     for (int propertyIndex = 0; propertyIndex < properties.Count; propertyIndex++)
                     {
-                        context.properties.Draw(context.editorContext, component, $"gameObject.{gameObject.identity.persistentId:N}.{componentId}", properties[propertyIndex]);
+                        context.properties.Draw(
+                            context.editorContext,
+                            component,
+                            $"gameObject.{gameObject.identity.persistentID:N}.{componentID}",
+                            properties[propertyIndex]
+                        );
                     }
                 }), dimmed: dimmed);
-                cardMaximum = Ui.GetItemMaximum();
-                Ui.Indent();
-                Ui.TreePop();
+                cardMaximum = Gui.GetItemMaximum();
+                Gui.Indent();
+                Gui.TreePop();
             }
 
             m_cardControls.DrawComponentDropTarget(context.interactions, m_edits, component, i, cardMinimum, cardMaximum);
-            Ui.Dummy(new Vector2(0f, EditorUI.current.widgets.style.cardSpacing));
+            Gui.Dummy(new Vector2(0f, EditorUI.current.widgets.style.cardSpacing));
         }
     }
 
@@ -248,19 +300,25 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
         if (EditorUI.current.widgets.CenteredButton("Add Component", EditorUI.current.widgets.style.addButtonTopPadding))
         {
             m_componentSearch = string.Empty;
-            Ui.OpenPopup("##add_component_popup");
+            Gui.OpenPopup("##add_component_popup");
         }
 
-        if (!EditorUI.current.widgets.BeginSearchPopup("##add_component_popup", ref m_componentSearch, "Search components...", C_SEARCH_BUFFER_SIZE))
-        {
+        if (!EditorUI.current.widgets.BeginSearchPopup(
+            "##add_component_popup",
+            ref m_componentSearch,
+            "Search components...",
+            C_SEARCH_BUFFER_SIZE
+        )) {
             return;
         }
 
         try
         {
-            EditorInteraction interaction = context.interactions.For(InspectorInteractionIds.C_COMPONENT_AREA, gameObject);
+            EditorInteraction interaction = context.interactions.For(InspectorInteractionIDs.C_COMPONENT_AREA, gameObject);
             if (EditorUI.current.menus.DrawSearchItems(interaction, interaction.BuildMenu().items, m_componentSearch))
-                Ui.CloseCurrentPopup();
+            {
+                Gui.CloseCurrentPopup();
+            }
         }
         finally
         {

@@ -9,7 +9,7 @@ namespace Inno.Tooling.Architecture;
 
 internal static class RuntimeContentBoundaryValidator
 {
-    private static readonly HashSet<string> PhysicalIoTypes = new(StringComparer.Ordinal)
+    private static readonly HashSet<string> PHYSICAL_IO_TYPES = new(StringComparer.Ordinal)
     {
         "System.IO.File", "System.IO.Directory", "System.IO.Path", "System.IO.FileStream",
         "System.IO.FileInfo", "System.IO.DirectoryInfo", "Inno.Core.IO.AtomicFile",
@@ -18,7 +18,7 @@ internal static class RuntimeContentBoundaryValidator
 
     internal static bool ShouldAudit(string relative)
         => IsContentOwner(relative) || relative.StartsWith("build/", StringComparison.Ordinal)
-            || relative.EndsWith("/EditorHost.cs", StringComparison.Ordinal);
+           || relative.EndsWith("/EditorHost.cs", StringComparison.Ordinal);
 
     internal static void Validate(
         string relative,
@@ -26,28 +26,35 @@ internal static class RuntimeContentBoundaryValidator
         ICollection<string> failures
     ) {
         if (model is null)
+        {
             return;
+        }
         bool contentOwner = IsContentOwner(relative);
         bool compositionOwner = relative.StartsWith("build/composition/Inno.Build.Composition/", StringComparison.Ordinal);
-        foreach (SyntaxNode expression in model.SyntaxTree.GetRoot().DescendantNodes().Where(static node =>
-                     node is InvocationExpressionSyntax or ObjectCreationExpressionSyntax or ImplicitObjectCreationExpressionSyntax))
-        {
+        foreach (SyntaxNode expression in model.SyntaxTree.GetRoot().DescendantNodes().Where(static node => (
+            node is InvocationExpressionSyntax or ObjectCreationExpressionSyntax or ImplicitObjectCreationExpressionSyntax
+        ))
+        ) {
             ISymbol? symbol = model.GetSymbolInfo(expression).Symbol;
             string? type = symbol?.ContainingType?.ToDisplayString();
-            if (contentOwner && type is not null && PhysicalIoTypes.Contains(type))
+            if (contentOwner && type is not null && PHYSICAL_IO_TYPES.Contains(type))
+            {
                 failures.Add($"{relative}: shared content owners must receive reading contracts instead of calling {type}.");
+            }
             if (!compositionOwner && (expression is ObjectCreationExpressionSyntax or ImplicitObjectCreationExpressionSyntax)
                 && (type is "Inno.Build.WindowsX64.WindowsX64GameBuildTarget"
                     or "Inno.Build.MacOSArm64.MacOSArm64GameBuildTarget"
-                    or "Inno.Build.BrowserWasm32.BrowserWasm32GameBuildTarget"))
+                    or "Inno.Build.BrowserWasm32.BrowserWasm32GameBuildTarget")
+            ) {
                 failures.Add($"{relative}: built-in targets must be registered by the shared build composition.");
+            }
         }
     }
 
     private static bool IsContentOwner(string relative)
         => relative.StartsWith("src/content/deployment/Inno.Content/", StringComparison.Ordinal)
-            || relative.StartsWith("src/composition/player/Inno.Player.Runtime/", StringComparison.Ordinal)
-            || relative.StartsWith("src/foundation/extensibility/Inno.Extensibility.Modules/", StringComparison.Ordinal)
-            || relative.StartsWith("src/content/assets/Inno.Assets/Runtime/AssetDatabase", StringComparison.Ordinal)
-            || relative.StartsWith("src/runtime/engine/Inno.Runtime/Hosting/RuntimeSession", StringComparison.Ordinal);
+           || relative.StartsWith("src/composition/player/Inno.Player.Runtime/", StringComparison.Ordinal)
+           || relative.StartsWith("src/foundation/extensibility/Inno.Extensibility.Modules/", StringComparison.Ordinal)
+           || relative.StartsWith("src/content/assets/Inno.Assets/Runtime/AssetDatabase", StringComparison.Ordinal)
+           || relative.StartsWith("src/runtime/engine/Inno.Runtime/Hosting/RuntimeSession", StringComparison.Ordinal);
 }
