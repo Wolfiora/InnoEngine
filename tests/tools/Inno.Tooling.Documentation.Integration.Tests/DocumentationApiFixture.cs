@@ -57,8 +57,10 @@ public abstract class DocumentationApiFixture : IDisposable
     protected void Bind(
         bool member = true,
         string description = "The value contract.",
-        string countType = "int"
+        string countType = "int",
+        string typeName = "Value"
     ) {
+        string type = "T:Inno.Probe." + typeName;
         string inventory = JsonSerializer.Serialize(
             new[] { new { name = "Inno.Probe", path = "src/Inno.Probe.csproj", surfaces = new[] { "source-clr" }, isTest = false } }
         );
@@ -84,10 +86,15 @@ public abstract class DocumentationApiFixture : IDisposable
         };
         object[] symbols = member
                            ? [
-                               Symbol(C_TYPE, "NamedType", "public class Inno.Probe.Value", null),
-                               Symbol(C_MEMBER, "Property", "public " + countType + " Inno.Probe.Value.count { get; }", C_TYPE)
+                               Symbol(type, "NamedType", "public class Inno.Probe." + typeName, null),
+                               Symbol(
+                                   "P:Inno.Probe." + typeName + ".count",
+                                   "Property",
+                                   "public " + countType + " Inno.Probe." + typeName + ".count { get; }",
+                                   type
+                               )
                            ]
-                           : [Symbol(C_TYPE, "NamedType", "public class Inno.Probe.Value", null)];
+                           : [Symbol(type, "NamedType", "public class Inno.Probe." + typeName, null)];
         string facts = JsonSerializer.Serialize(new
         {
             model = "source-clr",

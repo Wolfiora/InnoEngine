@@ -151,6 +151,35 @@ public sealed class DocumentationApiSynchronizationTests : DocumentationApiFixtu
         if (manual) Assert.Equal(before, File.ReadAllText(member));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CaseOnlyTypeRenameKeepsOnePageAndItsManualProse(bool manual)
+    {
+        await SyncAsync();
+        string page = Fragment(C_TYPE);
+        if (manual)
+        {
+            File.WriteAllText(
+                page,
+                File.ReadAllText(page).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
+                + "\nRead the value only on the owner thread.\n"
+            );
+        }
+        string before = File.ReadAllText(page);
+        Bind(typeName: "VALUE");
+        Assert.Equal(0, await SyncAsync());
+        Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-check", "--docs-root", m_root]));
+        Assert.Equal(page, Fragment("T:Inno.Probe.VALUE"));
+        Assert.True(File.Exists(Fragment("P:Inno.Probe.VALUE.count")));
+        string registry = File.ReadAllText(Path.Combine(m_root, "reference/api/content.json"));
+        Assert.DoesNotContain("Inno.Probe.Value", registry);
+        string after = File.ReadAllText(page);
+        Assert.Contains("symbol: engine:Inno.Probe:T:Inno.Probe.VALUE", after);
+        Assert.Contains(manual ? "source: Ada Example" : "source: xml", after);
+        if (manual) Assert.Equal(Body(before), Body(after));
+    }
+
     [Fact]
     public async Task BlankAuthorCannotOverwriteAnyContent()
     {
