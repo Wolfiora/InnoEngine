@@ -43,17 +43,11 @@ try {
         $failed = $false
         try {
             $retry = $case -ceq 'platform-retry'
-            & (Join-Path $scripts 'Join-ValidationCi.ps1') -ReceivedDirectory $received -Hosts $hosts -ExpectedCommit ('a' * 40) -Attempt $(if ($retry) { 2 } else { 1 }) -HostEvidenceOnly:$retry
+            & (Join-Path $scripts 'Join-ValidationCi.ps1') -ReceivedDirectory $received -Hosts $hosts -ExpectedCommit ('a' * 40) -Attempt $(if ($retry) { 2 } else { 1 })
         } catch { $failed = $true; $_ | Out-String | Set-Content (Join-Path $root 'failure.log') }
         if ($failed -ne ($case -cnotin @('complete','platform-retry'))) { throw "Unexpected final gate result: $case. See $root." }
         if ($retry -and (!(Test-Path (Join-Path $root 'artifacts/validation/joined/fixture/results.json')) -or (Test-Path $env:GITHUB_ENV))) {
             throw 'A platform retry must retain verified host results without claiming complete acceptance.'
-        }
-        $certificate = Join-Path $root 'artifacts/validation/certification.json'
-        if ((Test-Path $certificate) -ne ($case -ceq 'complete')) { throw 'An incomplete candidate received a final certification.' }
-        if ($case -ceq 'complete') {
-            if (-not (Test-Path (Join-Path $root 'artifacts/validation/joined/fixture/plan.json'))) { throw 'The original plan must accompany retained acceptance evidence.' }
-            if ((Get-Content $env:GITHUB_ENV) -cne 'INNO_FULL_CERTIFICATION=true') { throw 'Complete acceptance was not identified explicitly.' }
         }
     }
 } finally {

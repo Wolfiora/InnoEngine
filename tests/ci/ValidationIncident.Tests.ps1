@@ -26,7 +26,7 @@ try {
         if ($case -ceq 'missing-owner') { $evidence.results = @($results | Where-Object id -CNE 'unchanged-1') }
         $evidence | ConvertTo-Json -Depth 8 | Set-Content $path
         $summary = Join-Path $owner "$case.md"
-        & "$PSScriptRoot/../../tools/ci/Write-ValidationSummary.ps1" -ReceivedDirectory $owner -Repository fixture/engine -DefaultBranch master -Attempt 1 -RunId 1 -Hosts windows -SummaryPath $summary
+        & "$PSScriptRoot/../../tools/ci/Write-ValidationSummary.ps1" -ReceivedDirectory $owner -Repository fixture/engine -Attempt 1 -RunId 1 -Hosts windows -SummaryPath $summary
         $message = Get-Content $summary -Raw
         if (!$message.Contains($incident.test) -or !$message.Contains($incident.trxDuration) -or !$message.Contains('Shared tests exited with 1')) { throw 'The first failed test or independent process failure was lost.' }
         if ($case -ceq 'failed-owner' -and !$message.Contains('All 2 planned checks returned results.')) { throw 'A fully accounted failed run was reported as incomplete.' }

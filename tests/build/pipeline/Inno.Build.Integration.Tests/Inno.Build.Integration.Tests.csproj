@@ -6,9 +6,20 @@
     <IsPackable>false</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <InnoValidationLayer>integration</InnoValidationLayer>
+    <InnoValidationEnvironment>windows;macos;linux</InnoValidationEnvironment>
   </PropertyGroup>
   <Import Project="../../../RepositoryInput.targets" />
   <ItemGroup>
+    <InnoValidationSubject Include="../../../../platforms/MacOSArm64/build/Inno.Build.MacOSArm64/Inno.Build.MacOSArm64.csproj" />
+    <InnoValidationSubject Include="../../../../backends/DotNet/build/Inno.Build.Managed.DotNet/Inno.Build.Managed.DotNet.csproj" />
+    <InnoValidationSubject Include="../../../../build/composition/Inno.Build.Composition/Inno.Build.Composition.csproj" />
+    <InnoValidationSubject Include="../../../../build/distributions/Inno.Build.Distribution.Standard/Inno.Build.Distribution.Standard.csproj" />
+    <InnoValidationSubject Include="../../../../build/managed/Inno.Build.Managed/Inno.Build.Managed.csproj" />
+    <InnoValidationSubject Include="../../../../build/pipeline/Inno.Build/Inno.Build.csproj" />
+    <InnoValidationSubject Include="../../../../build/tasks/Inno.Build.TaskHosting/Inno.Build.TaskHosting.csproj" />
+    <InnoValidationSubject Include="../../../../build/tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj" />
+    <InnoValidationSubject Include="../../../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" />
+    <InnoValidationSubject Include="../../../../platforms/WindowsX64/build/Inno.Build.WindowsX64/Inno.Build.WindowsX64.csproj" />
     <ProjectReference Include="../../../../platforms/MacOSArm64/build/Inno.Build.MacOSArm64/Inno.Build.MacOSArm64.csproj" />
     <ProjectReference Include="../../../../backends/DotNet/build/Inno.Build.Managed.DotNet/Inno.Build.Managed.DotNet.csproj" />
     <ProjectReference Include="../../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" />

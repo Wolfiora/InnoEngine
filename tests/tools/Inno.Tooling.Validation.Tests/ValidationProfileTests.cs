@@ -250,16 +250,15 @@ public sealed class ValidationProfileTests : ValidationPlanFixture
             "native-hot-builds",
             "editor-products",
             "support-pack",
-            "native-aot-restore",
-            "release-bundle"
+            "native-aot-restore"
         }) {
             Assert.Contains(
                 checks,
                 check => check.GetProperty("id").GetString() == required && check.GetProperty("exclusion").ValueKind == JsonValueKind.Null
             );
         }
-        JsonElement bundle = checks.Single(check => check.GetProperty("id").GetString() == "release-bundle");
-        string releaseContext = bundle.GetProperty("context").GetString()!;
+        JsonElement pack = checks.Single(check => check.GetProperty("id").GetString() == "support-pack");
+        string releaseContext = pack.GetProperty("context").GetString()!;
         Assert.Equal(
             "Release",
             plan.RootElement
@@ -290,15 +289,6 @@ public sealed class ValidationProfileTests : ValidationPlanFixture
                     .GetString()
             );
         }
-        // Restore-only sources still invalidate the bundle, but their unbuilt standalone DLLs are not package inputs.
-        string[] bundleInputs = bundle.GetProperty("inputs").EnumerateArray().Select(value => value.GetString()!).ToArray();
-        Assert.Contains("@platforms/Fixture/player/Player.csproj", bundleInputs);
-        Assert.Contains("@src/PlayerOnly/PlayerOnly.csproj", bundleInputs);
-        Assert.Equal(
-            new[] { "entry/InnoEngine.Build/InnoEngine.Build.csproj", "entry/InnoEngine.Editor/InnoEngine.Editor.csproj" },
-            bundle.GetProperty("projects").EnumerateArray().Select(value => value.GetString()!).Order(StringComparer.Ordinal).ToArray()
-        );
-        Assert.Contains("native-aot-restore", bundle.GetProperty("prerequisites").EnumerateArray().Select(value => value.GetString()));
         Assert.Equal(
             "platforms/Fixture/player/Player.csproj",
             checks.Single(check => check.GetProperty("id").GetString() == "native-aot-restore").GetProperty("owner").GetString()

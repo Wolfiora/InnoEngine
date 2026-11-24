@@ -10,7 +10,7 @@ if (-not $branch.run -or $branch.profile -cne 'fast') { throw 'Branches need the
 if ((& $script -Event push -Commit $commit -IsDefaultBranch $false -HasOpenPullRequest $true).run) { throw 'PR-owned pushes must not duplicate candidate execution.' }
 $master = & $script -Event push -Commit $commit -IsDefaultBranch $true -HasOpenPullRequest $true
 if (-not $master.run -or $master.profile -cne 'master') { throw 'Default-branch integration must not be skipped by PR routing.' }
-if (-not (& $script -Event workflow_dispatch -Commit $commit).full) { throw 'Manual complete acceptance was lost.' }
+if ((& $script -Event workflow_dispatch -Commit $commit).full -or !(& $script -Event workflow_dispatch -Commit $commit -ManualFull $true).full) { throw 'Manual complete acceptance was lost.' }
 $rejected = $false
 try { $null = & $script -Event schedule -Commit $commit } catch { $rejected = $true }
 if (-not $rejected) { throw 'Timed events must not select an engine validation profile.' }

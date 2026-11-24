@@ -7,9 +7,6 @@ inputs:
   platform:
     description: Registered runner.
     required: true
-  source-run:
-    description: Trusted continuation run.
-    default: '0'
 runs:
   using: composite
   steps:
@@ -35,4 +32,3 @@ runs:
     - uses: ./.github/actions/execute-validation
       with:
         platform: ${{ inputs.platform }}
-        source-run: ${{ inputs.source-run }}

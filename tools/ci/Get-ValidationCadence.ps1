@@ -17,7 +17,7 @@ if ($Event -ceq 'push' -and -not $default) {
     $open = @($pulls | Where-Object { $_.state -ceq 'open' -and $_.head.sha -ceq $Commit `
         -and $_.head.repo.full_name -ceq $Repository -and "refs/heads/$($_.head.ref)" -ceq $eventData.ref }).Count -gt 0
 }
-$manualFull = if ($null -eq $eventData.inputs.full) { $true } else { [string]$eventData.inputs.full -ceq 'true' }
+$manualFull = [string]$eventData.inputs.full -ceq 'true'
 $selected = & "$PSScriptRoot/Select-ValidationCadence.ps1" -Event $Event -Commit $Commit `
     -IsDefaultBranch $default -HasOpenPullRequest $open -ManualFull $manualFull
 foreach ($name in @('run', 'full', 'extended')) {

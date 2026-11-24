@@ -8,7 +8,7 @@ foreach ($script in @('Invoke-ValidationWorkers.ps1','Prepare-ValidationShard.ps
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot "../../tools/ci/$script") -Destination $scripts
 }
 @'
-param($Stage,$BaseRevision,$ExpectedCommit,$Shard,$PlanDirectory,$OutputDirectory,$PrerequisitesDirectory,$SourceRunId)
+param($Stage,$BaseRevision,$ExpectedCommit,$Shard,$PlanDirectory,$OutputDirectory,$PrerequisitesDirectory)
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath('../..', $PSScriptRoot)
 if ((& git -C $root rev-parse HEAD).Trim() -cne $ExpectedCommit) { throw 'Incorrect worker checkout.' }
@@ -29,7 +29,6 @@ if ($Shard -ceq 'managed' -and $env:INNO_WORKER_FIXTURE_FAILURE -ceq 'missing') 
 $out = Join-Path $root $OutputDirectory
 New-Item -ItemType Directory -Path $out -Force | Out-Null
 @{ id = $Shard; checkout = $root } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $out 'results.json')
-"compiledOutputs=$out" >> $env:GITHUB_OUTPUT
 '@ | Set-Content -LiteralPath (Join-Path $scripts 'Invoke-ValidationCi.ps1')
 'artifacts/' | Set-Content -LiteralPath (Join-Path $fixture '.gitignore')
 'entry' | Set-Content -LiteralPath (Join-Path $fixture $entry)

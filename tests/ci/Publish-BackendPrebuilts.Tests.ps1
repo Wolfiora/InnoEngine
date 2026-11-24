@@ -120,7 +120,7 @@ try {
     $incomplete.checks[0].source = 'backend-prebuilts-2020.01.01.1'
     $incomplete | ConvertTo-Json -Depth 6 | Set-Content $proofPath
     try { Publish; throw 'An untrusted product proof passed.' } catch {
-        if ($_.Exception.Message -cnotin @('Missing real cold product consumption.', 'Untrusted SDK proof source.')) { throw }
+        if ($_.Exception.Message -cne 'Untrusted SDK proof source.') { throw }
     }
     $incomplete.checks = @()
     $incomplete | ConvertTo-Json -Depth 6 | Set-Content $proofPath

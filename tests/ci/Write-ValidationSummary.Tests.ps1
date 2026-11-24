@@ -16,7 +16,7 @@ try {
         }
         $summary = Join-Path $directory "$case/summary.md"
         & "$PSScriptRoot/../../tools/ci/Write-ValidationSummary.ps1" -ReceivedDirectory $received -Hosts @('fixture-host') `
-            -Repository fixture/engine -DefaultBranch master -Attempt 1 -RunId 1 -SummaryPath $summary
+            -Repository fixture/engine -Attempt 1 -RunId 1 -SummaryPath $summary
         $text = Get-Content -LiteralPath $summary -Raw
         if ($text -match 'windows-|macos-') { throw 'The summary invented an unselected host requirement.' }
         if ($case -ceq 'missing') {

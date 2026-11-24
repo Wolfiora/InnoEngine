@@ -9,6 +9,7 @@
     <InnoTestNativeProduct>editor</InnoTestNativeProduct>
     <InnoTestNativeTarget>$(InnoNativeTarget)</InnoTestNativeTarget>
     <InnoValidationLayer>native</InnoValidationLayer>
+    <InnoValidationEnvironment>windows;macos;linux</InnoValidationEnvironment>
     <OutputType>Exe</OutputType>
     <GenerateProgramFile>false</GenerateProgramFile>
     <StartupObject>Inno.Adapter.Rendering.Bgfx.Native.Tests.NativeWindowTestHost</StartupObject>

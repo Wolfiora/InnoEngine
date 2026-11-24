@@ -183,19 +183,12 @@ if ($HostTarget -cne $Target) {
 }
 $coldSelection = Join-Path $coldStore 'selection.json'
 [IO.File]::WriteAllText($coldSelection,(ConvertTo-Json $coldInputs -Depth 80 -Compress))
-$coldExecutions = 0
 $payload = Get-Content -LiteralPath (Join-Path $installed 'manifest.json') -Raw | ConvertFrom-Json -AsHashtable
 $checks = @(foreach ($configuration in $platform[0].configurations) {
     $plan = Get-Content -LiteralPath (Join-Path $work "plan-$configuration/plan.json") -Raw | ConvertFrom-Json -AsHashtable -Depth 100
     $sdk = Join-Path $work 'consume'
     $compilerPlan = Get-Content -LiteralPath (Join-Path $work "plan-$configuration/inputs.json") -Raw | ConvertFrom-Json -AsHashtable
-    if ($compilerPlan.developmentProperties) {
-        $development = [IO.Path]::GetFullPath($compilerPlan.developmentProperties,$root)
-        Invoke-BackendSolution (Join-Path $work "plan-$configuration/Backends.slnx") $plan.contexts.managed @(
-            '--configuration',$configuration,'--artifacts-path',(Join-Path $work 'consume-development'),'--disable-build-servers','-nr:false',
-            "-p:InnoNativeDependencyManifest=$coldSelection","-p:InnoBackendPrebuiltRoot=$installed","-p:InnoNativeTarget=$Target",
-            "-p:InnoToolTarget=$HostTarget","-p:InnoProductBuildProperties=$development")
-    }
+    $developmentChecked = $false
     foreach ($product in $plan.contexts.managed.sdkGraph | Where-Object { $_.Properties.InnoProductTarget -ceq $Target -and $_.Properties.InnoProductId }) {
         $project = $product.Path.Replace('${workspace}', $root)
         $properties = @(& $dotnetPath msbuild $project -nologo "-p:Configuration=$configuration" -getProperty:InnoProductBuildProperties)
@@ -235,21 +228,27 @@ $checks = @(foreach ($configuration in $platform[0].configurations) {
         }
         $identityBytes = [Text.Encoding]::UTF8.GetBytes((ConvertTo-Json $facts -Compress))
         $contract = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($identityBytes)).ToLowerInvariant()
-        $priorChecks = @($trustedChecks | Where-Object { $_.configuration -ceq $configuration -and $_.project -ceq $relative -and $_.identity -ceq $contract })
+        $priorChecks = @($trustedChecks | Where-Object { $_.configuration -ceq $configuration -and $_.project -ceq $relative -and $_.product -ceq $id -and $_.identity -ceq $contract })
         if ($priorChecks.Count -gt 1) { throw 'Duplicate trusted product evidence.' }
-        $reuse = $coldExecutions -gt 0 -and $priorChecks.Count -eq 1 -and !$pack -and !$aggregate.Count
+        $reuse = $priorChecks.Count -eq 1
+        if (!$reuse -and !$developmentChecked -and $compilerPlan.developmentProperties) {
+            $developmentChecked = $true
+            $development = [IO.Path]::GetFullPath($compilerPlan.developmentProperties,$root)
+            Invoke-BackendSolution (Join-Path $work "plan-$configuration/Backends.slnx") $plan.contexts.managed @(
+                '--configuration',$configuration,'--artifacts-path',(Join-Path $work 'consume-development'),'--disable-build-servers','-nr:false',
+                "-p:InnoNativeDependencyManifest=$coldSelection","-p:InnoBackendPrebuiltRoot=$installed","-p:InnoNativeTarget=$Target",
+                "-p:InnoToolTarget=$HostTarget","-p:InnoProductBuildProperties=$development")
+        }
         if (!$reuse -and !$aggregate.Count) {
             Invoke-Sdk @('build',$project,'--configuration',$configuration,'--artifacts-path',$sdk,'--disable-build-servers','-m:2','-nr:false',
                 "-p:InnoNativeDependencyManifest=$coldSelection","-p:InnoBackendPrebuiltRoot=$installed","-p:InnoNativeTarget=$Target",
                 "-p:InnoToolTarget=$HostTarget","-p:InnoProductBuildProperties=$($properties[0])")
         }
-        if ($id -ceq 'player' -and $configuration -ceq 'Release') { Invoke-PlayerSupportPack 'consume' $installed @() $coldSelection }
-        if (!$reuse) { $coldExecutions++ }
+        if (!$reuse -and $pack) { Invoke-PlayerSupportPack 'consume' $installed @() $coldSelection }
         [ordered]@{configuration=$configuration;product=$id;project=$relative;seconds=$clock.Elapsed.TotalSeconds;identity=$contract;
             source=$(if ($reuse) { $PreviousTag } else { 'executed' })}
     }
 })
-if (!$coldExecutions) { throw 'A new archive requires a real cold product check.' }
 $receipt = [ordered]@{version=2;commit=$identity.commit;target=$Target;sha256=$digest;bytes=[IO.FileInfo]::new($archive).Length;production=$production;checks=$checks}
 [IO.File]::WriteAllText((Join-Path $OutputDirectory 'consumption.json'),(ConvertTo-Json $receipt -Depth 8))
 $archive

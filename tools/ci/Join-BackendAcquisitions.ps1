@@ -33,7 +33,7 @@ foreach ($hostName in $Hosts) {
             throw "Missing exact archived platform for $target."
         }
         if (!$decision.deferred) {
-            if ($RebuildTargets -or $decision.packages.Count -ne 1 -or $package.operation -cne 'consume') {
+            if ($target -cin @($RebuildTargets -split ',') -or $package.operation -cne 'consume') {
                 throw "The local plan did not own this acquisition: $hostName/$target."
             }
             continue
@@ -49,7 +49,7 @@ foreach ($hostName in $Hosts) {
         }
     }
     if (!$decision.deferred -and !$decision.executedLocally) {
-        $digest = if ($decision.packages.Count) { $decision.packages[0].sha256 } else { '' }
+        $digest = if ($decision.packages.Count -eq 1) { $decision.packages[0].sha256 } else { '' }
         $independent += @{runner=$hostName;digest=$digest}
     }
     if ($decision.deferred) {

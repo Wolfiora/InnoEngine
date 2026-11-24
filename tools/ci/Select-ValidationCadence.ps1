@@ -3,7 +3,7 @@ param(
     [Parameter(Mandatory)][string]$Commit,
     [bool]$IsDefaultBranch = $true,
     [bool]$HasOpenPullRequest = $false,
-    [bool]$ManualFull = $true
+    [bool]$ManualFull = $false
 )
 
 $ErrorActionPreference = 'Stop'
@@ -19,7 +19,7 @@ if ($Event -ceq 'workflow_dispatch') {
 } elseif ($Event -ceq 'push') {
     if ($IsDefaultBranch) {
         $profile = 'master'
-        $reason = 'Expand affected product and publication checks on the default branch.'
+        $reason = 'Evaluate affected owners on the landed change.'
     } elseif ($HasOpenPullRequest) {
         $run = $false
         $profile = 'fast'

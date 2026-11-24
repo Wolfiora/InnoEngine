@@ -471,6 +471,7 @@ public sealed class ValidationDocumentationTests
                 if (item["id"]!.GetValue<string>() == "architecture")
                 {
                     item["kind"] = "ci-contracts";
+                    item["projects"] = new JsonArray("tests/ci/CapturePolicy.Tests.ps1");
                 }
                 selected.Add(item);
             }

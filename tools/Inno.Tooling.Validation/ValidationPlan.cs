@@ -33,7 +33,6 @@ internal sealed record ValidationPlan(
     string? backendHost = null,
     BackendPackageReceipt[]? backendPackages = null,
     ValidationResult[]? backendTests = null,
-    string[]? hostExcludedSources = null,
     Dictionary<string, string>? backendOwnerPayloads = null,
     Dictionary<string, string>? backendProductPayloads = null,
     bool portableTestChanges = false
@@ -92,7 +91,8 @@ internal sealed record ValidationCheck(
     ValidationDocumentationCheck? documentation = null,
     string[]? sourceSets = null,
     ValidationNativeRequest[]? consumedProducts = null,
-    string[]? changedSources = null
+    string[]? changedSources = null,
+    string[]? scenarios = null
 );
 
 internal sealed record ValidationDocumentationBinding(
@@ -118,7 +118,9 @@ internal sealed record ValidationResult(
     string detail,
     Dictionary<string, string>? outputs = null,
     string dependencyIdentity = "",
-    ValidationDocumentationInput[]? documentationInputs = null
+    ValidationDocumentationInput[]? documentationInputs = null,
+    int? testCases = null,
+    double? caseSeconds = null
 );
 
 internal sealed record ValidationDocumentationInput(

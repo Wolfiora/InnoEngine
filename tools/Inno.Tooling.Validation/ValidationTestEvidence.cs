@@ -9,7 +9,7 @@ namespace Inno.Tooling.Validation;
 
 internal static class ValidationTestEvidence
 {
-    internal static Dictionary<string, (bool passed, string detail)> Read(
+    internal static Dictionary<string, (bool passed, string detail, int cases, double seconds)> Read(
         string root,
         Dictionary<string, string> projects,
         string directory
@@ -25,6 +25,8 @@ internal static class ValidationTestEvidence
             static pair => ValidationTestHosts.Read(pair.Value),
             StringComparer.Ordinal
         );
+        Dictionary<string, TimeSpan> durations = projects.Keys.ToDictionary(project => project, _ => TimeSpan.Zero, StringComparer.Ordinal);
+        Dictionary<string, int> cases = projects.Keys.ToDictionary(project => project, _ => 0, StringComparer.Ordinal);
         Dictionary<string, int> executed = projects.Keys.ToDictionary(static project => project, static _ => 0, StringComparer.Ordinal);
         Dictionary<string, List<string>> excluded = projects.Keys.ToDictionary(
             static project => project,
@@ -65,6 +67,17 @@ internal static class ValidationTestEvidence
                 }
                 XElement method = definition.Elements().Single(static element => element.Name.LocalName == "TestMethod");
                 string name = (string?)method.Attribute("className") + "." + (string?)method.Attribute("name");
+                if ((string?)record.Attribute("outcome") is "Passed" or "Failed")
+                {
+                    cases[project]++;
+                    if (TimeSpan.TryParse(
+                        (string?)record.Attribute("duration"),
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        out TimeSpan duration
+                    )) {
+                        durations[project] += duration;
+                    }
+                }
                 if ((string?)record.Attribute("outcome") == "Failed")
                 {
                     string message = record.Descendants()
@@ -152,6 +165,9 @@ internal static class ValidationTestEvidence
         return projects.Keys.ToDictionary(static project => project, project => (failures[project].Count == 0,
             failures[project].Count == 0
             ? $"{executed[project]} required cases passed; {excluded[project].Count} OS contracts NotApplicable. See host-contracts.json."
-            : string.Join(Environment.NewLine, failures[project])), StringComparer.Ordinal);
+            : string.Join(
+                Environment.NewLine,
+                failures[project]
+            ), cases[project], durations[project].TotalSeconds), StringComparer.Ordinal);
     }
 }

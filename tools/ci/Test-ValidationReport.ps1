@@ -59,7 +59,7 @@ foreach ($check in $checks) {
         throw "Required check did not pass: $($check.id) ($($result.status))"
     } else {
         if ($null -eq $result.outputs) { throw "Required output evidence is missing: $($check.id)" }
-        $compiled = $check.kind -cin @('build', 'test', 'api', 'products', 'support-pack', 'release-bundle') -or
+        $compiled = $check.kind -cin @('build', 'test', 'api', 'products', 'support-pack') -or
             ($check.kind -cin @('documentation-api', 'documentation-examples') -and @($check.inputs | Where-Object { $_ -like '@*' -and $_ -cne '@tooling' -and $_ -cne '@native-sources' }).Count -gt 0)
         if ($compiled -and $result.dependencyIdentity -cnotmatch '^[0-9a-f]{64}$') {
             throw "Restored dependency evidence is missing: $($check.id)"

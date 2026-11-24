@@ -9,7 +9,7 @@ The implementation is delivered on `cicd-optimization` from `8d5ddc8a00463852667
 | Backend artifacts | CI resolves the SDK and native closures from an immutable prerelease catalog, builds changed owners, and distributes one verified ZIP per target. Local builds use source. |
 | Validation | The managed planner selects owners, prerequisites, environments and shards. Platform workers certify their own results. The stable PR and merge-group gate verifies the expected matrix. |
 | Cadence | Ordinary branches use fast checks. PRs and master select affected behavior. Full acceptance can be requested through manual dispatch. |
-| Release and documentation | Release continuation uses matching evidence. API export retains its independent preflight and Docs draft publication boundary. |
+| Release and documentation | Backend publication reconciles each target’s consumer records. Engine validation retains current-run diagnostics. API export retains its independent preflight and Docs draft publication boundary. |
 
 For the original component-package baseline, full hosted dependency certification ran in `44265138920`, cold consumption of the published release in `44301436204`, and scoped weekly sampling in `44271552325`. The final single-owner PR median was 234s against 189s on the previous workflow. See the measured results for the ten-minute and relative reduction targets. The hosted timings in this paragraph describe the original migration baseline.
 

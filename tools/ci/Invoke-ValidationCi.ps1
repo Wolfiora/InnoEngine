@@ -10,8 +10,9 @@ param(
     [string]$OutputDirectory = 'artifacts/validation/ci',
     [string]$PrerequisitesDirectory,
     [switch]$Scheduled,
-    [string]$BackendStore = 'artifacts/b',
-    [long]$SourceRunId = 0
+    [string]$RebuildBackends,
+    [string]$BackendStore = 'artifacts/b'
+
 )
 
 $ErrorActionPreference = 'Stop'
@@ -52,34 +53,14 @@ if ($Stage -ceq 'Plan') {
             ConvertTo-Json | Set-Content (Join-Path $planRoot 'entry.json')
     }
     if (!$matched) {
-        $baselineOptions = @()
-        if ($env:INNO_VALIDATION_RUNNER -and $env:GH_TOKEN) {
-            $base = (& git merge-base $BaseRevision HEAD).Trim()
-            if ($LASTEXITCODE) { throw 'Validation baseline is unavailable.' }
-            $removed = @(& git diff --no-renames --diff-filter=D --name-only $base HEAD)
-            if ($LASTEXITCODE) { throw 'Could not enumerate removed validation inputs.' }
-            if ($removed.Count) {
-                try {
-                    $headers = @{Authorization="Bearer $env:GH_TOKEN"}
-                    $api = "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/actions/workflows/engine-ci.yml/runs"
-                    $page = Invoke-RestMethod -Headers $headers -Uri "${api}?head_sha=$base&event=push&status=success&per_page=20"
-                    $run = $page.workflow_runs | Where-Object head_sha -CEQ $base | Select-Object -First 1
-                    if ($run) {
-                        $prior = $planRoot + '-baseline'
-                        & "$PSScriptRoot/Get-ValidationContinuation.ps1" -RunId $run.id -Commit $base -Platform $env:INNO_VALIDATION_RUNNER -Shard architecture -PlanOnly `
-                            -Repository $env:GITHUB_REPOSITORY -ApiUrl $env:GITHUB_API_URL -OutputDirectory $prior
-                        $baselineOptions = @('--baseline-plan',(Get-Content (Join-Path $prior 'continuation.json') -Raw | ConvertFrom-Json).plan)
-                    }
-                } catch { Write-Warning "Previous SDK graph unavailable. The planner will widen validation. $($_.Exception.Message)" }
-            }
-        }
-        & $Dotnet $assembly[0] validate plan --engine-root $repository --dotnet $Dotnet --base $BaseRevision --output $planRoot @baselineOptions `
+        $production = if ($RebuildBackends) { @('--rebuild-backends', $RebuildBackends) } else { @() }
+        & $Dotnet $assembly[0] validate plan --engine-root $repository --dotnet $Dotnet --base $BaseRevision --output $planRoot @production `
             --profile $Profile --backend-store $BackendStore 2>&1 | Tee-Object -FilePath (Join-Path $planRoot 'planning.log')
         if ($LASTEXITCODE -ne 0) { throw 'Validation plan generation failed; no downstream stage can certify success.' }
         $plan = Get-Content -LiteralPath (Join-Path $planRoot 'plan.json') -Raw | ConvertFrom-Json
         if (@($plan.nativeRequests).Count -gt 0 -and (& "$PSScriptRoot/Initialize-NativeDependencyWorkloads.ps1" -Targets @($plan.nativeRequests.target) -Dotnet $Dotnet)) {
             Copy-Item (Join-Path $planRoot 'plan.json') (Join-Path $planRoot 'plan-before-workloads.json')
-            & $Dotnet $assembly[0] validate plan --engine-root $repository --dotnet $Dotnet --base $BaseRevision --output $planRoot @baselineOptions `
+            & $Dotnet $assembly[0] validate plan --engine-root $repository --dotnet $Dotnet --base $BaseRevision --output $planRoot @production `
                 --profile $Profile --backend-store $BackendStore 2>&1 | Tee-Object -FilePath (Join-Path $planRoot 'planning-prepared.log')
             if ($LASTEXITCODE -ne 0) { throw 'Validation planning failed after explicit SDK preparation.' }
             $plan = Get-Content -LiteralPath (Join-Path $planRoot 'plan.json') -Raw | ConvertFrom-Json
@@ -132,27 +113,8 @@ if (@($selected[0].prerequisites).Count -gt 0) {
     if (-not $PrerequisitesDirectory) { throw 'This shard requires completed prerequisite receipts.' }
     $prerequisites = @('--prerequisites', $PrerequisitesDirectory)
 }
-$operation = 'run'
-$continuationArguments = @()
-if ($SourceRunId -gt 0) {
-    $continuationRoot = Join-Path $output 'accepted'
-    & "$PSScriptRoot/Get-ValidationContinuation.ps1" -RunId $SourceRunId -Commit $ExpectedCommit -Platform $env:VALIDATION_PLATFORM `
-        -Shard $Shard -Repository $env:GITHUB_REPOSITORY -ApiUrl $env:GITHUB_API_URL -OutputDirectory $continuationRoot
-    $accepted = Get-Content (Join-Path $continuationRoot 'continuation.json') -Raw | ConvertFrom-Json
-    $operation = 'resume'
-    $continuationArguments = @('--accepted-plan', $accepted.plan, '--evidence', $accepted.evidence)
-    if ($accepted.outputs) { $continuationArguments += @('--retained-outputs', $accepted.outputs) }
-}
-& $Dotnet $assembly validate $operation --engine-root $repository --dotnet $Dotnet --plan $planPath --output $output `
-    --shard $Shard @prerequisites @continuationArguments 2>&1 | Tee-Object -FilePath (Join-Path $output 'validation.log')
+& $Dotnet $assembly validate run --engine-root $repository --dotnet $Dotnet --plan $planPath --output $output `
+    --shard $Shard @prerequisites 2>&1 | Tee-Object -FilePath (Join-Path $output 'validation.log')
 if ($LASTEXITCODE -ne 0) { throw "Required validation failed; retained evidence: $output." }
-if (@($plan.checks | Where-Object { $_.kind -ceq 'build' -and $null -eq $_.exclusion -and $_.id -cin $selected[0].checks }).Count -gt 0) {
-    $bound = Get-Content -LiteralPath (Join-Path $output 'execution-plan.json') -Raw | ConvertFrom-Json
-    "compiledOutputs=$($bound.artifacts)" >> $env:GITHUB_OUTPUT
-}
-if (@($plan.checks | Where-Object { $_.id -ceq 'release-bundle' -and $null -eq $_.exclusion -and $_.id -cin $selected[0].checks }).Count -eq 1) {
-    $bound = Get-Content -LiteralPath (Join-Path $output 'execution-plan.json') -Raw | ConvertFrom-Json
-    "deliverables=$($bound.artifacts)/deliverables" >> $env:GITHUB_OUTPUT
-}
 $dirty = @(& git status --porcelain --untracked-files=all)
 if ($LASTEXITCODE -ne 0 -or $dirty.Count -ne 0) { throw "Validation changed source inputs: $($dirty -join ', ')" }

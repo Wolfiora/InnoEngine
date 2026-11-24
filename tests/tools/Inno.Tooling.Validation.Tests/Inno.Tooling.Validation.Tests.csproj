@@ -6,11 +6,14 @@
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <InnoValidationLayer>domain</InnoValidationLayer>
+    <InnoValidationEnvironment>windows;macos;linux</InnoValidationEnvironment>
   </PropertyGroup>
 
   <Import Project="../../RepositoryInput.targets" />
 
   <ItemGroup>
+    <InnoValidationSubject Include="../fixtures/Inno.Testing.Validation/Inno.Testing.Validation.csproj" />
+    <InnoValidationSubject Include="../../../tools/Inno.Tooling.Validation/Inno.Tooling.Validation.csproj" />
     <ProjectReference Include="../fixtures/Inno.Testing.Validation/Inno.Testing.Validation.csproj" />
 
   </ItemGroup>

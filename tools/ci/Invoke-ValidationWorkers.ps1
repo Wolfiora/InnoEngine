@@ -2,8 +2,8 @@ param(
     [Parameter(Mandatory)][string]$Platform,
     [Parameter(Mandatory)][string]$ExpectedCommit,
     [Parameter(Mandatory)][string]$WorkerDirectory,
-    [int]$Attempt = 1,
-    [long]$SourceRunId = 0
+    [int]$Attempt = 1
+
 )
 
 $ErrorActionPreference = 'Stop'
@@ -25,7 +25,7 @@ $receipts = @{}
 $failed = @()
 $pending = @($shards)
 $execute = {
-    param($checkout, $planDirectory, $shard, $commit, $sourceRun, $prerequisites, $stepOutput)
+    param($checkout, $planDirectory, $shard, $commit, $prerequisites, $stepOutput)
     $ErrorActionPreference = 'Stop'
     $env:GITHUB_WORKSPACE = $checkout
     $env:GITHUB_OUTPUT = $stepOutput
@@ -40,7 +40,7 @@ $execute = {
     }
     ./tools/ci/Invoke-ValidationCi.ps1 -Stage Run -BaseRevision $commit -ExpectedCommit $commit `
         -Shard $shard -PlanDirectory $planDirectory -OutputDirectory "artifacts/validation/shards/$shard" `
-        -PrerequisitesDirectory $prerequisites -SourceRunId $sourceRun
+        -PrerequisitesDirectory $prerequisites
 }
 # Every worker uses this runner's frozen SDK and image. Concurrent writers use separate checkouts.
 while ($pending.Count -gt 0) {
@@ -111,9 +111,9 @@ while ($pending.Count -gt 0) {
             }
             $output = Join-Path $checkout "artifacts/validation/shards/$id"
             "${id}_directory=$output" >> $env:GITHUB_OUTPUT
-            $arguments = @($checkout, 'artifacts/validation/ci-plan', $id, $ExpectedCommit, $SourceRunId, $prerequisites, $stepOutput)
+            $arguments = @($checkout, 'artifacts/validation/ci-plan', $id, $ExpectedCommit, $prerequisites, $stepOutput)
             $job = Start-Job -ScriptBlock $execute -ArgumentList $arguments
-            $running += [pscustomobject]@{ id = $id; job = $job; output = $output; metadata = $stepOutput }
+            $running += [pscustomobject]@{ id = $id; job = $job; output = $output }
         }
         # Forward every active worker's output as it arrives, including failures from a shorter shard.
         Receive-Job -Job @($running.job) -Wait -ErrorAction Continue | Out-Host
@@ -122,9 +122,6 @@ while ($pending.Count -gt 0) {
             $receipt = Join-Path $worker.output 'results.json'
             if (-not (Test-Path -LiteralPath $receipt -PathType Leaf)) { throw "A successful shard omitted its receipt: $($worker.id)." }
             $receipts[$worker.id] = $receipt
-            foreach ($line in Get-Content -LiteralPath $worker.metadata) {
-                if ($line -cmatch '^(compiledOutputs|deliverables)=') { "$($worker.id)_$line" >> $env:GITHUB_OUTPUT }
-            }
         }
     } finally {
         foreach ($worker in $running) {

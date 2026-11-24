@@ -8,9 +8,6 @@ on:
       profile:
         type: string
         required: true
-      source_run:
-        type: string
-        default: '0'
       rebuild_backends:
         type: string
         default: ''
@@ -94,6 +91,7 @@ jobs:
           if-no-files-found: error
           retention-days: 1
   build:
+    name: Backend build (${{ matrix.target }})
     needs: acquire
     if: fromJSON(inputs.producers).include[0] != null
     runs-on: ${{ matrix.runner }}
@@ -167,6 +165,7 @@ jobs:
           retention-days: 7
 
   execution:
+    name: Engine tests (${{ matrix.runner }})
     needs: [acquire, build]
     if: ${{ !cancelled() && needs.acquire.result == 'success' && (needs.build.result == 'success' || (needs.build.result == 'skipped' && fromJSON(inputs.producers).include[0] == null)) }}
     runs-on: ${{ matrix.runner }}
@@ -182,6 +181,7 @@ jobs:
       - uses: ./.github/actions/setup-dotnet
       - uses: ./.github/actions/freeze-validation
         with:
+          rebuild-backends: ${{ inputs.rebuild_backends }}
           runner-label: ${{ matrix.runner }}
           profile: ${{ inputs.profile }}
           scheduled: true
@@ -204,9 +204,26 @@ jobs:
       - uses: ./.github/actions/execute-validation
         with:
           platform: ${{ matrix.runner }}
-          source-run: ${{ inputs.source_run || '0' }}
+
+      - name: Verify new backend publication inputs
+        if: fromJSON(inputs.producers).include[0] != null
+        shell: pwsh
+        env:
+          PRODUCERS: ${{ inputs.producers }}
+          RUNNER_LABEL: ${{ matrix.runner }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $local = @(($env:PRODUCERS | ConvertFrom-Json).include | Where-Object runner -CEQ $env:RUNNER_LABEL)
+          if (!$local.Count) { return }
+          foreach ($item in $local) {
+            $candidate = "artifacts/candidates/backend-candidate-$($item.target)"
+            $owner = [IO.Directory]::CreateDirectory([IO.Path]::GetFullPath("artifacts/verified/$($item.target)"))
+            Copy-Item -LiteralPath "$candidate/$($item.asset)", "$candidate/consumption.json", 'artifacts/validation/ci-plan/plan.json', 'artifacts/validation/host-certification/results.json' -Destination $owner
+          }
+          ./tools/ci/Publish-BackendPrebuilts.ps1 -VerifyOnly -Directory artifacts/verified -Repository $env:GITHUB_REPOSITORY -Revision $env:GITHUB_SHA -ChangedTargets $local.target
 
   publish-backends:
+    name: Publish backend
     needs: execution
     if: >-
       ${{ success() &&
@@ -253,7 +270,7 @@ jobs:
           $producers = ($env:PRODUCERS | ConvertFrom-Json).include
           $consumers = ($env:CONSUMERS | ConvertFrom-Json).include
           ./tools/ci/Join-ValidationCi.ps1 -ReceivedDirectory artifacts/promotion -Hosts $consumers.runner -ExpectedCommit $env:GITHUB_SHA `
-            -Attempt ([int]$env:GITHUB_RUN_ATTEMPT) -HostEvidenceOnly
+            -Attempt ([int]$env:GITHUB_RUN_ATTEMPT)
           foreach ($item in $producers) {
             $owner = [IO.Directory]::CreateDirectory([IO.Path]::GetFullPath("artifacts/promotion/$($item.target)")).FullName
             $candidate = "artifacts/promotion/backend-candidate-$($item.target)"
