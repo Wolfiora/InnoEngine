@@ -56,8 +56,8 @@ internal static class NativeWindowTestHost
         ),
         ["FontCoverageTests.CustomFontStyleUsesOnlyItsOwnTextSourceAndIcons"] = () => new FontCoverageTests()
             .CustomFontStyleUsesOnlyItsOwnTextSourceAndIcons(),
-        ["FontCoverageTests.RetiringTenContextsReleasesTheirSourcesAndPreservesAnotherContext"] = () => new FontCoverageTests()
-            .RetiringTenContextsReleasesTheirSourcesAndPreservesAnotherContext(),
+        ["FontCoverageTests.RetiringOneContextReleasesItsSourceAndPreservesTheOtherContext"] = () => new FontCoverageTests()
+            .RetiringOneContextReleasesItsSourceAndPreservesTheOtherContext(),
         ["FontCoverageTests.SuccessfulDisposalPermitsReplacementOnTheSameLiveWindow"] = () => new FontCoverageTests()
             .SuccessfulDisposalPermitsReplacementOnTheSameLiveWindow(),
         ["FontCoverageTests.ApplicationShutdownRetiresBothRegisteredContexts"] = () => new FontCoverageTests()

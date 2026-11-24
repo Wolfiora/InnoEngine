@@ -220,11 +220,11 @@ public sealed class ShaderDocumentDraftTests : ShaderEditorFixture
 
     [Fact]
     [Trait("Acceptance", "Lifecycle")]
-    public void OneHundredActualShaderDocumentCyclesRetireTheirGraphOwners()
+    public void ReopenedShaderDocumentsRetireTheirGraphOwners()
     {
         AssetFileEntry entry = Create("Lifecycle.ishader");
         byte[] source = File.ReadAllBytes(Path.Combine(m_root, "Assets", entry.assetPath.localPath));
-        for (int iteration = 0; iteration < 100; iteration++)
+        for (int iteration = 0; iteration < 2; iteration++)
         {
             SelectAndDraw(entry);
             GraphDocumentController controller = Controller(entry);

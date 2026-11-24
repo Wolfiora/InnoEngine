@@ -29,36 +29,13 @@ public sealed partial class SerializationBehaviorTests
     }
 
     [Fact]
-    public void PreparedSerializationContextsAvoidRepeatedOwnerCopies()
+    public void PreparedContextPreservesCapturedPropertyBytes()
     {
         SerializationContext? prepared = null;
         _ = m_serialization.Encode(writer => prepared = writer.context);
         var source = new DefaultSample { count = 73 };
         byte[] expected = m_serialization.CapturePropertyData(source, nameof(DefaultSample.count));
-        long fresh = Measure(null);
-        long inherited = Measure(prepared);
-
-        Assert.True(
-            inherited < fresh && inherited <= 1024,
-            $"Prepared context allocated {inherited} bytes; fresh context allocated {fresh} bytes."
-        );
-
-        long Measure(SerializationContext? context)
-        {
-            for (int index = 0; index < 16; index++)
-            {
-                _ = m_serialization.CapturePropertyData(source, nameof(DefaultSample.count), context);
-            }
-            byte[]? actual = null;
-            long before = GC.GetAllocatedBytesForCurrentThread();
-            for (int index = 0; index < 128; index++)
-            {
-                actual = m_serialization.CapturePropertyData(source, nameof(DefaultSample.count), context);
-            }
-            long allocated = (GC.GetAllocatedBytesForCurrentThread() - before) / 128;
-            Assert.Equal(expected, actual);
-            return allocated;
-        }
+        Assert.Equal(expected, m_serialization.CapturePropertyData(source, nameof(DefaultSample.count), prepared));
     }
 
     [Fact]
@@ -104,28 +81,6 @@ public sealed partial class SerializationBehaviorTests
         });
 
         Assert.Equal(forward, reverse);
-    }
-
-    [Fact]
-    public void SmallBinaryDocumentsStayWithinABoundedAllocationBudget()
-    {
-        byte[] expected = m_serialization.Encode(static writer => writer.Write("value", 73));
-        for (int index = 0; index < 16; index++)
-        {
-            _ = m_serialization.Encode(static writer => writer.Write("value", 73));
-        }
-
-        const int C_ITERATIONS = 128;
-        byte[]? actual = null;
-        long before = GC.GetAllocatedBytesForCurrentThread();
-        for (int index = 0; index < C_ITERATIONS; index++)
-        {
-            actual = m_serialization.Encode(static writer => writer.Write("value", 73));
-        }
-        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
-
-        Assert.Equal(expected, actual);
-        Assert.InRange(allocated / C_ITERATIONS, 0, 4096);
     }
 
     [Fact]

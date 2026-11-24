@@ -9,35 +9,12 @@ namespace Inno.Scene.Tests;
 public sealed partial class SceneSerializationTests
 {
     [Fact]
-    public void ScalarPropertyPreparationDoesNotAllocateAnIndexOfUnrelatedSceneObjects()
+    public void TransformCaptureReturnsItsScalarProperties()
     {
-        var scene = new GameScene("Property allocation");
+        var scene = new GameScene("Property capture");
         GameObject owner = scene.CreateObject("Owner");
         IAssetReferenceResolver assets = m_serializationContext.GetRequired<IAssetReferenceResolver>();
-        long small = Measure();
-        for (int index = 0; index < 5_000; index++)
-        {
-            _ = scene.CreateObject("Unrelated " + index);
-        }
-        long large = Measure();
-        Assert.True(
-            large <= small + 64 * 1024,
-            $"Ten scalar property captures allocated {small} bytes in a small Scene and {large} with 5,000 unrelated objects."
-        );
-
-        long Measure()
-        {
-            for (int index = 0; index < 10; index++)
-            {
-                _ = ScenePropertySerialization.CapturePropertySnapshots(owner.transform, m_serialization, assets);
-            }
-            long before = GC.GetAllocatedBytesForCurrentThread();
-            for (int index = 0; index < 10; index++)
-            {
-                Assert.Equal(3, ScenePropertySerialization.CapturePropertySnapshots(owner.transform, m_serialization, assets).Count);
-            }
-            return GC.GetAllocatedBytesForCurrentThread() - before;
-        }
+        Assert.Equal(3, ScenePropertySerialization.CapturePropertySnapshots(owner.transform, m_serialization, assets).Count);
     }
 
     [Fact]

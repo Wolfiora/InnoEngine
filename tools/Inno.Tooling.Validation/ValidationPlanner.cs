@@ -876,7 +876,7 @@ internal static partial class ValidationPlanner
                     "native-hot-builds",
                     "hot-builds",
                     editorBuild.owner,
-                    "Ten unchanged native builds must retain content selections and start no native compiler or binding generation.",
+                    "An unchanged native build must retain content selections and start no native compiler or binding generation.",
                     "native-host",
                     [editorBuild.id],
                     editorBuild.inputs

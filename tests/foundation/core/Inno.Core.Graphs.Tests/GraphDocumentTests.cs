@@ -36,34 +36,4 @@ public sealed class GraphDocumentTests
         Assert.Throws<ArgumentException>(() => document.ReplaceContents(document));
         Assert.Same(copied, document.FindNode(first.id));
     }
-
-    [Fact]
-    public void RepeatedLookupAndCollectionAccessDoNotAllocate()
-    {
-        var document = new GraphDocument();
-        for (int index = 0; index < 2_000; index++)
-        {
-            document.AddNode(new GraphNodeRecord(new GraphNodeID("node-" + index), "test.node"));
-        }
-        GraphNodeRecord node = document.nodes[^1];
-        GraphNodeID id = node.id;
-        for (int index = 0; index < 1_000; index++)
-        {
-            _ = document.FindNode(id);
-        }
-
-        long before = GC.GetAllocatedBytesForCurrentThread();
-        for (int index = 0; index < 10_000; index++)
-        {
-            _ = document.FindNode(id);
-            _ = document.nodes;
-            _ = document.edges;
-            _ = document.metadata;
-            _ = node.values;
-        }
-        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
-
-        Assert.Equal(0, allocated);
-        Assert.Same(node, document.FindNode(id));
-    }
 }

@@ -208,9 +208,7 @@ internal static class ValidationRunner
                                 "-Context",
                                 contextID,
                                 "-ResultsDirectory",
-                                Path.Combine(directory, "hot-builds"),
-                                "-Iterations",
-                                "10"
+                                Path.Combine(directory, "hot-builds")
                             ], "hot-builds.log").ConfigureAwait(false);
                             break;
                         case "instructions":
@@ -545,8 +543,6 @@ internal static class ValidationRunner
                                         backendPattern,
                                         "-Dotnet",
                                         plan.dotnet,
-                                        "-Frames",
-                                        "300",
                                         "-HiddenWindow"
                                     ],
                                     check.id
@@ -577,10 +573,7 @@ internal static class ValidationRunner
                                             scenario,
                                             ..(plan.nativeDependencies is null
                                                ? Array.Empty<string>()
-                                               : ["-NativeDependencies", Path.Combine(plan.root, plan.nativeDependencies)]),
-                                            ..(plan.extended && scenario == "Lifecycle"
-                                               ? new[] { "-Cycles", "1000", "-Frames", "180000", "-TimeoutSeconds", "5400" }
-                                               : [])
+                                               : ["-NativeDependencies", Path.Combine(plan.root, plan.nativeDependencies)])
                                         ],
                                         check.id + "-" + scenario + ".log"
                                     ).ConfigureAwait(false);

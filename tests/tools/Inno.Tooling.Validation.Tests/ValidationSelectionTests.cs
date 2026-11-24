@@ -352,7 +352,7 @@ public sealed class ValidationSelectionTests : ValidationPlanFixture
     }
 
     [Theory]
-    [InlineData("tests/product/fixtures/editor-ui/ManagedMemorySample.editor.cs")]
+    [InlineData("tests/product/fixtures/editor-ui/PanelLifecycle.editor.cs")]
     [InlineData("tests/product/Invoke-EditorUiProductJourney.ps1")]
     public async Task JourneySourceChangesSelectCiContractsAndInvalidateTheirEvidence(string path)
     {

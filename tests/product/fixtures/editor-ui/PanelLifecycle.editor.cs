@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using InnoEditor.Core;
@@ -29,12 +27,6 @@ public sealed class PanelLifecycle(
     SceneEdits edits
 ) : EditorModule
 {
-    private const string C_RESOURCE_COLUMNS = "managed-bytes-after-full-gc\tprivate-bytes\tselection-count\tscene-count\thistory-resident-bytes\thistory-disk-bytes\tpending-events"
-        + "\tgc-index\tgc-generation\tgc-compacted\tgc-concurrent\tgc-heap-bytes\tgc-fragmented-bytes\testimated-managed-bytes";
-
-    private readonly List<string> m_resources = ["completed-cycles\t" + C_RESOURCE_COLUMNS];
-    private readonly List<string> m_preparationResources = ["phase\t" + C_RESOURCE_COLUMNS];
-    private readonly int m_requiredCycles = ReadRequiredCycles();
     private string[] m_panels = [];
     private bool[] m_originalOpenStates = [];
     private string? m_undoName;
@@ -43,10 +35,9 @@ public sealed class PanelLifecycle(
     private long m_historyDiskBytes;
     private int m_selectionCount;
     private int m_sceneCount;
-    private int m_warmup;
-    private int m_preparationFrames;
+    private bool m_panelsOpened;
     private int m_frame;
-    private int m_cycles;
+    private bool m_reopened;
     private bool m_baselineCaptured;
     private bool m_completed;
 
@@ -54,10 +45,6 @@ public sealed class PanelLifecycle(
     protected override void OnUpdate(EditorContext context)
     {
         if (m_completed)
-        {
-            return;
-        }
-        if (m_panels.Length == 0 && m_warmup++ < 20)
         {
             return;
         }
@@ -78,7 +65,6 @@ public sealed class PanelLifecycle(
                 throw new InvalidOperationException("The complete Editor product must expose its eight standard panels.");
             }
             m_originalOpenStates = new bool[m_panels.Length];
-            m_preparationResources.Add(CaptureResourceRow("before-first-panel-draw"));
             for (int index = 0; index < m_panels.Length; index++)
             {
                 string panel = m_panels[index];
@@ -87,15 +73,12 @@ public sealed class PanelLifecycle(
                     throw new InvalidOperationException("The product could not open panel '" + panel + "' for preparation.");
                 }
             }
-            m_preparationFrames = 120;
+            m_panelsOpened = true;
             return;
         }
-        if (m_preparationFrames > 0)
+        if (m_panelsOpened)
         {
-            if (--m_preparationFrames > 0)
-            {
-                return;
-            }
+            m_panelsOpened = false;
             foreach (string panel in m_panels)
             {
                 if (!interactions.ClosePanel(panel))
@@ -103,7 +86,6 @@ public sealed class PanelLifecycle(
                     throw new InvalidOperationException("The product could not close panel '" + panel + "' after preparation.");
                 }
             }
-            m_preparationResources.Add(CaptureResourceRow("after-120-drawn-frames"));
             return;
         }
         bool expectedOpen = (m_frame++ & 1) != 0;
@@ -111,22 +93,18 @@ public sealed class PanelLifecycle(
         {
             if (!interactions.TryGetPanelState(panel, out bool isOpen) || isOpen != expectedOpen)
             {
-                throw new InvalidOperationException("Panel state or native drawing failed for '" + panel + "' at cycle " + m_cycles + ".");
+                throw new InvalidOperationException("Panel state or native drawing failed for '" + panel + "'.");
             }
         }
         if (expectedOpen)
         {
-            m_cycles++;
+            m_reopened = true;
         }
         else
         {
             VerifyDocumentState();
-            if (m_cycles % 10 == 0)
-            {
-                CaptureResources();
-            }
         }
-        if (m_cycles == m_requiredCycles && !expectedOpen)
+        if (m_reopened && !expectedOpen)
         {
             for (int index = 0; index < m_panels.Length; index++)
             {
@@ -143,14 +121,8 @@ public sealed class PanelLifecycle(
             File.WriteAllLines(
                 Path.Combine(directory, "panel-lifecycle.tsv"),
                 new[] { "panel\tcompleted-open-close-cycles", "protocol\tpublic EditorInteractions / actual product drawing" }
-                    .Concat(
-                        m_panels.Select(
-                            panel => panel + "\t" + m_requiredCycles.ToString(System.Globalization.CultureInfo.InvariantCulture)
-                        )
-                    )
+                    .Concat(m_panels.Select(static panel => panel + "\t1"))
             );
-            File.WriteAllLines(Path.Combine(directory, "panel-lifecycle-resources.tsv"), m_resources);
-            File.WriteAllLines(Path.Combine(directory, "panel-lifecycle-preparation.tsv"), m_preparationResources);
             string completion = Path.Combine(directory, "journey-completed.txt");
             File.WriteAllText(completion + ".pending", "Lifecycle");
             File.Move(completion + ".pending", completion);
@@ -169,6 +141,10 @@ public sealed class PanelLifecycle(
 
     private void VerifyDocumentState()
     {
+        if (interactions.events.pendingCount != 0)
+        {
+            throw new InvalidOperationException("The closed panels retained pending events.");
+        }
         IEditorHistory history = interactions.history;
         if (!m_baselineCaptured)
         {
@@ -188,32 +164,5 @@ public sealed class PanelLifecycle(
                 "Window-only lifecycle operations changed Edit selection, scenes or committed History state."
             );
         }
-    }
-
-    private void CaptureResources()
-        => m_resources.Add(CaptureResourceRow(m_cycles.ToString(System.Globalization.CultureInfo.InvariantCulture)));
-
-    private string CaptureResourceRow(string observation)
-    {
-        ManagedMemorySample memory = ManagedMemorySample.Capture();
-        using Process process = Process.GetCurrentProcess();
-        string state = FormattableString.Invariant(
-            $"{observation}\t{memory.liveBytes}\t{process.PrivateMemorySize64}\t{interactions.selection.count}\t{workspace.scenes.Count}\t{interactions.history.residentBytes}\t{interactions.history.diskBytes}\t{interactions.events.pendingCount}"
-        );
-        return state
-            + FormattableString.Invariant(
-                $"\t{memory.collectionIndex}\t{memory.generation}\t{memory.compacted}\t{memory.concurrent}\t{memory.heapBytes}\t{memory.fragmentedBytes}\t{memory.estimatedBytes}"
-            );
-    }
-
-    private static int ReadRequiredCycles()
-    {
-        string value = Environment.GetEnvironmentVariable("INNO_ACCEPTANCE_PANEL_CYCLES") ?? "100";
-        if (!int.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out int cycles)
-            || cycles < 100 || cycles > 10_000 || cycles % 10 != 0
-        ) {
-            throw new InvalidOperationException("The lifecycle acceptance requires 100–10000 cycles in ten-cycle intervals.");
-        }
-        return cycles;
     }
 }

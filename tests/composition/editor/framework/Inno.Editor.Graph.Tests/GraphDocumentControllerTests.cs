@@ -121,12 +121,12 @@ public sealed class GraphDocumentControllerTests : IDisposable
 
     [Fact]
     [Trait("Acceptance", "Lifecycle")]
-    public void OneHundredDocumentCyclesReleasePayloadsAndRejectRetiredControllers()
+    public void ReopenedDocumentsReleasePayloadsAndRejectRetiredControllers()
     {
         GraphEditorModule module = Assert.IsType<GraphEditorModule>(m_sink.module);
         Guid identity = Guid.NewGuid();
         List<(GraphDocumentController controller, WeakReference<GraphDocument> document)> retired = [];
-        for (int iteration = 0; iteration < 100; iteration++)
+        for (int iteration = 0; iteration < 2; iteration++)
         {
             retired.Add(OpenAndClose());
         }

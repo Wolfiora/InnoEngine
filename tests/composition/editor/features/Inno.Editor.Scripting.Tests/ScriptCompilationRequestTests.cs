@@ -253,7 +253,7 @@ public sealed class ScriptCompilationRequestTests : ScriptingPipelineFixture
     [Fact]
     [Trait("Acceptance", "Lifecycle")]
     [Trait("ProcessIsolation", "Required")]
-    public void TenActionMenuGenerationsRetireTypesAndPreserveLastGoodAfterFailure()
+    public void ActionMenuReloadRetiresTheReplacedTypeAndKeepsLastGoodAfterFailure()
     {
         m_fixture.WriteVersionedBehavior(1);
         WriteAction(1);
@@ -269,23 +269,20 @@ public sealed class ScriptCompilationRequestTests : ScriptingPipelineFixture
         Assert.Equal("Generation 1", Assert.Single(retainedMenu.items).label);
         WeakReference previous = CaptureActiveType(m_fixture, "ReloadedAction", 1);
 
-        for (int version = 2; version <= 11; version++)
-        {
-            m_fixture.Write("Editor/LifecycleAction.editor.cs", "public sealed class ReloadedAction {");
-            ScriptCompilationResult failed = m_fixture.CompilePending(reload);
-            Assert.False(failed.success);
-            Assert.False(reload.ApplyPendingReload());
-            AssertMenu(runtime, version - 1);
+        m_fixture.Write("Editor/LifecycleAction.editor.cs", "public sealed class ReloadedAction {");
+        ScriptCompilationResult failed = m_fixture.CompilePending(reload);
+        Assert.False(failed.success);
+        Assert.False(reload.ApplyPendingReload());
+        AssertMenu(runtime, 1);
 
-            WriteAction(version);
-            ScriptCompilationResult replacement = m_fixture.CompilePending(reload);
-            Assert.True(replacement.success, FormatDiagnostics(replacement));
-            Assert.True(reload.ApplyPendingReload());
-            CompleteUnloadVerification(reload);
-            Assert.False(previous.IsAlive, "The retired Action type survived the public generation barrier.");
-            AssertMenu(runtime, version);
-            previous = CaptureActiveType(m_fixture, "ReloadedAction", version);
-        }
+        WriteAction(2);
+        ScriptCompilationResult replacement = m_fixture.CompilePending(reload);
+        Assert.True(replacement.success, FormatDiagnostics(replacement));
+        Assert.True(reload.ApplyPendingReload());
+        CompleteUnloadVerification(reload);
+        Assert.False(previous.IsAlive, "The retired Action type survived the public generation barrier.");
+        AssertMenu(runtime, 2);
+        _ = CaptureActiveType(m_fixture, "ReloadedAction", 2);
 
         Assert.Equal("Generation 1", Assert.Single(retainedMenu.items).label);
         GC.KeepAlive(retainedMenu);

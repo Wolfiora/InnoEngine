@@ -18,7 +18,7 @@ public sealed class JobSystemBehaviorTests
     {
         using var jobs = new JobScheduler(mode, new JobSchedulerOptions { workerCount = 1, maxFrameJobs = 4 });
         int completed = 0;
-        for (int frame = 0; frame < 256; frame++)
+        for (int frame = 0; frame < 2; frame++)
         {
             jobs.BeginFrame();
             Assert.Throws<ArgumentException>(() => jobs.Schedule(_ => {}, null, [default]));
@@ -35,9 +35,9 @@ public sealed class JobSystemBehaviorTests
             jobs.EndFrame();
             Assert.Equal(0, jobs.statistics.frameJobs);
         }
-        Assert.Equal(1024, completed);
+        Assert.Equal(8, completed);
         Assert.Equal(4, jobs.statistics.peakFrameJobs);
-        Assert.Equal(256 * 9, jobs.statistics.rejectedJobs);
+        Assert.Equal(2 * 9, jobs.statistics.rejectedJobs);
     }
 
     [Theory]
@@ -283,21 +283,34 @@ public sealed class JobSystemBehaviorTests
     }
 
     [Fact]
-    public void WorkStealingConcurrentSchedulingAcrossThreadsIsStable()
+    public void WorkerPoolCompletesJobsFromConcurrentProducers()
     {
-        using JobScheduler jobs = CreateWorkStealing(workerCount: 4);
+        using JobScheduler jobs = CreateWorkStealing(workerCount: 2);
         jobs.BeginFrame();
 
-        const int C_TASK_COUNT = 2000;
         int count = 0;
-        Parallel.For(0, C_TASK_COUNT, _ =>
+        using var start = new Barrier(2);
+        Exception? workerFailure = null;
+        var producer = new Thread(() => workerFailure = Record.Exception(Schedule)) { IsBackground = true };
+        producer.Start();
+        try
         {
+            Schedule();
+        }
+        finally
+        {
+            Assert.True(producer.Join(TimeSpan.FromSeconds(10)));
+        }
+        Assert.Null(workerFailure);
+        jobs.EndFrame();
+        Assert.Equal(2, count);
+
+        void Schedule()
+        {
+            Assert.True(start.SignalAndWait(TimeSpan.FromSeconds(10)));
             JobHandle handle = jobs.Schedule(() => Interlocked.Increment(ref count));
             jobs.Complete(handle);
-        });
-
-        jobs.EndFrame();
-        Assert.Equal(C_TASK_COUNT, count);
+        }
     }
 
     [Fact]

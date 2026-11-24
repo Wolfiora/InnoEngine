@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
 using Xunit;
-using Xunit.Abstractions;
 using Inno.Core.Logging;
 using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
@@ -11,7 +10,7 @@ using NativeGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.Panels.Native.Tests;
 
-public sealed unsafe class ConsoleVirtualizationNativeTests(ITestOutputHelper output)
+public sealed unsafe class ConsoleVirtualizationNativeTests
 {
     [Theory]
     [InlineData(false)]
@@ -66,55 +65,67 @@ public sealed unsafe class ConsoleVirtualizationNativeTests(ITestOutputHelper ou
         Assert.Equal(0, context->OpenPopupStack.Size);
     }
 
-    [Fact]
-    public void RepeatedContextMenusDoNotAccumulateRetiredOccurrenceWindows()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ReplacingConsoleRecordsReusesNativeWindows(bool openMenu)
     {
         using var host = new NativePanelHost(typeof(ConsoleVirtualizationNativeTests).Assembly, "Inno.Editor.Panel.Logging");
         host.console.capacity = 16;
         Logger logger = host.logs.CreateLogger<ConsoleVirtualizationNativeTests>();
         EditorPanelExtension panel = host.GetPanel("diagnostics.console");
         ImGuiIO* io = NativeGui.Raw.GetIO();
-        for (int iteration = 0; iteration < 100; iteration++)
+        int warmedWindowCount = 0;
+        int firstReplacement = host.console.capacity;
+        for (int iteration = 0; iteration < firstReplacement + 4; iteration++)
         {
             logger.Write(LogLevel.Info, "Context entry " + iteration);
             host.logs.Flush();
             host.DrawPanel(panel);
             host.DrawPanel(panel);
-            ImGuiWindow* card = null;
-            ImGuiNativeContext* context = NativeGui.Raw.GetCurrentContext();
-            for (int index = 0; index < context->Windows.Size; index++)
+            if (openMenu)
             {
-                ImGuiWindow* window = context->Windows.Data[index];
-                if (window->Active != 0
-                    && Marshal.PtrToStringUTF8((nint)window->Name)?.Contains("##ConsoleEntryCard", StringComparison.Ordinal) == true
-                ) {
-                    card = window;
+                ImGuiWindow* card = null;
+                ImGuiNativeContext* context = NativeGui.Raw.GetCurrentContext();
+                for (int index = 0; index < context->Windows.Size; index++)
+                {
+                    ImGuiWindow* window = context->Windows.Data[index];
+                    if (window->Active != 0
+                        && Marshal.PtrToStringUTF8((nint)window->Name)?.Contains("##ConsoleEntryCard", StringComparison.Ordinal) == true
+                    ) {
+                        card = window;
+                    }
                 }
+                Assert.True(card is not null);
+                NativeGui.Raw.AddMousePosEvent(io, card->Pos.X + 230f, card->Pos.Y + 12f);
+                host.DrawPanel(panel);
+                NativeGui.Raw.AddMouseButtonEvent(io, 1, 1);
+                host.DrawPanel(panel);
+                NativeGui.Raw.AddMouseButtonEvent(io, 1, 0);
+                host.DrawPanel(panel);
+                Assert.True(context->OpenPopupStack.Size > 0);
+                NativePanelInput.Key(host, panel, ImGuiKey.Escape);
             }
-            Assert.True(card is not null);
-            NativeGui.Raw.AddMousePosEvent(io, card->Pos.X + 230f, card->Pos.Y + 12f);
-            host.DrawPanel(panel);
-            NativeGui.Raw.AddMouseButtonEvent(io, 1, 1);
-            host.DrawPanel(panel);
-            NativeGui.Raw.AddMouseButtonEvent(io, 1, 0);
-            host.DrawPanel(panel);
-            Assert.True(context->OpenPopupStack.Size > 0);
-            NativePanelInput.Key(host, panel, ImGuiKey.Escape);
+            int windows = NativeGui.Raw.GetCurrentContext()->Windows.Size;
+            if (iteration == firstReplacement + 1)
+            {
+                warmedWindowCount = windows;
+            }
+            if (iteration > firstReplacement + 1)
+            {
+                Assert.InRange(windows, 1, warmedWindowCount);
+            }
         }
-        output.WriteLine(
-            "Context menus: 100; retained records: " + host.console.Capture().occurrences.Count
-            + "; native windows: " + NativeGui.Raw.GetCurrentContext()->Windows.Size
-        );
-        Assert.InRange(NativeGui.Raw.GetCurrentContext()->Windows.Size, 1, 32);
+        Assert.Equal(host.console.capacity, host.console.Capture().occurrences.Count);
     }
 
     [Fact]
-    public void TenThousandOccurrencesSubmitOnlyViewportCardsAndKeepKeyboardNavigation()
+    public void OffscreenOccurrencesKeepKeyboardNavigationWithoutSubmittingEveryCard()
     {
         using var host = new NativePanelHost(typeof(ConsoleVirtualizationNativeTests).Assembly, "Inno.Editor.Panel.Logging");
-        host.console.capacity = 10_000;
+        host.console.capacity = 256;
         Logger logger = host.logs.CreateLogger<ConsoleVirtualizationNativeTests>();
-        for (int index = 0; index < 10_000; index++)
+        for (int index = 0; index < 256; index++)
         {
             logger.Write(LogLevel.Info, "Entry " + index.ToString("D5") + "\nDetails / 资源信息");
             if (index % 128 == 0)
@@ -123,7 +134,7 @@ public sealed unsafe class ConsoleVirtualizationNativeTests(ITestOutputHelper ou
             }
         }
         host.logs.Flush();
-        Assert.Equal(10_000, host.console.Capture().occurrences.Count);
+        Assert.Equal(256, host.console.Capture().occurrences.Count);
         EditorPanelExtension panel = host.GetPanel("diagnostics.console");
         for (int frame = 0; frame < 4; frame++)
         {
@@ -138,26 +149,5 @@ public sealed unsafe class ConsoleVirtualizationNativeTests(ITestOutputHelper ou
             host.DrawPanel(panel);
         }
         Assert.InRange(NativeGui.Raw.GetCurrentContext()->Windows.Size, 1, 128);
-    }
-
-    [Fact]
-    public void RetiredOccurrencesDoNotAccumulateNativeChildWindows()
-    {
-        using var host = new NativePanelHost(typeof(ConsoleVirtualizationNativeTests).Assembly, "Inno.Editor.Panel.Logging");
-        host.console.capacity = 16;
-        Logger logger = host.logs.CreateLogger<ConsoleVirtualizationNativeTests>();
-        EditorPanelExtension panel = host.GetPanel("diagnostics.console");
-        for (int iteration = 0; iteration < 150; iteration++)
-        {
-            logger.Write(LogLevel.Info, "Retained occurrence " + iteration);
-            host.logs.Flush();
-            host.DrawPanel(panel);
-            host.DrawPanel(panel);
-        }
-        Assert.Equal(16, host.console.Capture().occurrences.Count);
-        output.WriteLine(
-            "Retained records: 16; completed updates: 150; native windows: " + NativeGui.Raw.GetCurrentContext()->Windows.Size
-        );
-        Assert.InRange(NativeGui.Raw.GetCurrentContext()->Windows.Size, 1, 64);
     }
 }

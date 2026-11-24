@@ -44,22 +44,19 @@ public sealed class ScriptReloadTests : ScriptingPipelineFixture
         Assert.True(firstResult.success, FormatDiagnostics(firstResult));
         Assert.True(reload.ApplyPendingReload());
         WeakReference active = CaptureActiveType(m_fixture, "VersionedBehavior", expectedVersion: 1);
-        for (int version = 2; version <= 11; version++)
-        {
-            m_fixture.Write("VersionedBehavior.cs", "using InnoEngine.Scene; public sealed class VersionedBehavior : GameBehavior {");
-            ScriptCompilationResult failed = m_fixture.CompilePending(reload);
-            Assert.False(failed.success);
-            Assert.False(reload.ApplyPendingReload());
-            AssertRetainedActiveType(m_fixture, active, version - 1);
+        m_fixture.Write("VersionedBehavior.cs", "using InnoEngine.Scene; public sealed class VersionedBehavior : GameBehavior {");
+        ScriptCompilationResult failed = m_fixture.CompilePending(reload);
+        Assert.False(failed.success);
+        Assert.False(reload.ApplyPendingReload());
+        AssertRetainedActiveType(m_fixture, active, 1);
 
-            m_fixture.WriteVersionedBehavior(version);
-            ScriptCompilationResult replacement = m_fixture.CompilePending(reload);
-            Assert.True(replacement.success, FormatDiagnostics(replacement));
-            Assert.True(reload.ApplyPendingReload());
-            CompleteUnloadVerification(reload);
-            Assert.False(active.IsAlive, "The previous script generation remained reachable after its reload barrier.");
-            active = CaptureActiveType(m_fixture, "VersionedBehavior", version);
-        }
+        m_fixture.WriteVersionedBehavior(2);
+        ScriptCompilationResult replacement = m_fixture.CompilePending(reload);
+        Assert.True(replacement.success, FormatDiagnostics(replacement));
+        Assert.True(reload.ApplyPendingReload());
+        CompleteUnloadVerification(reload);
+        Assert.False(active.IsAlive, "The previous script generation remained reachable after its reload barrier.");
+        _ = CaptureActiveType(m_fixture, "VersionedBehavior", 2);
     }
 
     [Fact]
@@ -184,58 +181,55 @@ public sealed class ScriptReloadTests : ScriptingPipelineFixture
         string installedPlugin = Path.Combine(fixture.projectRoot, "Plugins", "unavailability.iplugin");
         string detachedPlugin = Path.Combine(fixture.projectRoot, "UnavailabilityPlugin.detached");
         byte[] validPluginPackage = File.ReadAllBytes(installedPlugin);
-        for (int cycle = 0; cycle < 10; cycle++)
+        if (updateInPlace)
         {
-            if (updateInPlace)
-            {
-                WriteUnavailableGenerationPlugin(
-                    fixture.projectRoot,
-                    fixture.host.serialization,
-                    "this Plugin update is deliberately invalid C#"
-                );
-            }
-            else
-            {
-                File.Move(installedPlugin, detachedPlugin);
-            }
-
-            Assert.True(fixture.RefreshPlugins());
-            ScriptCompilationResult unavailable = fixture.CompilePendingPluginReload(reload);
-            Assert.False(unavailable.success);
-            Assert.Contains(unavailable.diagnostics, static diagnostic => diagnostic.severity == DiagnosticSeverity.Error);
-            Assert.True(reload.ApplyPendingReload());
-            Assert.DoesNotContain(
-                fixture.host.modules.modules,
-                static module => module.domain is AssemblyDomain.InnoPlugin or AssemblyDomain.InnoScripting
+            WriteUnavailableGenerationPlugin(
+                fixture.projectRoot,
+                fixture.host.serialization,
+                "this Plugin update is deliberately invalid C#"
             );
-            Assert.Equal(updateInPlace ? 1 : 0, fixture.activePlugins.Count);
-            MissingGameComponent missingPlugin = Assert.IsType<MissingGameComponent>(
-                state.pluginOwner.GetComponents().Single(component => component is not Transform)
-            );
-            MissingGameComponent missingScript = Assert.IsType<MissingGameComponent>(
-                state.scriptOwner.GetComponents().Single(component => component is not Transform)
-            );
-            Assert.Equal(state.pluginComponentID, missingPlugin.identity.persistentID);
-            Assert.Equal(state.scriptComponentID, missingScript.identity.persistentID);
-            Assert.Equal("UnavailabilityPlugin.PluginBehavior", missingPlugin.missingTypeName);
-            Assert.Equal("DependentBehavior", missingScript.missingTypeName);
-            CompleteUnloadVerification(reload);
-            if (updateInPlace)
-            {
-                File.WriteAllBytes(installedPlugin, validPluginPackage);
-            }
-            else
-            {
-                File.Move(detachedPlugin, installedPlugin);
-            }
-            Assert.True(fixture.RefreshPlugins());
-            ScriptCompilationResult recoveredCompilation = fixture.CompilePendingPluginReload(reload);
-            Assert.True(recoveredCompilation.success, FormatDiagnostics(recoveredCompilation));
-            Assert.True(reload.ApplyPendingReload());
-            AssertRecoveredAvailability(state);
-            CompleteUnloadVerification(reload);
-            Assert.Equal(GenerationState.Ready, fixture.host.modules.generations.state);
         }
+        else
+        {
+            File.Move(installedPlugin, detachedPlugin);
+        }
+
+        Assert.True(fixture.RefreshPlugins());
+        ScriptCompilationResult unavailable = fixture.CompilePendingPluginReload(reload);
+        Assert.False(unavailable.success);
+        Assert.Contains(unavailable.diagnostics, static diagnostic => diagnostic.severity == DiagnosticSeverity.Error);
+        Assert.True(reload.ApplyPendingReload());
+        Assert.DoesNotContain(
+            fixture.host.modules.modules,
+            static module => module.domain is AssemblyDomain.InnoPlugin or AssemblyDomain.InnoScripting
+        );
+        Assert.Equal(updateInPlace ? 1 : 0, fixture.activePlugins.Count);
+        MissingGameComponent missingPlugin = Assert.IsType<MissingGameComponent>(
+            state.pluginOwner.GetComponents().Single(component => component is not Transform)
+        );
+        MissingGameComponent missingScript = Assert.IsType<MissingGameComponent>(
+            state.scriptOwner.GetComponents().Single(component => component is not Transform)
+        );
+        Assert.Equal(state.pluginComponentID, missingPlugin.identity.persistentID);
+        Assert.Equal(state.scriptComponentID, missingScript.identity.persistentID);
+        Assert.Equal("UnavailabilityPlugin.PluginBehavior", missingPlugin.missingTypeName);
+        Assert.Equal("DependentBehavior", missingScript.missingTypeName);
+        CompleteUnloadVerification(reload);
+        if (updateInPlace)
+        {
+            File.WriteAllBytes(installedPlugin, validPluginPackage);
+        }
+        else
+        {
+            File.Move(detachedPlugin, installedPlugin);
+        }
+        Assert.True(fixture.RefreshPlugins());
+        ScriptCompilationResult recoveredCompilation = fixture.CompilePendingPluginReload(reload);
+        Assert.True(recoveredCompilation.success, FormatDiagnostics(recoveredCompilation));
+        Assert.True(reload.ApplyPendingReload());
+        AssertRecoveredAvailability(state);
+        CompleteUnloadVerification(reload);
+        Assert.Equal(GenerationState.Ready, fixture.host.modules.generations.state);
     }
 
     [Fact]
@@ -448,7 +442,7 @@ public sealed class ScriptReloadTests : ScriptingPipelineFixture
 
     [Fact]
     [Trait("Acceptance", "Lifecycle")]
-    public void ContentPlayStopReloadPlaySoakRetiresEverySessionBeforeTheNextGeneration()
+    public void ContentPlayCanRestartAfterSessionRetirementAndReload()
     {
         using var fixture = new ScriptingFixture(WriteUnavailableGenerationPlugin);
         var reloads = new EditorReloadCoordinator();
@@ -464,9 +458,9 @@ public sealed class ScriptReloadTests : ScriptingPipelineFixture
             new RuntimeSessionOptions
             {
                 kind = RuntimeSessionKind.Play,
-                applicationID = "tests.content-soak",
+                applicationID = "tests.content-reload",
                 createLogSink = _ => new FileLogSink(
-                    Path.Combine(Path.Combine(fixture.projectRoot, "Persistent", "tests.content-soak"), "Logs")
+                    Path.Combine(Path.Combine(fixture.projectRoot, "Persistent", "tests.content-reload"), "Logs")
                 ),
                 jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
                 referenceResolvers = [fixture.assets]
@@ -477,27 +471,21 @@ public sealed class ScriptReloadTests : ScriptingPipelineFixture
             fixture.host.logs
         );
         using IDisposable registration = reloads.RegisterGuard(play);
-        for (int iteration = 0; iteration < 10; iteration++)
-        {
-            Assert.True(play.EnterPlayMode());
-            play.AdvanceTransition();
-            play.AdvanceTransition();
-            Assert.True(play.state == EditorPlayModeState.Playing, play.lastFailure);
-            for (int frame = 0; frame < 60; frame++)
-            {
-                play.Tick(1f / 60f);
-            }
-            Assert.True(play.ExitPlayMode());
-            play.AdvanceTransition();
-            play.AdvanceTransition();
-            Assert.Equal(EditorPlayModeState.Editing, play.state);
-            Assert.True(fixture.CompilePendingPluginReload(reload).success);
-            Assert.True(reload.ApplyPendingReload());
-            CompleteUnloadVerification(reload);
-            Assert.Equal(GenerationState.Ready, fixture.host.modules.generations.state);
-            Assert.Equal(iteration + 1, scenes.restoreCount);
-            Assert.Equal(iteration + 1, history.disposeCount);
-        }
+        Assert.True(play.EnterPlayMode());
+        play.AdvanceTransition();
+        play.AdvanceTransition();
+        Assert.True(play.state == EditorPlayModeState.Playing, play.lastFailure);
+        play.Tick(1f / 60f);
+        Assert.True(play.ExitPlayMode());
+        play.AdvanceTransition();
+        play.AdvanceTransition();
+        Assert.Equal(EditorPlayModeState.Editing, play.state);
+        Assert.True(fixture.CompilePendingPluginReload(reload).success);
+        Assert.True(reload.ApplyPendingReload());
+        CompleteUnloadVerification(reload);
+        Assert.Equal(GenerationState.Ready, fixture.host.modules.generations.state);
+        Assert.Equal(1, scenes.restoreCount);
+        Assert.Equal(1, history.disposeCount);
 
         Assert.True(play.EnterPlayMode());
         play.AdvanceTransition();

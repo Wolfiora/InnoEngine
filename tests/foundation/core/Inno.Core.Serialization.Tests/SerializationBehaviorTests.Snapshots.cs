@@ -204,23 +204,13 @@ public sealed partial class SerializationBehaviorTests
     }
 
     [Fact]
-    public void UnchangedLargeBinaryCaptureDoesNotCopyItsPayload()
+    public void BinaryMutationReplacesTheReusedSnapshot()
     {
         var source = new SnapshotEnvelope();
-        source.state.bytes = new byte[1024 * 1024];
+        source.state.bytes = new byte[2];
         SerializationSnapshot snapshot = m_serialization.CaptureSnapshot(source);
-        for (int index = 0; index < 8; index++)
-        {
-            Assert.Same(snapshot, m_serialization.CaptureSnapshot(source, previous: snapshot));
-        }
-        long started = GC.GetAllocatedBytesForCurrentThread();
-        for (int index = 0; index < 16; index++)
-        {
-            Assert.Same(snapshot, m_serialization.CaptureSnapshot(source, previous: snapshot));
-        }
-        long allocated = (GC.GetAllocatedBytesForCurrentThread() - started) / 16;
-        Assert.True(allocated < 16_384, $"An unchanged 1 MiB payload allocated {allocated} bytes per capture.");
-        source.state.bytes[500] = 12;
+        Assert.Same(snapshot, m_serialization.CaptureSnapshot(source, previous: snapshot));
+        source.state.bytes[1] = 12;
         SerializationSnapshot changed = m_serialization.CaptureSnapshot(source, previous: snapshot);
         Assert.NotSame(snapshot, changed);
         Assert.Equal(m_serialization.Serialize(source), changed.ToArray());

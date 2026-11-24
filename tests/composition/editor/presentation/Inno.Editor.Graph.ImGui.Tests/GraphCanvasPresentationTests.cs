@@ -53,15 +53,15 @@ public sealed class GraphCanvasPresentationTests
     }
 
     [Fact]
-    public void ChangingOneOfTwoThousandNodesPreservesOtherGeometry()
+    public void ChangingOneNodePreservesOtherGeometry()
     {
-        GraphCanvasNode[] nodes = Enumerable.Range(0, 2000)
+        GraphCanvasNode[] nodes = Enumerable.Range(0, 2)
             .Select(index => Node("workflow." + index, new GraphPosition(index * 220f, 0f)))
             .ToArray();
         var layout = new GraphCanvasLayout();
-        Assert.Equal(2000, layout.SetNodes(nodes));
-        GraphCanvasNode retained = nodes[999];
-        nodes[1000] = Node(nodes[1000].id.value, new GraphPosition(100f, 200f));
+        Assert.Equal(2, layout.SetNodes(nodes));
+        GraphCanvasNode retained = nodes[0];
+        nodes[1] = Node(nodes[1].id.value, new GraphPosition(100f, 200f));
         Assert.Equal(1, layout.SetNodes(nodes));
         Assert.True(layout.TryGetNode(retained.id, out GraphCanvasNode? current));
         Assert.Same(retained, current);

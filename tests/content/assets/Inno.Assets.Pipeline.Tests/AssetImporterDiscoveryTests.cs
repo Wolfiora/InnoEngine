@@ -339,13 +339,6 @@ public sealed class AssetImporterDiscoveryTests : AssetLoaderFixture
     }
 
     [Fact]
-    public void ExtensionContractsUseImplementationIdentityWithoutManualVersions()
-    {
-        Assert.Null(typeof(AssetImporter).GetProperty("version"));
-        Assert.Null(typeof(AssetBuildProcessor).GetProperty("version"));
-    }
-
-    [Fact]
     public void AutomaticallyDiscoveredPrivateImporterLoadsWithoutRegistrationApi()
     {
         using var workspace = new TestWorkspace();

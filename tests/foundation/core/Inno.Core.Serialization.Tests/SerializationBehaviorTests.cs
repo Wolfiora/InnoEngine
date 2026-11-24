@@ -77,13 +77,6 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void ISerializableIsPureMarkerInterface()
-    {
-        Assert.Empty(typeof(ISerializable).GetMethods());
-        Assert.Empty(typeof(ISerializable).GetProperties());
-    }
-
-    [Fact]
     public void PublicOperationsRejectDisposedRegistry()
     {
         m_serialization.Dispose();

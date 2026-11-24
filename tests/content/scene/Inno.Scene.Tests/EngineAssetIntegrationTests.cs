@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -8,7 +7,6 @@ using Xunit;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Serialization;
-using Inno.Extensibility.Types;
 using Inno.Scene;
 using Inno.Scene.Layers;
 
@@ -292,16 +290,6 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
 
         DestroyScene(sourceScene);
         DestroyScene(recoveredScene);
-    }
-
-    [Fact]
-    public void EngineImportersAreDiscoveredWithoutManualRegistration()
-    {
-        IReadOnlyList<TypeRef> importerTypes = m_fixture.types.GetSubTypesOf<AssetImporter>();
-
-        Assert.Contains(importerTypes, type => type.Resolve(m_fixture.types).Name == "SceneAssetImporter");
-        Assert.Contains(importerTypes, type => type.Resolve(m_fixture.types).Name == "PrefabAssetImporter");
-        Assert.Null(typeof(AssetPipeline).GetMethod("RegisterImporter"));
     }
 
     [Fact]

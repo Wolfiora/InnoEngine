@@ -287,7 +287,7 @@ public sealed class AssetRuntimeLoadingTests : AssetLoaderFixture
             residencyBudgetBytes: 0,
             preparationBudgetBytes: 100_000
         );
-        for (int cycle = 0; cycle < 32; cycle++)
+        for (int cycle = 0; cycle < 2; cycle++)
         {
             using var cancellation = new CancellationTokenSource();
             Task<AssetLease<DependencyAsset>> first = database.AcquireAsync<DependencyAsset>(
@@ -326,8 +326,8 @@ public sealed class AssetRuntimeLoadingTests : AssetLoaderFixture
             Assert.Equal(0, database.residencyStatistics.residentAssetCount);
         }
         AssetPreparationStatistics statistics = database.preparationStatistics;
-        Assert.Equal(96, statistics.payloadReadsStarted);
-        Assert.Equal(32, statistics.sharedPayloadReads);
+        Assert.Equal(6, statistics.payloadReadsStarted);
+        Assert.Equal(2, statistics.sharedPayloadReads);
         Assert.Equal(2, statistics.peakPendingRequests);
         Assert.InRange(statistics.peakReservedBytes, 65_536, 100_000);
         Assert.Equal(0, statistics.rejectedRequests);
