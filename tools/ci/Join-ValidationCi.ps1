@@ -2,7 +2,8 @@ param(
     [Parameter(Mandatory)][string]$ReceivedDirectory,
     [Parameter(Mandatory)][string[]]$Hosts,
     [Parameter(Mandatory)][string]$ExpectedCommit,
-    [Parameter(Mandatory)][int]$Attempt
+    [Parameter(Mandatory)][int]$Attempt,
+    [switch]$HostEvidenceOnly
 )
 
 $ErrorActionPreference = 'Stop'
@@ -41,6 +42,7 @@ $certification = foreach ($platform in $Hosts) {
     $routing[$platform] = @($plan.hostExcludedSources | Where-Object { $_ })
     [pscustomobject]@{ platform = $platform; receipt = $receipt }
 }
+if ($HostEvidenceOnly) { return }
 [IO.File]::WriteAllText((Join-Path $repository 'artifacts/validation/host-routing.json'),
     (ConvertTo-Json @{commit=$ExpectedCommit;hosts=$routing} -Depth 6 -Compress))
 $certification | ConvertTo-Json -Depth 12 | Set-Content (Join-Path $repository 'artifacts/validation/certification.json')

@@ -4,6 +4,7 @@ param(
     [Parameter(Mandatory)][string]$Revision,
     [string]$ApiUrl = 'https://api.github.com',
     [string[]]$ChangedTargets,
+    [string[]]$ActiveTags = @(),
     [switch]$DryRun
 )
 $ErrorActionPreference = 'Stop'
@@ -105,7 +106,8 @@ foreach ($platform in $targets) {
     $digests.Add($platform.asset, $digest)
     $archives.Add($platform.asset, (Get-Item -LiteralPath $archive).FullName)
 }
-$publication = & "$PSScriptRoot/Get-BackendReleasePlan.ps1" -Releases $releases -Digests $digests -Revision $Revision
+$publication = & "$PSScriptRoot/Get-BackendReleasePlan.ps1" -Releases $releases -Digests $digests -Revision $Revision `
+    -ActiveTags $ActiveTags -UpdateLatest:($ChangedTargets.Count -lt $targets.Count)
 if ($publication.operation -ceq 'reuse') {
     $published = $releases | Where-Object id -EQ $publication.id
     $null = Get-BackendCatalog $base $headers $published
@@ -116,12 +118,17 @@ if ($publication.retire) {
     $readers = @(Get-OtherReaders)
     if ($readers.Count) { throw "Release $($publication.retire.tag) is protected while runs $($readers -join ', ') can acquire its files." }
 }
-if ($DryRun) { return $publication }
+# Two producer groups can publish different asset sets for the same commit. Bind the draft before the first upload.
+$assetSet = ($digests.Keys | Sort-Object | ForEach-Object { "$_=$($digests[$_])" }) -join ' '
+$intent = "<!-- backend-assets $assetSet -->"
 if ($publication.operation -ceq 'resume') {
     $draft = $releases | Where-Object id -EQ $publication.id
-} else {
+    if ($draft.body -match '<!-- backend-assets ' -and !$draft.body.Contains($intent)) { throw 'Another backend asset set owns the pending draft.' }
+}
+if ($DryRun) { return $publication }
+if ($publication.operation -ceq 'create') {
     $body = @{tag_name=$publication.tag; target_commitish=$Revision; name=$publication.title; draft=$true; prerelease=$true
-        body="Certified backend assemblies, native libraries and build tools for engine CI. Each platform ZIP includes its file inventory. Source revision: $Revision." }
+        body="Certified backend assemblies, native libraries and build tools for engine CI. Each platform ZIP includes its file inventory. Source revision: $Revision.`n`n$intent" }
     if ($publication.retire) {
         $old = $releases | Where-Object id -EQ $publication.retire.id
         $catalog = Get-BackendCatalog $base $headers $old
@@ -186,6 +193,7 @@ $retirement = [regex]::Match([string]$ready.body, '(?m)^<!-- backend-retirement 
 if ($publication.retire -and (!$retirement.Success -or $retirement.Groups[1].Value -cne [string]$publication.retire.id -or
     $retirement.Groups[2].Value -cne $publication.retire.tag)) { throw 'The draft does not own the expected retirement.' }
 if ($retirement.Success) {
+    if ($retirement.Groups[2].Value -cin $ActiveTags) { throw 'The retiring catalog is pinned by another platform.' }
     $readers = @(Get-OtherReaders)
     if ($readers.Count) { throw "Retained draft $($draft.id) while runs $($readers -join ', ') can acquire the rollback release." }
     $oldId = $retirement.Groups[1].Value

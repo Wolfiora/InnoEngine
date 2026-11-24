@@ -15,7 +15,7 @@ function Join-Requests([array]$Packages, [string]$Commit=$revision, [string]$Reb
 try {
     $none = Join-Requests @()
     if ($none.platforms.Count -or $none.producers.Count -or $none.deferred.Count) { throw 'An independent plan allocated a backend job.' }
-    $prior = @{target=$target;operation='consume';sha256=('b'*64);assetId=12}
+    $prior = @{target=$target;operation='consume';sha256=('b'*64);assetId=12;tag='backend-prebuilts-2026.11.19.1'}
     $warm = Join-Requests @($prior)
     if ($warm.producers.Count -or $warm.platforms.Count -ne 1 -or $warm.platforms[0].nativeInputs) { throw 'A matching backend ZIP scheduled source production.' }
     if ($warm.deferred[0].pattern -cne "backend-candidate-$target" -or $warm.deferred[0].destination -cne "artifacts/candidates/backend-candidate-$target") {
@@ -32,6 +32,14 @@ try {
             [IO.File]::WriteAllText($peerFile,(ConvertTo-Json $peerDecision -Depth 8))
             $split = & "$PSScriptRoot/../../tools/ci/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
             if ($split.chains.Count -ne 2) { throw 'Disjoint target requests must start independent chains.' }
+            if ($split.readerTags.Count -ne 1 -or $split.readerTags[0] -cne $prior.tag) { throw 'Publication lost a sibling reader.' }
+            $coldHost = @($platforms | Where-Object runner -CEQ $runner | ForEach-Object {
+                @{target=$_.target;operation='produce';sha256=$null;assetId=$null}
+            })
+            [IO.File]::WriteAllText($file,(ConvertTo-Json @{commit=$revision;packages=$coldHost;deferred=$true;executedLocally=$false} -Depth 8))
+            $initial = & "$PSScriptRoot/../../tools/ci/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
+            if ($initial.chains.Count -ne 1 -or $initial.chains[0].producers.include.Count -ne $platforms.Count) { throw 'The initial catalog requires the complete producer set.' }
+            $null = Join-Requests @($prior)
             $peerDecision.packages += $prior
             [IO.File]::WriteAllText($peerFile,(ConvertTo-Json $peerDecision -Depth 8))
             $shared = & "$PSScriptRoot/../../tools/ci/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision

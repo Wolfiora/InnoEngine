@@ -14,6 +14,9 @@ on:
       rebuild_backends:
         type: string
         default: ''
+      reader_tags:
+        type: string
+        required: true
       platforms:
         type: string
         required: true
@@ -202,3 +205,63 @@ jobs:
         with:
           platform: ${{ matrix.runner }}
           source-run: ${{ inputs.source_run || '0' }}
+
+  publish-backends:
+    needs: execution
+    if: >-
+      ${{ success() &&
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch) &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') &&
+      fromJSON(inputs.producers).include[0] != null }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: write
+    concurrency:
+      group: trusted-backend-publication
+      queue: max
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Select certified inputs for this producer group
+        id: scope
+        shell: pwsh
+        env:
+          PRODUCERS: ${{ inputs.producers }}
+          CONSUMERS: ${{ inputs.consumers }}
+        run: |
+          $patterns = @(foreach ($item in ($env:PRODUCERS | ConvertFrom-Json).include) { "backend-candidate-$($item.target)" })
+          foreach ($consumer in ($env:CONSUMERS | ConvertFrom-Json).include) {
+            $patterns += "validation-{plan,joined,result}-$($consumer.runner)-*"
+          }
+          "pattern={$($patterns -join ',')}" >> $env:GITHUB_OUTPUT
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          pattern: ${{ steps.scope.outputs.pattern }}
+          path: artifacts/promotion
+      - name: Publish the certified backend targets
+        shell: pwsh
+        env:
+          PRODUCERS: ${{ inputs.producers }}
+          CONSUMERS: ${{ inputs.consumers }}
+          READER_TAGS: ${{ inputs.reader_tags }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $producers = ($env:PRODUCERS | ConvertFrom-Json).include
+          $consumers = ($env:CONSUMERS | ConvertFrom-Json).include
+          ./tools/ci/Join-ValidationCi.ps1 -ReceivedDirectory artifacts/promotion -Hosts $consumers.runner -ExpectedCommit $env:GITHUB_SHA `
+            -Attempt ([int]$env:GITHUB_RUN_ATTEMPT) -HostEvidenceOnly
+          foreach ($item in $producers) {
+            $owner = [IO.Directory]::CreateDirectory([IO.Path]::GetFullPath("artifacts/promotion/$($item.target)")).FullName
+            $candidate = "artifacts/promotion/backend-candidate-$($item.target)"
+            Copy-Item -LiteralPath "$candidate/$($item.asset)","$candidate/consumption.json" -Destination $owner
+            $evidence = "artifacts/validation/joined/$($item.runner)"
+            Copy-Item -LiteralPath "$evidence/plan.json","$evidence/results.json" -Destination $owner
+          }
+          $head = Invoke-RestMethod -Headers @{Authorization="Bearer $env:GH_TOKEN"} -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/git/ref/heads/$env:DEFAULT_BRANCH"
+          if ($head.object.sha -cne $env:GITHUB_SHA) { Write-Host 'A newer default-branch candidate owns promotion.'; return }
+          ./tools/ci/Publish-BackendPrebuilts.ps1 -Directory artifacts/promotion -Repository $env:GITHUB_REPOSITORY `
+            -Revision $env:GITHUB_SHA -ApiUrl $env:GITHUB_API_URL -ChangedTargets $producers.target -ActiveTags (ConvertFrom-Json -NoEnumerate $env:READER_TAGS)

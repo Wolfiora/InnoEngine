@@ -259,8 +259,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
-      producers: ${{ steps.join.outputs.producers }}
       chains: ${{ steps.join.outputs.chains }}
+      reader_tags: ${{ steps.join.outputs.reader_tags }}
       independent: ${{ steps.join.outputs.independent }}
       required: ${{ steps.join.outputs.required }}
     steps:
@@ -279,9 +279,10 @@ jobs:
         run: |
           $jobs = ./tools/ci/Join-BackendAcquisitions.ps1 -RebuildTargets $env:REBUILD_TARGETS -Received artifacts/requests -Hosts (($env:HOSTS | ConvertFrom-Json).include.runner) `
             -Revision $env:GITHUB_SHA
-          foreach ($name in 'chains','producers','independent') {
+          foreach ($name in 'chains','independent') {
             "$name=$(@{include=@($jobs.$name)} | ConvertTo-Json -Compress -Depth 8)" >> $env:GITHUB_OUTPUT
           }
+          "reader_tags=$(ConvertTo-Json -InputObject $jobs.readerTags -Compress)" >> $env:GITHUB_OUTPUT
           "required=$(($jobs.platforms.Count -gt 0).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
 
   independent:
@@ -319,11 +320,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.backend-matrix.outputs.chains) }}
+    permissions:
+      actions: read
+      contents: write
     uses: ./.github/workflows/backend-prebuilts.yml
     with:
       platforms: ${{ toJSON(matrix.platforms) }}
       producers: ${{ toJSON(matrix.producers) }}
       consumers: ${{ toJSON(matrix.consumers) }}
+      reader_tags: ${{ needs.backend-matrix.outputs.reader_tags }}
       profile: ${{ needs.route.outputs.profile }}
       source_run: ${{ inputs.source_run || '0' }}
       rebuild_backends: ${{ inputs.rebuild_backends || '' }}
@@ -412,48 +417,3 @@ jobs:
           path: artifacts/validation/host-routing.json
           if-no-files-found: error
           retention-days: 30
-
-  publish-backends:
-    needs: [engine-validation, backend-matrix, backends]
-    if: >-
-      ${{ !cancelled() && needs.engine-validation.result == 'success' && needs.backends.result == 'success' &&
-      github.ref == format('refs/heads/{0}', github.event.repository.default_branch) &&
-      (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') &&
-      fromJSON(needs.backend-matrix.outputs.producers).include[0] != null }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    permissions:
-      actions: read
-      contents: write
-    concurrency:
-      group: trusted-backend-publication
-      cancel-in-progress: false
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          persist-credentials: false
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
-        with:
-          pattern: '{backend-candidate-*,engine-acceptance-evidence-attempt-*}'
-          path: artifacts/promotion
-      - name: Publish certified changes and retain the other platforms byte for byte
-        shell: pwsh
-        env:
-          MATRIX: ${{ needs.backend-matrix.outputs.producers }}
-          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          $head = Invoke-RestMethod -Headers @{Authorization="Bearer $env:GH_TOKEN"} -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/git/ref/heads/$env:DEFAULT_BRANCH"
-          if ($head.object.sha -cne $env:GITHUB_SHA) { Write-Host 'A newer default-branch candidate owns promotion.'; return }
-          $artifacts = @(Get-ChildItem -LiteralPath artifacts/promotion -Directory)
-          $evidence = ./tools/ci/Select-ValidationArtifact.ps1 -Artifacts $artifacts -Name engine-acceptance-evidence -MaximumAttempt ([int]$env:GITHUB_RUN_ATTEMPT)
-          $producers = @((ConvertFrom-Json $env:MATRIX).include)
-          foreach ($item in $producers) {
-            $owner = [IO.Directory]::CreateDirectory([IO.Path]::GetFullPath("artifacts/promotion/$($item.target)")).FullName
-            $candidate = "artifacts/promotion/backend-candidate-$($item.target)"
-            Copy-Item -LiteralPath "$candidate/$($item.asset)","$candidate/consumption.json" -Destination $owner
-            $hostEvidence = Join-Path $evidence.FullName $item.runner
-            Copy-Item -LiteralPath "$hostEvidence/plan.json","$hostEvidence/results.json" -Destination $owner
-          }
-          ./tools/ci/Publish-BackendPrebuilts.ps1 -Directory artifacts/promotion -Repository $env:GITHUB_REPOSITORY `
-            -Revision $env:GITHUB_SHA -ApiUrl $env:GITHUB_API_URL -ChangedTargets $producers.target
