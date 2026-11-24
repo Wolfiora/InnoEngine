@@ -33,7 +33,8 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - uses: ./.github/actions/setup-dotnet
-      - uses: ./.github/actions/freeze-validation
+      - id: freeze
+        uses: ./.github/actions/freeze-validation
         with:
           rebuild-backends: ${{ inputs.rebuild_backends }}
           runner-label: ${{ matrix.runner }}
@@ -79,7 +80,7 @@ jobs:
           if-no-files-found: error
           overwrite: true
           retention-days: 7
-      - name: Engine tests
+      - name: ${{ steps.freeze.outputs.execution-label }}
         uses: ./.github/actions/consume-validation
         if: steps.decision.outputs.dispatch == 'false'
         with:
@@ -102,7 +103,8 @@ jobs:
           persist-credentials: false
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
-          pattern: backend-request-*
+          pattern: ${{ fromJSON(inputs.hosts).include[1] == null && format('backend-request-{0}', fromJSON(inputs.hosts).include[0].runner) || 'backend-request-*' }}
+          merge-multiple: ${{ fromJSON(inputs.hosts).include[1] == null }}
           path: ${{ fromJSON(inputs.hosts).include[1] == null && format('artifacts/requests/backend-request-{0}', fromJSON(inputs.hosts).include[0].runner) || 'artifacts/requests' }}
       - id: join
         shell: pwsh
@@ -133,7 +135,8 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - uses: ./.github/actions/setup-dotnet
-      - uses: ./.github/actions/freeze-validation
+      - id: freeze
+        uses: ./.github/actions/freeze-validation
         with:
           rebuild-backends: ${{ inputs.rebuild_backends }}
           runner-label: ${{ matrix.runner }}
@@ -143,7 +146,7 @@ jobs:
         with:
           name: backend-request-${{ matrix.runner }}
           path: artifacts/backend-request
-      - name: Engine tests
+      - name: ${{ steps.freeze.outputs.execution-label }}
         uses: ./.github/actions/consume-validation
         with:
           digest: ${{ matrix.digest }}

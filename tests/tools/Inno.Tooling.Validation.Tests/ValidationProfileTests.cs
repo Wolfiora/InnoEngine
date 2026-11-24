@@ -158,7 +158,7 @@ public sealed class ValidationProfileTests : ValidationPlanFixture
         using var repository = new ValidationRepository();
         repository.Write("src/Example/Changed.cs", "namespace Example;\n");
         repository.Write("src/Example/Changed.txt", "Text.\n");
-        foreach (string? profile in new[] { null, "fast" })
+        foreach (string? profile in new[] { null, "fast", "master" })
         {
             using JsonDocument incremental = await repository.PlanAsync(profile: profile);
             Assert.Equal(
@@ -166,8 +166,6 @@ public sealed class ValidationProfileTests : ValidationPlanFixture
                 Architecture(incremental).GetProperty("changedSources").EnumerateArray().Select(static source => source.GetString())
             );
         }
-        using JsonDocument master = await repository.PlanAsync(profile: "master");
-        Assert.False(IsIncremental(master));
         repository.Write("InnoEngine.sln", "Microsoft Visual Studio Solution File, Format Version 12.00\n\n");
         using JsonDocument tooling = await repository.PlanAsync();
         Assert.False(IsIncremental(tooling));

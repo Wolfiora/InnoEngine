@@ -166,6 +166,13 @@ internal static partial class ValidationPlanner
             cancellationToken
         ).ConfigureAwait(false);
         List<string> diagnostics = [];
+        Dictionary<string, string[]> contracts = ValidationCiContracts.Select(
+            root,
+            inputs.Keys,
+            changes,
+            full || extended || profile == ValidationProfile.Full,
+            out HashSet<string> workflowInputs
+        );
         foreach (string change in changes)
         {
             ValidationProject[] owners = projects.Where(project => (
@@ -180,7 +187,7 @@ internal static partial class ValidationPlanner
                 && inputs.GetValueOrDefault(change, "missing") != "missing"
                 && !IsDocumentation(change)
                 && change != ValidationRunner.C_TEST_EXECUTOR
-                && !IsWorkflowInput(change) && !IsEditorProductInput(change) && IsExecutable(change)
+                && !workflowInputs.Contains(change) && !IsEditorProductInput(change) && IsExecutable(change)
             ) {
                 if (change is "global.json" or "Directory.Solution.targets" or "InnoEngine.sln")
                 {
@@ -204,7 +211,8 @@ internal static partial class ValidationPlanner
             try
             {
                 string listing = await GitAsync("ls-tree", "-rz", "--name-only", mergeBase).ConfigureAwait(false);
-                string[] priorProjects = listing.Split('\0', StringSplitOptions.RemoveEmptyEntries)
+                string[] priorPaths = listing.Split('\0', StringSplitOptions.RemoveEmptyEntries);
+                string[] priorProjects = priorPaths
                     .Where(path => (
                         path.EndsWith(".csproj", StringComparison.Ordinal)
                         && path.Split('/')[0] is "src" or "entry" or "build" or "backends" or "platforms" or "tools" or "tests"
@@ -224,38 +232,112 @@ internal static partial class ValidationPlanner
                     cancellationToken: cancellationToken
                 ).ConfigureAwait(false);
                 using JsonDocument snapshots = JsonDocument.Parse(prior);
-                var sets = new Dictionary<string, string[]>(StringComparer.Ordinal);
                 HashSet<string> deleted = removed.ToHashSet(StringComparer.Ordinal);
-                var entries = new ValidationEntryInputs(
+                var mapped = new HashSet<string>(StringComparer.Ordinal);
+                Dictionary<string, string[]> priorContracts = ValidationCiContracts.Select(
                     checkout,
-                    snapshots.RootElement,
-                    "managed",
-                    sets,
-                    values => values.Where(deleted.Contains).ToArray()
+                    priorPaths,
+                    deleted,
+                    false,
+                    out HashSet<string> priorScripts
                 );
-                HashSet<string> matches = sets
-                    .Where(pair => pair.Value.Length != 0)
-                    .Select(pair => pair.Key)
-                    .ToHashSet(StringComparer.Ordinal);
-                var surviving = new HashSet<string>(StringComparer.Ordinal);
-                foreach (JsonElement snapshot in snapshots.RootElement.EnumerateArray())
+                mapped.UnionWith(deleted.Where(priorScripts.Contains));
+                if (priorContracts.Count > 0)
                 {
-                    string owner = Path.GetRelativePath(checkout, snapshot.GetProperty("Path").GetString()!).Replace('\\', '/');
-                    if (byPath.ContainsKey(owner) && entries.Sources(owner).Any(matches.Contains))
+                    HashSet<string> survivingInputs = changes
+                        .Concat(priorContracts.Keys.Where(test => File.Exists(Path.Combine(root, test))))
+                        .ToHashSet(StringComparer.Ordinal);
+                    contracts = ValidationCiContracts.Select(
+                        root,
+                        inputs.Keys,
+                        survivingInputs,
+                        full || extended || profile == ValidationProfile.Full,
+                        out _
+                    );
+                }
+                MapRemoved(snapshots.RootElement, "managed");
+                JsonElement? baselineEditor = DevelopmentProject(snapshots.RootElement, checkout);
+                if (baselineEditor.HasValue && deleted.Any(path => !IsWorkflowInput(path) && IsExecutable(path)))
+                {
+                    JsonElement host = baselineEditor.Value.GetProperty("Properties");
+                    string? hostTarget = host.GetProperty("InnoDevelopmentTarget").GetString();
+                    string? productProperties = host.GetProperty("InnoDevelopmentEditorBuildProperties").GetString();
+                    if (!string.IsNullOrEmpty(hostTarget) && !string.IsNullOrEmpty(productProperties))
                     {
-                        surviving.Add(owner);
+                        var native = new Dictionary<string, string>(baselineProperties)
+                        {
+                            ["InnoNativeTarget"] = hostTarget,
+                            ["InnoToolTarget"] = hostTarget,
+                            ["InnoProductBuildProperties"] = productProperties
+                        };
+                        string priorNative = await ManagedProjectGraphCapture.CaptureSelectedAsync(
+                            checkout,
+                            sdk,
+                            priorProjects,
+                            native,
+                            cancellationToken: cancellationToken
+                        ).ConfigureAwait(false);
+                        using JsonDocument nativeGraph = JsonDocument.Parse(priorNative);
+                        MapRemoved(nativeGraph.RootElement, "native");
                     }
                 }
-                removedEntries.Add("managed", surviving);
-                affected.UnionWith(surviving);
-                foreach (string path in deleted.Except(sets.Values.SelectMany(value => value)))
+                foreach (string path in deleted.Except(mapped))
                 {
-                    if (!IsWorkflowInput(path) && !IsEditorProductInput(path) && IsExecutable(path))
+                    if (!IsEditorProductInput(path) && IsExecutable(path))
                     {
                         throw new InvalidDataException($"Removed executable input '{path}' has no declared owner at {mergeBase}.");
                     }
                 }
-                diagnostics.Add($"Selected {surviving.Count} surviving consumers using the Git merge base {mergeBase}.");
+                diagnostics.Add($"Resolved deleted inputs from Git merge base {mergeBase}.");
+                void MapRemoved(
+                    JsonElement baselineGraph,
+                    string context
+                ) {
+                    var sets = new Dictionary<string, string[]>(StringComparer.Ordinal);
+                    var entries = new ValidationEntryInputs(
+                        checkout,
+                        baselineGraph,
+                        context,
+                        sets,
+                        values => values.Where(deleted.Contains).ToArray()
+                    );
+                    HashSet<string> matches = sets.Where(pair => pair.Value.Length != 0)
+                        .Select(pair => pair.Key)
+                        .ToHashSet(StringComparer.Ordinal);
+                    mapped.UnionWith(sets.Values.SelectMany(values => values));
+                    ValidationProject[] priorOwners = baselineGraph
+                        .EnumerateArray()
+                        .Select(node => ValidationProject.Read(checkout, node))
+                        .ToArray();
+                    HashSet<string> direct = priorOwners.Where(owner => owner.inputs.Any(deleted.Contains))
+                        .Select(owner => owner.path)
+                        .ToHashSet(StringComparer.Ordinal);
+                    var surviving = new HashSet<string>(StringComparer.Ordinal);
+                    foreach (ValidationProject priorOwner in priorOwners)
+                    {
+                        if (!byPath.ContainsKey(priorOwner.path) || !entries.Sources(priorOwner.path).Any(matches.Contains))
+                        {
+                            continue;
+                        }
+                        if (priorOwner.test && priorOwner.subjects.Length != 0 && !direct.Contains(priorOwner.path)
+                            && !priorOwner.subjects.Any(direct.Contains)
+                        ) {
+                            continue;
+                        }
+                        surviving.Add(priorOwner.path);
+                    }
+                    removedEntries.Add(context, surviving);
+                    affected.UnionWith(
+                        priorOwners
+                            .Where(
+                                owner => (
+                                    surviving.Contains(owner.path)
+                                    && (owner.test || direct.Contains(owner.path) || owner.references.Any(direct.Contains))
+                                )
+                            )
+                            .Select(owner => owner.path)
+                    );
+                }
             }
             finally
             {
@@ -268,11 +350,6 @@ internal static partial class ValidationPlanner
                 ).ConfigureAwait(false);
             }
         }
-        bool changedTestExecutor = changes.Contains(ValidationRunner.C_TEST_EXECUTOR);
-        if (changedTestExecutor)
-        {
-            affected.UnionWith(projects.Where(static project => project.test).Select(static project => project.path));
-        }
         if (extended || profile == ValidationProfile.Full)
         {
             full = true;
@@ -282,16 +359,38 @@ internal static partial class ValidationPlanner
             affected.UnionWith(paths);
         }
         const string C_EDITOR = "entry/InnoEngine.Editor/InnoEngine.Editor.csproj";
-        if (byPath.ContainsKey(C_EDITOR) && changes.Any(path => (
-            IsEditorProductInput(path) || IsReleaseProductInput(path)
+        bool releaseConfiguration = full
+            || changes.Any(
+                path => path == "Directory.Build.targets" || path.EndsWith(".Release.props", StringComparison.OrdinalIgnoreCase)
+            );
+        bool supportPack = releaseConfiguration
+            || changes.Any(
+                path => (
+                    path.StartsWith("build/support/", StringComparison.Ordinal)
+                    || path.Contains("SupportPack", StringComparison.Ordinal) && path.StartsWith("build/", StringComparison.Ordinal)
+                    || path == ValidationRunner.C_SUPPORT_PACK
+                )
+            );
+        bool playerExport = releaseConfiguration
+            || changes.Any(
+                path => (
+                    path.StartsWith("build/", StringComparison.Ordinal)
+                    && path.Contains("/Player/", StringComparison.Ordinal)
+                    && !path.Contains("SupportPack", StringComparison.Ordinal)
+                    || path.StartsWith("platforms/", StringComparison.Ordinal) && path.Contains("/player/", StringComparison.Ordinal)
+                )
+            );
+        bool releaseProduct = supportPack || playerExport;
+        bool hotBuild = extended || changes.Contains(ValidationRunner.C_BUILD_CACHE);
+        bool editorProduct = changes.Any(path => (
+            IsEditorProductInput(path) || path.StartsWith(DirectoryOf(C_EDITOR), StringComparison.Ordinal)
             || path.StartsWith("src/composition/editor/panels/", StringComparison.Ordinal)
-            || path.StartsWith("src/composition/editor/features/", StringComparison.Ordinal)
-               && path.Contains("Scripting", StringComparison.Ordinal)
-        ))
-        ) {
+        ));
+        if (byPath.ContainsKey(C_EDITOR) && (editorProduct || hotBuild || releaseProduct))
+        {
             affected.Add(C_EDITOR);
         }
-        if (byPath.ContainsKey("entry/InnoEngine.Build/InnoEngine.Build.csproj") && changes.Any(IsReleaseProductInput))
+        if (byPath.ContainsKey("entry/InnoEngine.Build/InnoEngine.Build.csproj") && releaseProduct)
         {
             affected.Add("entry/InnoEngine.Build/InnoEngine.Build.csproj");
         }
@@ -311,7 +410,6 @@ internal static partial class ValidationPlanner
         while (expanded);
         if (!full)
         {
-            HashSet<string> consumers = affected.ToHashSet(StringComparer.Ordinal);
             // MSBuild still compiles all references of each selected entry.
             affected.RemoveWhere(owner =>
             {
@@ -330,7 +428,7 @@ internal static partial class ValidationPlanner
                 }
                 return !candidate.references.Any(reference => (
                     directOwners.Contains(reference)
-                    || reference.StartsWith("tests/", StringComparison.Ordinal) && consumers.Contains(reference)
+                    || reference.StartsWith("tests/", StringComparison.Ordinal) && byPath[reference].references.Any(directOwners.Contains)
                 ));
             });
         }
@@ -687,7 +785,7 @@ internal static partial class ValidationPlanner
                                  && priorTooling.Contains(C_VALIDATOR);
         bool effectiveBuildChange = changes.Count > 0
                                     && changes.All(path => (
-                                        path != ValidationRunner.C_TEST_EXECUTOR && !IsCiContractInput(path)
+                                        path != ValidationRunner.C_TEST_EXECUTOR && !IsWorkflowInput(path) && !IsEditorProductInput(path)
                                         && (removedEntries.Count > 0 && removed.Contains(path, StringComparer.Ordinal)
                                             || inputs.TryGetValue(path, out string? value)
                                                && value != "missing"
@@ -697,7 +795,14 @@ internal static partial class ValidationPlanner
         inputSets.Add("native-sources", submoduleInputs);
         // Style and XML documentation rules judge one file at a time. An incremental profile checks the changed sources;
         // a changed validator can alter any verdict, so it selects every source again.
-        string[]? changedSources = full || toolingChanged || profile is not (ValidationProfile.PullRequest or ValidationProfile.Fast)
+        const string C_ARCHITECTURE = "tools/Inno.Tooling.Architecture/Inno.Tooling.Architecture.csproj";
+        bool architectureChanged = changes.Overlaps(
+            ["global.json", "Directory.Build.props", "Directory.Build.targets", "Directory.Solution.targets", "InnoEngine.sln"]
+        )
+                                   || changes.Any(path => path.StartsWith(DirectoryOf(C_ARCHITECTURE), StringComparison.Ordinal));
+        string[]? changedSources = full
+                                   || architectureChanged
+                                   || profile is not (ValidationProfile.PullRequest or ValidationProfile.Fast or ValidationProfile.Master)
                                    ? null
                                    : changes
                                        .Where(path => (
@@ -791,23 +896,25 @@ internal static partial class ValidationPlanner
                 )
             );
         }
-        Dictionary<string, string[]> contracts = ValidationCiContracts.Select(root, inputs.Keys, changes, full);
-        if (contracts.Count != 0 && !secondaryHost)
+        foreach (KeyValuePair<string, string[]> contract in contracts)
         {
-            checks.Add(
-                new ValidationCheck(
-                    "ci-contracts",
-                    "ci-contracts",
-                    "tests/ci",
-                    "Exercise the affected CI scripts and their shared dependencies.",
-                    "any",
-                    [],
-                    contracts.Values.SelectMany(value => value).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray(),
-                    true,
-                    null,
-                    projects: contracts.Keys.Order(StringComparer.Ordinal).ToArray()
-                )
-            );
+            if (!secondaryHost)
+            {
+                checks.Add(
+                    new ValidationCheck(
+                        "ci-contract:" + contract.Key,
+                        "ci-contracts",
+                        contract.Key,
+                        "Check the behavior of the affected CI script.",
+                        "any",
+                        [],
+                        contract.Value,
+                        true,
+                        null,
+                        projects: [contract.Key]
+                    )
+                );
+            }
         }
         foreach (ValidationProject project in projects.OrderBy(static project => project.path, StringComparer.Ordinal))
         {
@@ -836,7 +943,7 @@ internal static partial class ValidationPlanner
             bool selected = affected.Contains(project.path);
             string? matchedSet = sourceSets?.FirstOrDefault(changedSets.ContainsKey);
             bool baselineMatch = removed.Length > 0
-                                 && (removedEntries.TryGetValue("managed", out HashSet<string>? priorEntries)
+                                 && (removedEntries.TryGetValue(context, out HashSet<string>? priorEntries)
                                      && priorEntries.Contains(project.path));
             if (selected && !full && effectiveBuildChange && sourceSets is not null && project.path != C_EDITOR
                 && profile is ValidationProfile.PullRequest or ValidationProfile.Fast or ValidationProfile.Master
@@ -969,7 +1076,7 @@ internal static partial class ValidationPlanner
         ValidationCheck? editorBuild = builds.SingleOrDefault(
             static check => check.owner == "entry/InnoEngine.Editor/InnoEngine.Editor.csproj"
         );
-        if (editorBuild is not null)
+        if (editorBuild is not null && (full || editorProduct || !releaseProduct && !hotBuild))
         {
             checks.Add(
                 new ValidationCheck(
@@ -1005,7 +1112,7 @@ internal static partial class ValidationPlanner
                 )
             );
         }
-        if (editorBuild is not null && extended)
+        if (editorBuild is not null && hotBuild)
         {
             checks.Add(
                 new ValidationCheck(
@@ -1016,7 +1123,7 @@ internal static partial class ValidationPlanner
                     "native-host",
                     [editorBuild.id],
                     editorBuild.inputs
-                        .Append("tools/ci/Invoke-BuildCacheChecks.ps1")
+                        .Append(ValidationRunner.C_BUILD_CACHE)
                         .ToArray(),
                     false,
                     null,
@@ -1044,7 +1151,7 @@ internal static partial class ValidationPlanner
                 )
             );
         }
-        if ((full || changes.Any(IsReleaseProductInput)) && editorBuild?.context == "native")
+        if (releaseProduct && editorBuild?.context == "native")
         {
             const string C_BUILD_ENTRY = "entry/InnoEngine.Build/InnoEngine.Build.csproj";
             if (!byPath.ContainsKey(C_BUILD_ENTRY))
@@ -1112,7 +1219,7 @@ internal static partial class ValidationPlanner
             }
             var releaseInputs = new HashSet<string>(StringComparer.Ordinal) { "@tooling", "@native-sources" };
             List<string> releaseBuilds = [];
-            string[] releaseRoots = [editorBuild.owner, C_BUILD_ENTRY];
+            string[] releaseRoots = releaseConfiguration ? [editorBuild.owner, C_BUILD_ENTRY] : [C_BUILD_ENTRY];
             foreach (string owner in releaseRoots)
             {
                 VisitRelease(owner);
@@ -1164,6 +1271,9 @@ internal static partial class ValidationPlanner
                             .ToArray()
                     )
                 );
+            }
+            if (releaseConfiguration && releaseContext != "native")
+            {
                 checks.Add(
                     new ValidationCheck(
                         "editor-release-products",
@@ -1200,6 +1310,8 @@ internal static partial class ValidationPlanner
                     "product"
                 )
             );
+            if (playerExport)
+            {
             JsonElement[] players = contexts[releaseContext].sdkGraph.EnumerateArray().Where(snapshot => (
                 snapshot.GetProperty("Properties").GetProperty("InnoProductId").GetString() == "player"
                 && snapshot.GetProperty("Properties").GetProperty("InnoProductTarget").GetString() == target
@@ -1237,6 +1349,7 @@ internal static partial class ValidationPlanner
                     "contract"
                 )
             );
+            }
             void VisitRelease(string owner)
             {
                 if (!releaseInputs.Add("@" + owner))
@@ -1252,6 +1365,20 @@ internal static partial class ValidationPlanner
                     VisitRelease(reference);
                 }
             }
+        }
+        if (requestedProducts.Any(request => request.configuration == "Release") && configuration != "Release"
+            && !contexts.ContainsKey("backend-release")
+        ) {
+            var release = new Dictionary<string, string>(properties) { ["Configuration"] = "Release" };
+            string capture = await ManagedProjectGraphCapture.CaptureSelectedAsync(
+                root,
+                sdk,
+                paths.Select(path => Path.Combine(root, path)).ToArray(),
+                release,
+                cancellationToken: cancellationToken
+            ).ConfigureAwait(false);
+            using JsonDocument releaseGraph = JsonDocument.Parse(capture);
+            contexts.Add("backend-release", new ValidationContext(release, releaseGraph.RootElement.Clone()));
         }
         RecordStage("selection-and-release-graph");
         string environmentIdentity = await ValidationEnvironment.CaptureAsync(
@@ -1319,20 +1446,6 @@ internal static partial class ValidationPlanner
             }
             : check
         )).ToArray();
-        if (requestedProducts.Any(request => request.configuration == "Release") && configuration != "Release"
-            && !contexts.ContainsKey("backend-release")
-        ) {
-            var release = new Dictionary<string, string>(properties) { ["Configuration"] = "Release" };
-            string capture = await ManagedProjectGraphCapture.CaptureSelectedAsync(
-                root,
-                sdk,
-                paths.Select(path => Path.Combine(root, path)).ToArray(),
-                release,
-                cancellationToken: cancellationToken
-            ).ConfigureAwait(false);
-            using JsonDocument releaseGraph = JsonDocument.Parse(capture);
-            contexts.Add("backend-release", new ValidationContext(release, releaseGraph.RootElement.Clone()));
-        }
         ValidationNativeRequest[] requests = contexts.Values.Where(context => context.properties.ContainsKey("InnoNativeTarget"))
             .SelectMany(context => CollectNativeRequests(
                 context,
@@ -1397,7 +1510,8 @@ internal static partial class ValidationPlanner
                 backendStore is null
                 ? null
                 : target,
-                portableTestChanges: !full && profile is (ValidationProfile.Fast or ValidationProfile.PullRequest)
+                portableTestChanges: !full
+                                     && profile is (ValidationProfile.Fast or ValidationProfile.PullRequest or ValidationProfile.Master)
                                      && changes.Count > 0 && removed.Length == 0 && affected.Count > 0
                                      && affected.All(owner => byPath[owner] is { test: true, layer: "domain" })
                                      && changes.All(change => (
@@ -1786,24 +1900,13 @@ internal static partial class ValidationPlanner
            || path.StartsWith("tests/ci/", StringComparison.Ordinal);
 
     private static bool IsEditorProductInput(string path)
-        => path.StartsWith("tests/product/", StringComparison.Ordinal);
+        => path is "tests/product/Invoke-EditorSmoke.ps1" or "tests/product/Invoke-EditorUiProductJourney.ps1"
+           || path.StartsWith("tests/product/fixtures/editor-ui/", StringComparison.Ordinal);
 
     private static bool IsExecutable(string path)
         => Path.GetExtension(path).ToLowerInvariant() is ".cs" or ".csproj" or ".ps1" or ".sh" or ".py"
+           or ".cc" or ".cxx" or ".h" or ".hpp" or ".m" or ".mm" or ".psm1" or ".cmd" or ".bat" or ".js" or ".ts"
            or ".cpp" or ".c" or ".targets" or ".props" or ".sln" or ".slnx" or ".cmake" || path == "global.json";
-
-    private static bool IsReleaseProductInput(string path)
-        => path.StartsWith("build/support/", StringComparison.Ordinal)
-           || path.StartsWith("build/", StringComparison.Ordinal)
-              && (path.Contains("/Player/", StringComparison.Ordinal) || path.Contains("SupportPack", StringComparison.Ordinal))
-           || path.StartsWith("platforms/", StringComparison.Ordinal) && path.Contains("/player/", StringComparison.Ordinal)
-           || path.EndsWith(".Release.props", StringComparison.OrdinalIgnoreCase);
-
-    private static bool IsCiContractInput(string path)
-        => path.StartsWith("tests/ci/", StringComparison.Ordinal)
-           || path.StartsWith("tools/ci/", StringComparison.Ordinal)
-           || path.StartsWith("tests/product/fixtures/editor-ui/", StringComparison.Ordinal)
-           || path == "tests/product/Invoke-EditorUiProductJourney.ps1";
 
     private static bool IsDocumentation(string path)
         => path.EndsWith(".md", StringComparison.OrdinalIgnoreCase)

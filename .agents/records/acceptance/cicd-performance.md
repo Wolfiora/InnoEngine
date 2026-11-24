@@ -241,3 +241,12 @@ The first Windows SDL profile rejected a plan transported from Windows image 202
 ## Affected validation cutover, November 25, 2026
 
 The previous 96-minute managed batch included validation-tool workloads. The four-round validator fixture previously took 11m35s. Its replacement runs one failing xUnit case in a small SDK project through the real executor and rejects the resulting evidence. On the Windows development host this test took 21s. The focused planner and cadence-profile suite passed 25 cases in 3m41s on that machine. These are local measurements. The mixed infrastructure PR and a small managed change have different selected workloads.
+
+Two affected manual runs on the PR branch isolate a single changed input and a single changed tooling script. Each uses the same planner and host workers as the pull request. Times are wall clock from the Actions job and step timestamps. Upload figures add the client transfer and finalization intervals on Windows. The workers overlap.
+
+| Changed input | Queue to first job | Route | Windows checkout / SDK setup / freeze | Resolve | Windows execution step | Managed build / test process | Windows uploads | End to end |
+| --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
+| Input test project | 5s | 22s | 11s / 19s / 67s | 7s | 154s | 65.1s / 5.0s, 8 Input cases passed | 3.50s | 8m44s |
+| Tool summary script | 4s | 8s | 10s / 19s / 52s | 1s | 46s | No engine compilation or xUnit. Three PowerShell scripts took 2.04s. | 4.07s | 3m12s |
+
+The managed run used the exact Windows backend archive with zero producers. Its Windows job finished at 4m53s. The macOS job started at 5m33s, ran repository checks for 2m40s, and selected zero engine test projects. The managed sample missed the five-minute end-to-end target. The tooling sample met it. These two samples measure different changes and do not establish an average or a latency guarantee. [Managed run](https://github.com/Wolfiora/InnoEngine/actions/runs/45444455737) / [Tooling run](https://github.com/Wolfiora/InnoEngine/actions/runs/45444719532)

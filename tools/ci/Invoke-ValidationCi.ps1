@@ -67,6 +67,16 @@ if ($Stage -ceq 'Plan') {
         }
     }
     if (@($plan.checks).Count -eq 0 -or @($plan.shards).Count -eq 0) { throw 'Required hosted validation discovery is empty.' }
+    $active = @($plan.checks | Where-Object { !$_.exclusion })
+    $engine = @($active | Where-Object { $_.kind -ceq 'products' -or ($_.kind -ceq 'test' -and $_.owner -notmatch '^tests/(tools|build)/') })
+    $tooling = @($active | Where-Object { $_.kind -ceq 'ci-contracts' -or ($_.kind -ceq 'test' -and $_.owner -match '^tests/(tools|build)/') })
+    $label = if ($engine.Count -and $tooling.Count) { 'Engine tests and tooling tests' } elseif ($engine.Count) { 'Engine tests' } elseif ($tooling.Count) { 'Tooling tests' } else { 'Repository checks' }
+    "execution_label=$label" >> $env:GITHUB_OUTPUT
+    if ($env:GITHUB_STEP_SUMMARY) {
+        "### Plan for $Platform" >> $env:GITHUB_STEP_SUMMARY
+        foreach ($item in @($engine) + @($tooling)) { "- $($item.owner) ($($item.kind))" >> $env:GITHUB_STEP_SUMMARY }
+        if (!$engine.Count -and !$tooling.Count) { "No engine or tooling tests apply on this host." >> $env:GITHUB_STEP_SUMMARY }
+    }
     $requests = @($plan.nativeRequests)
     "native=$(($requests.Count -gt 0).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
     "shards=$(ConvertTo-Json -InputObject @($plan.shards.id) -Compress)" >> $env:GITHUB_OUTPUT

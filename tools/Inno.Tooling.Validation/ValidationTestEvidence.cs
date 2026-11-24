@@ -153,7 +153,7 @@ internal static class ValidationTestEvidence
                     failures[project].Add("Required isolated execution is missing, duplicated or unsuccessful.");
                 }
             }
-            if (executed[project] == 0)
+            if (cases[project] == 0)
             {
                 failures[project].Add("No executed test evidence for required owner: " + project);
             }

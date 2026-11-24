@@ -188,7 +188,7 @@ $checks = @(foreach ($configuration in $platform[0].configurations) {
     $plan = Get-Content -LiteralPath (Join-Path $work "plan-$configuration/plan.json") -Raw | ConvertFrom-Json -AsHashtable -Depth 100
     $sdk = Join-Path $work 'consume'
     $compilerPlan = Get-Content -LiteralPath (Join-Path $work "plan-$configuration/inputs.json") -Raw | ConvertFrom-Json -AsHashtable
-    $developmentChecked = $false
+    $checkedDevelopmentOwners = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
     foreach ($product in $plan.contexts.managed.sdkGraph | Where-Object { $_.Properties.InnoProductTarget -ceq $Target -and $_.Properties.InnoProductId }) {
         $project = $product.Path.Replace('${workspace}', $root)
         $properties = @(& $dotnetPath msbuild $project -nologo "-p:Configuration=$configuration" -getProperty:InnoProductBuildProperties)
@@ -231,13 +231,21 @@ $checks = @(foreach ($configuration in $platform[0].configurations) {
         $priorChecks = @($trustedChecks | Where-Object { $_.configuration -ceq $configuration -and $_.project -ceq $relative -and $_.product -ceq $id -and $_.identity -ceq $contract })
         if ($priorChecks.Count -gt 1) { throw 'Duplicate trusted product evidence.' }
         $reuse = $priorChecks.Count -eq 1
-        if (!$reuse -and !$developmentChecked -and $compilerPlan.developmentProperties) {
-            $developmentChecked = $true
-            $development = [IO.Path]::GetFullPath($compilerPlan.developmentProperties,$root)
-            Invoke-BackendSolution (Join-Path $work "plan-$configuration/Backends.slnx") $plan.contexts.managed @(
-                '--configuration',$configuration,'--artifacts-path',(Join-Path $work 'consume-development'),'--disable-build-servers','-nr:false',
-                "-p:InnoNativeDependencyManifest=$coldSelection","-p:InnoBackendPrebuiltRoot=$installed","-p:InnoNativeTarget=$Target",
-                "-p:InnoToolTarget=$HostTarget","-p:InnoProductBuildProperties=$development")
+        if (!$reuse -and $compilerPlan.developmentProperties) {
+            $roots = @($consumer.backendOwners | Where-Object { $checkedDevelopmentOwners.Add($_) })
+            if ($roots.Count) {
+                $solution = Join-Path $work "plan-$configuration/Consume-$id.slnx"
+                $entries = foreach ($owner in $roots) {
+                    $path = [Security.SecurityElement]::Escape([IO.Path]::GetFullPath($owner,$root))
+                    "  <Project Path=`"$path`" />"
+                }
+                [IO.File]::WriteAllLines($solution,[string[]](@('<Solution>') + @($entries) + @('</Solution>')))
+                $development = [IO.Path]::GetFullPath($compilerPlan.developmentProperties,$root)
+                Invoke-BackendSolution $solution $plan.contexts.managed @(
+                    '--configuration',$configuration,'--artifacts-path',(Join-Path $work 'consume-development'),'--disable-build-servers','-nr:false',
+                    "-p:InnoNativeDependencyManifest=$coldSelection","-p:InnoBackendPrebuiltRoot=$installed","-p:InnoNativeTarget=$Target",
+                    "-p:InnoToolTarget=$HostTarget","-p:InnoProductBuildProperties=$development")
+            }
         }
         if (!$reuse -and !$aggregate.Count) {
             Invoke-Sdk @('build',$project,'--configuration',$configuration,'--artifacts-path',$sdk,'--disable-build-servers','-m:2','-nr:false',

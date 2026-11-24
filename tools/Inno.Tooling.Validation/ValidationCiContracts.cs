@@ -15,7 +15,8 @@ internal static class ValidationCiContracts
         string root,
         IEnumerable<string> files,
         HashSet<string> changes,
-        bool full
+        bool full,
+        out HashSet<string> owned
     ) {
         string[] paths = files
             .Where(path => (
@@ -26,11 +27,19 @@ internal static class ValidationCiContracts
             .ToArray();
         ILookup<string, string> scripts = paths.Where(path => path.EndsWith(".ps1", StringComparison.Ordinal))
             .ToLookup(path => Path.GetFileName(path), StringComparer.OrdinalIgnoreCase);
+        owned = new HashSet<string>(StringComparer.Ordinal)
+        {
+            C_RULE_LOADER,
+            C_RULE_EXAMPLES,
+            ValidationRunner.C_BUILD_CACHE,
+            ValidationRunner.C_SUPPORT_PACK,
+            ValidationRunner.C_TEST_EXECUTOR
+        };
         var references = new Dictionary<string, string[]>(StringComparer.Ordinal);
         var selected = new Dictionary<string, string[]>(StringComparer.Ordinal);
         foreach (string test in paths.Where(path => (
-            path.StartsWith("tests/ci/", StringComparison.Ordinal)
-            && path.EndsWith(".Tests.ps1", StringComparison.Ordinal)
+            path.EndsWith(".Tests.ps1", StringComparison.Ordinal)
+            || path.StartsWith(".github/", StringComparison.Ordinal) && path.EndsWith(".yml", StringComparison.Ordinal)
         ))
         ) {
             var visited = new HashSet<string>(StringComparer.Ordinal);
@@ -62,7 +71,8 @@ internal static class ValidationCiContracts
                     pending.Push(dependency);
                 }
             }
-            if (full || visited.Overlaps(changes))
+            owned.UnionWith(visited);
+            if (test.StartsWith("tests/ci/", StringComparison.Ordinal) && (full || visited.Overlaps(changes)))
             {
                 selected.Add(test, visited.Order(StringComparer.Ordinal).ToArray());
             }

@@ -92,6 +92,19 @@ foreach ($platform in $Hosts) {
             }
             $lines.Add('')
         }
+        $scripts = @($plan.checks | Where-Object { $_.kind -ceq 'ci-contracts' -and !$_.exclusion })
+        if ($scripts.Count) {
+            $lines.Add('#### Tooling tests (PowerShell)')
+            $lines.Add('')
+            $lines.Add('| Script | Result | Wall seconds |')
+            $lines.Add('| --- | --- | ---: |')
+            foreach ($script in $scripts) {
+                $result = $results | Where-Object id -CEQ $script.id | Select-Object -First 1
+                if ($result) { $lines.Add("| $($script.owner) | $($result.status) | $([math]::Round($result.seconds, 2)) |") }
+                else { $lines.Add("| $($script.owner) | Missing | unavailable |") }
+            }
+            $lines.Add('')
+        }
         foreach ($group in @($plan.checks | Group-Object kind)) {
             $seconds = ($results | Where-Object { $_.id -cin $group.Group.id } | Measure-Object seconds -Sum).Sum
             $lines.Add("  - $($group.Name): $([Math]::Round($seconds, 1)) check-seconds (parallel work is not wall-clock duration).")

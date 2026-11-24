@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 $workflow = Get-Content (Join-Path $PSScriptRoot '../../.github/workflows/engine-ci.yml') -Raw
 $gate = [regex]::Match($workflow, '(?ms)^  engine-validation:\r?\n.*?(?=^  [\w-]+:|\z)').Value
-if ($gate -notmatch 'if: \$\{\{ !cancelled\(\) \}\}' -or $gate -notmatch 'run: \./tools/ci/Invoke-ValidationGate\.ps1' -or
+if ($gate -notmatch 'if: \$\{\{ !cancelled\(\) && needs\.route\.outputs\.run != ''false'' \}\}' -or $gate -notmatch 'run: \./tools/ci/Invoke-ValidationGate\.ps1' -or
     $gate -notmatch "'Branch validation' \|\| 'Engine validation'") { throw 'The required gate lost its cancellation, invocation or event naming contract.' }
 $env:ROUTE_RESULT = 'success'
 $env:SHOULD_RUN = 'true'

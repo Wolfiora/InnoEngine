@@ -99,7 +99,7 @@ public sealed class ValidationSelectionTests : ValidationPlanFixture
     }
 
     [Fact]
-    public async Task SharedTestExecutionChangesSelectAllTestOwnersAndInvalidateOnlyTheirExecutionInputs()
+    public async Task SharedTestExecutorSelectsItsBehaviorContractAndRemainsAnExecutionInput()
     {
         using var repository = new ValidationRepository();
         const string C_EXECUTOR = "tools/ci/Invoke-IsolatedTests.ps1";
@@ -111,7 +111,16 @@ public sealed class ValidationSelectionTests : ValidationPlanFixture
             )
         );
         repository.Write(C_EXECUTOR, "Write-Host 'before'");
-        repository.Git("add", C_EXECUTOR, C_UNRELATED);
+        const string C_SUBJECT = "tests/Example.Tests/Example.Tests.csproj";
+        repository.Write(
+            C_SUBJECT,
+            File.ReadAllText(repository.PathOf(C_SUBJECT)).Replace(
+                "</Project>",
+                "<ItemGroup><InnoValidationInput Include=\"../../tools/ci/Invoke-IsolatedTests.ps1\" /></ItemGroup></Project>",
+                StringComparison.Ordinal
+            )
+        );
+        repository.Git("add", C_EXECUTOR, C_UNRELATED, C_SUBJECT);
         repository.Git("commit", "-m", "Declare the shared test executor");
         using JsonDocument initial = await repository.PlanAsync();
         string original = initial.RootElement.GetProperty("inputs").GetProperty(C_EXECUTOR).GetString()!;
@@ -119,15 +128,20 @@ public sealed class ValidationSelectionTests : ValidationPlanFixture
         using JsonDocument changed = await repository.PlanAsync();
         Assert.False(changed.RootElement.GetProperty("full").GetBoolean());
         Assert.Contains("tests/Example.Tests/Example.Tests.csproj", Owners(changed));
-        Assert.Contains(C_UNRELATED, Owners(changed));
+        Assert.DoesNotContain(C_UNRELATED, Owners(changed));
         Assert.DoesNotContain("src/Other/Other.csproj", Owners(changed));
         Assert.NotEqual(original, changed.RootElement.GetProperty("inputs").GetProperty(C_EXECUTOR).GetString());
         JsonElement[] checks = changed.RootElement.GetProperty("checks").EnumerateArray().ToArray();
-        Assert.All(checks.Where(check => check.GetProperty("kind").GetString() == "test"), test =>
-        {
-            Assert.Equal(JsonValueKind.Null, test.GetProperty("exclusion").ValueKind);
-            Assert.Contains(C_EXECUTOR, test.GetProperty("inputs").EnumerateArray().Select(static value => value.GetString()));
-        });
+        Assert.All(
+            checks.Where(
+                check => check.GetProperty("kind").GetString() == "test" && check.GetProperty("exclusion").ValueKind == JsonValueKind.Null
+            ),
+            test =>
+            {
+                Assert.Equal(C_SUBJECT, test.GetProperty("owner").GetString());
+                Assert.Contains(C_EXECUTOR, test.GetProperty("inputs").EnumerateArray().Select(static value => value.GetString()));
+            }
+        );
         Assert.All(checks.Where(check => check.GetProperty("kind").GetString() == "build"), build =>
             Assert.DoesNotContain(C_EXECUTOR, build.GetProperty("inputs").EnumerateArray().Select(static value => value.GetString())));
         Assert.DoesNotContain(
@@ -243,7 +257,7 @@ public sealed class ValidationSelectionTests : ValidationPlanFixture
         JsonElement check = plan.RootElement
             .GetProperty("checks")
             .EnumerateArray()
-            .Single(item => item.GetProperty("id").GetString() == "ci-contracts");
+            .Single(item => item.GetProperty("id").GetString() == "ci-contract:tests/ci/Consumer.Tests.ps1");
         Assert.Equal("tests/ci/Consumer.Tests.ps1", Assert.Single(check.GetProperty("projects").EnumerateArray()).GetString());
         Assert.Empty(Owners(plan));
     }
@@ -295,6 +309,33 @@ public sealed class ValidationSelectionTests : ValidationPlanFixture
         Assert.Contains("src/Other/Moved.cs", Changes(moved));
         Assert.Contains("src/Example/Example.csproj", Owners(moved));
         Assert.Contains("src/Other/Other.csproj", Owners(moved));
+    }
+
+    [Fact]
+    public async Task RemovedProjectSelectsSurvivingConsumerFromMergeBase()
+    {
+        using var repository = new ValidationRepository();
+        const string C_REMOVED = "src/Example/Example.csproj";
+        const string C_CONSUMER = "tests/Example.Tests/Example.Tests.csproj";
+        repository.Write(
+            C_CONSUMER,
+            File.ReadAllText(repository.PathOf(C_CONSUMER)).Replace(
+                "<ProjectReference Include=",
+                "<ProjectReference Condition=\"Exists('../../src/Example/Example.csproj')\" Include=",
+                StringComparison.Ordinal
+            )
+        );
+        repository.Git("add", C_CONSUMER);
+        repository.Git("commit", "-m", "Declare optional consumer");
+        File.Delete(repository.PathOf(C_REMOVED));
+        using JsonDocument plan = await repository.PlanAsync();
+        Assert.False(plan.RootElement.GetProperty("full").GetBoolean());
+        Assert.Contains(C_CONSUMER, Owners(plan));
+        Assert.DoesNotContain("src/Other/Other.csproj", Owners(plan));
+        Assert.Contains(plan.RootElement.GetProperty("checks").EnumerateArray(), check => (
+            check.GetProperty("kind").GetString() == "test" && check.GetProperty("owner").GetString() == C_CONSUMER
+            && check.GetProperty("exclusion").ValueKind == JsonValueKind.Null
+        ));
     }
 
     [Fact]
@@ -388,10 +429,10 @@ public sealed class ValidationSelectionTests : ValidationPlanFixture
     }
 
     [Fact]
-    public async Task UnknownInputsExpandAndReportTheirReason()
+    public async Task UnownedExecutableInputsIdentifyTheirPath()
     {
         using var repository = new ValidationRepository();
-        repository.Write("unknown.ps1", "Write-Output 1");
+        repository.Write("tools/ci/unknown.ps1", "Write-Output 1");
         InvalidDataException error = await Assert.ThrowsAsync<InvalidDataException>(() => repository.PlanAsync());
         Assert.Contains("unknown.ps1", error.Message);
     }

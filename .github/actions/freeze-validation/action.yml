@@ -14,6 +14,9 @@ inputs:
     required: true
     description: Validation depth chosen by event routing.
 outputs:
+  execution-label:
+    value: ${{ steps.freeze.outputs.execution_label }}
+    description: Work selected for this host.
   native:
     value: ${{ steps.freeze.outputs.native }}
     description: Whether this host requires native packages.
@@ -30,6 +33,7 @@ runs:
       shell: pwsh
       env:
         GH_TOKEN: ${{ github.token }}
+        PLATFORM: ${{ inputs.runner-label }}
         REBUILD_BACKENDS: ${{ inputs.rebuild-backends }}
         BASE_REVISION: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before || github.sha }}
         EXPECTED_COMMIT: ${{ github.sha }}
@@ -39,4 +43,4 @@ runs:
         $baseline = $env:BASE_REVISION
         if ($env:GITHUB_EVENT_NAME -ceq 'workflow_dispatch' -and $env:PROFILE -ceq 'pull-request') { $baseline = 'HEAD^' }
         if ($baseline -match '^0+$') { $baseline = 'origin/master' }
-        ./tools/ci/Invoke-ValidationCi.ps1 -Stage Plan -Scheduled:($env:SCHEDULED -ceq 'true') -BaseRevision $baseline -ExpectedCommit $env:EXPECTED_COMMIT -RebuildBackends $env:REBUILD_BACKENDS -Profile $env:PROFILE -BackendStore artifacts/b -PlanDirectory artifacts/validation/ci-plan
+        ./tools/ci/Invoke-ValidationCi.ps1 -Stage Plan -Platform $env:PLATFORM -Scheduled:($env:SCHEDULED -ceq 'true') -BaseRevision $baseline -ExpectedCommit $env:EXPECTED_COMMIT -RebuildBackends $env:REBUILD_BACKENDS -Profile $env:PROFILE -BackendStore artifacts/b -PlanDirectory artifacts/validation/ci-plan

@@ -179,7 +179,8 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - uses: ./.github/actions/setup-dotnet
-      - uses: ./.github/actions/freeze-validation
+      - id: freeze
+        uses: ./.github/actions/freeze-validation
         with:
           rebuild-backends: ${{ inputs.rebuild_backends }}
           runner-label: ${{ matrix.runner }}
@@ -201,7 +202,8 @@ jobs:
           $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
           ./tools/ci/Install-BackendAcquisition.ps1 -PlanPath artifacts/validation/ci-plan/plan.json -EntryAssembly $entry `
             -Acquisition artifacts/backend-request/acquisition.json -Downloads artifacts/backend-downloads -Candidates artifacts/candidates -RebuildTargets $env:REBUILD_TARGETS
-      - uses: ./.github/actions/execute-validation
+      - name: ${{ steps.freeze.outputs.execution-label }}
+        uses: ./.github/actions/execute-validation
         with:
           platform: ${{ matrix.runner }}
 
