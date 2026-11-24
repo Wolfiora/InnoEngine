@@ -21,8 +21,8 @@ $repositoryData = Invoke-RestMethod -Uri $base -Headers $headers
 $run = Invoke-RestMethod -Uri "$base/actions/runs/$RunId" -Headers $headers
 if ($run.id -ne $RunId -or $run.status -cne 'completed' -or $run.conclusion -cne 'success' -or
     $run.head_repository.id -ne $repositoryData.id -or $run.head_sha -cne $Commit -or
-    $run.head_branch -cne $repositoryData.default_branch -or $run.event -cnotin @('push', 'schedule', 'workflow_dispatch') -or
-    $run.path -cnotin @('.github/workflows/engine-ci.yml', '.github/workflows/engine-regression.yml')) {
+    $run.head_branch -cne $repositoryData.default_branch -or $run.event -cnotin @('push', 'workflow_dispatch') -or
+    $run.path -cne '.github/workflows/engine-ci.yml') {
     throw 'Continuation requires successful exact default-branch engine evidence; PR and foreign evidence are forbidden.'
 }
 $workflow = Invoke-RestMethod -Uri "$base/actions/workflows/$([IO.Path]::GetFileName($run.path))" -Headers $headers

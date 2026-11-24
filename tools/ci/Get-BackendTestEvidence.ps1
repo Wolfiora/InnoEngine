@@ -17,7 +17,7 @@ foreach ($item in @($list.artifacts | Where-Object {
     $run = Invoke-RestMethod -Headers $Headers -Uri "$ApiBase/actions/runs/$($item.workflow_run.id)"
     if ($run.conclusion -cne 'success' -or $run.status -cne 'completed' -or $run.head_sha -cne $item.workflow_run.head_sha -or
         $run.head_branch -cne $DefaultBranch -or $run.head_repository.id -ne $RepositoryId -or
-        $run.event -cnotin @('push','schedule','workflow_dispatch') -or $run.path -cnotin @('.github/workflows/engine-ci.yml','.github/workflows/engine-regression.yml')) { continue }
+        $run.event -cnotin @('push','workflow_dispatch') -or $run.path -cne '.github/workflows/engine-ci.yml') { continue }
     $file = [IO.Path]::GetTempFileName()
     try {
         Invoke-WebRequest -Headers $Headers -Uri "$ApiBase/actions/artifacts/$($item.id)/zip" -OutFile $file

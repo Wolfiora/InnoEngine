@@ -1,22 +1,12 @@
 name: Resolve backend inputs
 description: Match the frozen SDK inputs against authenticated platform catalogs.
-outputs:
-  required:
-    description: The plan requires platform packages.
-    value: ${{ steps.resolve.outputs.required }}
-  production:
-    description: At least one required archive must be produced.
-    value: ${{ steps.resolve.outputs.production }}
 runs:
   using: composite
   steps:
-    - id: resolve
-      shell: pwsh
+    - shell: pwsh
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
         $plan = 'artifacts/validation/ci-plan/plan.json'
         $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
-        $decision = ./tools/ci/Resolve-BackendAcquisition.ps1 -PlanPath $plan -EntryAssembly $entry -OutputDirectory artifacts/backend-request
-        "required=$(($decision.packages.Count -gt 0).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
-        "production=$(@($decision.packages | Where-Object operation -CEQ 'produce').Count -gt 0)".ToLowerInvariant() >> $env:GITHUB_OUTPUT
+        $null = ./tools/ci/Resolve-BackendAcquisition.ps1 -PlanPath $plan -EntryAssembly $entry -OutputDirectory artifacts/backend-request

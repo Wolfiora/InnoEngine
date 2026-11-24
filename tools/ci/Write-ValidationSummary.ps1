@@ -127,7 +127,7 @@ if ($env:GH_TOKEN -and (Test-Path -LiteralPath $certification)) {
         $runs = Invoke-RestMethod -Uri "$ApiUrl/repos/$Repository/actions/workflows/engine-ci.yml/runs?branch=$branch&status=success&per_page=20" -Headers $headers
         foreach ($run in $runs.workflow_runs) {
             if ($run.id -eq $RunId -or $run.head_repository.full_name -cne $Repository -or $run.head_branch -cne $DefaultBranch -or
-                $run.event -cnotin @('push', 'schedule', 'workflow_dispatch')) { continue }
+                $run.event -cnotin @('push', 'workflow_dispatch')) { continue }
             $inventory = Invoke-RestMethod -Uri "$ApiUrl/repos/$Repository/actions/runs/$($run.id)/artifacts?per_page=100" -Headers $headers
             $matches = @($inventory.artifacts | Where-Object { $_.name -ceq "engine-certification-attempt-$($run.run_attempt)" -and -not $_.expired })
             if ($matches.Count -ne 1) { continue }

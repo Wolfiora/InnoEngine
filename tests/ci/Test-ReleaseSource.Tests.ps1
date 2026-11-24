@@ -22,7 +22,7 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [bool]$Accept) {
     $script:passed++
 }
 Invoke-Case 'trusted-default-branch' { param($s) } $true
-Invoke-Case 'trusted-regression' { param($s) $s.run.path = '.github/workflows/engine-regression.yml'; $s.run.event = 'schedule' } $true
+Invoke-Case 'manual-default-branch' { param($s) $s.run.event = 'workflow_dispatch' } $true
 Invoke-Case 'untrusted-workflow-path' { param($s) $s.run.path = '.github/workflows/backend-prebuilts.yml' } $false
 Invoke-Case 'wrong-repository' { param($s) $s.run.head_repository.id = 999 } $false
 Invoke-Case 'pull-request' { param($s) $s.run.event = 'pull_request' } $false

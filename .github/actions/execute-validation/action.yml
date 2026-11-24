@@ -26,10 +26,6 @@ runs:
         SOURCE_RUN_ID: ${{ inputs.source-run || '0' }}
         GH_TOKEN: ${{ github.token }}
       run: |
-        if ($env:GITHUB_EVENT_NAME -ceq 'schedule' -and $env:SOURCE_RUN_ID -ceq '0') {
-          $request = Get-Content artifacts/backend-request/acquisition.json -Raw | ConvertFrom-Json
-          if ($request.continuationRun) { $env:SOURCE_RUN_ID = [string]$request.continuationRun }
-        }
         ./tools/ci/Invoke-ValidationWorkers.ps1 -Platform $env:VALIDATION_PLATFORM -ExpectedCommit $env:GITHUB_SHA `
         -WorkerDirectory (Join-Path $env:RUNNER_TEMP 'inno-shards') -Attempt ([int]$env:GITHUB_RUN_ATTEMPT) -SourceRunId ([long]$env:SOURCE_RUN_ID)
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
@@ -42,7 +38,7 @@ runs:
         retention-days: 30
     - name: Retain reusable backend test results for this execution environment
       id: backend-tests
-      if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+      if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
       shell: pwsh
       run: |
         $plan = Get-Content artifacts/validation/ci-plan/plan.json -Raw | ConvertFrom-Json -AsHashtable -Depth 100

@@ -23,15 +23,6 @@ on:
         description: Run complete functional acceptance
         type: boolean
         default: true
-  workflow_call:
-    inputs:
-      source_run:
-        type: string
-        default: '0'
-      profile:
-        description: Explicit scheduled validation profile
-        required: true
-        type: string
 
 permissions:
   contents: read
@@ -65,19 +56,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           CANDIDATE: ${{ github.sha }}
-          REQUESTED_PROFILE: ${{ inputs.profile }}
           REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
           SOURCE_RUN_ID: ${{ inputs.source_run }}
           BASELINE: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
-          if ($env:REQUESTED_PROFILE) {
-            if ($env:REQUESTED_PROFILE -cne 'full') { throw 'Unsupported scheduled profile.' }
-            $selected = [pscustomobject]@{ run = $true; profile = $env:REQUESTED_PROFILE }
-          } else {
-            $selected = ./tools/ci/Get-ValidationCadence.ps1 -EventPath $env:GITHUB_EVENT_PATH -Event $env:GITHUB_EVENT_NAME `
-              -Commit $env:CANDIDATE -Repository $env:GITHUB_REPOSITORY -ApiUrl $env:GITHUB_API_URL | ConvertFrom-Json
-          }
+          $selected = ./tools/ci/Get-ValidationCadence.ps1 -EventPath $env:GITHUB_EVENT_PATH -Event $env:GITHUB_EVENT_NAME `
+            -Commit $env:CANDIDATE -Repository $env:GITHUB_REPOSITORY -ApiUrl $env:GITHUB_API_URL | ConvertFrom-Json
           if ($env:REBUILD_TARGETS -and ($env:GITHUB_EVENT_NAME -cne 'workflow_dispatch' -or $selected.profile -cne 'full')) {
             throw 'Explicit backend rebuilds require a manual full acceptance run.'
           }
@@ -96,7 +81,7 @@ jobs:
             $hosts = @(./tools/ci/Select-ValidationHosts.ps1 -Hosts $hosts -Baseline $env:BASELINE -Candidate $env:CANDIDATE -DefaultBranch $env:DEFAULT_BRANCH)
           }
           # Recheck an ordinary push immediately before scheduling expensive jobs; PR event delivery can race the first lookup.
-          if (-not $env:REQUESTED_PROFILE -and $env:GITHUB_EVENT_NAME -ceq 'push' -and $selected.profile -ceq 'fast' -and $selected.run) {
+          if ($env:GITHUB_EVENT_NAME -ceq 'push' -and $selected.profile -ceq 'fast' -and $selected.run) {
             $selected = ./tools/ci/Get-ValidationCadence.ps1 -EventPath $env:GITHUB_EVENT_PATH -Event $env:GITHUB_EVENT_NAME `
               -Commit $env:CANDIDATE -Repository $env:GITHUB_REPOSITORY -ApiUrl $env:GITHUB_API_URL | ConvertFrom-Json
           }
@@ -104,86 +89,13 @@ jobs:
           "profile=$($selected.profile)" >> $env:GITHUB_OUTPUT
           "hosts=$(@{ include = $hosts } | ConvertTo-Json -Depth 4 -Compress)" >> $env:GITHUB_OUTPUT
 
-  preflight:
-    needs: route
-    if: github.event_name == 'schedule' && needs.route.outputs.profile == 'full'
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.route.outputs.hosts) }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: ./.github/actions/setup-dotnet
-      - uses: ./.github/actions/freeze-validation
-        id: freeze
-        with:
-          runner-label: ${{ matrix.runner }}
-          profile: ${{ needs.route.outputs.profile }}
-      - uses: ./.github/actions/resolve-backends
-        id: acquisition
-      - name: Bind available packages before comparing complete acceptance
-        if: steps.acquisition.outputs.production != 'true'
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
-          ./tools/ci/Install-BackendAcquisition.ps1 -PlanPath artifacts/validation/ci-plan/plan.json -EntryAssembly $entry `
-            -Acquisition artifacts/backend-request/acquisition.json -Downloads artifacts/backend-downloads
-      - name: Compare retained complete acceptance after current environment capture
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PLATFORM: ${{ matrix.runner }}
-        run: |
-          ./tools/ci/Find-ValidationAcceptance.ps1 -PlanDirectory artifacts/validation/ci-plan -Platform $env:PLATFORM `
-            -Repository $env:GITHUB_REPOSITORY -ApiUrl $env:GITHUB_API_URL
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-        if: always()
-        with:
-          name: validation-preflight-${{ matrix.runner }}-attempt-${{ github.run_attempt }}
-          path: |
-            artifacts/validation/ci-plan/
-            !artifacts/validation/ci-plan/accepted/**
-          if-no-files-found: error
-          retention-days: 30
-
-  acceptance-reuse:
-    needs: [route, preflight]
-    if: github.event_name == 'schedule' && needs.route.outputs.profile == 'full'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    outputs:
-      reusable: ${{ steps.join.outputs.reusable }}
-      continuations: ${{ steps.join.outputs.continuations }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          persist-credentials: false
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
-        with:
-          pattern: validation-preflight-*
-          path: artifacts/validation/received
-      - id: join
-        shell: pwsh
-        env:
-          HOSTS: ${{ needs.route.outputs.hosts }}
-        run: |
-          ./tools/ci/Join-ValidationAcceptance.ps1 -ReceivedDirectory artifacts/validation/received `
-            -Hosts (($env:HOSTS | ConvertFrom-Json).include.runner) -ExpectedCommit $env:GITHUB_SHA -Attempt ([int]$env:GITHUB_RUN_ATTEMPT) `
-            -OutputPath artifacts/validation/acceptance-reuse.json
-
   plan:
     outputs:
       # A host that finished its own plan emits no job-level demand. The runner
       # omits empty outputs, so matrix completion order cannot erase another host's request.
       dispatch: ${{ steps.decision.outputs.dispatch == 'true' && 'true' || '' }}
-    needs: [route, preflight, acceptance-reuse]
-    if: ${{ !cancelled() && needs.route.result == 'success' && needs.route.outputs.run == 'true' && ((needs.preflight.result == 'skipped' && needs.acceptance-reuse.result == 'skipped') || (needs.acceptance-reuse.result == 'success' && needs.acceptance-reuse.outputs.reusable == 'false')) }}
+    needs: route
+    if: needs.route.outputs.run == 'true'
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 360
     strategy:
@@ -204,15 +116,9 @@ jobs:
         shell: pwsh
         env:
           MULTI_HOST: ${{ fromJSON(needs.route.outputs.hosts).include[1] != null }}
-          CONTINUATIONS: ${{ needs.acceptance-reuse.outputs.continuations }}
-          RUNNER_LABEL: ${{ matrix.runner }}
           REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
         run: |
           $decision = Get-Content artifacts/backend-request/acquisition.json -Raw | ConvertFrom-Json
-          if ($env:CONTINUATIONS) {
-            $sources = $env:CONTINUATIONS | ConvertFrom-Json -AsHashtable
-            if ($sources.Contains($env:RUNNER_LABEL)) { $decision | Add-Member -NotePropertyName continuationRun -NotePropertyValue $sources[$env:RUNNER_LABEL] }
-          }
           $direct = !$env:REBUILD_TARGETS -and $decision.packages.Count -eq 1 -and $decision.packages[0].operation -ceq 'consume'
           if ($direct) {
             $digest = $decision.packages[0].sha256
@@ -338,7 +244,7 @@ jobs:
     name: ${{ github.event_name == 'push' && github.ref_name != github.event.repository.default_branch && 'Branch validation' || 'Engine validation' }}
     # Reconcile failed prerequisites on a live run. A cancelled run has no candidate to certify.
     if: ${{ !cancelled() }}
-    needs: [route, preflight, acceptance-reuse, plan, backend-matrix, backends, independent]
+    needs: [route, plan, backend-matrix, backends, independent]
     runs-on: windows-2022
     timeout-minutes: 15
     steps:
@@ -349,13 +255,12 @@ jobs:
         if: needs.route.outputs.run == 'true'
         with:
           # The gate consumes receipts; compiled archives belong to release continuation.
-          pattern: validation-{plan,preflight,joined,result}-*
+          pattern: validation-{plan,joined,result}-*
           path: artifacts/validation/received
       - name: Reconcile the exact required host and shard matrix
         shell: pwsh
         env:
           ROUTE_RESULT: ${{ needs.route.result }}
-          PREFLIGHT_RESULT: ${{ needs.preflight.result }}
           PLAN_RESULT: ${{ needs.plan.result }}
           MATRIX_RESULT: ${{ needs.backend-matrix.result }}
           DISPATCH: ${{ needs.plan.outputs.dispatch }}
@@ -364,14 +269,12 @@ jobs:
           BACKENDS_REQUIRED: ${{ needs.backend-matrix.outputs.required }}
           INDEPENDENT_RESULT: ${{ needs.independent.result }}
           INDEPENDENT: ${{ needs.backend-matrix.outputs.independent }}
-          REUSE_RESULT: ${{ needs.acceptance-reuse.result }}
-          REUSED: ${{ needs.acceptance-reuse.outputs.reusable }}
           SHOULD_RUN: ${{ needs.route.outputs.run }}
           HOSTS: ${{ needs.route.outputs.hosts }}
           EXPECTED_COMMIT: ${{ github.sha }}
         run: ./tools/ci/Invoke-ValidationGate.ps1
       - name: Retain first failures and timing by check category
-        if: ${{ !cancelled() && needs.route.outputs.run == 'true' && needs.acceptance-reuse.outputs.reusable != 'true' }}
+        if: ${{ !cancelled() && needs.route.outputs.run == 'true' }}
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
@@ -382,17 +285,10 @@ jobs:
             -DefaultBranch $env:DEFAULT_BRANCH -Attempt ([int]$env:GITHUB_RUN_ATTEMPT) -RunId ([long]$env:GITHUB_RUN_ID) -ApiUrl $env:GITHUB_API_URL `
             -Hosts (($env:HOSTS | ConvertFrom-Json).include.runner)
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-        if: needs.route.outputs.run == 'true' && needs.acceptance-reuse.outputs.reusable != 'true'
+        if: needs.route.outputs.run == 'true'
         with:
           name: engine-certification-attempt-${{ github.run_attempt }}
           path: artifacts/validation/certification.json
-          if-no-files-found: error
-          retention-days: 30
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-        if: needs.acceptance-reuse.outputs.reusable == 'true'
-        with:
-          name: engine-acceptance-reuse-attempt-${{ github.run_attempt }}
-          path: artifacts/validation/acceptance-reuse.json
           if-no-files-found: error
           retention-days: 30
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
@@ -403,7 +299,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-        if: needs.route.outputs.run == 'true' && needs.acceptance-reuse.outputs.reusable != 'true'
+        if: needs.route.outputs.run == 'true'
         with:
           name: engine-acceptance-evidence-attempt-${{ github.run_attempt }}
           path: artifacts/validation/joined/

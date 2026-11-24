@@ -20,7 +20,7 @@ try {
     $base = "$ApiUrl/repos/$Repository"
     $repositoryData = Invoke-RestMethod -Uri $base -Headers $headers
     $run = Invoke-RestMethod -Uri "$base/actions/runs/$RunId" -Headers $headers
-    if ($run.path -cnotin @('.github/workflows/engine-ci.yml', '.github/workflows/engine-regression.yml')) { throw 'The source workflow is not a trusted functional producer.' }
+    if ($run.path -cne '.github/workflows/engine-ci.yml') { throw 'The source workflow is not a trusted functional producer.' }
     $workflowName = [IO.Path]::GetFileName($run.path)
     $workflow = Invoke-RestMethod -Uri "$base/actions/workflows/$workflowName" -Headers $headers
     $artifacts = Invoke-RestMethod -Uri "$base/actions/runs/$RunId/artifacts?per_page=100" -Headers $headers

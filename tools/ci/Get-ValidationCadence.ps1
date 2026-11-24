@@ -18,8 +18,7 @@ if ($Event -ceq 'push' -and -not $default) {
         -and $_.head.repo.full_name -ceq $Repository -and "refs/heads/$($_.head.ref)" -ceq $eventData.ref }).Count -gt 0
 }
 $manualFull = if ($null -eq $eventData.inputs.full) { $true } else { [string]$eventData.inputs.full -ceq 'true' }
-# Scheduling cannot be suppressed by a commit-only lookup. Full reuse follows actual environment capture.
-$selected = & "$PSScriptRoot/Select-ValidationCadence.ps1" -Event $Event -Commit $Commit -Schedule ([string]$eventData.schedule) `
+$selected = & "$PSScriptRoot/Select-ValidationCadence.ps1" -Event $Event -Commit $Commit `
     -IsDefaultBranch $default -HasOpenPullRequest $open -ManualFull $manualFull
 foreach ($name in @('run', 'full', 'extended')) {
     "$name=$($selected.$name.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
