@@ -26,8 +26,10 @@ public sealed class ValidationRepository : IDisposable
                                            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
                                        );
 
-    public ValidationRepository(string? source = null)
-    {
+    public ValidationRepository(
+        string? source = null,
+        Action<ValidationRepository>? initialize = null
+    ) {
         Directory.CreateDirectory(m_root);
         if (source is not null)
         {
@@ -63,16 +65,23 @@ public sealed class ValidationRepository : IDisposable
         Write(".gitignore", "artifacts/\n**/obj/\n**/bin/\n");
         Write("InnoEngine.sln", "Microsoft Visual Studio Solution File, Format Version 12.00\n");
         Write("Shared.props", "<Project />");
-        Write("src/Example/Example.csproj", Project("<Import Project=\"../../Shared.props\" />"));
-        Write("src/Other/Other.csproj", Project());
-        Write(
-            "tests/Example.Tests/Example.Tests.csproj",
-            Project("""
-            <PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>domain</InnoValidationLayer></PropertyGroup>
-            <ItemGroup><ProjectReference Include="../../src/Example/Example.csproj" /><InnoValidationInput Include="../../fixtures/plugin.txt" /></ItemGroup>
-            """)
-        );
-        Write("fixtures/plugin.txt", "initial input");
+        if (initialize is null)
+        {
+            Write("src/Example/Example.csproj", Project("<Import Project=\"../../Shared.props\" />"));
+            Write("src/Other/Other.csproj", Project());
+            Write(
+                "tests/Example.Tests/Example.Tests.csproj",
+                Project("""
+                <PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>domain</InnoValidationLayer></PropertyGroup>
+                <ItemGroup><ProjectReference Include="../../src/Example/Example.csproj" /><InnoValidationInput Include="../../fixtures/plugin.txt" /></ItemGroup>
+                """)
+            );
+            Write("fixtures/plugin.txt", "initial input");
+        }
+        else
+        {
+            initialize(this);
+        }
         Git("init", "-b", "master");
         Git("config", "user.name", "Aaron Liao");
         Git("config", "user.email", "hsuankailiao@gmail.com");

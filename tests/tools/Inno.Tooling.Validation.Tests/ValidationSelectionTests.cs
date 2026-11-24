@@ -428,13 +428,17 @@ public sealed class ValidationSelectionTests : ValidationPlanFixture
         ));
     }
 
-    [Fact]
-    public async Task UnownedExecutableInputsIdentifyTheirPath()
+    [Theory]
+    [InlineData("tools/ci/unknown.ps1")]
+    [InlineData(".agents/check.ps1")]
+    [InlineData("Unimported.props")]
+    public async Task UnownedExecutableInputsIdentifyTheirPath(string path)
     {
         using var repository = new ValidationRepository();
-        repository.Write("tools/ci/unknown.ps1", "Write-Output 1");
+        repository.Write(path, path.EndsWith(".props", StringComparison.Ordinal) ? "<Project />" : "Write-Output 1");
         InvalidDataException error = await Assert.ThrowsAsync<InvalidDataException>(() => repository.PlanAsync());
-        Assert.Contains("unknown.ps1", error.Message);
+        Assert.Contains(path, error.Message);
+        Assert.Contains("no declared project or workflow owner", error.Message);
     }
 
     [Fact]

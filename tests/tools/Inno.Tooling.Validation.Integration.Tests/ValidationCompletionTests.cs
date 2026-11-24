@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using Inno.Core.IO;
-using Inno.Testing.Source;
 using Inno.Testing.Validation;
 using Inno.Tooling.Documentation;
 
@@ -27,9 +26,7 @@ public sealed class ValidationCompletionTests
     [Fact]
     public async Task ChangedCompilationInputsCannotPublishReusableBuildIdentity()
     {
-        using var repository = new ValidationRepository(
-            TestRepository.GetRoot(typeof(ValidationCompletionTests).Assembly)
-        );
+        using ValidationRepository repository = await ManagedValidationFixture.CreateAsync();
         // Five real SDK validation cycles exercise identity correctness; their aggregate duration is not a latency contract.
         // Keep a generous runaway safeguard without canceling a healthy final build on a slower hosted runner.
         using var cancellation = new CancellationTokenSource(TimeSpan.FromHours(1));
@@ -151,9 +148,7 @@ public sealed class ValidationCompletionTests
     [Fact]
     public async Task FailedClosingReadCannotCertifyOtherwisePassingIntermediateResults()
     {
-        using var repository = new ValidationRepository(
-            TestRepository.GetRoot(typeof(ValidationCompletionTests).Assembly)
-        );
+        using ValidationRepository repository = await ManagedValidationFixture.CreateAsync();
         using var external = new ValidationRepository();
         string dependency = external.PathOf("Shared.props");
         const string C_PROJECT = "tests/services/input/Inno.Input.Tests/Inno.Input.Tests.csproj";
@@ -235,9 +230,7 @@ public sealed class ValidationCompletionTests
         bool variant,
         bool lateSelection = false
     ) {
-        using var repository = new ValidationRepository(
-            TestRepository.GetRoot(typeof(ValidationCompletionTests).Assembly)
-        );
+        using ValidationRepository repository = await ManagedValidationFixture.CreateAsync();
         // Source capture and three real compilation cycles prove content correctness, not a short latency budget.
         using var cancellation = new CancellationTokenSource(TimeSpan.FromHours(1));
         const string C_FIXTURE = "tests/services/input/fixtures/Inno.Input.CompilationFixture";

@@ -58,7 +58,7 @@ public sealed class ValidationEvidenceIdentityTests : ValidationPlanFixture
     [Theory]
     [InlineData("tests/Example.Tests/Changed.cs", "global using System;")]
     [InlineData("docs/Example.cs.txt", "global using System;")]
-    [InlineData("Policy.props", "<Project><PropertyGroup><ImplicitUsings>enable</ImplicitUsings></PropertyGroup></Project>")]
+    [InlineData("Shared.props", "<Project><PropertyGroup><ImplicitUsings>enable</ImplicitUsings></PropertyGroup></Project>")]
     public async Task RepositoryWideSourcePolicyInputsParticipateInEvidenceIdentity(
         string path,
         string content

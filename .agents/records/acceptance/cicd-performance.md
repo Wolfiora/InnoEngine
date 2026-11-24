@@ -252,3 +252,16 @@ Two affected manual runs on the PR branch isolate a single changed input and a s
 The managed run used the exact Windows backend archive with zero producers. Its Windows job finished at 4m53s. The macOS job started at 5m33s, ran repository checks for 2m40s, and selected zero engine test projects. The managed sample missed the five-minute end-to-end target. The tooling sample met it. These two samples measure different changes and do not establish an average or a latency guarantee. [Managed run](https://github.com/Wolfiora/InnoEngine/actions/runs/45444455737) / [Tooling run](https://github.com/Wolfiora/InnoEngine/actions/runs/45444719532)
 
 On the updated branch, changing only `GameScene.cs` in a disposable checkout selected the same nine projects under the pull-request and master profiles. The five expensive tooling suites were absent. Both plans requested the Windows Editor backend for native Editor tests. An explicit Browser Wasm32 rebuild selected one Player request and zero unrelated engine tests. The full plan selected the registered applicable engine checks. The focused selection and profile suite passed 26 cases in 4m17s. The executor-ownership regression passed in 9s, and five integration cases covering real failure and shard execution passed in 56s. The source architecture checker passed on all 51 C# files changed by the PR.
+
+The managed validator fixture now contains only the SDK projects and build rules exercised by its compilation, host-filter and failure cases. It runs the real architecture prerequisite and xUnit executor. A local before/after comparison retained all six independent compiler and host assertions. Durations below are per case from TRX and include concurrent test activity.
+
+| Case | Engine checkout fixture | Small SDK fixture |
+| --- | ---: | ---: |
+| Compilation inputs change during execution | 9m12s | 1m48s |
+| Changed property variant | 8m41s | 1m37s |
+| Compiled host exclusions vs missing test | 6m51s | 1m30s |
+| Reference selected during a build | 6m25s | 1m55s |
+| Changed union roots, stable dependency | 5m31s | 1m32s |
+| Closing read fails after passing checks | 2m58s | 24s |
+
+These six cases and the real failing-xUnit fixture passed together in 7m14s. The failure fixture took 43s in this batch and ran the original frozen plan through the real architecture prerequisite. The complete validator unit project passed 94 cases in 10m19s. The complete validator integration project passed 20 cases in 7m39s on the same host. The source architecture check covered all 55 changed C# files. These suites are selected for validator changes.

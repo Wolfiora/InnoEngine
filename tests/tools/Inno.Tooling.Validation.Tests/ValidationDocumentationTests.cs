@@ -510,19 +510,6 @@ public sealed class ValidationDocumentationTests
         }
     }
 
-    [Fact]
-    public async Task UnknownExecutableAgentInputIsNotExemptedAsDocumentation()
-    {
-        using var repository = new ValidationRepository();
-        repository.Write(".agents/check.ps1", "throw 'unknown executable input'");
-        using JsonDocument plan = await repository.PlanAsync();
-        Assert.True(plan.RootElement.GetProperty("full").GetBoolean());
-        Assert.Contains(
-            plan.RootElement.GetProperty("diagnostics").EnumerateArray(),
-            item => item.GetString()!.Contains(".agents/check.ps1", StringComparison.Ordinal)
-        );
-    }
-
     private static async Task<DocumentationResult> PrepareDocumentationAsync(ValidationRepository repository)
     {
         var docs = new ValidationDocumentationFixture(repository);
