@@ -24,6 +24,14 @@ foreach ($platform in $Hosts) {
         $lines.Add("### $platform")
         $lines.Add("")
         $lines.Add("Affected files: " + (@($plan.changes) -join ', '))
+        if ($plan.planningSeconds) {
+            $lines.Add('')
+            $lines.Add('| Planning stage | Seconds |')
+            $lines.Add('| --- | ---: |')
+            foreach ($stage in $plan.planningSeconds.PSObject.Properties) {
+                $lines.Add("| $($stage.Name) | $([math]::Round($stage.Value, 2)) |")
+            }
+        }
         $missing = [Collections.Generic.List[string]]::new()
         $faults = [Collections.Generic.List[object]]::new()
         $results = @(foreach ($shard in @($plan.shards)) {
@@ -130,9 +138,20 @@ if ($env:GH_TOKEN) {
                     $end = $right
                 }
             }
-            $clock = ($end - [datetimeoffset]$attemptInfo.run_started_at).TotalSeconds
+            $created = [datetimeoffset]$attemptInfo.created_at
+            $clock = ($end - $created).TotalSeconds
+            $lines.Add('')
+            $lines.Add('| GitHub job | Step | Wall seconds |')
+            $lines.Add('| --- | --- | ---: |')
+            foreach ($job in $finished) {
+                foreach ($step in $job.steps | Where-Object { $_.conclusion -cne 'skipped' -and $_.started_at -and $_.completed_at }) {
+                    $seconds = ([datetimeoffset]$step.completed_at - [datetimeoffset]$step.started_at).TotalSeconds
+                    $lines.Add("| $($job.name) | $($step.name) | $([math]::Round($seconds, 1)) |")
+                }
+            }
+            $lines.Add('')
             $lines.Add("- Through the last completed job: $([math]::Round($clock)) seconds elapsed, $([math]::Round($busy)) seconds with active runners, $([math]::Round($runner / 60, 1)) cumulative runner-minutes.")
-            $lines.Add("- Time before the first runner started: $([math]::Round(($start - [datetimeoffset]$attemptInfo.run_started_at).TotalSeconds)) seconds.")
+            $lines.Add("- Time before the first runner started: $([math]::Round(($start - $created).TotalSeconds)) seconds.")
         }
     } catch { $lines.Add('- Hosted job timing unavailable: ' + $_.Exception.Message) }
 }
