@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InnoValidationSubject Include="../../../../src/services/input/Inno.Input/Inno.Input.csproj" />
+    <InnoValidationSubject Include="../../../../src/services/input/Inno.Input.Runtime/Inno.Input.Runtime.csproj" />
+    <InnoValidationSubject Include="../../../../src/adapters/input/Inno.Adapter.Input/Inno.Adapter.Input.csproj" />
+    <InnoValidationSubject Include="../../../../src/foundation/core/Inno.Core.Input/Inno.Core.Input.csproj" />
     <ProjectReference Include="../../../../src/services/input/Inno.Input/Inno.Input.csproj" />
     <ProjectReference Include="../../../../src/services/input/Inno.Input.Runtime/Inno.Input.Runtime.csproj" />
     <ProjectReference Include="../../../../src/adapters/input/Inno.Adapter.Input/Inno.Adapter.Input.csproj" />
