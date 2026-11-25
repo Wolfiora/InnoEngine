@@ -64,7 +64,7 @@ internal static class RepositorySourceInventory
 
     internal static IEnumerable<string> Directories(string root)
     {
-        string? localBenchmarks = File.Exists(Path.Combine(root, "InnoEngine.sln")) ? Path.Combine(root, "benchmarks") : null;
+        string? localBenchmarks = File.Exists(Path.Combine(root, "InnoEngine.sln")) ? Path.Combine(root, "benchmark") : null;
         var pending = new Stack<string>();
         pending.Push(root);
         while (pending.Count != 0)

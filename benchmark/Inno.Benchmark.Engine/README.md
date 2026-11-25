@@ -10,16 +10,16 @@ generation retirement, editor graph editing, inspection drawer resolution, file-
 artifact deployment.
 
 ```sh
-dotnet run -c Release --project benchmarks/Inno.Benchmark.Engine -- --filter '*' --exporters json --artifacts <output-directory>
+dotnet run -c Release --project benchmark/Inno.Benchmark.Engine -- --filter '*' --exporters json --artifacts <output-directory>
 ```
 
 Build with `-m:1`: parallel builds can race on the native task-host process claim. The default toolchain
 rebuilds the generated project and can exceed its two-minute build timeout, so run the built assembly in process:
 
 ```sh
-dotnet build -c Release -m:1 benchmarks/Inno.Benchmark.Engine
-dotnet benchmarks/Inno.Benchmark.Engine/bin/Release/net10.0/Inno.Benchmark.Engine.dll --filter '*' --inProcess --artifacts <output-directory>
-dotnet benchmarks/Inno.Benchmark.Engine/bin/Release/net10.0/Inno.Benchmark.Engine.dll --probes <report.md>
+dotnet build -c Release -m:1 benchmark/Inno.Benchmark.Engine
+dotnet benchmark/Inno.Benchmark.Engine/bin/Release/net10.0/Inno.Benchmark.Engine.dll --filter '*' --inProcess --artifacts <output-directory>
+dotnet benchmark/Inno.Benchmark.Engine/bin/Release/net10.0/Inno.Benchmark.Engine.dll --probes <report.md>
 ```
 
 `--probes` records first-use latency, retained memory and cache hit/miss counts in one process.
