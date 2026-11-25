@@ -9,6 +9,7 @@
     <InnoTestNativeProduct>shader-tools</InnoTestNativeProduct>
     <InnoTestNativeTarget>$(InnoNativeTarget)</InnoTestNativeTarget>
     <InnoValidationLayer>native</InnoValidationLayer>
+    <InnoValidationEnvironment>windows;macos;linux</InnoValidationEnvironment>
   </PropertyGroup>
 
   <ItemGroup>

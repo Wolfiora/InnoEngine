@@ -122,6 +122,7 @@ public sealed class ValidationDocumentationCompilationTests
                 if (kind == "architecture")
                 {
                     item["kind"] = "ci-contracts";
+                    item["projects"] = new JsonArray("tests/ci/Policy.Tests.ps1");
                 }
                 selected.Add(item);
             }

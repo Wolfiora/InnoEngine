@@ -1,7 +1,7 @@
 [
   { "path": "src/foundation/core/Inno.Core.Mathematics/Vector2.cs", "includes": ["coding", "csharp-style/README", "csharp-style/03-naming", "csharp-style/17-example"], "excludes": ["domains/editor/state", "domains/identity-reload", "validation", "projects"] },
   { "path": "src/foundation/core/Inno.Core.Execution/StateMachine.cs", "excludes": ["domains/editor/state", "domains/editor/projects"] },
-  { "path": "tools/Inno.Tooling.Validation/ValidationWorkspace.cs", "excludes": ["domains/editor/state", "validation"] },
+  { "path": "tools/Inno.Tooling.Validation/ValidationWorkspace.cs", "includes": ["validation"], "excludes": ["domains/editor/state"] },
   { "path": "tools/ci/Invoke-ValidationGate.ps1", "includes": ["validation"], "excludes": ["coding"] },
   { "path": "assets/branding/logo.svg", "excludes": ["domains/identity-reload"] },
   { "path": "tools/Inno.Tooling.Validation/AssetsReport.cs", "includes": ["coding"], "excludes": ["domains/identity-reload"] },
@@ -14,8 +14,9 @@
   { "path": "src/content/scene/Inno.Scene/Scene.cs", "includes": ["domains/identity-reload"], "excludes": ["domains/rendering", "domains/plugins"] },
   { "path": "tests/services/rendering/Inno.Rendering.Tests/FrameTests.cs", "includes": ["validation", "coding", "domains/rendering"] },
   { "path": "Directory.Build.props", "includes": ["projects", "domains/build-native/hosts"] },
-  { "path": ".github/workflows/validation.yml", "includes": ["domains/build-native/hosts"], "excludes": ["validation"] },
+  { "path": ".github/workflows/engine-ci.yml", "includes": ["domains/build-native/hosts", "validation"] },
   { "path": ".agents/rulebook/coding.md", "includes": ["validation"], "excludes": ["coding"] },
+  { "path": ".github/actions/execute-validation/action.yml", "includes": ["validation"] },
   { "path": "AGENTS.md", "includes": ["validation"] },
   { "path": ".agents/records/decisions/README.md", "includes": ["validation"] }
 ]

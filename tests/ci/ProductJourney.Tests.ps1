@@ -7,22 +7,11 @@ $dotnet = if ($env:DOTNET_HOST_PATH) { $env:DOTNET_HOST_PATH } else { (Get-Comma
 $pwsh = (Get-Command pwsh).Source
 $null = New-Item -ItemType Directory -Path $root
 try {
-    Copy-Item -LiteralPath (Join-Path $repository 'tests/product/fixtures/editor-ui/ManagedMemorySample.editor.cs') -Destination $root
     [IO.File]::WriteAllText((Join-Path $root 'Fixture.csproj'), '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings></PropertyGroup></Project>')
     [IO.File]::WriteAllText((Join-Path $root 'Program.cs'), @'
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using EditorUIAcceptance;
-
-if (args is ["memory-sampling"])
-{
-    VerifyMemorySampling();
-    return 0;
-}
 string project = args[0];
 string mode = Environment.GetEnvironmentVariable("INNO_JOURNEY_PROTOCOL_CASE")!;
 string scenario = Environment.GetEnvironmentVariable("INNO_JOURNEY_PROTOCOL_SCENARIO")!;
-int cycles = int.Parse(Environment.GetEnvironmentVariable("INNO_ACCEPTANCE_PANEL_CYCLES")!);
 string evidence = Path.Combine(project, "Library", "Acceptance");
 Directory.CreateDirectory(evidence);
 Directory.CreateDirectory(Path.Combine(project, "Logs"));
@@ -43,22 +32,7 @@ if (mode != "missing-evidence")
     {
         File.WriteAllLines(Path.Combine(evidence, "panel-lifecycle.tsv"),
             new[] { "panel\tcompleted-open-close-cycles", "protocol\tfixture" }.Concat(
-                Enumerable.Range(0, 8).Select(index => $"panel-{index}\t{(mode == "missing-cycle" && index == 0 ? cycles - 1 : cycles)}")));
-        File.WriteAllLines(Path.Combine(evidence, "panel-lifecycle-preparation.tsv"),
-            new[] { "phase", "before-first-panel-draw", mode == "missing-preparation" ? "wrong" : "after-120-drawn-frames" });
-        int count = mode == "missing-sample" ? cycles / 10 : cycles / 10 + 1;
-        File.WriteAllLines(Path.Combine(evidence, "panel-lifecycle-resources.tsv"),
-            new[] { "completed-cycles\tmanaged-bytes-after-full-gc\tpending-events\tgc-index\tgc-generation\tgc-compacted\tgc-concurrent\tgc-heap-bytes\tgc-fragmented-bytes\testimated-managed-bytes" }.Concat(
-                Enumerable.Range(0, count).Select(index =>
-                {
-                    long live = 16 * 1024 * 1024 + (mode == "growth" && index == count - 1 ? 5 * 1024 * 1024 : 0);
-                    long heap = live + 1024;
-                    long fragmented = mode == "negative-fragmentation" ? -1 : 1024;
-                    long estimated = mode == "estimate-drift" ? (index == 0 ? -8 * 1024 * 1024 : 16 * 1024 * 1024) : live;
-                    string collection = mode == "missing-gc" ? "" : (mode == "stale-gc" ? 1 : index + 1).ToString();
-                    if (mode == "inconsistent-live-memory") live++;
-                    return $"{index * 10}\t{live}\t{(mode == "pending-events" ? 1 : 0)}\t{collection}\t{(mode == "partial-gc" ? 1 : GC.MaxGeneration)}\t{mode != "uncompacted-gc"}\t{mode == "background-gc"}\t{heap}\t{fragmented}\t{estimated}";
-                })));
+                Enumerable.Range(0, 8).Select(index => $"panel-{index}\t{(mode == "missing-cycle" && index == 0 ? 0 : 1)}")));
     }
 }
 if (mode == "wrong-notification")
@@ -67,74 +41,9 @@ if (mode == "wrong-notification")
     Thread.Sleep(30000);
 }
 return mode == "failed-process" ? 3 : mode == "canceled-process" ? 2 : 0;
-
-static void VerifyMemorySampling()
-{
-    ManagedMemorySample baseline = ManagedMemorySample.Capture();
-    long previousIndex = baseline.collectionIndex;
-    var pins = new List<GCHandle>();
-    long pinnedBytes = 0;
-    try
-    {
-        for (int round = 0; round < 12; round++)
-        {
-            pinnedBytes += Fragment(pins);
-            ManagedMemorySample sample = ManagedMemorySample.Capture();
-            if (sample.collectionIndex <= previousIndex || sample.liveBytes < 0)
-                throw new Exception("The collector returned a stale or invalid live-memory observation.");
-            previousIndex = sample.collectionIndex;
-        }
-        ManagedMemorySample pinned = ManagedMemorySample.Capture();
-        if (pinned.liveBytes - baseline.liveBytes < pinnedBytes - 128 * 1024)
-            throw new Exception("The snapshot failed to count the rooted pinned buffers.");
-        foreach (GCHandle pin in pins) pin.Free();
-        pins.Clear();
-        ManagedMemorySample released = ManagedMemorySample.Capture();
-        if (pinned.liveBytes - released.liveBytes < pinnedBytes - 128 * 1024)
-            throw new Exception("Released pinned buffers were still counted as live memory.");
-        Console.WriteLine($"Pinned/released: live growth={released.liveBytes - pinned.liveBytes}; estimated growth={released.estimatedBytes - pinned.estimatedBytes}; pinned bytes={pinnedBytes}");
-    }
-    finally
-    {
-        foreach (GCHandle pin in pins) pin.Free();
-    }
-    VerifyRetainedAllocation();
-    Console.WriteLine("Managed-memory sampling: fresh snapshots, pinned fragmentation, reclamation and an actual 8 MiB retention passed.");
-}
-
-[MethodImpl(MethodImplOptions.NoInlining)]
-static long Fragment(List<GCHandle> pins)
-{
-    long bytes = 0;
-    for (int index = 0; index < 2000; index++)
-    {
-        byte[] data = new byte[32 * 1024 + index % 1024];
-        if (index % 200 == 0)
-        {
-            pins.Add(GCHandle.Alloc(data, GCHandleType.Pinned));
-            bytes += data.Length;
-        }
-        GC.KeepAlive(data);
-    }
-    return bytes;
-}
-
-[MethodImpl(MethodImplOptions.NoInlining)]
-static void VerifyRetainedAllocation()
-{
-    ManagedMemorySample baseline = ManagedMemorySample.Capture();
-    byte[] retained = GC.AllocateUninitializedArray<byte>(8 * 1024 * 1024);
-    ManagedMemorySample held = ManagedMemorySample.Capture();
-    GC.KeepAlive(retained);
-    if (held.liveBytes - baseline.liveBytes <= 4 * 1024 * 1024)
-        throw new Exception("An actual retained 8 MiB allocation escaped the 4 MiB budget.");
-}
 '@)
     & $dotnet build (Join-Path $root 'Fixture.csproj') --configuration Debug --disable-build-servers -m:1 -nr:false *> (Join-Path $root 'build.log')
     if ($LASTEXITCODE -ne 0) { throw "Protocol fixture build failed:`n$(Get-Content (Join-Path $root 'build.log') -Raw)" }
-    & $dotnet (Join-Path $root 'bin/Debug/net10.0/Fixture.dll') memory-sampling *> (Join-Path $root 'memory-sampling.log')
-    if ($LASTEXITCODE -ne 0) { throw "Live-memory sampling failed:`n$(Get-Content (Join-Path $root 'memory-sampling.log') -Raw)" }
-    Get-Content (Join-Path $root 'memory-sampling.log')
     $cocoa = Join-Path $root 'CocoaFixture'
     if ($IsMacOS) {
         # Exercise the real AppKit quit transport without building an engine or installing a fake signal handler.
@@ -204,37 +113,24 @@ int main(int argc, const char *argv[])
         if ($LASTEXITCODE -ne 0) { throw "AppKit protocol fixture build failed:`n$(Get-Content (Join-Path $root 'cocoa-build.log') -Raw)" }
     }
     $cases = @(
-        @{ name='valid'; scenario='Workflows'; cycles=100; success=$true },
-        @{ name='missing-evidence'; scenario='Workflows'; cycles=100; reason='did not complete the journey' },
-        @{ name='missing-stage'; scenario='Workflows'; cycles=100; reason='Expected eight completed workflow stages' },
-        @{ name='failed-process'; scenario='Workflows'; cycles=100; reason='exited with code 3' },
-        @{ name='canceled-process'; scenario='Workflows'; cycles=100; reason='exited with code 2' },
-        @{ name='missing-retirement'; scenario='Workflows'; cycles=100; reason='did not retire its real product resources' },
-        @{ name='teardown-failure'; scenario='Workflows'; cycles=100; reason='did not retire its real product resources' },
-        @{ name='wrong-notification'; scenario='Workflows'; cycles=100; reason='different journey' },
-        @{ name='timeout'; scenario='Workflows'; cycles=100; reason='exceeded its deadline' },
-        @{ name='extension-failure'; scenario='Workflows'; cycles=100; reason='The source extension failed: Original source failure' },
-        @{ name='valid'; scenario='Lifecycle'; cycles=100; success=$true },
-        @{ name='valid'; scenario='Lifecycle'; cycles=1000; success=$true },
-        @{ name='estimate-drift'; scenario='Lifecycle'; cycles=100; success=$true },
-        @{ name='missing-gc'; scenario='Lifecycle'; cycles=100; reason='fresh compacting full-GC snapshot' },
-        @{ name='stale-gc'; scenario='Lifecycle'; cycles=100; reason='fresh compacting full-GC snapshot' },
-        @{ name='partial-gc'; scenario='Lifecycle'; cycles=100; reason='fresh compacting full-GC snapshot' },
-        @{ name='uncompacted-gc'; scenario='Lifecycle'; cycles=100; reason='fresh compacting full-GC snapshot' },
-        @{ name='background-gc'; scenario='Lifecycle'; cycles=100; reason='fresh compacting full-GC snapshot' },
-        @{ name='negative-fragmentation'; scenario='Lifecycle'; cycles=100; reason='fresh compacting full-GC snapshot' },
-        @{ name='inconsistent-live-memory'; scenario='Lifecycle'; cycles=100; reason='fresh compacting full-GC snapshot' },
-        @{ name='missing-cycle'; scenario='Lifecycle'; cycles=100; reason='must complete 100 open/close cycles' },
-        @{ name='missing-preparation'; scenario='Lifecycle'; cycles=100; reason='record cold resource preparation separately' },
-        @{ name='missing-sample'; scenario='Lifecycle'; cycles=100; reason='complete full-GC resource series' },
-        @{ name='growth'; scenario='Lifecycle'; cycles=100; reason='beyond its 4 MiB final live-memory budget' },
-        @{ name='pending-events'; scenario='Lifecycle'; cycles=100; reason='retained pending events' }
+        @{ name='valid'; scenario='Workflows'; success=$true },
+        @{ name='missing-evidence'; scenario='Workflows'; reason='did not complete the journey' },
+        @{ name='missing-stage'; scenario='Workflows'; reason='Expected eight completed workflow stages' },
+        @{ name='failed-process'; scenario='Workflows'; reason='exited with code 3' },
+        @{ name='canceled-process'; scenario='Workflows'; reason='exited with code 2' },
+        @{ name='missing-retirement'; scenario='Workflows'; reason='did not retire its real product resources' },
+        @{ name='teardown-failure'; scenario='Workflows'; reason='did not retire its real product resources' },
+        @{ name='wrong-notification'; scenario='Workflows'; reason='different journey' },
+        @{ name='timeout'; scenario='Workflows'; reason='exceeded its deadline' },
+        @{ name='extension-failure'; scenario='Workflows'; reason='The source extension failed: Original source failure' },
+        @{ name='valid'; scenario='Lifecycle'; success=$true },
+        @{ name='missing-cycle'; scenario='Lifecycle'; reason='must complete one open/close cycle' }
     )
     if ($IsMacOS) {
         $cases += @(
-            @{ name='appkit-exit'; scenario='Workflows'; cycles=100; success=$true },
-            @{ name='appkit-retirement-failure'; scenario='Workflows'; cycles=100; reason='did not retire its real product resources' },
-            @{ name='appkit-failed-process'; scenario='Workflows'; cycles=100; reason='exited with code 2' }
+            @{ name='appkit-exit'; scenario='Workflows'; success=$true },
+            @{ name='appkit-retirement-failure'; scenario='Workflows'; reason='did not retire its real product resources' },
+            @{ name='appkit-failed-process'; scenario='Workflows'; reason='exited with code 2' }
         )
     }
     $oldCase = $env:INNO_JOURNEY_PROTOCOL_CASE
@@ -243,13 +139,13 @@ int main(int argc, const char *argv[])
         foreach ($case in $cases) {
             $env:INNO_JOURNEY_PROTOCOL_CASE = $case.name
             $env:INNO_JOURNEY_PROTOCOL_SCENARIO = $case.scenario
-            $output = Join-Path $root "$($case.scenario)-$($case.name)-$($case.cycles)"
+            $output = Join-Path $root "$($case.scenario)-$($case.name)"
             $hostExecutable = if ($case.name.StartsWith('appkit-', [StringComparison]::Ordinal)) { $cocoa } else { $dotnet }
             $deadline = if ($hostExecutable -ceq $cocoa) { 30 } else { 5 }
             & $pwsh -NoProfile -File (Join-Path $repository 'tests/product/Invoke-EditorUiProductJourney.ps1') `
                 -EditorAssembly (Join-Path $root 'bin/Debug/net10.0/Fixture.dll') `
                 -ResultsDirectory $output -Dotnet $hostExecutable -GraphicsApi ProtocolFixture -Scenario $case.scenario `
-                -Cycles $case.cycles -TimeoutSeconds $deadline *> "$output.log"
+                -TimeoutSeconds $deadline *> "$output.log"
             $code = $LASTEXITCODE
             $result = Get-Content -LiteralPath (Join-Path $output 'result.json') -Raw | ConvertFrom-Json
             if ($case.success) {

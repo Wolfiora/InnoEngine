@@ -118,7 +118,6 @@ internal sealed class ValidationDependencyInputs(
            or "documentation-examples"
            or "products"
            or "support-pack"
-           or "release-bundle"
            && check.inputs.Any(static input => input.StartsWith('@') && input is not ("@tooling" or "@native-sources"));
 
     internal static string[] RestoredPackageDirectories(

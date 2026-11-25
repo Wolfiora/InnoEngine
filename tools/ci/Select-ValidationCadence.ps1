@@ -1,10 +1,9 @@
 param(
-    [Parameter(Mandatory)][ValidateSet('pull_request', 'push', 'merge_group', 'workflow_dispatch', 'schedule')][string]$Event,
+    [Parameter(Mandatory)][ValidateSet('pull_request', 'push', 'merge_group', 'workflow_dispatch')][string]$Event,
     [Parameter(Mandatory)][string]$Commit,
-    [string]$Schedule = '',
     [bool]$IsDefaultBranch = $true,
     [bool]$HasOpenPullRequest = $false,
-    [bool]$ManualFull = $true
+    [bool]$ManualFull = $false
 )
 
 $ErrorActionPreference = 'Stop'
@@ -17,15 +16,10 @@ if ($Event -ceq 'workflow_dispatch') {
     $full = $ManualFull
     $profile = if ($full) { 'full' } else { 'pull-request' }
     $reason = 'Explicit manual validation request.'
-} elseif ($Event -ceq 'schedule') {
-    if ($Schedule -cne '17 19 * * *') { throw 'Unknown scheduled cadence; required validation cannot be silently skipped.' }
-    $full = $true
-    $profile = 'full'
-    $reason = 'Capture current complete inputs and environment before the validation engine evaluates trusted acceptance reuse.'
 } elseif ($Event -ceq 'push') {
     if ($IsDefaultBranch) {
         $profile = 'master'
-        $reason = 'Expand affected product and publication checks on the default branch.'
+        $reason = 'Evaluate affected owners on the landed change.'
     } elseif ($HasOpenPullRequest) {
         $run = $false
         $profile = 'fast'

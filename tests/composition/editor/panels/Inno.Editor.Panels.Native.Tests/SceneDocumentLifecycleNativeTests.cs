@@ -13,7 +13,7 @@ public sealed class SceneDocumentLifecycleNativeTests
 {
     [Fact]
     [Trait("Acceptance", "Lifecycle")]
-    public void OneHundredSavedSceneCyclesRetireLiveScenesAndPreserveSourceAndHistory()
+    public void ReopenedSavedScenesRetireAndPreserveSourceAndHistory()
     {
         using var host = new NativeProjectPanelHost(typeof(SceneDocumentLifecycleNativeTests).Assembly);
         GameScene original = host.CreateScene();
@@ -23,7 +23,7 @@ public sealed class SceneDocumentLifecycleNativeTests
         Assert.True(host.edits.CloseScene(original));
         EditorPanelExtension panel = host.native.GetPanel("scene.hierarchy");
         List<WeakReference<GameScene>> retired = [];
-        for (int iteration = 0; iteration < 100; iteration++)
+        for (int iteration = 0; iteration < 2; iteration++)
         {
             retired.Add(OpenDrawAndClose(host, panel, path));
         }

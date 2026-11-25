@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
     <InnoValidationLayer>domain</InnoValidationLayer>
+    <InnoValidationEnvironment>windows;macos;linux</InnoValidationEnvironment>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <Import Project="../../../RepositoryInput.targets" />

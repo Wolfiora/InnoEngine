@@ -9,6 +9,7 @@
     <InnoTestNativeProduct>player</InnoTestNativeProduct>
     <InnoTestNativeTarget>$(InnoNativeTarget)</InnoTestNativeTarget>
     <InnoValidationLayer>native</InnoValidationLayer>
+    <InnoValidationEnvironment>windows;macos;linux</InnoValidationEnvironment>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 

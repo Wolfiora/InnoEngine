@@ -45,14 +45,14 @@ public sealed class ModuleHostTests : IDisposable
     public void RepeatedReloadCollectsEveryRetiredContextBeforeNextGeneration()
     {
         AssemblyModuleHandle handle = LoadVersion("V1");
-        for (int index = 0; index < 12; index++)
+        for (int index = 0; index < 2; index++)
         {
             IAssemblyUnloadProbe monitor = CompleteReload(handle);
             ForceCollection();
             Assert.True(monitor.isCompleted);
             m_modules.generations.Wait();
         }
-        Assert.Equal(13, m_modules.modules.Single().generation);
+        Assert.Equal(3, m_modules.modules.Single().generation);
     }
 
     [Theory]

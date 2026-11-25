@@ -10,16 +10,14 @@ try {
     $arguments = @{Target=$target.target;HostTarget=$target.target;Operation='consume';OutputDirectory=$output;NativeDirectory=$native
         PreviousZip=$archive;PreviousDigest=$digest;Dotnet='an-sdk-must-not-run-for-an-unchanged-transfer'}
     & "$PSScriptRoot/../../tools/ci/Initialize-BackendProduction.ps1" @arguments
-    $receipt = Get-Content -LiteralPath (Join-Path $output 'candidate.json') -Raw | ConvertFrom-Json
-    if (!$receipt.reused -or $receipt.sha256 -cne $digest -or $receipt.target -cne $target.target -or
-        (Get-FileHash -LiteralPath (Join-Path $output $target.asset)).Hash.ToLowerInvariant() -cne $digest -or (Test-Path -LiteralPath $native)) {
-        throw 'Unchanged platform transfer performed native preparation or changed the ZIP.'
+    if (@(Get-ChildItem $output).Count -or (Test-Path -LiteralPath $native)) {
+        throw 'Release consumption staged a duplicate candidate or prepared native inputs.'
     }
     $arguments.OutputDirectory = Join-Path $owner 'bad'
     $arguments.PreviousDigest = '0'*64
     try { & "$PSScriptRoot/../../tools/ci/Initialize-BackendProduction.ps1" @arguments; throw 'A different seed was accepted.' }
     catch { if ($_.Exception.Message -cne 'Backend producer seed differs from the catalog.') { throw } }
-    if (Test-Path -LiteralPath (Join-Path $arguments.OutputDirectory 'candidate.json')) { throw 'Rejected transfer published a receipt.' }
+    if (@(Get-ChildItem $arguments.OutputDirectory).Count) { throw 'Rejected transfer staged a backend.' }
     $root = Join-Path $owner 'workspace with spaces'
     $scripts = Join-Path $root 'tools/ci'
     $project = Join-Path $root 'entry/InnoEngine.Build'

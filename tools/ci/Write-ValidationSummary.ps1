@@ -1,7 +1,6 @@
 param(
     [Parameter(Mandatory)][string]$ReceivedDirectory,
     [Parameter(Mandatory)][string]$Repository,
-    [Parameter(Mandatory)][string]$DefaultBranch,
     [Parameter(Mandatory)][int]$Attempt,
     [Parameter(Mandatory)][long]$RunId,
     [string[]]$Hosts,
@@ -22,6 +21,17 @@ foreach ($platform in $Hosts) {
     try {
         $artifact = & "$PSScriptRoot/Select-ValidationArtifact.ps1" -Artifacts $available -Name "validation-plan-$platform" -MaximumAttempt $Attempt
         $plan = Get-Content -LiteralPath (Join-Path $artifact.directory 'plan.json') -Raw | ConvertFrom-Json
+        $lines.Add("### $platform")
+        $lines.Add("")
+        $lines.Add("Affected files: " + (@($plan.changes) -join ', '))
+        if ($plan.planningSeconds) {
+            $lines.Add('')
+            $lines.Add('| Planning stage | Seconds |')
+            $lines.Add('| --- | ---: |')
+            foreach ($stage in $plan.planningSeconds.PSObject.Properties) {
+                $lines.Add("| $($stage.Name) | $([math]::Round($stage.Value, 2)) |")
+            }
+        }
         $missing = [Collections.Generic.List[string]]::new()
         $faults = [Collections.Generic.List[object]]::new()
         $results = @(foreach ($shard in @($plan.shards)) {
@@ -63,6 +73,37 @@ foreach ($platform in $Hosts) {
         }
         foreach ($reason in @($plan.diagnostics | Where-Object { $_ -clike 'Selected * entry *' } | Select-Object -First 3)) {
             $lines.Add("  - $reason")
+        }
+        foreach ($category in 'Engine tests','Tooling tests') {
+            $projects = @($plan.checks | Where-Object {
+                $_.kind -ceq 'test' -and !$_.exclusion -and ($_.owner -match '^tests/(tools|build)/') -eq ($category -ceq 'Tooling tests')
+            })
+            if (!$projects.Count) { continue }
+            $lines.Add("#### $category")
+            $lines.Add('')
+            $lines.Add('| Project | Result | Executed cases | Sum of case durations |')
+            $lines.Add('| --- | --- | ---: | ---: |')
+            foreach ($project in $projects) {
+                $result = $results | Where-Object id -CEQ $project.id | Select-Object -First 1
+                $status = if ($result) { $result.status } else { 'Missing' }
+                $cases = if ($status -ceq 'Reused') { 0 } elseif ($null -ne $result.testCases) { $result.testCases } else { 'unavailable' }
+                $seconds = if ($status -ceq 'Reused') { '0 s' } elseif ($null -ne $result.caseSeconds) { "$([math]::Round($result.caseSeconds, 2)) s" } else { 'unavailable' }
+                $lines.Add("| $($project.owner) | $status | $cases | $seconds |")
+            }
+            $lines.Add('')
+        }
+        $scripts = @($plan.checks | Where-Object { $_.kind -ceq 'ci-contracts' -and !$_.exclusion })
+        if ($scripts.Count) {
+            $lines.Add('#### Tooling tests (PowerShell)')
+            $lines.Add('')
+            $lines.Add('| Script | Result | Wall seconds |')
+            $lines.Add('| --- | --- | ---: |')
+            foreach ($script in $scripts) {
+                $result = $results | Where-Object id -CEQ $script.id | Select-Object -First 1
+                if ($result) { $lines.Add("| $($script.owner) | $($result.status) | $([math]::Round($result.seconds, 2)) |") }
+                else { $lines.Add("| $($script.owner) | Missing | unavailable |") }
+            }
+            $lines.Add('')
         }
         foreach ($group in @($plan.checks | Group-Object kind)) {
             $seconds = ($results | Where-Object { $_.id -cin $group.Group.id } | Measure-Object seconds -Sum).Sum
@@ -110,50 +151,22 @@ if ($env:GH_TOKEN) {
                     $end = $right
                 }
             }
-            $clock = ($end - [datetimeoffset]$attemptInfo.run_started_at).TotalSeconds
+            $created = [datetimeoffset]$attemptInfo.created_at
+            $clock = ($end - $created).TotalSeconds
+            $lines.Add('')
+            $lines.Add('| GitHub job | Step | Wall seconds |')
+            $lines.Add('| --- | --- | ---: |')
+            foreach ($job in $finished) {
+                foreach ($step in $job.steps | Where-Object { $_.conclusion -cne 'skipped' -and $_.started_at -and $_.completed_at }) {
+                    $seconds = ([datetimeoffset]$step.completed_at - [datetimeoffset]$step.started_at).TotalSeconds
+                    $lines.Add("| $($job.name) | $($step.name) | $([math]::Round($seconds, 1)) |")
+                }
+            }
+            $lines.Add('')
             $lines.Add("- Through the last completed job: $([math]::Round($clock)) seconds elapsed, $([math]::Round($busy)) seconds with active runners, $([math]::Round($runner / 60, 1)) cumulative runner-minutes.")
-            $lines.Add("- Time before the first runner started: $([math]::Round(($start - [datetimeoffset]$attemptInfo.run_started_at).TotalSeconds)) seconds.")
+            $lines.Add("- Time before the first runner started: $([math]::Round(($start - $created).TotalSeconds)) seconds.")
         }
     } catch { $lines.Add('- Hosted job timing unavailable: ' + $_.Exception.Message) }
 }
 
-# Timing comparisons are informational; they never transfer validation status across runs.
-$certification = [IO.Path]::GetFullPath('../certification.json', $ReceivedDirectory)
-if ($env:GH_TOKEN -and (Test-Path -LiteralPath $certification)) {
-    try {
-        $current = @(Get-Content -LiteralPath $certification -Raw | ConvertFrom-Json)
-        $headers = @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' }
-        $branch = [Uri]::EscapeDataString($DefaultBranch)
-        $runs = Invoke-RestMethod -Uri "$ApiUrl/repos/$Repository/actions/workflows/engine-ci.yml/runs?branch=$branch&status=success&per_page=20" -Headers $headers
-        foreach ($run in $runs.workflow_runs) {
-            if ($run.id -eq $RunId -or $run.head_repository.full_name -cne $Repository -or $run.head_branch -cne $DefaultBranch -or
-                $run.event -cnotin @('push', 'schedule', 'workflow_dispatch')) { continue }
-            $inventory = Invoke-RestMethod -Uri "$ApiUrl/repos/$Repository/actions/runs/$($run.id)/artifacts?per_page=100" -Headers $headers
-            $matches = @($inventory.artifacts | Where-Object { $_.name -ceq "engine-certification-attempt-$($run.run_attempt)" -and -not $_.expired })
-            if ($matches.Count -ne 1) { continue }
-            $comparison = Join-Path (Split-Path ([IO.Path]::GetFullPath($ReceivedDirectory)) -Parent) ('comparison-' + [Guid]::NewGuid().ToString('N'))
-            New-Item -ItemType Directory -Path $comparison | Out-Null
-            $archive = Join-Path $comparison 'certification.zip'
-            Invoke-WebRequest -Uri "$ApiUrl/repos/$Repository/actions/artifacts/$($matches[0].id)/zip" -Headers $headers -OutFile $archive
-            & "$PSScriptRoot/Expand-ValidationArtifact.ps1" -ArchivePath $archive -Destination (Join-Path $comparison 'verified') -ExpectedDigest $matches[0].digest
-            $previous = @(Get-Content -LiteralPath (Join-Path $comparison 'verified/certification.json') -Raw | ConvertFrom-Json)
-            $changes = 0
-            foreach ($platform in $current) {
-                $before = @($previous | Where-Object { $_.platform -ceq $platform.platform -and $_.receipt.environment -ceq $platform.receipt.environment })
-                if ($before.Count -ne 1) { continue }
-                foreach ($timing in @($platform.receipt.timings)) {
-                    $baseline = @($before[0].receipt.timings | Where-Object { $_.id -ceq $timing.id -and $_.kind -ceq $timing.kind -and $_.owner -ceq $timing.owner })
-                    if ($baseline.Count -ne 1 -or $baseline[0].seconds -le 0 -or $timing.seconds -lt $baseline[0].seconds * 1.5 -or
-                        $timing.seconds - $baseline[0].seconds -lt 15) { continue }
-                    $message = "$($platform.platform) / $($timing.id): $([Math]::Round($baseline[0].seconds, 1))s to $([Math]::Round($timing.seconds, 1))s. Inspect workload changes and compare repeated samples."
-                    $lines.Add("- Duration increase against [run $($run.id)]($($run.html_url)): $message")
-                    Write-Host ('::warning::' + $message.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A'))
-                    $changes++
-                }
-            }
-            if ($changes -eq 0) { $lines.Add('- No actionable duration increase in comparable retained checks; no performance notification emitted.') }
-            break
-        }
-    } catch { $lines.Add('- Timing comparison unavailable; required validation status is unchanged. ' + $_.Exception.Message) }
-}
 $lines | Add-Content -LiteralPath $SummaryPath -Encoding utf8

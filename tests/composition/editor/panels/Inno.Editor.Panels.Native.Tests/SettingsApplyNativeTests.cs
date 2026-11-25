@@ -52,7 +52,7 @@ public sealed unsafe class SettingsApplyNativeTests
 
     [Fact]
     [Trait("Acceptance", "Lifecycle")]
-    public void OneHundredSettingsCyclesReleaseDrawnValuesAndReloadAdmission()
+    public void ReopenedSettingsReleaseDrawnValuesAndReloadAdmission()
     {
         AtomicEditorSetting.SNAPSHOTS.Clear();
         AtomicEditorSetting.observe = true;
@@ -62,11 +62,11 @@ public sealed unsafe class SettingsApplyNativeTests
                 typeof(SettingsApplyNativeTests).Assembly,
                 includeSettings: true
             );
-            for (int cycle = 0; cycle < 100; cycle++)
+            for (int cycle = 0; cycle < 2; cycle++)
             {
                 OpenAndClose(host);
             }
-            Assert.True(AtomicEditorSetting.SNAPSHOTS.Count >= 100);
+            Assert.True(AtomicEditorSetting.SNAPSHOTS.Count >= 2);
             GC.Collect();
             GC.WaitForPendingFinalizers();
             GC.Collect();

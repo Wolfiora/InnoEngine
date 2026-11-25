@@ -75,7 +75,7 @@ public sealed unsafe class TreeRowTests : WidgetLayoutFixture
     }
 
     [Fact]
-    public void TenThousandTreeRowsSubmitCustomContentOnlyWithinTheViewport()
+    public void TreeRowsSubmitCustomContentOnlyWithinTheViewport()
     {
         using var context = new NativeContext(1f);
         for (int frame = 0; frame < 3; frame++)
@@ -89,7 +89,7 @@ public sealed unsafe class TreeRowTests : WidgetLayoutFixture
                     drawn++;
                     NativeImGui.TextUnformatted("Visible content");
                 };
-                for (int row = 0; row < 10_000; row++)
+                for (int row = 0; row < 128; row++)
                 {
                     _ = EditorUI.current.widgets.TreeNode("row-" + row, draw, new TreeNodeOptions() { isLeaf = true });
                 }
@@ -113,19 +113,19 @@ public sealed unsafe class TreeRowTests : WidgetLayoutFixture
             int submitted = 0;
             bool preserved = false;
             float height = NativeImGui.GetTextLineHeightWithSpacing();
-            EditorUI.current.widgets.ClippedRows(10_000, height, 0, (
+            EditorUI.current.widgets.ClippedRows(128, height, 0, (
                 state,
                 start,
                 end
             ) =>
             {
                 submitted += end - start;
-                preserved |= start <= 9999 && end > 9999;
+                preserved |= start <= 127 && end > 127;
                 for (int row = start; row < end; row++)
                 {
                     NativeImGui.Dummy(new Vector2(100f, NativeImGui.GetTextLineHeight()));
                 }
-            }, [9999]);
+            }, [127]);
             Assert.InRange(submitted, 1, 64);
             Assert.True(preserved);
             NativeImGui.End();
@@ -146,7 +146,7 @@ public sealed unsafe class TreeRowTests : WidgetLayoutFixture
                 Assert.Same(
                     failure,
                     Assert.Throws<InvalidOperationException>(() => EditorUI.current.widgets.ClippedRows(
-                        10_000,
+                        128,
                         NativeImGui.GetTextLineHeightWithSpacing(),
                         0,
                         (

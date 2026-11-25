@@ -1,0 +1,183 @@
+name: Engine platform
+on:
+  workflow_call:
+    inputs:
+      hosts:
+        required: true
+        type: string
+      profile:
+        required: true
+        type: string
+      rebuild_backends:
+        type: string
+        default: ''
+permissions:
+  contents: read
+  actions: read
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: '1'
+  CMAKE_BUILD_PARALLEL_LEVEL: '2'
+jobs:
+  plan:
+    name: Plan (${{ matrix.runner }})
+    outputs:
+      # A host that finished its own plan emits no job-level demand. The runner
+      # omits empty outputs, so matrix completion order cannot erase another host's request.
+      dispatch: ${{ steps.decision.outputs.dispatch == 'true' && 'true' || '' }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(inputs.hosts) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/setup-dotnet
+      - id: freeze
+        uses: ./.github/actions/freeze-validation
+        with:
+          rebuild-backends: ${{ inputs.rebuild_backends }}
+          runner-label: ${{ matrix.runner }}
+          profile: ${{ inputs.profile }}
+      - uses: ./.github/actions/resolve-backends
+      - id: decision
+        shell: pwsh
+        env:
+          MULTI_HOST: ${{ fromJSON(inputs.hosts).include[1] != null }}
+          REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
+        run: |
+          $decision = Get-Content artifacts/backend-request/acquisition.json -Raw | ConvertFrom-Json
+          $forced = @($env:REBUILD_TARGETS -split ',' | Where-Object { $_ })
+          $deferred = @($decision.packages | Where-Object { $_.operation -ceq 'produce' -or $_.target -cin $forced }).Count -gt 0
+          if (!$deferred -and $decision.packages.Count -eq 1) {
+            $digest = $decision.packages[0].sha256
+            if ($digest -cnotmatch '^[a-f0-9]{64}$') { throw 'Direct backend consumption requires an exact archive digest.' }
+            "digest=$digest" >> $env:GITHUB_OUTPUT
+          }
+          $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
+          "entry-directory=$((Split-Path $entry).Replace('\','/'))" >> $env:GITHUB_OUTPUT
+          $inline = !$deferred -and ($env:MULTI_HOST -ine 'true' -or ($decision.portableTestChanges -and !$decision.packages.Count))
+          $decision | Add-Member -NotePropertyName executedLocally -NotePropertyValue $inline
+          $decision | Add-Member -NotePropertyName deferred -NotePropertyValue $deferred
+          [IO.File]::WriteAllText([IO.Path]::GetFullPath('artifacts/backend-request/acquisition.json'), (ConvertTo-Json $decision -Depth 30 -Compress))
+          "dispatch=$((!$inline).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: fromJSON(inputs.hosts).include[1] != null || steps.decision.outputs.dispatch == 'true'
+        with:
+          overwrite: true
+          name: backend-request-${{ matrix.runner }}
+          path: artifacts/backend-request/acquisition.json
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: steps.decision.outputs.dispatch == 'true'
+        with:
+          name: scheduled-plan-${{ matrix.runner }}
+          path: |
+            artifacts/validation/ci-plan/plan.json
+            artifacts/validation/ci-plan/entry.json
+            ${{ steps.decision.outputs.entry-directory }}/
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 7
+      - name: ${{ steps.freeze.outputs.execution-label }}
+        uses: ./.github/actions/consume-validation
+        if: steps.decision.outputs.dispatch == 'false'
+        with:
+          digest: ${{ steps.decision.outputs.digest }}
+          platform: ${{ matrix.runner }}
+
+  backend-matrix:
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    needs: plan
+    if: ${{ !cancelled() && needs.plan.result == 'success' && needs.plan.outputs.dispatch == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      chains: ${{ steps.join.outputs.chains }}
+      reader_tags: ${{ steps.join.outputs.reader_tags }}
+      independent: ${{ steps.join.outputs.independent }}
+      required: ${{ steps.join.outputs.required }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          pattern: ${{ fromJSON(inputs.hosts).include[1] == null && format('backend-request-{0}', fromJSON(inputs.hosts).include[0].runner) || 'backend-request-*' }}
+          merge-multiple: ${{ fromJSON(inputs.hosts).include[1] == null }}
+          path: ${{ fromJSON(inputs.hosts).include[1] == null && format('artifacts/requests/backend-request-{0}', fromJSON(inputs.hosts).include[0].runner) || 'artifacts/requests' }}
+      - id: join
+        shell: pwsh
+        env:
+          HOSTS: ${{ inputs.hosts }}
+          REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $options = @{}
+          if ($env:GITHUB_EVENT_NAME -ceq 'push' -and $env:GITHUB_REF -ceq "refs/heads/$env:DEFAULT_BRANCH") { $options.DefaultBranch = $env:DEFAULT_BRANCH }
+          $jobs = ./tools/ci/Join-BackendAcquisitions.ps1 @options -RebuildTargets $env:REBUILD_TARGETS -Received artifacts/requests -Hosts (($env:HOSTS | ConvertFrom-Json).include.runner) `
+            -Revision $env:GITHUB_SHA
+          foreach ($name in 'chains','independent') {
+            "$name=$(@{include=@($jobs.$name)} | ConvertTo-Json -Compress -Depth 8)" >> $env:GITHUB_OUTPUT
+          }
+          "reader_tags=$(ConvertTo-Json -InputObject $jobs.readerTags -Compress)" >> $env:GITHUB_OUTPUT
+          "required=$(($jobs.platforms.Count -gt 0).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+
+  independent:
+    name: Engine tests (${{ matrix.runner }})
+    needs: backend-matrix
+    if: ${{ !cancelled() && needs.backend-matrix.result == 'success' && fromJSON(needs.backend-matrix.outputs.independent).include[0] != null }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.backend-matrix.outputs.independent) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/setup-dotnet
+      - id: freeze
+        uses: ./.github/actions/freeze-validation
+        with:
+          rebuild-backends: ${{ inputs.rebuild_backends }}
+          runner-label: ${{ matrix.runner }}
+          profile: ${{ inputs.profile }}
+          scheduled: true
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: backend-request-${{ matrix.runner }}
+          path: artifacts/backend-request
+      - name: ${{ steps.freeze.outputs.execution-label }}
+        uses: ./.github/actions/consume-validation
+        with:
+          digest: ${{ matrix.digest }}
+          platform: ${{ matrix.runner }}
+
+  backends:
+    needs: backend-matrix
+    if: ${{ !cancelled() && needs.backend-matrix.result == 'success' && needs.backend-matrix.outputs.required == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.backend-matrix.outputs.chains) }}
+    permissions:
+      actions: read
+      contents: write
+    uses: ./.github/workflows/backend-prebuilts.yml
+    with:
+      platforms: ${{ toJSON(matrix.platforms) }}
+      builders: ${{ toJSON(matrix.builders) }}
+      producers: ${{ toJSON(matrix.producers) }}
+      consumers: ${{ toJSON(matrix.consumers) }}
+      reader_tags: ${{ needs.backend-matrix.outputs.reader_tags }}
+      profile: ${{ inputs.profile }}
+      rebuild_backends: ${{ inputs.rebuild_backends || '' }}

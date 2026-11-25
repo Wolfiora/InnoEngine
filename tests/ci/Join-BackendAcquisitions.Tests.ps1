@@ -18,9 +18,7 @@ try {
     $prior = @{target=$target;operation='consume';sha256=('b'*64);assetId=12;tag='backend-prebuilts-2026.11.19.1'}
     $warm = Join-Requests @($prior)
     if ($warm.producers.Count -or $warm.platforms.Count -ne 1 -or $warm.platforms[0].nativeInputs) { throw 'A matching backend ZIP scheduled source production.' }
-    if ($warm.deferred[0].pattern -cne "backend-candidate-$target" -or $warm.deferred[0].destination -cne "artifacts/candidates/backend-candidate-$target") {
-        throw 'The single platform archive would lose its named directory during download.'
-    }
+    if ($warm.deferred[0].pattern) { throw 'Release consumption requested a candidate artifact.' }
     $peer = $hostsRegistered | Where-Object runner -CNE $runner | Select-Object -First 1
     if ($peer) {
         $peerOwner = [IO.Directory]::CreateDirectory((Join-Path $work "backend-request-$($peer.runner)")).FullName
@@ -82,9 +80,9 @@ try {
     if ($cross) {
         $changed = @{target=$cross.target;operation='produce';sha256=$null;assetId=$null}
         $candidate = Join-Requests @($prior,$changed)
-        $expectedNames = @(($target,$cross.target) | Sort-Object -CaseSensitive)
-        if ($candidate.deferred[0].pattern -cne "backend-candidate-{$($expectedNames -join ',')}" -or $candidate.deferred[0].destination -cne 'artifacts/candidates') {
-            throw 'Multiple platform archives must each extract beneath their own named directory.'
+        $name = "backend-candidate-$($cross.target)"
+        if ($candidate.deferred[0].pattern -cne $name -or $candidate.deferred[0].destination -cne "artifacts/candidates/$name") {
+            throw 'Only a newly produced cross target should transfer through the current workflow.'
         }
         if ($candidate.producers[0].hostSeed.sha256 -cne $prior.sha256 -or $candidate.producers[0].hostSeed.assetId -ne $prior.assetId) {
             throw 'The cross-target managed SDK bootstrap lost the independently selected host package.'

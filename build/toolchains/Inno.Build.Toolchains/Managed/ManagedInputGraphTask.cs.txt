@@ -263,7 +263,7 @@ public sealed class ManagedInputGraphTask : Task
             "DefineConstants", "LangVersion", "Nullable", "AllowUnsafeBlocks", "BindGenGeneratedBindings",
             "InnoDevelopmentTarget", "InnoDevelopmentEditorBuildProperties", "InnoDevelopmentEditorProject"];
         string[] itemNames = ["ProjectReference", "PackageReference", "Compile", "Using", "EmbeddedResource", "Content", "None", "Analyzer",
-            "AdditionalFiles", "EditorConfigFiles", "AdditionalCompileInputs", "InnoBuildInputProject", "InnoValidationInput", "InnoNativeDependency"];
+            "AdditionalFiles", "EditorConfigFiles", "AdditionalCompileInputs", "InnoBuildInputProject", "InnoValidationSubject", "InnoValidationInput", "InnoNativeDependency"];
         var snapshots = new List<object>();
         using var collection = new ProjectCollection(globals);
         var elapsed = Stopwatch.StartNew();

@@ -1,7 +1,8 @@
 $ErrorActionPreference = 'Stop'
+. "$PSScriptRoot/../../tools/ci/BackendReleaseCatalog.ps1"
 $root = Join-Path ([IO.Path]::GetFullPath('../../artifacts/validation/backend-publication', $PSScriptRoot)) ([Guid]::NewGuid().ToString('N'))
 $platforms = @(Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.github/native-targets.json') -Raw | ConvertFrom-Json)
-$revision = 'a'*40
+$revision = (git rev-parse HEAD).Trim()
 $original = $env:GH_TOKEN
 $retiredTag = 'backend-prebuilts-2020.01.01.1'
 $retiredObject = 'f'*40
@@ -120,7 +121,7 @@ try {
     $incomplete.checks[0].source = 'backend-prebuilts-2020.01.01.1'
     $incomplete | ConvertTo-Json -Depth 6 | Set-Content $proofPath
     try { Publish; throw 'An untrusted product proof passed.' } catch {
-        if ($_.Exception.Message -cnotin @('Missing real cold product consumption.', 'Untrusted SDK proof source.')) { throw }
+        if ($_.Exception.Message -cne 'Untrusted SDK proof source.') { throw }
     }
     $incomplete.checks = @()
     $incomplete | ConvertTo-Json -Depth 6 | Set-Content $proofPath
@@ -179,7 +180,9 @@ try {
         try { $null = $zip.CreateEntry('new-content') } finally { $zip.Dispose() }
         $hash = (Get-FileHash $archive).Hash.ToLowerInvariant()
         $proof = Get-Content "$directory/consumption.json" -Raw | ConvertFrom-Json
+        $proof.commit = 'b' * 40
         $proof.sha256 = $hash
+        foreach ($check in $proof.checks) { $check.source = $prior.tag_name }
         $proof | ConvertTo-Json -Depth 8 | Set-Content "$directory/consumption.json"
         $plan = Get-Content "$directory/plan.json" -Raw | ConvertFrom-Json
         $plan.backendPackages[0].sha256 = $hash
@@ -188,8 +191,16 @@ try {
         $results.planIdentity = (Get-FileHash "$directory/plan.json").Hash.ToLowerInvariant()
         $results | ConvertTo-Json -Depth 8 | Set-Content "$directory/results.json"
         $promotion = @{Directory=$stage;Repository='fixture/engine';Revision=$revision;ApiUrl='https://fixture.invalid';ChangedTargets=@($platform.target)}
+        $origin = @{commit=$proof.commit;tree=(git rev-parse 'HEAD^{tree}').Trim();run=42;attempt=1;artifact=13;digest=('sha256:'+('1'*64))}
+        $promotion.Promoted = @(@{target=$platform.target;promotion=$origin})
+        $verified = & "$PSScriptRoot/../../tools/ci/Publish-BackendPrebuilts.ps1" @promotion -VerifyOnly
+        if ($verified -notlike 'Verified candidate inputs*' -or $server.release) { throw 'Candidate verification must validate trusted reuse without publishing.' }
         $result = & "$PSScriptRoot/../../tools/ci/Publish-BackendPrebuilts.ps1" @promotion
         if ($result -notlike 'Published *' -or $server.release.draft -or $server.uploads[$platform.asset].digest -cne "sha256:$hash") { throw 'The independently certified platform was not published.' }
+        $catalog = Read-BackendTagCatalog $server.tag.message
+        if ($catalog.revision -cne $revision -or $catalog.platforms[$platform.target].origin.commit -cne $proof.commit) {
+            throw 'The published catalog lost the landed revision or the original producer.'
+        }
         foreach ($asset in $prior.assets | Where-Object name -CNE $platform.asset) {
             if ($server.uploads[$asset.name].digest -cne $asset.digest) { throw "A sibling publication changed $($asset.name)." }
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -6,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
+using Inno.Build.Toolchains;
 using Inno.Testing.Validation;
 
 namespace Inno.Tooling.Validation.Tests;
@@ -128,6 +130,7 @@ public sealed class BackendInputTests
             request.GetProperty("product").GetString() == "tool-only" && request.GetProperty("configuration").GetString() == "Debug"
         ));
         var digest = new string('a', 64);
+        string source = NativeBuildFingerprint.Create([repository.Git("ls-tree", "HEAD", "--", "Shared.props")], []);
         WriteSelection(digest);
         string output = repository.PathOf("artifacts/inputs.json");
         Assert.Equal(0, await EvaluateAsync());
@@ -138,6 +141,10 @@ public sealed class BackendInputTests
         );
         if (expected)
         {
+            repository.Write("Shared.props", "<Project><ItemGroup /></Project>");
+            Assert.Equal(0, await EvaluateAsync());
+            using JsonDocument stale = JsonDocument.Parse(File.ReadAllBytes(output));
+            Assert.Equal("tool-only", Assert.Single(stale.RootElement.GetProperty("missingNativeProducts").EnumerateArray()).GetString());
             WriteSelection(new string('b', 64));
             await Assert.ThrowsAsync<InvalidDataException>(() => EvaluateAsync());
         }
@@ -150,7 +157,14 @@ public sealed class BackendInputTests
                     assets = Array.Empty<object>(),
                     aggregates = new[]
                     {
-                        new { product = "tool-only", target = "fixture-target", configuration = "release", sha256 = digest }
+                        new
+                        {
+                            product = "tool-only",
+                            target = "fixture-target",
+                            configuration = "release",
+                            sha256 = digest,
+                            sources = new Dictionary<string, string> { ["Shared.props"] = source }
+                        }
                     },
                     requests = new[]
                     {

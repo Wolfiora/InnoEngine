@@ -18,6 +18,38 @@ namespace Inno.Tooling.Validation.Tests;
 public sealed class ValidationProfileTests : ValidationPlanFixture
 {
     [Fact]
+    public async Task HostedManagedAllocationDoesNotChangeIndependentLocalPlans()
+    {
+        using var repository = new ValidationRepository();
+        repository.Write("src/Example/Changed.cs", "namespace Example; public class Changed { }");
+        string output = repository.PathOf("artifacts/secondary");
+        Assert.Equal(
+            0,
+            await ValidationCommand.ExecuteAsync([
+                "plan",
+                "--engine-root",
+                repository.PathOf("."),
+                "--dotnet",
+                repository.dotnet,
+                "--shared-managed",
+                "false",
+                "--output",
+                output
+            ])
+        );
+        using JsonDocument secondary = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(output, "plan.json")));
+        Assert.Equal(JsonValueKind.String, ExampleTest(secondary).GetProperty("exclusion").ValueKind);
+        using JsonDocument local = await repository.PlanAsync();
+        Assert.Equal(JsonValueKind.Null, ExampleTest(local).GetProperty("exclusion").ValueKind);
+
+        static JsonElement ExampleTest(JsonDocument plan)
+            => plan.RootElement.GetProperty("checks").EnumerateArray().Single(check => (
+                check.GetProperty("kind").GetString() == "test"
+                && check.GetProperty("owner").GetString() == "tests/Example.Tests/Example.Tests.csproj"
+            ));
+    }
+
+    [Fact]
     public async Task ScheduledPlanRebindsOnlyOnItsCapturedEnvironment()
     {
         using var repository = new ValidationRepository();
@@ -158,7 +190,7 @@ public sealed class ValidationProfileTests : ValidationPlanFixture
         using var repository = new ValidationRepository();
         repository.Write("src/Example/Changed.cs", "namespace Example;\n");
         repository.Write("src/Example/Changed.txt", "Text.\n");
-        foreach (string? profile in new[] { null, "fast" })
+        foreach (string? profile in new[] { null, "fast", "master" })
         {
             using JsonDocument incremental = await repository.PlanAsync(profile: profile);
             Assert.Equal(
@@ -166,8 +198,6 @@ public sealed class ValidationProfileTests : ValidationPlanFixture
                 Architecture(incremental).GetProperty("changedSources").EnumerateArray().Select(static source => source.GetString())
             );
         }
-        using JsonDocument master = await repository.PlanAsync(profile: "master");
-        Assert.False(IsIncremental(master));
         repository.Write("InnoEngine.sln", "Microsoft Visual Studio Solution File, Format Version 12.00\n\n");
         using JsonDocument tooling = await repository.PlanAsync();
         Assert.False(IsIncremental(tooling));
@@ -250,16 +280,15 @@ public sealed class ValidationProfileTests : ValidationPlanFixture
             "native-hot-builds",
             "editor-products",
             "support-pack",
-            "native-aot-restore",
-            "release-bundle"
+            "native-aot-restore"
         }) {
             Assert.Contains(
                 checks,
                 check => check.GetProperty("id").GetString() == required && check.GetProperty("exclusion").ValueKind == JsonValueKind.Null
             );
         }
-        JsonElement bundle = checks.Single(check => check.GetProperty("id").GetString() == "release-bundle");
-        string releaseContext = bundle.GetProperty("context").GetString()!;
+        JsonElement pack = checks.Single(check => check.GetProperty("id").GetString() == "support-pack");
+        string releaseContext = pack.GetProperty("context").GetString()!;
         Assert.Equal(
             "Release",
             plan.RootElement
@@ -290,15 +319,6 @@ public sealed class ValidationProfileTests : ValidationPlanFixture
                     .GetString()
             );
         }
-        // Restore-only sources still invalidate the bundle, but their unbuilt standalone DLLs are not package inputs.
-        string[] bundleInputs = bundle.GetProperty("inputs").EnumerateArray().Select(value => value.GetString()!).ToArray();
-        Assert.Contains("@platforms/Fixture/player/Player.csproj", bundleInputs);
-        Assert.Contains("@src/PlayerOnly/PlayerOnly.csproj", bundleInputs);
-        Assert.Equal(
-            new[] { "entry/InnoEngine.Build/InnoEngine.Build.csproj", "entry/InnoEngine.Editor/InnoEngine.Editor.csproj" },
-            bundle.GetProperty("projects").EnumerateArray().Select(value => value.GetString()!).Order(StringComparer.Ordinal).ToArray()
-        );
-        Assert.Contains("native-aot-restore", bundle.GetProperty("prerequisites").EnumerateArray().Select(value => value.GetString()));
         Assert.Equal(
             "platforms/Fixture/player/Player.csproj",
             checks.Single(check => check.GetProperty("id").GetString() == "native-aot-restore").GetProperty("owner").GetString()

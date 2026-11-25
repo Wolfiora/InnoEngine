@@ -5,10 +5,9 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
-using Inno.Testing.Source;
 using Inno.Testing.Validation;
 
-namespace Inno.Tooling.Validation.Tests;
+namespace Inno.Tooling.Validation.Integration.Tests;
 
 public sealed class ValidationHostContractsTests
 {
@@ -22,9 +21,7 @@ public sealed class ValidationHostContractsTests
     [Fact]
     public async Task ActualTrxDistinguishesCompiledHostExclusionsFromMissingRequiredExecution()
     {
-        using var repository = new ValidationRepository(
-            TestRepository.GetRoot(typeof(ValidationHostContractsTests).Assembly)
-        );
+        using ValidationRepository repository = await ManagedValidationFixture.CreateAsync();
         string currentHost = OperatingSystem.IsWindows() ? "windows" : OperatingSystem.IsMacOS() ? "macos" : "linux";
         string otherHost = currentHost == "linux" ? "windows" : "linux";
         string source = $$"""

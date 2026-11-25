@@ -2,8 +2,11 @@ name: Freeze validation plan
 description: Resolve affected owners and environment inputs on the execution host.
 inputs:
   runner-label:
-    description: Registered validation runner for baseline graph lookup.
+    description: Registered validation runner.
     required: true
+  rebuild-backends:
+    description: Explicit backend targets requested by a manual run.
+    default: ''
   scheduled:
     description: Bind the plan and validation entry from this run on its final runner.
     default: 'false'
@@ -11,6 +14,9 @@ inputs:
     required: true
     description: Validation depth chosen by event routing.
 outputs:
+  execution-label:
+    value: ${{ steps.freeze.outputs.execution_label }}
+    description: Work selected for this host.
   native:
     value: ${{ steps.freeze.outputs.native }}
     description: Whether this host requires native packages.
@@ -27,7 +33,8 @@ runs:
       shell: pwsh
       env:
         GH_TOKEN: ${{ github.token }}
-        INNO_VALIDATION_RUNNER: ${{ inputs.runner-label }}
+        PLATFORM: ${{ inputs.runner-label }}
+        REBUILD_BACKENDS: ${{ inputs.rebuild-backends }}
         BASE_REVISION: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before || github.sha }}
         EXPECTED_COMMIT: ${{ github.sha }}
         SCHEDULED: ${{ inputs.scheduled }}
@@ -36,4 +43,4 @@ runs:
         $baseline = $env:BASE_REVISION
         if ($env:GITHUB_EVENT_NAME -ceq 'workflow_dispatch' -and $env:PROFILE -ceq 'pull-request') { $baseline = 'HEAD^' }
         if ($baseline -match '^0+$') { $baseline = 'origin/master' }
-        ./tools/ci/Invoke-ValidationCi.ps1 -Stage Plan -Scheduled:($env:SCHEDULED -ceq 'true') -BaseRevision $baseline -ExpectedCommit $env:EXPECTED_COMMIT -Profile $env:PROFILE -BackendStore artifacts/b -PlanDirectory artifacts/validation/ci-plan
+        ./tools/ci/Invoke-ValidationCi.ps1 -Stage Plan -Platform $env:PLATFORM -Scheduled:($env:SCHEDULED -ceq 'true') -BaseRevision $baseline -ExpectedCommit $env:EXPECTED_COMMIT -RebuildBackends $env:REBUILD_BACKENDS -Profile $env:PROFILE -BackendStore artifacts/b -PlanDirectory artifacts/validation/ci-plan

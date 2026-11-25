@@ -26,6 +26,7 @@ public sealed class ValidationFailureExecutionTests
         JsonObject failure = policy.DeepClone().AsObject();
         failure["id"] = "contract-failure";
         failure["kind"] = "ci-contracts";
+        failure["projects"] = new JsonArray("tests/ci/Failure.Tests.ps1");
         failure["inputs"] = new JsonArray("tests/ci/Failure.Tests.ps1");
         JsonObject independent = policy.DeepClone().AsObject();
         independent["id"] = "independent-policy";

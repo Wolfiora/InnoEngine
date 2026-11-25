@@ -4,6 +4,7 @@ param(
     [Parameter(Mandatory)][string]$EntryAssembly,
     [Parameter(Mandatory)][string]$Downloads,
     [string]$Candidates,
+    [array]$Promoted = @(),
     [string]$RebuildTargets,
     [string]$Dotnet = 'dotnet',
     [string]$Repository = $env:GITHUB_REPOSITORY,
@@ -27,16 +28,15 @@ $receipts = @(foreach ($package in $request.packages) {
     $registered = @($registry | Where-Object target -CEQ $target)
     if ($registered.Count -ne 1) { throw "Unregistered backend platform: $target." }
     $candidate = if ($Candidates) { Join-Path $Candidates "backend-candidate-$target" }
-    if ($candidate -and (Test-Path -LiteralPath (Join-Path $candidate 'candidate.json'))) {
+    if ($candidate -and (Test-Path -LiteralPath (Join-Path $candidate 'consumption.json'))) {
         $archive = Join-Path $candidate $registered[0].asset
-        $receipt = Get-Content -LiteralPath (Join-Path $candidate 'candidate.json') -Raw | ConvertFrom-Json
-        if ($receipt.commit -cne $plan.commit -or $receipt.target -cne $target -or $receipt.asset -cne $registered[0].asset) {
+        $receipt = Get-Content -LiteralPath (Join-Path $candidate 'consumption.json') -Raw | ConvertFrom-Json
+        $source = @($Promoted | Where-Object target -CEQ $target)
+        $expectedCommit = if ($source.Count -eq 1) { $source[0].promotion.commit } else { $plan.commit }
+        if ($source.Count -gt 1 -or $receipt.commit -cne $expectedCommit -or $receipt.target -cne $target) {
             throw "The produced $target candidate belongs to another commit or asset."
         }
         $digest = $receipt.sha256
-        if ($receipt.PSObject.Properties['reused'] -and $receipt.reused -and $digest -cne $package.sha256) {
-            throw "The downloaded $target release differs from the frozen acquisition."
-        }
     } elseif ($package.operation -ceq 'consume') {
         $digest = $package.sha256
         if ($digest -cnotmatch '^[a-f0-9]{64}$' -or [string]$package.assetId -cnotmatch '^[1-9][0-9]*$') { throw 'Invalid exact backend asset identity.' }

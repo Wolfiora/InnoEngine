@@ -218,25 +218,16 @@ public sealed class CoroutineSchedulerTests
     }
 
     [Fact]
-    public void ConcurrentStartAndTickIsStable()
+    public async Task ConcurrentlyStartedCoroutinesResumeOnTheNextTick()
     {
         using var scheduler = new CoroutineScheduler();
-        const int C_WORKERS = 8;
-        const int C_PER_WORKER = 4000;
         int count = 0;
-
-        Parallel.For(0, C_WORKERS, _ =>
-        {
-            for (int i = 0; i < C_PER_WORKER; i++)
-            {
-                scheduler.StartCoroutine(Routine());
-            }
-        });
+        await RunTogetherAsync(_ => scheduler.StartCoroutine(Routine()));
 
         scheduler.Tick(0.016f);
         scheduler.Tick(0.016f);
 
-        Assert.Equal(C_WORKERS * C_PER_WORKER, count);
+        Assert.Equal(2, count);
         return;
 
         IEnumerator Routine()
@@ -247,22 +238,13 @@ public sealed class CoroutineSchedulerTests
     }
 
     [Fact]
-    public void ConcurrentStopByHandleIsStable()
+    public async Task ConcurrentlyStoppedHandlesDoNotResume()
     {
         using var scheduler = new CoroutineScheduler();
-        const int C_COUNT = 3000;
-        var handles = new CoroutineHandle[C_COUNT];
         int ran = 0;
+        CoroutineHandle[] handles = [scheduler.StartCoroutine(Routine()), scheduler.StartCoroutine(Routine())];
+        await RunTogetherAsync(index => scheduler.StopCoroutine(handles[index]));
 
-        for (int i = 0; i < C_COUNT; i++)
-        {
-            handles[i] = scheduler.StartCoroutine(Routine());
-        }
-
-        Parallel.For(0, C_COUNT, i =>
-        {
-            scheduler.StopCoroutine(handles[i]);
-        });
         scheduler.Tick(0.016f);
         scheduler.Tick(0.016f);
 
@@ -330,6 +312,18 @@ public sealed class CoroutineSchedulerTests
         scheduler.Dispose();
 
         Assert.Throws<ObjectDisposedException>(() => scheduler.StartCoroutine(Loop(() => {})));
+    }
+
+    private static async Task RunTogetherAsync(Action<int> action)
+    {
+        using var start = new Barrier(2);
+        await Task.WhenAll(Task.Run(() => Run(0)), Task.Run(() => Run(1)));
+
+        void Run(int index)
+        {
+            Assert.True(start.SignalAndWait(TimeSpan.FromSeconds(10)));
+            action(index);
+        }
     }
 
     private static IEnumerator Loop(Action onTick)

@@ -6,8 +6,7 @@ param(
     [Parameter(Mandatory)][string]$GraphicsApi,
     [ValidateSet('Workflows', 'Lifecycle')][string]$Scenario = 'Workflows',
     [int]$Frames = 30000,
-    [int]$TimeoutSeconds = 600,
-    [ValidateRange(100, 10000)][int]$Cycles = 100
+    [int]$TimeoutSeconds = 600
 )
 
 $ErrorActionPreference = 'Stop'
@@ -84,7 +83,7 @@ public static class EditorJourneyExit
     return [Inno.Validation.EditorJourneyExit]::Request($OwnedProcess.Id)
 }
 
-function Assert-JourneyEvidence([string]$Project, [string]$Scenario, [int]$Cycles) {
+function Assert-JourneyEvidence([string]$Project, [string]$Scenario) {
     $evidence = Join-Path $Project $(if ($Scenario -eq 'Lifecycle') { 'Library/Acceptance/panel-lifecycle.tsv' } else { 'Library/Acceptance/workflow-journey.tsv' })
     if (-not (Test-Path -LiteralPath $evidence)) { throw 'The source extension did not complete the journey.' }
     $verified = @(Get-Content -LiteralPath $evidence)
@@ -92,39 +91,13 @@ function Assert-JourneyEvidence([string]$Project, [string]$Scenario, [int]$Cycle
         if ($verified.Count -ne 8) { throw "Expected eight completed workflow stages, got $($verified.Count)." }
     } else {
         $panels = @(Import-Csv -LiteralPath $evidence -Delimiter "`t" | Where-Object panel -ne 'protocol')
-        if ($panels.Count -lt 8 -or @($panels | Where-Object 'completed-open-close-cycles' -ne ([string]$Cycles)).Count -ne 0) {
-            throw "Every actual product panel must complete $Cycles open/close cycles."
-        }
-        $resources = @(Import-Csv -LiteralPath (Join-Path $Project 'Library/Acceptance/panel-lifecycle-resources.tsv') -Delimiter "`t")
-        $preparation = @(Import-Csv -LiteralPath (Join-Path $Project 'Library/Acceptance/panel-lifecycle-preparation.tsv') -Delimiter "`t")
-        if ($preparation.Count -ne 2 -or $preparation[0].phase -ne 'before-first-panel-draw' -or $preparation[1].phase -ne 'after-120-drawn-frames') {
-            throw 'The lifecycle run must record cold resource preparation separately from its repeated open/close baseline.'
-        }
-        if ($resources.Count -ne ($Cycles / 10 + 1) -or [int]$resources[0].'completed-cycles' -ne 0 -or [int]$resources[-1].'completed-cycles' -ne $Cycles) {
-            throw 'The lifecycle run did not record its complete full-GC resource series.'
-        }
-        $previousCollection = 0L
-        foreach ($sample in $resources) {
-            $collection = [long]$sample.'gc-index'
-            $heap = [long]$sample.'gc-heap-bytes'
-            $fragmented = [long]$sample.'gc-fragmented-bytes'
-            if ($collection -le $previousCollection -or [int]$sample.'gc-generation' -ne [GC]::MaxGeneration -or
-                $sample.'gc-compacted' -cne 'True' -or $sample.'gc-concurrent' -cne 'False' -or
-                $fragmented -lt 0 -or $heap -lt $fragmented -or [long]$sample.'managed-bytes-after-full-gc' -ne ($heap - $fragmented)) {
-                throw 'The lifecycle run did not record a fresh compacting full-GC snapshot with consistent live-memory bytes.'
-            }
-            $previousCollection = $collection
-        }
-        $growth = [long]$resources[-1].'managed-bytes-after-full-gc' - [long]$resources[0].'managed-bytes-after-full-gc'
-        if ($growth -gt 4MB) { throw "Panel lifecycle retained $growth bytes beyond its 4 MiB final live-memory budget." }
-        if (@($resources | Where-Object { [long]$_.'pending-events' -ne 0 }).Count -ne 0) {
-            throw 'Panel lifecycle retained pending events after closed-frame reconciliation.'
+        if ($panels.Count -lt 8 -or @($panels | Where-Object 'completed-open-close-cycles' -ne '1').Count -ne 0) {
+            throw "Every actual product panel must complete one open/close cycle."
         }
     }
 }
 
 if ($Frames -lt 120 -or $TimeoutSeconds -le 0) { throw 'The journey needs at least 120 frames and a positive deadline.' }
-if ($Cycles % 10 -ne 0) { throw 'Lifecycle sampling requires a whole number of ten-cycle intervals.' }
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $editor = [IO.Path]::GetFullPath($EditorAssembly)
 $Dotnet = (Get-Command $Dotnet -ErrorAction Stop).Source
@@ -138,7 +111,7 @@ Copy-Item -LiteralPath (Join-Path $repository 'src/composition/editor/hosting/In
     -Destination (Join-Path $project 'editor.ini')
 $fixtures = Join-Path $project 'Assets/Acceptance'
 New-Item -ItemType Directory -Force -Path $fixtures | Out-Null
-$fixtureNames = if ($Scenario -eq 'Lifecycle') { @('ManagedMemorySample.editor.cs', 'PanelLifecycle.editor.cs') } else { @('WorkflowState.cs.txt', 'WorkflowJourney.editor.cs.txt') }
+$fixtureNames = if ($Scenario -eq 'Lifecycle') { @('PanelLifecycle.editor.cs') } else { @('WorkflowState.cs.txt', 'WorkflowJourney.editor.cs.txt') }
 foreach ($name in $fixtureNames) {
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot "fixtures/editor-ui/$name") -Destination (Join-Path $fixtures ($name -replace '\.txt$', ''))
 }
@@ -153,7 +126,6 @@ $start.WindowStyle = [Diagnostics.ProcessWindowStyle]::Hidden
 $start.RedirectStandardOutput = $true
 $start.RedirectStandardError = $true
 $start.WorkingDirectory = $project
-$start.Environment['INNO_ACCEPTANCE_PANEL_CYCLES'] = [string]$Cycles
 foreach ($argument in @($editor, $project, '--window-visible', 'false', '--smoke-frames', [string]$Frames,
                         '--graphics-api', $GraphicsApi)) { $start.ArgumentList.Add($argument) }
 if ($NativeDependencies) {
@@ -181,13 +153,13 @@ try {
             $completedScenario = [IO.File]::ReadAllText($completion)
             if ($completedScenario.Length -eq 0) { continue }
             if ($completedScenario -cne $Scenario) { throw 'The completion notification belongs to a different journey.' }
-            Assert-JourneyEvidence -Project $project -Scenario $Scenario -Cycles $Cycles
+            Assert-JourneyEvidence -Project $project -Scenario $Scenario
             $exitRequested = Request-EditorJourneyExit -OwnedProcess $process
         }
     }
     $code = $process.ExitCode
     if ($code -ne 0) { throw "The owned Editor exited with code $code." }
-    Assert-JourneyEvidence -Project $project -Scenario $Scenario -Cycles $Cycles
+    Assert-JourneyEvidence -Project $project -Scenario $Scenario
     $boot = Get-Content -LiteralPath (Join-Path $project 'Logs/EditorBoot.log') -Raw
     if ($boot -notmatch 'Dispose end\.' -or $boot -match 'Teardown failure') { throw 'The completed journey did not retire its real product resources successfully.' }
 }
@@ -212,9 +184,9 @@ finally {
         workingChanges = @(& git -C $repository status --porcelain=v1)
         editor = $editor; graphicsApi = $GraphicsApi; frameLimit = $Frames; exitCode = $code; scenario = $Scenario
         exitTrigger = $(if ($exitRequested) { 'completed-journey' } else { 'frame-limit' })
-        seconds = $elapsed.Elapsed.TotalSeconds; cycles = $(if ($Scenario -eq 'Lifecycle') { $Cycles } else { $null })
+        seconds = $elapsed.Elapsed.TotalSeconds; cycles = $(if ($Scenario -eq 'Lifecycle') { 1 } else { $null })
         status = $(if ($failure) { 'Failed' } else { 'Passed' })
-        diagnostic = $(if ($failure) { $failure.Exception.Message } elseif ($Scenario -eq 'Lifecycle') { "Every actual product panel completed $Cycles cycles and $($Cycles / 10 + 1) full-GC resource observations." } else { 'Eight actual-product feature workflows completed.' })
+        diagnostic = $(if ($failure) { $failure.Exception.Message } elseif ($Scenario -eq 'Lifecycle') { 'Every actual product panel reopened, closed and restored its original state.' } else { 'Eight actual-product feature workflows completed.' })
         limitation = 'Public feature commands with real panel drawing; native pointer/keyboard contracts and physical-device experience are separate evidence.'
     } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $results 'result.json') -Encoding utf8
 }

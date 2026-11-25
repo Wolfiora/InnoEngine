@@ -7,6 +7,7 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <InnoValidationLayer>integration</InnoValidationLayer>
+    <InnoValidationEnvironment>windows;macos;linux</InnoValidationEnvironment>
   </PropertyGroup>
 
   <Import Project="../../../RepositoryInput.targets" />

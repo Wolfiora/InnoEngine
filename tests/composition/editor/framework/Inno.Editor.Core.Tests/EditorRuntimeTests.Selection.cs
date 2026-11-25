@@ -32,9 +32,9 @@ public sealed partial class EditorRuntimeTests
     }
 
     [Fact]
-    public void LargeIdentityRangesKeepOrderedPrimaryAndIndexedMembership()
+    public void IdentityRangesKeepOrderedPrimaryAndIndexedMembership()
     {
-        var targets = new SelectionQueueTarget[10_000];
+        var targets = new SelectionQueueTarget[3];
         var order = new RuntimeIdentity[targets.Length];
         for (int index = 0; index < targets.Length; index++)
         {

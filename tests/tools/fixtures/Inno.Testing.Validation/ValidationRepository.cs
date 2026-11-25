@@ -26,8 +26,10 @@ public sealed class ValidationRepository : IDisposable
                                            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
                                        );
 
-    public ValidationRepository(string? source = null)
-    {
+    public ValidationRepository(
+        string? source = null,
+        Action<ValidationRepository>? initialize = null
+    ) {
         Directory.CreateDirectory(m_root);
         if (source is not null)
         {
@@ -63,16 +65,23 @@ public sealed class ValidationRepository : IDisposable
         Write(".gitignore", "artifacts/\n**/obj/\n**/bin/\n");
         Write("InnoEngine.sln", "Microsoft Visual Studio Solution File, Format Version 12.00\n");
         Write("Shared.props", "<Project />");
-        Write("src/Example/Example.csproj", Project("<Import Project=\"../../Shared.props\" />"));
-        Write("src/Other/Other.csproj", Project());
-        Write(
-            "tests/Example.Tests/Example.Tests.csproj",
-            Project("""
-            <PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>domain</InnoValidationLayer></PropertyGroup>
-            <ItemGroup><ProjectReference Include="../../src/Example/Example.csproj" /><InnoValidationInput Include="../../fixtures/plugin.txt" /></ItemGroup>
-            """)
-        );
-        Write("fixtures/plugin.txt", "initial input");
+        if (initialize is null)
+        {
+            Write("src/Example/Example.csproj", Project("<Import Project=\"../../Shared.props\" />"));
+            Write("src/Other/Other.csproj", Project());
+            Write(
+                "tests/Example.Tests/Example.Tests.csproj",
+                Project("""
+                <PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>domain</InnoValidationLayer></PropertyGroup>
+                <ItemGroup><ProjectReference Include="../../src/Example/Example.csproj" /><InnoValidationInput Include="../../fixtures/plugin.txt" /></ItemGroup>
+                """)
+            );
+            Write("fixtures/plugin.txt", "initial input");
+        }
+        else
+        {
+            initialize(this);
+        }
         Git("init", "-b", "master");
         Git("config", "user.name", "Aaron Liao");
         Git("config", "user.email", "hsuankailiao@gmail.com");
@@ -152,8 +161,7 @@ public sealed class ValidationRepository : IDisposable
         string? documentationBaseline = null,
         string? profile = null,
         string? nativeDependencies = null,
-        string? backendStore = null,
-        string? baselinePlan = null
+        string? backendStore = null
     ) {
         string output = PathOf("artifacts/plan");
         await ValidationCommand.ExecuteAsync([
@@ -171,7 +179,6 @@ public sealed class ValidationRepository : IDisposable
             "--configuration",
             configuration,
             ..profile is null ? Array.Empty<string>() : ["--profile", profile],
-            ..baselinePlan is null ? Array.Empty<string>() : ["--baseline-plan", baselinePlan],
             ..backendStore is null ? Array.Empty<string>() : ["--backend-store", backendStore],
             ..nativeDependencies is null ? Array.Empty<string>() : ["--native-dependencies", nativeDependencies],
             ..documentationCache is null ? Array.Empty<string>() : ["--docs-cache-root", documentationCache],

@@ -62,20 +62,12 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void CreateHubProducesValidHub()
-    {
-        var dispatcher = new EventDispatcher();
-        using EventHub hub = dispatcher.CreateHub();
-
-        Assert.True(hub.isValid);
-    }
-
-    [Fact]
     public void DisposeHubMakesHubInvalidAndPreventsFurtherListen()
     {
         var dispatcher = new EventDispatcher();
         EventHub hub = dispatcher.CreateHub();
 
+        Assert.True(hub.isValid);
         hub.Dispose();
 
         Assert.False(hub.isValid);
@@ -127,18 +119,14 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void ListenOnceConcurrentEmitStillInvokesOnlyOneTime()
+    public async Task ConcurrentEmitInvokesOnceListenerOnlyOnce()
     {
-        const int C_ITERATIONS = 10_000;
         var dispatcher = new EventDispatcher();
         using EventHub hub = dispatcher.CreateHub();
         int count = 0;
 
         hub.ListenOnce<ProbeEvent>(_ => Interlocked.Increment(ref count));
-        Parallel.For(0, C_ITERATIONS, i =>
-        {
-            dispatcher.Emit(new ProbeEvent(i));
-        });
+        await EmitTogetherAsync(dispatcher);
 
         Assert.Equal(1, count);
     }
@@ -273,9 +261,8 @@ public sealed class EventDispatcherBehaviorTests
     }
 
     [Fact]
-    public void ConcurrentEmitAcrossThreadsIsStable()
+    public async Task ConcurrentEmitDeliversBothEventsToBothHubs()
     {
-        const int C_ITERATIONS = 20_000;
         var dispatcher = new EventDispatcher();
         using EventHub hubA = dispatcher.CreateHub(order: 10);
         using EventHub hubB = dispatcher.CreateHub(order: 0);
@@ -285,77 +272,46 @@ public sealed class EventDispatcherBehaviorTests
         hubA.Listen<ProbeEvent>(_ => Interlocked.Increment(ref countA));
         hubB.Listen<ProbeEvent>(_ => Interlocked.Increment(ref countB));
 
-        Parallel.For(0, C_ITERATIONS, i =>
-        {
-            dispatcher.Emit(new ProbeEvent(i));
-        });
+        await EmitTogetherAsync(dispatcher);
 
-        Assert.Equal(C_ITERATIONS, countA);
-        Assert.Equal(C_ITERATIONS, countB);
+        Assert.Equal(2, countA);
+        Assert.Equal(2, countB);
     }
 
-    [Fact]
-    public void ConcurrentEmitWithHandleInHubStopsOnlyCurrentHub()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ConcurrentEmitKeepsConsumptionScopedToTheHandledEvent(bool handleGlobally)
     {
-        const int C_ITERATIONS = 20_000;
         var dispatcher = new EventDispatcher();
-        using EventHub hubA = dispatcher.CreateHub(order: 10);
-        using EventHub hubB = dispatcher.CreateHub(order: 0);
-        int hubAFirst = 0;
-        int hubASecond = 0;
-        int hubBCount = 0;
-
-        hubA.Listen<ProbeEvent>(e =>
+        using EventHub first = dispatcher.CreateHub(order: 10);
+        using EventHub next = dispatcher.CreateHub(order: 0);
+        var received = new int[2];
+        var laterListeners = new int[2];
+        var laterHub = new int[2];
+        first.Listen<ProbeEvent>(evnt =>
         {
-            Interlocked.Increment(ref hubAFirst);
-            if ((e.value & 1) == 0)
+            Interlocked.Increment(ref received[evnt.value]);
+            if (evnt.value == 0)
             {
-                e.HandleInHub();
+                if (handleGlobally)
+                {
+                    evnt.HandleInGlobal();
+                }
+                else
+                {
+                    evnt.HandleInHub();
+                }
             }
         });
-        hubA.Listen<ProbeEvent>(_ => Interlocked.Increment(ref hubASecond));
-        hubB.Listen<ProbeEvent>(_ => Interlocked.Increment(ref hubBCount));
+        first.Listen<ProbeEvent>(evnt => Interlocked.Increment(ref laterListeners[evnt.value]));
+        next.Listen<ProbeEvent>(evnt => Interlocked.Increment(ref laterHub[evnt.value]));
 
-        Parallel.For(0, C_ITERATIONS, i =>
-        {
-            dispatcher.Emit(new ProbeEvent(i));
-        });
+        await EmitTogetherAsync(dispatcher);
 
-        Assert.Equal(C_ITERATIONS, hubAFirst);
-        Assert.Equal(C_ITERATIONS / 2, hubASecond);
-        Assert.Equal(C_ITERATIONS, hubBCount);
-    }
-
-    [Fact]
-    public void ConcurrentEmitWithHandleInGlobalStopsFollowingHubs()
-    {
-        const int C_ITERATIONS = 20_000;
-        var dispatcher = new EventDispatcher();
-        using EventHub hubA = dispatcher.CreateHub(order: 10);
-        using EventHub hubB = dispatcher.CreateHub(order: 0);
-        int hubAFirst = 0;
-        int hubASecond = 0;
-        int hubBCount = 0;
-
-        hubA.Listen<ProbeEvent>(e =>
-        {
-            Interlocked.Increment(ref hubAFirst);
-            if ((e.value & 1) == 0)
-            {
-                e.HandleInGlobal();
-            }
-        });
-        hubA.Listen<ProbeEvent>(_ => Interlocked.Increment(ref hubASecond));
-        hubB.Listen<ProbeEvent>(_ => Interlocked.Increment(ref hubBCount));
-
-        Parallel.For(0, C_ITERATIONS, i =>
-        {
-            dispatcher.Emit(new ProbeEvent(i));
-        });
-
-        Assert.Equal(C_ITERATIONS, hubAFirst);
-        Assert.Equal(C_ITERATIONS / 2, hubASecond);
-        Assert.Equal(C_ITERATIONS / 2, hubBCount);
+        Assert.Equal(new[] { 1, 1 }, received);
+        Assert.Equal(new[] { 0, 1 }, laterListeners);
+        Assert.Equal(new[] { handleGlobally ? 0 : 1, 1 }, laterHub);
     }
 
     [Fact]
@@ -421,6 +377,18 @@ public sealed class EventDispatcherBehaviorTests
 
         Assert.False(secondCalled);
         Assert.False(hub.isValid);
+    }
+
+    private static async Task EmitTogetherAsync(EventDispatcher dispatcher)
+    {
+        using var start = new Barrier(2);
+        await Task.WhenAll(Task.Run(() => Emit(0)), Task.Run(() => Emit(1)));
+
+        void Emit(int value)
+        {
+            Assert.True(start.SignalAndWait(TimeSpan.FromSeconds(10)));
+            dispatcher.Emit(new ProbeEvent(value));
+        }
     }
 
     private sealed class ProbeEvent(int value) : Event

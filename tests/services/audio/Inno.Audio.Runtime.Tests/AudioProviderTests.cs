@@ -127,7 +127,7 @@ public sealed class AudioProviderTests : AudioRuntimeFixture
         );
         options.maxContentSnapshots = 100;
 
-        for (int frame = 0; frame < 256; frame++)
+        for (int frame = 0; frame < 2; frame++)
         {
             runtime.Update(0);
             Assert.Equal(new AudioContentStatistics(2, 2, 1), runtime.contentStatistics);

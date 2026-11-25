@@ -2,6 +2,7 @@ param(
     [Parameter(Mandatory)][string]$Received,
     [Parameter(Mandatory)][string[]]$Hosts,
     [Parameter(Mandatory)][string]$Revision,
+    [string]$DefaultBranch,
     [string]$RebuildTargets
 )
 $ErrorActionPreference = 'Stop'
@@ -33,7 +34,7 @@ foreach ($hostName in $Hosts) {
             throw "Missing exact archived platform for $target."
         }
         if (!$decision.deferred) {
-            if ($RebuildTargets -or $decision.packages.Count -ne 1 -or $package.operation -cne 'consume') {
+            if ($target -cin @($RebuildTargets -split ',') -or $package.operation -cne 'consume') {
                 throw "The local plan did not own this acquisition: $hostName/$target."
             }
             continue
@@ -49,21 +50,19 @@ foreach ($hostName in $Hosts) {
         }
     }
     if (!$decision.deferred -and !$decision.executedLocally) {
-        $digest = if ($decision.packages.Count) { $decision.packages[0].sha256 } else { '' }
+        $digest = if ($decision.packages.Count -eq 1) { $decision.packages[0].sha256 } else { '' }
         $independent += @{runner=$hostName;digest=$digest}
     }
     if ($decision.deferred) {
         if (!$seen.Count) { throw "An empty acquisition cannot defer execution: $hostName." }
         $names = @($seen | Sort-Object -CaseSensitive)
         $requirements[$hostName] = $names
-        $pattern = if ($names.Count -eq 1) { "backend-candidate-$($names[0])" } else { "backend-candidate-{$($names -join ',')}" }
-        # download-artifact extracts a single match directly into its destination.
-        $destination = if ($names.Count -eq 1) { "artifacts/candidates/$pattern" } else { 'artifacts/candidates' }
-        $deferred += [pscustomobject]@{runner=$hostName;target=$hostRegistration[0].target;pattern=$pattern;destination=$destination}
+        $deferred += [pscustomobject]@{runner=$hostName;target=$hostRegistration[0].target;targets=$names;pattern='';destination='artifacts/candidates'}
     }
 }
 # The initial catalog must publish all registered targets together. Check before a cold rebuild clears seed identities.
 $bootstrap = $targets.Count -eq $platforms.Count -and !@($targets.Values | Where-Object sha256).Count
+$requested = @()
 if ($RebuildTargets) {
     $requested = @($RebuildTargets.Split(',') | ForEach-Object { $_.Trim() })
     if (@($requested | Sort-Object -CaseSensitive -Unique).Count -ne $requested.Count) { throw 'Duplicate manual rebuild target.' }
@@ -73,6 +72,16 @@ if ($RebuildTargets) {
         $targets[$name].tag = $null
         $targets[$name].sha256 = $null
         $targets[$name].assetId = $null
+    }
+}
+$eligible = @($targets.Values | Where-Object { $_.operation -ceq 'produce' -and $_.target -cnotin $requested })
+if ($DefaultBranch -and $eligible.Count) {
+    $matchesByTarget = & "$PSScriptRoot/Get-MergedBackendCandidates.ps1" -Revision $Revision -Targets $eligible -DefaultBranch $DefaultBranch
+    foreach ($item in $eligible) {
+        if ($matchesByTarget.ContainsKey($item.target)) {
+            $item.operation = 'promote'
+            $item.promotion = $matchesByTarget[$item.target]
+        }
     }
 }
 # Cross-target builds need an independently acquired native tools host. The planner names that
@@ -89,6 +98,15 @@ foreach ($target in $targets.Values) {
         if ($hostPackage.sha256) { $target.hostSeed = @{sha256=$hostPackage.sha256;assetId=$hostPackage.assetId} }
     }
     $target.nativeInputs = @($targets.Values | Where-Object { $_.operation -ceq 'produce' -and ($_.target -ceq $target.target -or $_.hostTarget -ceq $target.target) }).Count -gt 0
+}
+foreach ($consumer in $deferred) {
+    $built = @($consumer.targets | Where-Object { $targets[$_].operation -ceq 'produce' })
+    if ($built.Count -eq 1) {
+        $consumer.pattern = "backend-candidate-$($built[0])"
+        $consumer.destination = "artifacts/candidates/$($consumer.pattern)"
+    } elseif ($built.Count -gt 1) {
+        $consumer.pattern = "backend-candidate-{$($built -join ',')}"
+    }
 }
 # Each target is produced once. Consumers that share a target or its build host
 # travel in the same workflow call, independently of unrelated producer groups.
@@ -116,7 +134,8 @@ while ($pending.Count) {
         }
     }
     $platformSet = @($targets.Values | Where-Object { $closure.Contains($_.target) })
-    $chains += @{platforms=@{include=$platformSet}; producers=@{include=@($platformSet | Where-Object operation -CEQ 'produce')};
+    $chains += @{platforms=@{include=$platformSet}; builders=@{include=@($platformSet | Where-Object operation -CEQ 'produce')};
+        producers=@{include=@($platformSet | Where-Object operation -CNE 'consume')};
         consumers=@{include=@($deferred | Where-Object { $_.runner -cin $members })}}
 }
 [pscustomobject]@{platforms=@($targets.Values); producers=@($targets.Values | Where-Object operation -CEQ 'produce');

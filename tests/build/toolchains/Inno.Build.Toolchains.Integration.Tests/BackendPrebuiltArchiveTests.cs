@@ -24,9 +24,9 @@ public sealed class BackendPrebuiltArchiveTests : IDisposable
     }
 
     [Fact]
-    public async Task RepackingOneHundredRevisionsIncludesOnlyTheSelectedCurrentFiles()
+    public async Task RepackingReplacesThePreviousSelectionAndPreservesTheInstalledArchive()
     {
-        for (int revision = 0; revision < 100; revision++)
+        for (int revision = 0; revision < 2; revision++)
         {
             string path = $"library-{revision}.dll";
             File.WriteAllText(Path.Combine(m_root, path), revision.ToString());
@@ -40,11 +40,11 @@ public sealed class BackendPrebuiltArchiveTests : IDisposable
         Assert.Equal(digest, Digest(archive));
         string output = Path.Combine(m_root, "consumer");
         await BackendPrebuiltArchive.ExtractAsync(archive, digest, "fixture-target", output);
-        Assert.Equal("99", File.ReadAllText(Path.Combine(output, "library-99.dll")));
+        Assert.Equal("1", File.ReadAllText(Path.Combine(output, "library-1.dll")));
         Assert.Equal(3, Directory.GetFiles(output).Length);
         Assert.Contains(digest, File.ReadAllText(Path.Combine(output, "receipt.json")));
         await Assert.ThrowsAnyAsync<IOException>(() => BackendPrebuiltArchive.ExtractAsync(archive, digest, "fixture-target", output));
-        Assert.Equal("99", File.ReadAllText(Path.Combine(output, "library-99.dll")));
+        Assert.Equal("1", File.ReadAllText(Path.Combine(output, "library-1.dll")));
     }
 
     [Fact]

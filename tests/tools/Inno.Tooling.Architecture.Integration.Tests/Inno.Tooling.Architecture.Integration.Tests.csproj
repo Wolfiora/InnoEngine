@@ -7,11 +7,13 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <InnoValidationLayer>integration</InnoValidationLayer>
+    <InnoValidationEnvironment>windows;macos;linux</InnoValidationEnvironment>
   </PropertyGroup>
 
   <Import Project="../../RepositoryInput.targets" />
 
   <ItemGroup>
+    <InnoValidationSubject Include="../../../tools/Inno.Tooling.Architecture/Inno.Tooling.Architecture.csproj" />
     <InnoValidationInput Include="../../../tools/ci/Get-DocumentationExampleReceipt.ps1;../../../tools/ci/Get-DocumentationSourceInputs.ps1" />
     <ProjectReference Include="../../../tools/Inno.Tooling.Documentation/Inno.Tooling.Documentation.csproj" />
     <ProjectReference Include="../../../tools/Inno.Tooling.Architecture/Inno.Tooling.Architecture.csproj" />

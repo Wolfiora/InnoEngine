@@ -16,19 +16,15 @@ Set-StrictMode -Version Latest
 $root = [IO.Path]::GetFullPath('../..',$PSScriptRoot)
 $platform = @(Get-Content -LiteralPath (Join-Path $root '.github/native-targets.json') -Raw | ConvertFrom-Json | Where-Object target -CEQ $Target)
 if ($platform.Count -ne 1) { throw "Unknown platform $Target." }
-$revision = (& git -C $root rev-parse HEAD).Trim()
 $output = [IO.Directory]::CreateDirectory([IO.Path]::GetFullPath($OutputDirectory)).FullName
 if ($PreviousZip) {
     if ($PreviousDigest -cnotmatch '^[a-f0-9]{64}$' -or (Get-FileHash -LiteralPath $PreviousZip).Hash.ToLowerInvariant() -cne $PreviousDigest) {
         throw 'Backend producer seed differs from the catalog.'
     }
-    [IO.File]::Copy([IO.Path]::GetFullPath($PreviousZip),(Join-Path $output $platform[0].asset),$false)
+    if ($Operation -ceq 'produce') { [IO.File]::Copy([IO.Path]::GetFullPath($PreviousZip),(Join-Path $output $platform[0].asset),$false) }
 }
 if ($Operation -ceq 'consume') {
     if (!$PreviousZip) { throw 'A consumption job needs a certified archive.' }
-    [IO.File]::WriteAllText((Join-Path $output 'candidate.json'), (ConvertTo-Json ([ordered]@{
-        target=$Target;asset=$platform[0].asset;commit=$revision;sha256=$PreviousDigest;reused=$true
-    })))
     if (!$PrepareNative) { return }
 }
 $dotnetPath = (Get-Command $Dotnet -CommandType Application | Select-Object -First 1).Source

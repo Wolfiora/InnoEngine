@@ -7,12 +7,17 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <InnoValidationLayer>domain</InnoValidationLayer>
+    <InnoValidationEnvironment>windows;macos;linux</InnoValidationEnvironment>
     <InnoValidationReusable>false</InnoValidationReusable>
     <InnoAssemblyScope>Editor</InnoAssemblyScope>
     <DefineConstants>$(DefineConstants);INNO_EDITOR</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
+    <InnoValidationSubject Include="../../../../../src/composition/editor/features/Inno.Editor.Scripting/Inno.Editor.Scripting.csproj" />
+    <InnoValidationSubject Include="../../../../../src/runtime/scripting/Inno.Scripting.Compiler/Inno.Scripting.Compiler.csproj" />
+    <InnoValidationSubject Include="../../../../../src/runtime/scripting/Inno.Scripting.Reload/Inno.Scripting.Reload.csproj" />
+    <InnoValidationSubject Include="../../../../support/Inno.Testing.Scripting/Inno.Testing.Scripting.csproj" />
     <ProjectReference Include="../../../../../build/pipeline/Inno.Build/Inno.Build.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../../src/composition/editor/presentation/Inno.Editor.Workbench/Inno.Editor.Workbench.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../../backends/ImGui/native/Inno.Native.ImGui/Inno.Native.ImGui.csproj" PrivateAssets="compile" />

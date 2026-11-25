@@ -6,9 +6,13 @@
     <IsPackable>false</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <InnoValidationLayer>integration</InnoValidationLayer>
+    <InnoValidationEnvironment>windows;macos;linux</InnoValidationEnvironment>
   </PropertyGroup>
   <Import Project="../../../RepositoryInput.targets" />
   <ItemGroup>
+    <InnoValidationSubject Include="../../../../build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj" />
+    <InnoValidationSubject Include="../../../../build/tasks/Inno.Build.TaskHosting/Inno.Build.TaskHosting.csproj" />
+    <InnoValidationSubject Include="../../../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" />
     <ProjectReference Include="../../../../build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj" />
     <ProjectReference Include="../../../../build/tasks/Inno.Build.TaskHosting/Inno.Build.TaskHosting.csproj" />
     <ProjectReference Include="../../../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" />

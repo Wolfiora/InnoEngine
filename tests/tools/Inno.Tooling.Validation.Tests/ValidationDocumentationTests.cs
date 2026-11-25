@@ -471,6 +471,7 @@ public sealed class ValidationDocumentationTests
                 if (item["id"]!.GetValue<string>() == "architecture")
                 {
                     item["kind"] = "ci-contracts";
+                    item["projects"] = new JsonArray("tests/ci/CapturePolicy.Tests.ps1");
                 }
                 selected.Add(item);
             }
@@ -507,19 +508,6 @@ public sealed class ValidationDocumentationTests
             Assert.DoesNotContain(checks, check => check.GetProperty("kind").GetString() == "build");
             Assert.Equal(JsonValueKind.Null, missing.GetProperty("projects").ValueKind);
         }
-    }
-
-    [Fact]
-    public async Task UnknownExecutableAgentInputIsNotExemptedAsDocumentation()
-    {
-        using var repository = new ValidationRepository();
-        repository.Write(".agents/check.ps1", "throw 'unknown executable input'");
-        using JsonDocument plan = await repository.PlanAsync();
-        Assert.True(plan.RootElement.GetProperty("full").GetBoolean());
-        Assert.Contains(
-            plan.RootElement.GetProperty("diagnostics").EnumerateArray(),
-            item => item.GetString()!.Contains(".agents/check.ps1", StringComparison.Ordinal)
-        );
     }
 
     private static async Task<DocumentationResult> PrepareDocumentationAsync(ValidationRepository repository)

@@ -59,10 +59,12 @@ public sealed partial class EditorRuntimeTests
         m_runtime.interactions.For("tests/multiple-shortcuts").Focus();
         m_runtime.HandleKeyPressed(new KeyPressedEvent(0, KeyCode.F3));
         Assert.Equal(1, MultiShortcutAction.executeCount);
-        m_types.Rebuild();
         m_runtime.HandleKeyPressed(new KeyPressedEvent(0, KeyCode.F4));
         Assert.Equal(2, MultiShortcutAction.executeCount);
+        m_types.Rebuild();
+        m_runtime.HandleKeyPressed(new KeyPressedEvent(0, KeyCode.F4));
+        Assert.Equal(3, MultiShortcutAction.executeCount);
         m_runtime.HandleKeyPressed(new KeyPressedEvent(0, KeyCode.F4, repeat: true));
-        Assert.Equal(2, MultiShortcutAction.executeCount);
+        Assert.Equal(3, MultiShortcutAction.executeCount);
     }
 }

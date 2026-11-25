@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Xunit;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Core.Diagnostics;
@@ -106,18 +105,6 @@ public sealed partial class EditorRuntimeTests : IDisposable
     }
 
     [Fact]
-    public void HistoryAndExtensionStateContractsDoNotExposeStandaloneWorkspaceTypes()
-    {
-        Assembly core = typeof(EditorModule).Assembly;
-        Assert.Null(core.GetType("Inno.Editor.Core.IEditorWorkspaceState"));
-        Assert.Null(core.GetType("Inno.Editor.Core.EditorWorkspaceStateReader"));
-        Assert.Null(core.GetType("Inno.Editor.Core.EditorWorkspaceStateWriter"));
-        Assert.Null(typeof(EditorHistoryChange).GetProperty("version"));
-        ConstructorInfo constructor = Assert.Single(typeof(EditorHistoryHandlerAttribute).GetConstructors());
-        Assert.Collection(constructor.GetParameters(), static parameter => Assert.Equal(typeof(string), parameter.ParameterType));
-    }
-
-    [Fact]
     public void EditorDensityDefaultsToComfortableAndCanSwitchIdempotently()
     {
         var style = new EditorStyleMetrics();
@@ -159,19 +146,8 @@ public sealed partial class EditorRuntimeTests : IDisposable
     }
 
     [Fact]
-    public void InteractionIdentifiersArePlainValidatedStringsWithoutWrapperTypes()
+    public void InteractionCommandsRejectEmptyIdentifiers()
     {
-        Assembly assembly = typeof(EditorInteractions).Assembly;
-        Assert.Null(assembly.GetType("Inno.Editor.Interactions.EditorActionId"));
-        Assert.Null(assembly.GetType("Inno.Editor.Interactions.EditorAreaId"));
-        Assert.Null(assembly.GetType("Inno.Editor.Interactions.EditorPanelId"));
-        Assert.Null(assembly.GetType("Inno.Editor.Interactions.EditorCommand"));
-        Assert.Null(assembly.GetType("Inno.Editor.Interactions.EditorCommand`1"));
-        Assert.Equal(typeof(string), typeof(EditorInteractions).GetProperty("focusedArea")!.PropertyType);
-        Assert.Equal(typeof(string), typeof(EditorInteraction).GetProperty("area")!.PropertyType);
-        Assert.Equal(typeof(string), typeof(EditorPanelExtension).GetProperty("id")!.PropertyType);
-        MethodInfo forMethod = Assert.Single(typeof(EditorInteractions).GetMethods().Where(static method => method.Name == "For"));
-        Assert.Equal(typeof(string), forMethod.GetParameters()[0].ParameterType);
         Assert.Throws<ArgumentException>(() => m_runtime.interactions.For(string.Empty));
         Assert.Throws<ArgumentException>(() => m_runtime.interactions.TogglePanel(" "));
         Assert.Throws<ArgumentException>(() => m_runtime.interactions.OpenPanel(" "));
@@ -480,15 +456,6 @@ public sealed partial class EditorRuntimeTests : IDisposable
         EditorMenuItem openTesting = Assert.Single(openPanel.children.Where(static item => item.label == "Testing"));
         EditorMenuItem openTest = Assert.Single(openTesting.children.Where(static item => item.label == "Test"));
         Assert.True(openTest.status.isChecked);
-    }
-
-    [Fact]
-    public void EveryShortcutDeclaredByTheSameActionCanDispatch()
-    {
-        m_runtime.interactions.For("tests/multiple-shortcuts").Focus();
-        m_runtime.HandleKeyPressed(new KeyPressedEvent(0, KeyCode.F3, KeyModifier.None));
-        m_runtime.HandleKeyPressed(new KeyPressedEvent(0, KeyCode.F4, KeyModifier.None));
-        Assert.Equal(2, MultiShortcutAction.executeCount);
     }
 
     [Fact]

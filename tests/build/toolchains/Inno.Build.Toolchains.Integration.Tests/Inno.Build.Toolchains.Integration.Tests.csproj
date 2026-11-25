@@ -6,6 +6,7 @@
     <IsPackable>false</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <InnoValidationLayer>integration</InnoValidationLayer>
+    <InnoValidationEnvironment>windows;macos;linux</InnoValidationEnvironment>
   </PropertyGroup>
   <Import Project="../../../RepositoryInput.targets" />
   <ItemGroup>

@@ -7,6 +7,7 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <InnoValidationLayer>native</InnoValidationLayer>
+    <InnoValidationEnvironment>windows;macos;linux</InnoValidationEnvironment>
     <OutputType>Exe</OutputType>
     <GenerateProgramFile>false</GenerateProgramFile>
     <StartupObject>Inno.Adapter.Platform.Sdl3.Native.Tests.NativeWindowTestHost</StartupObject>

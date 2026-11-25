@@ -9,6 +9,7 @@
     <InnoValidationLayer>integration</InnoValidationLayer>
   </PropertyGroup>
   <ItemGroup>
+    <InnoValidationSubject Include="../../../tools/Inno.Tooling.Documentation/Inno.Tooling.Documentation.csproj" />
     <ProjectReference Include="../../../tools/Inno.Tooling.Documentation/Inno.Tooling.Documentation.csproj" />
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
