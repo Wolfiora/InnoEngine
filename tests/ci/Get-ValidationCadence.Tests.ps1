@@ -37,9 +37,38 @@ try {
         $calls = if ($event -ceq 'push' -and $case -cne 'master') { 1 } else { 0 }
         if ($fixtureCalls.count -ne $calls) { throw 'A required candidate was incorrectly delegated to a branch lookup.' }
     }
+
+    Push-Location $directory
+    try {
+        git init --quiet
+        git config user.name 'CI fixture'
+        git config user.email 'ci@example.invalid'
+        git commit --allow-empty --quiet -m 'Base'
+        $base = git rev-parse HEAD
+        New-Item -ItemType Directory benchmark | Out-Null
+        'local' | Set-Content benchmark/sample.cs
+        git add -- benchmark/
+        git commit --quiet -m 'Benchmark only'
+        $local = git rev-parse HEAD
+        'engine' | Set-Content engine.cs
+        git add -- engine.cs
+        git commit --quiet -m 'Engine change'
+        $mixed = git rev-parse HEAD
+        foreach ($event in @('pull_request', 'merge_group')) {
+            $eventPath = Join-Path $directory "$event.json"
+            @{ pull_request = @{ base = @{ sha = $base } }; merge_group = @{ base_sha = $base } } |
+                ConvertTo-Json -Depth 4 | Set-Content $eventPath
+            foreach ($candidate in @($base, $local, $mixed)) {
+                $selected = & "$PSScriptRoot/../../tools/ci/Get-ValidationCadence.ps1" -EventPath $eventPath -Event $event -Commit $candidate -Repository fixture/engine | ConvertFrom-Json
+                if ($selected.run -ne ($candidate -ne $local)) { throw "Incorrect benchmark-only routing for $event at $candidate." }
+            }
+        }
+    } finally {
+        Pop-Location
+    }
 } finally {
     Remove-Item Function:Invoke-RestMethod -ErrorAction SilentlyContinue
     $env:GH_TOKEN = $token
     $env:GITHUB_OUTPUT = $output
 }
-Write-Output "Passed 9 event routing contracts. Evidence: $directory"
+Write-Output "Passed 15 event routing contracts. Evidence: $directory"

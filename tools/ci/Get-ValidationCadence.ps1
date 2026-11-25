@@ -20,6 +20,23 @@ if ($Event -ceq 'push' -and -not $default) {
 $manualFull = [string]$eventData.inputs.full -ceq 'true'
 $selected = & "$PSScriptRoot/Select-ValidationCadence.ps1" -Event $Event -Commit $Commit `
     -IsDefaultBranch $default -HasOpenPullRequest $open -ManualFull $manualFull
+# Keep the required PR/queue check visible while bypassing validation of local measurements.
+$base = switch ($Event) {
+    'pull_request' { $eventData.pull_request.base.sha }
+    'merge_group' { $eventData.merge_group.base_sha }
+}
+if ($base -cmatch '^[0-9a-f]{40}$') {
+    $outside = git diff --shortstat --no-renames $base $Commit -- . ':(top,exclude)benchmark/**'
+    if ($LASTEXITCODE) { throw 'Could not compare the merge candidate with its base.' }
+    if (!$outside) {
+        $benchmark = git diff --shortstat --no-renames $base $Commit -- benchmark/
+        if ($LASTEXITCODE) { throw 'Could not compare benchmark inputs.' }
+        if ($benchmark) {
+            $selected.run = $false
+            $selected.reason = 'Only local benchmark inputs changed.'
+        }
+    }
+}
 foreach ($name in @('run', 'full', 'extended')) {
     "$name=$($selected.$name.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
 }

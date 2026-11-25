@@ -35,3 +35,5 @@ Asset lookup/import/cache (cold and warm Library), content pack open/read/lease,
 The suite moved from its layout in merge commit `3446dda9` to `benchmark/Inno.Benchmark.Engine`. It runs manually outside the engine solution. The module reload benchmark uses the V1, V2 and dependency fixtures under `tests/foundation/extensibility/fixtures`.
 
 On Windows x64 with .NET SDK 10.0.402, the serialized Release build completed with zero warnings and errors. All 35 project references resolved. The benchmark runner listed 52 methods, and one in-process Dry run of `ReloadBenchmarks.HotReloadAndRetire` completed. This run verified fixture loading and retirement. The full measurement suite was not rerun.
+
+Benchmark-only pushes are excluded from engine CI and documentation export. Pull requests and merge groups retain the routing check and skip engine validation for benchmark-only changes. Local checks passed for 15 event-routing cases, cadence selection, merge-gate wiring and documentation export preflight. No benchmark was executed for this CI change.

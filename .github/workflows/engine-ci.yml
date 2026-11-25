@@ -5,6 +5,7 @@ on:
   pull_request:
   push:
     branches: ['**']
+    paths-ignore: ['benchmark/**']
   merge_group:
     types: [checks_requested]
   workflow_dispatch:
@@ -43,7 +44,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          fetch-depth: 2
+          fetch-depth: ${{ github.event_name == 'merge_group' && '0' || '2' }}
           persist-credentials: false
       - id: select
         shell: pwsh
