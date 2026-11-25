@@ -55,13 +55,13 @@ if ($Stage -ceq 'Plan') {
     if (!$matched) {
         $production = if ($RebuildBackends) { @('--rebuild-backends', $RebuildBackends) } else { @() }
         & $Dotnet $assembly[0] validate plan --engine-root $repository --dotnet $Dotnet --base $BaseRevision --output $planRoot @production `
-            --profile $Profile --backend-store $BackendStore 2>&1 | Tee-Object -FilePath (Join-Path $planRoot 'planning.log')
+            --profile $Profile --shared-managed "$IsWindows" --backend-store $BackendStore 2>&1 | Tee-Object -FilePath (Join-Path $planRoot 'planning.log')
         if ($LASTEXITCODE -ne 0) { throw 'Validation plan generation failed; no downstream stage can certify success.' }
         $plan = Get-Content -LiteralPath (Join-Path $planRoot 'plan.json') -Raw | ConvertFrom-Json
         if (@($plan.nativeRequests).Count -gt 0 -and (& "$PSScriptRoot/Initialize-NativeDependencyWorkloads.ps1" -Targets @($plan.nativeRequests.target) -Dotnet $Dotnet)) {
             Copy-Item (Join-Path $planRoot 'plan.json') (Join-Path $planRoot 'plan-before-workloads.json')
             & $Dotnet $assembly[0] validate plan --engine-root $repository --dotnet $Dotnet --base $BaseRevision --output $planRoot @production `
-                --profile $Profile --backend-store $BackendStore 2>&1 | Tee-Object -FilePath (Join-Path $planRoot 'planning-prepared.log')
+                --profile $Profile --shared-managed "$IsWindows" --backend-store $BackendStore 2>&1 | Tee-Object -FilePath (Join-Path $planRoot 'planning-prepared.log')
             if ($LASTEXITCODE -ne 0) { throw 'Validation planning failed after explicit SDK preparation.' }
             $plan = Get-Content -LiteralPath (Join-Path $planRoot 'plan.json') -Raw | ConvertFrom-Json
         }

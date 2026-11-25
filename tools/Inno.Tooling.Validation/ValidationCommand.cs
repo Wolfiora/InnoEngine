@@ -64,7 +64,7 @@ public static class ValidationCommand
                                     or "bind-backends")
         ) {
             throw new ArgumentException(
-                "Usage: validate <plan|run|full|evidence|join|pack-backends|import-backends|backend-inputs|bind-backends> --engine-root ROOT --dotnet HOST [--base REV] [--output DIR] [--plan FILE] [--evidence FILE] [--profile NAME] [--native-dependencies FILE] [--shard ID] [--prerequisites DIR]"
+                "Usage: validate <plan|run|full|evidence|join|pack-backends|import-backends|backend-inputs|bind-backends> --engine-root ROOT --dotnet HOST [--base REV] [--output DIR] [--plan FILE] [--evidence FILE] [--profile NAME] [--shared-managed true|false] [--native-dependencies FILE] [--shard ID] [--prerequisites DIR]"
             );
         }
         var options = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -99,7 +99,8 @@ public static class ValidationCommand
                                       or "--native-dependencies"
                                       or "--shard"
                                       or "--prerequisites"
-                                      or "--backend-store") || (arguments[0] == "plan" && key == "--rebuild-backends");
+                                      or "--backend-store")
+                              || (arguments[0] == "plan" && key is ("--rebuild-backends" or "--shared-managed"));
             if (arguments[0] == "backend-inputs" && key is ("--selection" or "--configuration"))
             {
                 allowed = true;
@@ -200,6 +201,10 @@ public static class ValidationCommand
         ) {
             throw new ArgumentException("A supplied plan already fixes its documentation selection; regenerate the plan to change it.");
         }
+        if (options.ContainsKey("--plan") && options.ContainsKey("--shared-managed"))
+        {
+            throw new ArgumentException("The supplied plan already freezes the shared managed test allocation.");
+        }
         ValidationPlan plan;
         if (options.TryGetValue("--plan", out string? planPath))
         {
@@ -222,6 +227,7 @@ public static class ValidationCommand
                 options.GetValueOrDefault("--native-dependencies"),
                 options.GetValueOrDefault("--backend-store"),
                 options.GetValueOrDefault("--rebuild-backends"),
+                !options.TryGetValue("--shared-managed", out string? allocation) || bool.Parse(allocation),
                 cancellationToken
             ).ConfigureAwait(false);
             if (selected.preparation is not null)

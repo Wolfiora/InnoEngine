@@ -18,6 +18,38 @@ namespace Inno.Tooling.Validation.Tests;
 public sealed class ValidationProfileTests : ValidationPlanFixture
 {
     [Fact]
+    public async Task HostedManagedAllocationDoesNotChangeIndependentLocalPlans()
+    {
+        using var repository = new ValidationRepository();
+        repository.Write("src/Example/Changed.cs", "namespace Example; public class Changed { }");
+        string output = repository.PathOf("artifacts/secondary");
+        Assert.Equal(
+            0,
+            await ValidationCommand.ExecuteAsync([
+                "plan",
+                "--engine-root",
+                repository.PathOf("."),
+                "--dotnet",
+                repository.dotnet,
+                "--shared-managed",
+                "false",
+                "--output",
+                output
+            ])
+        );
+        using JsonDocument secondary = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(output, "plan.json")));
+        Assert.Equal(JsonValueKind.String, ExampleTest(secondary).GetProperty("exclusion").ValueKind);
+        using JsonDocument local = await repository.PlanAsync();
+        Assert.Equal(JsonValueKind.Null, ExampleTest(local).GetProperty("exclusion").ValueKind);
+
+        static JsonElement ExampleTest(JsonDocument plan)
+            => plan.RootElement.GetProperty("checks").EnumerateArray().Single(check => (
+                check.GetProperty("kind").GetString() == "test"
+                && check.GetProperty("owner").GetString() == "tests/Example.Tests/Example.Tests.csproj"
+            ));
+    }
+
+    [Fact]
     public async Task ScheduledPlanRebindsOnlyOnItsCapturedEnvironment()
     {
         using var repository = new ValidationRepository();

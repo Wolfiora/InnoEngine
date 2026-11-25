@@ -30,6 +30,7 @@ internal static partial class ValidationPlanner
         string? nativeDependencies = null,
         string? backendStore = null,
         string? rebuildBackends = null,
+        bool sharedManaged = true,
         CancellationToken cancellationToken = default
     ) {
         if (rebuildBackends is not null && backendStore is null)
@@ -441,7 +442,6 @@ internal static partial class ValidationPlanner
                 "Explicit native producer acceptance selects declared producer regressions; functional consumers remain separately required."
             );
         }
-        bool secondaryHost = !OperatingSystem.IsWindows() && Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
         var executionExclusions = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (ValidationProject project in projects)
         {
@@ -594,7 +594,7 @@ internal static partial class ValidationPlanner
             }
         }
         while (expanded);
-        if (secondaryHost)
+        if (!sharedManaged)
         {
             foreach (ValidationProject project in projects.Where(project => (
                 !nativeOwners.Contains(project.path)
@@ -898,7 +898,7 @@ internal static partial class ValidationPlanner
         }
         foreach (KeyValuePair<string, string[]> contract in contracts)
         {
-            if (!secondaryHost)
+            if (sharedManaged)
             {
                 checks.Add(
                     new ValidationCheck(
@@ -1033,7 +1033,7 @@ internal static partial class ValidationPlanner
         }
         if (profile != ValidationProfile.Fast
             && checks.Any(check => check.kind == "build" && check.exclusion is null && affected.Contains(check.owner))
-            && !secondaryHost && !checks.Any(static check => check.kind is "products" or "test" && check.exclusion is null)
+            && sharedManaged && !checks.Any(static check => check.kind is "products" or "test" && check.exclusion is null)
             && !affected.Contains(C_EDITOR) && !changes.Any(IsWorkflowInput)
         ) {
             throw new InvalidDataException(
