@@ -103,6 +103,7 @@ internal static partial class ValidationPlanner
                 "-z"
             ).ConfigureAwait(false)).Split('\0', StringSplitOptions.RemoveEmptyEntries)
         );
+        changes.RemoveWhere(static path => path.StartsWith("benchmarks/", StringComparison.Ordinal));
         string[] paths = inputs.Keys
             .Where(static path => (
                 path.EndsWith(".csproj", StringComparison.Ordinal)
@@ -837,6 +838,7 @@ internal static partial class ValidationPlanner
                 "any",
                 [],
                 inputs.Keys
+                    .Where(static path => !path.StartsWith("benchmarks/", StringComparison.Ordinal))
                     .Where(static path => (
                         path.Split('/')[0] is "src" or "entry" or "backends" or "platforms" or "build" or "tools"
                         || path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
