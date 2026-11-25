@@ -3,9 +3,9 @@ tags: [delivery, notification]
 ---
 # Delivery
 
-## 31. Issues and pull requests
+## 31. Commits, issues and pull requests
 
-- When creating or updating a repository issue or pull request, use a `type(scope): description` title. Both the title and body must be entirely in English.
+- Write commit subjects, issue titles and pull request titles in English as `type(scope): description`. Name the affected area in the scope and describe the actual change. Write issue and pull request bodies in English.
 - Issues must distinguish reproduced defects from risks awaiting verification, and state the responsible owner, reproduction conditions, actual result, expected result and executable acceptance criteria. Search existing issues before submission to avoid duplicates.
 - Pull request bodies must explain the problem, final behavior and actual verification against the complete difference from the target branch, and identify checks that were not run. Search existing PRs before creation. Never describe partial acceptance as a passed complete matrix.
 - A human vouches for every commit: its Git author and committer are the human contributor responsible for it. No agent, bot or application identity may appear as author, committer, `Co-authored-by` or any other attribution. Create pull requests with the GitHub account authorized by the user.

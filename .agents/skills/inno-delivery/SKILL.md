@@ -5,7 +5,7 @@ description: Review InnoEngine semantic risks and matching evidence, then prepar
 
 Select the `delivery`, `review` and `notification` tags through the rule script; use the [delivery rules](../../rulebook/delivery.md). Review changed dependency directions, input authority, rollback, concurrency and resource retirement. Directory neatness and test counts do not prove correctness.
 
-Reconcile the approved plan and every required result with current inputs. Distinguish missing implementation, unexecuted acceptance and external blockers. Report final behavior, actual checks, outstanding work and necessary action. Use English `type(scope): description` issue/PR titles and English bodies. Never promote historical evidence to a current pass.
+Reconcile the approved plan and every required result with current inputs. Distinguish missing implementation, unexecuted acceptance and external blockers. Report final behavior, actual checks, outstanding work and necessary action. Check commit subjects before pushing and issue or PR text before submitting against the delivery rules. Never promote historical evidence to a current pass.
 
 Report API synchronization, Docs validation, manual editorial work and website deployment separately. API export tracks an exact master input; Docs can publish its already selected API version without waiting for a newer unrelated engine CI run. Draft previews never deploy. Only a human Docs `draft` to `main` merge authorizes automatic site deployment. Do not automatically merge either repository's PRs or formally publish an engine release.
 
