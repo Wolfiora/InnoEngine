@@ -91,6 +91,10 @@ jobs:
           platform: ${{ matrix.runner }}
 
   backend-matrix:
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
     needs: plan
     if: ${{ !cancelled() && needs.plan.result == 'success' && needs.plan.outputs.dispatch == 'true' }}
     runs-on: ubuntu-24.04
@@ -114,8 +118,12 @@ jobs:
         env:
           HOSTS: ${{ inputs.hosts }}
           REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          $jobs = ./tools/ci/Join-BackendAcquisitions.ps1 -RebuildTargets $env:REBUILD_TARGETS -Received artifacts/requests -Hosts (($env:HOSTS | ConvertFrom-Json).include.runner) `
+          $options = @{}
+          if ($env:GITHUB_EVENT_NAME -ceq 'push' -and $env:GITHUB_REF -ceq "refs/heads/$env:DEFAULT_BRANCH") { $options.DefaultBranch = $env:DEFAULT_BRANCH }
+          $jobs = ./tools/ci/Join-BackendAcquisitions.ps1 @options -RebuildTargets $env:REBUILD_TARGETS -Received artifacts/requests -Hosts (($env:HOSTS | ConvertFrom-Json).include.runner) `
             -Revision $env:GITHUB_SHA
           foreach ($name in 'chains','independent') {
             "$name=$(@{include=@($jobs.$name)} | ConvertTo-Json -Compress -Depth 8)" >> $env:GITHUB_OUTPUT
@@ -167,6 +175,7 @@ jobs:
     uses: ./.github/workflows/backend-prebuilts.yml
     with:
       platforms: ${{ toJSON(matrix.platforms) }}
+      builders: ${{ toJSON(matrix.builders) }}
       producers: ${{ toJSON(matrix.producers) }}
       consumers: ${{ toJSON(matrix.consumers) }}
       reader_tags: ${{ needs.backend-matrix.outputs.reader_tags }}

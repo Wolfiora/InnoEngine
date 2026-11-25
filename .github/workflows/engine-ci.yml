@@ -97,6 +97,7 @@ jobs:
     permissions:
       contents: write
       actions: read
+      pull-requests: read
     name: ${{ matrix.name }}
     uses: ./.github/workflows/engine-platform.yml
     with:

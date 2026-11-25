@@ -1,7 +1,8 @@
 $ErrorActionPreference = 'Stop'
+. "$PSScriptRoot/../../tools/ci/BackendReleaseCatalog.ps1"
 $root = Join-Path ([IO.Path]::GetFullPath('../../artifacts/validation/backend-publication', $PSScriptRoot)) ([Guid]::NewGuid().ToString('N'))
 $platforms = @(Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.github/native-targets.json') -Raw | ConvertFrom-Json)
-$revision = 'a'*40
+$revision = (git rev-parse HEAD).Trim()
 $original = $env:GH_TOKEN
 $retiredTag = 'backend-prebuilts-2020.01.01.1'
 $retiredObject = 'f'*40
@@ -179,6 +180,7 @@ try {
         try { $null = $zip.CreateEntry('new-content') } finally { $zip.Dispose() }
         $hash = (Get-FileHash $archive).Hash.ToLowerInvariant()
         $proof = Get-Content "$directory/consumption.json" -Raw | ConvertFrom-Json
+        $proof.commit = 'b' * 40
         $proof.sha256 = $hash
         foreach ($check in $proof.checks) { $check.source = $prior.tag_name }
         $proof | ConvertTo-Json -Depth 8 | Set-Content "$directory/consumption.json"
@@ -189,10 +191,16 @@ try {
         $results.planIdentity = (Get-FileHash "$directory/plan.json").Hash.ToLowerInvariant()
         $results | ConvertTo-Json -Depth 8 | Set-Content "$directory/results.json"
         $promotion = @{Directory=$stage;Repository='fixture/engine';Revision=$revision;ApiUrl='https://fixture.invalid';ChangedTargets=@($platform.target)}
+        $origin = @{commit=$proof.commit;tree=(git rev-parse 'HEAD^{tree}').Trim();run=42;attempt=1;artifact=13;digest=('sha256:'+('1'*64))}
+        $promotion.Promoted = @(@{target=$platform.target;promotion=$origin})
         $verified = & "$PSScriptRoot/../../tools/ci/Publish-BackendPrebuilts.ps1" @promotion -VerifyOnly
         if ($verified -notlike 'Verified candidate inputs*' -or $server.release) { throw 'Candidate verification must validate trusted reuse without publishing.' }
         $result = & "$PSScriptRoot/../../tools/ci/Publish-BackendPrebuilts.ps1" @promotion
         if ($result -notlike 'Published *' -or $server.release.draft -or $server.uploads[$platform.asset].digest -cne "sha256:$hash") { throw 'The independently certified platform was not published.' }
+        $catalog = Read-BackendTagCatalog $server.tag.message
+        if ($catalog.revision -cne $revision -or $catalog.platforms[$platform.target].origin.commit -cne $proof.commit) {
+            throw 'The published catalog lost the landed revision or the original producer.'
+        }
         foreach ($asset in $prior.assets | Where-Object name -CNE $platform.asset) {
             if ($server.uploads[$asset.name].digest -cne $asset.digest) { throw "A sibling publication changed $($asset.name)." }
         }

@@ -5,6 +5,7 @@ param(
     [Parameter(Mandatory)][string]$Revision,
     [string]$ApiUrl = 'https://api.github.com',
     [string[]]$ChangedTargets,
+    [array]$Promoted = @(),
     [string[]]$ActiveTags = @(),
     [switch]$DryRun
 )
@@ -45,6 +46,7 @@ $digests = @{}
 $archives = @{}
 $testReceipts = @{}
 $consumerReceipts = @{}
+$origins = @{}
 if (!$PSBoundParameters.ContainsKey('ChangedTargets')) { $ChangedTargets = @($targets.target) }
 if (!$ChangedTargets.Count -or @($ChangedTargets | Sort-Object -Unique).Count -ne $ChangedTargets.Count -or
     @($ChangedTargets | Where-Object { $_ -cnotin $targets.target }).Count) { throw 'Invalid changed backend target matrix.' }
@@ -64,6 +66,7 @@ foreach ($platform in $targets) {
         $archive = & "$PSScriptRoot/Get-BackendPlatformArchive.ps1" -Sha256 $prior.sha256 -AssetId $asset.id `
             -Directory (Join-Path $Directory 'unchanged') -Repository $Repository -ApiUrl $ApiUrl
         $digest = $prior.sha256
+        if ($prior.Contains('origin')) { $origins[$platform.target] = $prior.origin }
         $consumerReceipts[$platform.target] = if ($prior.Contains('consumers')) { @($prior.consumers) }
         $testReceipts[$platform.target] = if ($prior.Contains('tests')) { @($prior.tests) } else { @() }
     } else {
@@ -78,7 +81,15 @@ foreach ($platform in $targets) {
         if (!$receipt -or $bound.Count -ne 1 -or $bound[0].sha256 -cne $digest) { throw "No matching certified ZIP for $($platform.target)." }
         $sdk = Get-Content -LiteralPath (Join-Path $owner 'consumption.json') -Raw | ConvertFrom-Json
         $products = @($plan.contexts.managed.sdkGraph | Where-Object { $_.Properties.InnoProductTarget -ceq $platform.target -and $_.Properties.InnoProductId })
-        if ($sdk.version -ne 2 -or $sdk.commit -cne $Revision -or $sdk.sha256 -cne $digest -or $sdk.target -cne $platform.target -or !$products.Count -or
+        $source = @($Promoted | Where-Object target -CEQ $platform.target)
+        $producerRevision = $Revision
+        if ($source.Count) {
+            $landedTree = (& git rev-parse --verify "${Revision}^{tree}").Trim()
+            if ($source.Count -ne 1 -or $LASTEXITCODE -or $landedTree -cne $source[0].promotion.tree) { throw 'Candidate source tree differs from the landing.' }
+            $producerRevision = $source[0].promotion.commit
+            $origins[$platform.target] = $source[0].promotion
+        }
+        if ($sdk.version -ne 2 -or $sdk.commit -cne $producerRevision -or $sdk.sha256 -cne $digest -or $sdk.target -cne $platform.target -or !$products.Count -or
             $sdk.checks.Count -ne ($products.Count * $platform.configurations.Count)) { throw 'Missing verified SDK product matrix.' }
         foreach ($check in $sdk.checks) {
             if ($check.identity -cnotmatch '^[a-f0-9]{64}$') { throw 'Invalid SDK product proof identity.' }
@@ -173,6 +184,7 @@ if (!$ready.draft -or !$ready.prerelease -or $ready.tag_name -cne $publication.t
 $platforms = [ordered]@{}
 foreach ($target in $targets) {
     $platforms[$target.target] = Get-BackendCatalogPlatform $archives[$target.asset] $target.asset $target.target $digests[$target.asset]
+    if ($origins.ContainsKey($target.target)) { $platforms[$target.target].origin = $origins[$target.target] }
     $platforms[$target.target].consumers = @($consumerReceipts[$target.target] | Where-Object { $_ })
     $platforms[$target.target].tests = @($testReceipts[$target.target] | Where-Object { $_ })
 }
