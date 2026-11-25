@@ -6,10 +6,10 @@ $originalDirectory = (Get-Location).Path
 try {
     foreach ($case in $cases) {
         $root = Join-Path $directory $case
-        $scripts = Join-Path $root 'tests/ci'
+        $scripts = Join-Path $root 'tools/ci'
         $plan = Join-Path $root 'artifacts/validation/ci-plan'
         New-Item -ItemType Directory -Path $scripts, $plan -Force | Out-Null
-        Copy-Item -LiteralPath "$PSScriptRoot/Invoke-ValidationCi.ps1" -Destination $scripts
+        Copy-Item -LiteralPath "$PSScriptRoot/../../tools/ci/Invoke-ValidationCi.ps1" -Destination $scripts
         "artifacts/`noutputs.txt`n" | Set-Content (Join-Path $root '.gitignore')
         'entry fixture' | Set-Content (Join-Path $root 'entry.dll')
         $case | Set-Content (Join-Path $root 'case.txt')

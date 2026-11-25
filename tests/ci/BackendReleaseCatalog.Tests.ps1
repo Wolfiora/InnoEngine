@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
-. "$PSScriptRoot/BackendReleaseCatalog.ps1"
+. "$PSScriptRoot/../../tools/ci/BackendReleaseCatalog.ps1"
 $owner = [IO.Directory]::CreateTempSubdirectory('InnoBackendCatalog-').FullName
 try {
     $archive = Join-Path $owner 'fixture.zip'

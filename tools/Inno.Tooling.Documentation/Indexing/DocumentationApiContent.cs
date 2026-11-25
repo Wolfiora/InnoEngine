@@ -40,6 +40,13 @@ internal static class DocumentationApiContent
         {
             throw new InvalidDataException("API content registry repeats an owned path.");
         }
+        // A removed symbol and a current symbol can resolve to one page, for example after a case-only rename.
+        Dictionary<string, DocumentationApiContentEntry> removedPaths = prior.Values
+            .Where(entry => !facts.ContainsKey(entry.symbol))
+            .ToDictionary(entry => entry.path, StringComparer.Ordinal);
+        var inherited = new HashSet<string>(StringComparer.Ordinal);
+        var claimedPaths = new HashSet<string>(StringComparer.Ordinal);
+        List<string> retiredPaths = [];
         var edits = new Dictionary<string, DocumentationApiEdit>(StringComparer.Ordinal);
         List<DocumentationApiWarning> warnings = [];
         List<DocumentationApiContentEntry> entries = [];
@@ -97,6 +104,7 @@ internal static class DocumentationApiContent
             string contract = Contract(pair.Value);
             var entry = new DocumentationApiContentEntry(fact.key, path, type, title, contract);
             entries.Add(entry);
+            claimedPaths.Add(path);
             DocumentationApiFragment? existing = null;
             if (prior.TryGetValue(fact.key, out DocumentationApiContentEntry? old))
             {
@@ -110,7 +118,17 @@ internal static class DocumentationApiContent
                 {
                     throw new InvalidDataException("Registered API identity changed: " + old.path);
                 }
-                if (old.path != path && existing is not null) Edit(old.path, null);
+                if (old.path != path && existing is not null) retiredPaths.Add(old.path);
+            }
+            else if (removedPaths.TryGetValue(path, out DocumentationApiContentEntry? renamed))
+            {
+                DocumentationApiFragment? predecessor = ReadRemoved(renamed);
+                if (predecessor is not null && predecessor.source != "xml")
+                {
+                    // The new symbol owns the same page, so the authored explanation follows it instead of being orphaned.
+                    existing = predecessor;
+                    inherited.Add(renamed.symbol);
+                }
             }
             if (existing is not null && existing.source != "xml")
             {
@@ -158,19 +176,22 @@ internal static class DocumentationApiContent
                 warnings.Add(new DocumentationApiWarning(fact.key, path, "XmlOnly", "This API still uses XML-synchronized prose."));
             }
         }
-        foreach (DocumentationApiContentEntry removed in prior.Values.Where(entry => !facts.ContainsKey(entry.symbol)))
+        // A current symbol's page is rewritten in place; retiring its path afterwards would delete the new page.
+        foreach (string retired in retiredPaths.Where(path => !claimedPaths.Contains(path)))
         {
-            string path = RequireApiPath(root, removed.path);
-            if (!File.Exists(path)) continue;
-            DocumentationApiFragment fragment = DocumentationApiFragment.Read(removed.path, File.ReadAllText(path))
-                ?? throw new InvalidDataException("Registered API file lacks symbol metadata: " + removed.path);
-            if (fragment.symbol != removed.symbol)
-            {
-                throw new InvalidDataException("Removed API identity differs from its registration.");
-            }
+            Edit(retired, null);
+        }
+        foreach (DocumentationApiContentEntry removed in removedPaths.Values.Where(entry => !inherited.Contains(entry.symbol)))
+        {
+            DocumentationApiFragment? fragment = ReadRemoved(removed);
+            if (fragment is null) continue;
             if (fragment.source == "xml")
             {
-                Edit(removed.path, null);
+                if (!claimedPaths.Contains(removed.path)) Edit(removed.path, null);
+            }
+            else if (claimedPaths.Contains(removed.path))
+            {
+                throw new InvalidDataException("A current API replaces manual prose preserved for a removed API: " + removed.path);
             }
             else
             {
@@ -249,6 +270,17 @@ internal static class DocumentationApiContent
         }
         warnings.AddRange(guides.warnings);
         return new(edits.Values.OrderBy(edit => edit.path, StringComparer.Ordinal).ToArray(), warnings, facts.Count);
+
+        DocumentationApiFragment? ReadRemoved(DocumentationApiContentEntry removed)
+        {
+            string path = RequireApiPath(root, removed.path);
+            if (!File.Exists(path)) return null;
+            DocumentationApiFragment fragment = DocumentationApiFragment.Read(removed.path, File.ReadAllText(path))
+                ?? throw new InvalidDataException("Registered API file lacks symbol metadata: " + removed.path);
+            return fragment.symbol == removed.symbol
+                   ? fragment
+                   : throw new InvalidDataException("Removed API identity differs from its registration.");
+        }
 
         void Edit(
             string path,

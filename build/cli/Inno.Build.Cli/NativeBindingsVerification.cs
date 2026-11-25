@@ -60,7 +60,7 @@ internal static partial class NativeBindingsVerification
                 .ConfigureAwait(false);
             nativeContext = nativeContext.WithToolchain(sdk);
             string testHost = ToolchainEnvironment.ResolveExecutable("pwsh");
-            string testEntry = Path.Combine(repositoryRoot, "tests", "Invoke-IsolatedTests.ps1");
+            string testEntry = Path.Combine(repositoryRoot, "tools", "ci", "Invoke-IsolatedTests.ps1");
             if (!File.Exists(testEntry))
             {
                 throw new FileNotFoundException("The common test execution entry is unavailable.", testEntry);
@@ -312,8 +312,10 @@ internal static partial class NativeBindingsVerification
             ))
             .Order(StringComparer.Ordinal)
             .ToList();
-        projects.Add(Path.Combine(repositoryRoot, "tests", "text", "Inno.Text.Tests", "Inno.Text.Tests.csproj"));
-        projects.Add(Path.Combine(repositoryRoot, "tests", "ui", "Inno.UI.Tests", "Inno.UI.Tests.csproj"));
+        projects.Add(
+            Path.Combine(repositoryRoot, "tests", "services", "text", "Inno.Text.Native.Tests", "Inno.Text.Native.Tests.csproj")
+        );
+        projects.Add(Path.Combine(repositoryRoot, "tests", "services", "ui", "Inno.UI.Tests", "Inno.UI.Tests.csproj"));
         if (projects.Count == 0)
         {
             throw new InvalidOperationException("No native binding test projects were discovered.");

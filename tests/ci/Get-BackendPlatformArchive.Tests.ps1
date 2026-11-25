@@ -8,7 +8,7 @@ function Invoke-WebRequest($Uri,$Headers,$OutFile) {
     $requests.Add($Uri)
     [IO.File]::WriteAllBytes($OutFile,$bytes)
 }
-function Acquire { & "$PSScriptRoot/Get-BackendPlatformArchive.ps1" -Directory $directory -Repository 'fixture/engine' -ApiUrl 'https://fixture.invalid' -Sha256 $digest -AssetId 17 }
+function Acquire { & "$PSScriptRoot/../../tools/ci/Get-BackendPlatformArchive.ps1" -Directory $directory -Repository 'fixture/engine' -ApiUrl 'https://fixture.invalid' -Sha256 $digest -AssetId 17 }
 try {
     $cold = Acquire
     $warm = Acquire

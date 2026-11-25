@@ -163,3 +163,11 @@ The host-worker adapter has five fixture cases covering sequential execution, is
 The three `JobSystemPerformanceTests` methods now belong to `tests/core/Inno.Core.Jobs.Performance.Tests`. Timing includes scheduling and completion. Worker-count and throughput assertions run in the performance profile. The domain project retains functional job-system contracts.
 
 The test-only `Inno.Testing.Discovery.TestLogger` records VSTest source, count and isolation traits. Its build-only reference from test projects makes changes visible through their actual SDK closures. The existing isolated test runner owns execution and per-owner receipts. The real ownership regression exercises both failed shared and isolated cases and rejects missing receipts.
+
+## Functional acceptance cleanup on cicd-optimization
+
+Baseline `ed416cb0`. The revised `tests` tree is `b7c13fd5e1f4af6bf35337ae34b89753aecf9450` and the `tools` tree is `4da5291d9a5303d2184247f958dd21cfd6173e92`. The migration table above describes its original snapshot.
+
+The engine retains 2,241 xUnit methods. The cleanup removes redundant setup and API-shape checks, steady-state allocation budgets, repeated product GC sampling and repeated build timing. Focused regressions still cover cross-thread delivery, asset and script ownership, rollback, streaming, UI clipping, native window reuse and retirement. Each real panel reopens and returns to its original state. The extended build check validates one unchanged rebuild.
+
+Windows x64 validation with .NET SDK 10.0.402 passed 155 distinct xUnit cases across targeted runs and the complete Events, Coroutines, Jobs and Graphs suites. Both console input modes and all four clipped panel views passed. The journey runner passed 12 protocol cases, and both historical incident receipt cases passed. The newly built Direct3D11 Editor passed the three-frame sRGB smoke, eight product workflow stages and the lifecycle check for eight panels. One unchanged Editor rebuild reported zero native processes, zero binding generations and stable selections. The style check reported zero findings across 35 changed C# files. The Editor build emitted one deferred cache-maintenance warning about duplicate registry identities. Local results cover Windows x64. macOS and the full hosted matrix require CI evidence.

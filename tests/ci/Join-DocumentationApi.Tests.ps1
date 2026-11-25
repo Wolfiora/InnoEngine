@@ -12,7 +12,7 @@ function Hash([string] $Path) { (Get-FileHash -LiteralPath $Path -Algorithm SHA2
 [IO.Directory]::CreateDirectory($root) | Out-Null
 if (!$Dotnet) { $Dotnet = (Get-Command dotnet -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source }
 if (!$Transport) {
-    $Transport = & "$PSScriptRoot/Initialize-ValidationEntry.ps1" -Dotnet $Dotnet -LogPath (Join-Path $root 'bootstrap.log') `
+    $Transport = & "$PSScriptRoot/../../tools/ci/Initialize-ValidationEntry.ps1" -Dotnet $Dotnet -LogPath (Join-Path $root 'bootstrap.log') `
         -WorkspaceDirectory (Join-Path $root 'artifacts/bootstrap')
 }
 if (!(Test-Path -LiteralPath $Transport -PathType Leaf)) { throw 'The actual managed API transport is required.' }
@@ -22,8 +22,8 @@ if (!(Test-Path -LiteralPath $Transport -PathType Leaf)) { throw 'The actual man
 Write-Text (Join-Path $root 'src/Inno.Probe/Inno.Probe.csproj') '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>'
 Write-Text (Join-Path $root 'src/Inno.Probe/Probe.cs') 'internal sealed class Probe { }'
 Write-Text (Join-Path $root '.gitignore') "artifacts/`n"
-[IO.Directory]::CreateDirectory((Join-Path $root 'tests/ci')) | Out-Null
-Copy-Item -LiteralPath "$PSScriptRoot/Join-DocumentationApi.ps1" -Destination (Join-Path $root 'tests/ci/Join-DocumentationApi.ps1')
+[IO.Directory]::CreateDirectory((Join-Path $root 'tools/ci')) | Out-Null
+Copy-Item -LiteralPath "$PSScriptRoot/../../tools/ci/Join-DocumentationApi.ps1" -Destination (Join-Path $root 'tools/ci/Join-DocumentationApi.ps1')
 & git -C $root add -- .
 & git -C $root -c core.hooksPath= commit -q -m 'Fixture source'
 if ($LASTEXITCODE -ne 0) { throw 'Could not prepare the aggregation fixture source.' }
@@ -62,7 +62,7 @@ function Case([string] $Name, [scriptblock] $Change, [bool] $Accept) {
     $accepted = $false
     $failure = $null
     try {
-        & (Join-Path $root 'tests/ci/Join-DocumentationApi.ps1') -Dotnet $Dotnet -Transport $Transport `
+        & (Join-Path $root 'tools/ci/Join-DocumentationApi.ps1') -Dotnet $Dotnet -Transport $Transport `
             -InputDirectory (Split-Path $directory -Parent) -OutputDirectory (Join-Path $root "artifacts/$Name/output") `
             -ExpectedCommit $revision -Configurations $state.configurations | Out-Null
         $accepted = $true

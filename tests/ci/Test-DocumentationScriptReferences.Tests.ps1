@@ -8,7 +8,7 @@ try {
     [IO.File]::WriteAllText((Join-Path $root 'runtime.dll'), 'selection fixture')
     [IO.File]::WriteAllText((Join-Path $root 'editor.dll'), 'selection fixture')
     $path = Join-Path $root 'Inno.EditorScripts.csproj'
-    $reader = Join-Path $PSScriptRoot 'Get-DocumentationScriptReferences.ps1'
+    $reader = Join-Path $PSScriptRoot '../../tools/ci/Get-DocumentationScriptReferences.ps1'
     $xml = '<Project><ItemGroup><Compile Include="Script.cs" /></ItemGroup><ItemGroup><Reference Include="Inno.ScriptApi.Runtime"><HintPath>runtime.dll</HintPath></Reference><Reference Include="Inno.ScriptApi.Editor"><HintPath>editor.dll</HintPath></Reference></ItemGroup><ItemGroup><None Include="project.json" /></ItemGroup></Project>'
     [IO.File]::WriteAllText($path, $xml)
     $actual = & $reader -Project $path

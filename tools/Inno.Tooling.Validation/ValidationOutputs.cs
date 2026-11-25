@@ -23,8 +23,7 @@ internal static class ValidationOutputs
                                or "documentation-api"
                                or "documentation-examples"
                                or "products"
-                               or "support-pack"
-                               or "release-bundle")
+                               or "support-pack")
             || check.kind is "documentation-api" or "documentation-examples"
                && !check.inputs.Any(static input => input.StartsWith('@') && input is not ("@tooling" or "@native-sources"))
         ) {
@@ -33,20 +32,11 @@ internal static class ValidationOutputs
         var directories = new HashSet<string>(
             OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
         );
-        if (check.kind is "support-pack" or "release-bundle")
+        if (check.kind == "support-pack")
         {
-            foreach (string name in check.kind == "support-pack"
-                                    ? new[] { "PlayerSupportPack.zip" }
-                                    : ["Editor.zip", "PlayerSupportPack.zip", "deliverable-manifest.json"]
-            ) {
-                string archive = Path.Combine(plan.artifacts, "deliverables", name);
-                if (!File.Exists(archive))
-                {
-                    throw new InvalidDataException($"Required verified deliverable is absent: {name}");
-                }
-                using FileStream stream = File.OpenRead(archive);
-                outputs["deliverables/" + name] = Convert.ToHexStringLower(SHA256.HashData(stream));
-            }
+            const string C_ARCHIVE = "deliverables/PlayerSupportPack.zip";
+            using FileStream stream = File.OpenRead(Path.Combine(plan.artifacts, C_ARCHIVE));
+            outputs[C_ARCHIVE] = Convert.ToHexStringLower(SHA256.HashData(stream));
         }
         foreach (string target in ValidationCompiledGraph.Select(plan, check)
             .Select(static instance => instance.GetProperty("TargetPath").GetString()!)

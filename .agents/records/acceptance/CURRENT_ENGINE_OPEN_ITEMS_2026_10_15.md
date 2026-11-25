@@ -67,7 +67,7 @@ BGFX tests、SDL tests、Editor.ImGui tests各自的NativeWindowTestHost，在�
 
 ### O05 · P2：单一隔离失败截断后续独立验收
 
-[Invoke-IsolatedTests.ps1](../../../tests/Invoke-IsolatedTests.ps1#L58)在第一个独立进程用例失败后throw；workflow随后跳过Pack和renderer smoke。因此macOS的2068 passed、1 failed不等于完整隔离矩阵全部执行。
+[Invoke-IsolatedTests.ps1](https://github.com/Wolfiora/InnoEngine/blob/4491dbe0706e78e306da40d017c405a141b48578/tests/Invoke-IsolatedTests.ps1#L58)在第一个独立进程用例失败后throw；workflow随后跳过Pack和renderer smoke。因此macOS的2068 passed、1 failed不等于完整隔离矩阵全部执行。
 
 这是证据覆盖不足，未证明共同业务依赖BGFX测试实现。独立用例可记录失败并继续其他独立进程，最后整体失败；产品阶段应明确依赖必要构建成功和有效产物，不能无条件强跑或忽略上游失败。
 

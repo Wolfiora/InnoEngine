@@ -1,8 +1,8 @@
 $ErrorActionPreference = 'Stop'
 $root = Join-Path ([IO.Path]::GetFullPath('../../artifacts/validation/workload-contracts', $PSScriptRoot)) ([Guid]::NewGuid().ToString('N'))
-$scripts = Join-Path $root 'tests/ci'
+$scripts = Join-Path $root 'tools/ci'
 New-Item -ItemType Directory -Path $scripts, "$root/.github" -Force | Out-Null
-Copy-Item "$PSScriptRoot/Initialize-NativeDependencyWorkloads.ps1" $scripts
+Copy-Item "$PSScriptRoot/../../tools/ci/Initialize-NativeDependencyWorkloads.ps1" $scripts
 '[{"target":"native","workloads":[]},{"target":"cross","workloads":["fixture-sdk"]}]' | Set-Content "$root/.github/native-targets.json"
 $stub = Join-Path $root 'dotnet-fixture.ps1'
 @'

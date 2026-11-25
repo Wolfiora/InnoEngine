@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InnoValidationLayer>integration</InnoValidationLayer>
+    <InnoValidationEnvironment>windows;macos;linux</InnoValidationEnvironment>
+  </PropertyGroup>
+  <Import Project="../../../RepositoryInput.targets" />
+  <ItemGroup>
+    <InnoValidationSubject Include="../../../../platforms/MacOSArm64/build/Inno.Build.MacOSArm64/Inno.Build.MacOSArm64.csproj" />
+    <InnoValidationSubject Include="../../../../backends/DotNet/build/Inno.Build.Managed.DotNet/Inno.Build.Managed.DotNet.csproj" />
+    <InnoValidationSubject Include="../../../../build/composition/Inno.Build.Composition/Inno.Build.Composition.csproj" />
+    <InnoValidationSubject Include="../../../../build/distributions/Inno.Build.Distribution.Standard/Inno.Build.Distribution.Standard.csproj" />
+    <InnoValidationSubject Include="../../../../build/managed/Inno.Build.Managed/Inno.Build.Managed.csproj" />
+    <InnoValidationSubject Include="../../../../build/pipeline/Inno.Build/Inno.Build.csproj" />
+    <InnoValidationSubject Include="../../../../build/tasks/Inno.Build.TaskHosting/Inno.Build.TaskHosting.csproj" />
+    <InnoValidationSubject Include="../../../../build/tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj" />
+    <InnoValidationSubject Include="../../../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" />
+    <InnoValidationSubject Include="../../../../platforms/WindowsX64/build/Inno.Build.WindowsX64/Inno.Build.WindowsX64.csproj" />
+    <ProjectReference Include="../../../../platforms/MacOSArm64/build/Inno.Build.MacOSArm64/Inno.Build.MacOSArm64.csproj" />
+    <ProjectReference Include="../../../../backends/DotNet/build/Inno.Build.Managed.DotNet/Inno.Build.Managed.DotNet.csproj" />
+    <ProjectReference Include="../../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" />
+    <ProjectReference Include="../../../../build/composition/Inno.Build.Composition/Inno.Build.Composition.csproj" />
+    <ProjectReference Include="../../../../build/distributions/Inno.Build.Distribution.Standard/Inno.Build.Distribution.Standard.csproj" />
+    <ProjectReference Include="../../../../build/managed/Inno.Build.Managed/Inno.Build.Managed.csproj" />
+    <ProjectReference Include="../../../../build/pipeline/Inno.Build/Inno.Build.csproj" />
+    <ProjectReference Include="../../../../build/tasks/Inno.Build.TaskHosting/Inno.Build.TaskHosting.csproj" />
+    <ProjectReference Include="../../../../build/tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj" />
+    <ProjectReference Include="../../../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" />
+    <ProjectReference Include="../../../../platforms/WindowsX64/build/Inno.Build.WindowsX64/Inno.Build.WindowsX64.csproj" />
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" />
+    <ProjectReference Include="../../../support/Inno.Testing.Source/Inno.Testing.Source.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.6.6" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build" Version="18.9.6" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="18.9.6" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="18.9.6" />
+    <PackageReference Include="BGCS" Version="[$(InnoBgcsPackageVersion)]" PrivateAssets="all" />
+    <PackageReference Include="BGCS.Runtime" Version="[$(InnoBgcsPackageVersion)]" />
+  </ItemGroup>
+</Project>

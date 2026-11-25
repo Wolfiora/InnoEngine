@@ -16,6 +16,24 @@ internal static class MSBuildProjectGraphValidator
         "InnoEngine.Editor", "InnoEngine.Build"
     };
 
+    // Suites that prove one behavior across several production projects, so no single project names them.
+    // Each one lives in the test directory of the production directory that owns most of that behavior.
+    private static readonly Dictionary<string, string> CROSS_PROJECT_TEST_SUBJECTS = new(StringComparer.Ordinal)
+    {
+        // Native producer selection, caching and publication across the Build pipeline and its toolchains.
+        ["Inno.Build.NativeProducer"] = "tests/build/pipeline",
+        // Declared product profiles resolved through the Build pipeline and every registered platform.
+        ["Inno.Build.ProductProfiles"] = "tests/build/pipeline",
+        // Product composition across the Build pipeline, packaging and platform contributions.
+        ["Inno.Build.Products"] = "tests/build/pipeline",
+        // Support pack production and consumption across the Build pipeline and the Editor exporter.
+        ["Inno.Build.SupportPacks"] = "tests/build/pipeline",
+        // Editor feature projects that each carry fewer than five tests.
+        ["Inno.Editor.Features"] = "tests/composition/editor/features",
+        // Native layout, keyboard and lifecycle behavior of the Editor panels composed together.
+        ["Inno.Editor.Panels"] = "tests/composition/editor/panels"
+    };
+
     internal static async Task<IReadOnlyDictionary<string, string>> ValidateAsync(
         string root,
         string configuration,
@@ -35,6 +53,14 @@ internal static class MSBuildProjectGraphValidator
             .Where(project => selectedOwners is null || selectedOwners.Contains(Relative(root, project)))
             .Order(StringComparer.Ordinal)
             .ToArray();
+        // A test directory mirrors the directory of its subject; production roots other than src keep their name.
+        Dictionary<string, string> owners = RepositorySourceInventory.Projects(root)
+            .GroupBy(static project => Path.GetFileNameWithoutExtension(project), StringComparer.Ordinal)
+            .ToDictionary(
+                static project => project.Key,
+                project => TestDirectory(Path.GetDirectoryName(Path.GetDirectoryName(Relative(root, project.First()))!)!),
+                StringComparer.Ordinal
+            );
         List<EvaluatedProject> evaluated = [];
         var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -64,13 +90,13 @@ internal static class MSBuildProjectGraphValidator
             {
                 continue;
             }
-            ValidateProject(root, project, failures);
+            ValidateProject(root, project, owners, failures);
             if (snapshot.TryGetProperty("Variants", out JsonElement variants))
             {
                 EvaluatedProject[] effective = variants.EnumerateArray().Select(variant => ReadSnapshot(root, variant)).ToArray();
                 foreach (EvaluatedProject variant in effective)
                 {
-                    ValidateProject(root, variant, failures);
+                    ValidateProject(root, variant, owners, failures);
                 }
                 project = project with
                 {
@@ -87,6 +113,7 @@ internal static class MSBuildProjectGraphValidator
             throw new InvalidDataException("The SDK snapshot does not cover the exact current project inventory.");
         }
         ValidateGraph(evaluated, failures);
+        ValidateTestSupport(evaluated, failures);
         if (outputPath is not null)
         {
             string destination = Path.GetFullPath(outputPath);
@@ -144,13 +171,15 @@ internal static class MSBuildProjectGraphValidator
             Value(properties, "IsTestSupportProject").Equals("true", StringComparison.OrdinalIgnoreCase)
             || items.TryGetProperty("PackageReference", out JsonElement packages)
                && packages.EnumerateArray().Any(static item => RepositorySourceInventory.IsTestPackage(Value(item, "Identity"))),
-            Value(properties, "InnoTestNativeProduct").Length != 0 || Value(properties, "InnoProductId").Length != 0
+            Value(properties, "InnoTestNativeProduct").Length != 0 || Value(properties, "InnoProductId").Length != 0,
+            Value(properties, "InnoTestNativeProduct").Length != 0
         );
     }
 
     private static void ValidateProject(
         string root,
         EvaluatedProject project,
+        IReadOnlyDictionary<string, string> owners,
         ICollection<string> failures
     ) {
         bool test = RepositorySourceInventory.IsTestPath(project.path);
@@ -158,9 +187,13 @@ internal static class MSBuildProjectGraphValidator
         {
             failures.Add($"{project.path}: effective test projects must belong to the root tests directory.");
         }
-        if (project.isTest && project.layer is not ("domain" or "contract" or "integration" or "native" or "product" or "performance"))
+        if (project.isTest && project.layer is not ("domain" or "contract" or "integration" or "native" or "product"))
         {
             failures.Add($"{project.path}: test execution layer must declare its actual execution requirements.");
+        }
+        if (project.isTest)
+        {
+            ValidateTestIdentity(project, owners, failures);
         }
         if (project.implicitUsings.Equals("enable", StringComparison.OrdinalIgnoreCase)
             || project.implicitUsings.Equals("true", StringComparison.OrdinalIgnoreCase)
@@ -207,6 +240,111 @@ internal static class MSBuildProjectGraphValidator
             if (!generated && (source.link.Length != 0 || !source.path.StartsWith(owner, StringComparison.Ordinal)))
             {
                 failures.Add($"{project.path}: effective hand-authored Compile source has a second owner: {source.path}.");
+            }
+        }
+    }
+
+    private static void ValidateTestIdentity(
+        EvaluatedProject project,
+        IReadOnlyDictionary<string, string> owners,
+        ICollection<string> failures
+    ) {
+        const string C_TESTS = ".Tests";
+        string name = Path.GetFileNameWithoutExtension(project.path);
+        if (!name.EndsWith(C_TESTS, StringComparison.Ordinal))
+        {
+            failures.Add($"{project.path}: test project name must end with {C_TESTS}.");
+            return;
+        }
+        string subject = name[..^C_TESTS.Length];
+        // A binding project already names the native layer.
+        string named = subject.StartsWith("Inno.Native.", StringComparison.Ordinal) ? "native" : string.Empty;
+        foreach (string layer in new[] { "integration", "native", "product" })
+        {
+            if (subject.EndsWith("." + layer, StringComparison.OrdinalIgnoreCase))
+            {
+                named = layer;
+                subject = subject[..^(layer.Length + 1)];
+                break;
+            }
+        }
+        if (named.Length == 0 ? project.layer is not ("domain" or "contract") : project.layer != named)
+        {
+            failures.Add(
+                $"{project.path}: test project name and execution layer '{project.layer}' must agree; "
+                + "integration, native and product suites end with .Integration.Tests, .Native.Tests and .Product.Tests."
+            );
+        }
+        if (project.nativeProduct && project.layer is not ("native" or "product"))
+        {
+            failures.Add($"{project.path}: a test that deploys a native product must declare the native or product execution layer.");
+        }
+        if (!CROSS_PROJECT_TEST_SUBJECTS.TryGetValue(subject, out string? directory) && !owners.TryGetValue(subject, out directory))
+        {
+            failures.Add($"{project.path}: test project must be named after the project it tests or a declared cross-project suite.");
+            return;
+        }
+        if (Path.GetDirectoryName(Path.GetDirectoryName(project.path))!.Replace('\\', '/') != directory)
+        {
+            failures.Add($"{project.path}: test project must live in {directory}, the test directory of the project it tests.");
+        }
+    }
+
+    private static string TestDirectory(string directory)
+    {
+        string normalized = directory.Replace('\\', '/');
+        if (RepositorySourceInventory.IsTestPath(normalized + "/"))
+        {
+            return normalized;
+        }
+        return normalized == "src"
+               ? "tests"
+               : "tests/" + (normalized.StartsWith("src/", StringComparison.Ordinal) ? normalized["src/".Length..] : normalized);
+    }
+
+    private static void ValidateTestSupport(
+        IReadOnlyList<EvaluatedProject> projects,
+        ICollection<string> failures
+    ) {
+        const string C_SUPPORT = "tests/support";
+        const string C_SHARED = "Inno.Testing.";
+        foreach (EvaluatedProject project in projects)
+        {
+            if (project.isTest || !RepositorySourceInventory.IsTestPath(project.path))
+            {
+                continue;
+            }
+            string name = Path.GetFileNameWithoutExtension(project.path);
+            string directory = Path.GetDirectoryName(Path.GetDirectoryName(project.path))!.Replace('\\', '/');
+            if (directory == C_SUPPORT)
+            {
+                if (!name.StartsWith(C_SHARED, StringComparison.Ordinal))
+                {
+                    failures.Add($"{project.path}: shared test support in {C_SUPPORT} must be named {C_SHARED}*.");
+                }
+                continue;
+            }
+            if (!directory.EndsWith("/fixtures", StringComparison.Ordinal))
+            {
+                failures.Add(
+                    $"{project.path}: test support belongs to {C_SUPPORT} when several test directories share it, "
+                    + "or to the fixtures directory of the one test directory that owns it."
+                );
+                continue;
+            }
+            // A module fixture is loaded as test input and stays with its owner; a helper library has one owning directory.
+            string owner = directory[..^"fixtures".Length];
+            if (name.StartsWith(C_SHARED, StringComparison.Ordinal))
+            {
+                foreach (EvaluatedProject consumer in projects.Where(consumer => (
+                    !consumer.path.StartsWith(owner, StringComparison.Ordinal)
+                    && consumer.references.Any(reference => reference.path.Equals(project.path, StringComparison.OrdinalIgnoreCase))
+                ))) {
+                    failures.Add(
+                        $"{project.path}: test support used from {consumer.path} is shared by several test directories "
+                        + $"and belongs to {C_SUPPORT}."
+                    );
+                }
             }
         }
     }
@@ -338,7 +476,8 @@ internal static class MSBuildProjectGraphValidator
         string layer,
         bool isTest,
         bool testSupport,
-        bool native
+        bool native,
+        bool nativeProduct
     );
 
     private sealed record EvaluatedReference(

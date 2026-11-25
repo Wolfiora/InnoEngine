@@ -23,7 +23,7 @@ foreach ($case in $cases) {
     }
     $accepted = $false
     try {
-        & "$PSScriptRoot/Test-IsolatedExecution.ps1" -Report $report -Contract 'Inno.Contracts.Run'
+        & "$PSScriptRoot/../../tools/ci/Test-IsolatedExecution.ps1" -Report $report -Contract 'Inno.Contracts.Run'
         $accepted = $true
     } catch { $_.Exception.Message | Set-Content -LiteralPath (Join-Path $directory ($case.name + '.log')) }
     if ($accepted -ne $case.accept) { throw "Unexpected isolated contract result: $($case.name)" }

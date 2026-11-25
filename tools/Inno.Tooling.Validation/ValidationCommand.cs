@@ -17,22 +17,17 @@ namespace Inno.Tooling.Validation;
 public static class ValidationCommand
 {
     /// <summary>
-    /// Executes planning, checks, evidence reconciliation, shard joining or exact functional acceptance comparison.
+    /// Executes planning, checks, evidence reconciliation, and shard joining.
     /// </summary>
     /// <param name="arguments">
     /// Pack-backends writes the selected staging inventory into a platform archive. Import-backends verifies an archive digest and target before installation.
     /// The operation followed by explicit engine-root, base, dotnet, configuration, artifacts-path, output, plan,
     /// evidence, full, extended, cache-input or cache-output options. Cache archives contain immutable native payloads only.
     /// Explicit docs-cache-root and docs-snapshot options select protected external documentation facts.
-    /// A baseline-plan supplies the accepted SDK graph for ownership of removed inputs at the exact merge base.
     /// Optional docs-base-snapshot identifies changed pages and facts without rescanning an authoring checkout.
     /// Profile selects execution depth; native-dependencies selects immutable consume-only dependencies.
     /// Shard and prerequisites select a frozen partition and its completed receipts. Join validates every partition
     /// without recapturing source inputs or executing checks.
-    /// Acceptance compares a freshly captured full plan with accepted-plan and evidence from an authenticated producer.
-    /// Resume requires accepted-plan and evidence from an authenticated default-branch producer. It verifies retained
-    /// output and dependency bytes and executes missing checks; the caller owns remote provenance authentication.
-    /// Retained-outputs supplies authenticated compiled files for a fresh workspace; restoration occurs under its writer lease.
     /// </param>
     /// <param name="cancellationToken">
     /// Cancels child processes while retaining the first failure and completed diagnostics.
@@ -63,15 +58,13 @@ public static class ValidationCommand
                                     or "full"
                                     or "evidence"
                                     or "join"
-                                    or "acceptance"
-                                    or "resume"
                                     or "pack-backends"
                                     or "import-backends"
                                     or "backend-inputs"
                                     or "bind-backends")
         ) {
             throw new ArgumentException(
-                "Usage: validate <plan|run|full|evidence|join|acceptance|resume|pack-backends|import-backends|backend-inputs|bind-backends> --engine-root ROOT --dotnet HOST [--base REV] [--output DIR] [--plan FILE] [--accepted-plan FILE] [--evidence FILE] [--profile NAME] [--native-dependencies FILE] [--shard ID] [--prerequisites DIR]"
+                "Usage: validate <plan|run|full|evidence|join|pack-backends|import-backends|backend-inputs|bind-backends> --engine-root ROOT --dotnet HOST [--base REV] [--output DIR] [--plan FILE] [--evidence FILE] [--profile NAME] [--shared-managed true|false] [--native-dependencies FILE] [--shard ID] [--prerequisites DIR]"
             );
         }
         var options = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -94,7 +87,6 @@ public static class ValidationCommand
                                       or "--artifacts-path"
                                       or "--output"
                                       or "--plan"
-                                      or "--accepted-plan"
                                       or "--evidence"
                                       or "--extended"
                                       or "--full"
@@ -107,13 +99,9 @@ public static class ValidationCommand
                                       or "--native-dependencies"
                                       or "--shard"
                                       or "--prerequisites"
-                                      or "--retained-outputs"
-                                      or "--backend-store");
+                                      or "--backend-store")
+                              || (arguments[0] == "plan" && key is ("--rebuild-backends" or "--shared-managed"));
             if (arguments[0] == "backend-inputs" && key is ("--selection" or "--configuration"))
-            {
-                allowed = true;
-            }
-            if (arguments[0] == "plan" && key == "--baseline-plan")
             {
                 allowed = true;
             }
@@ -180,7 +168,7 @@ public static class ValidationCommand
         bool extended = options.TryGetValue("--extended", out string? depth) && bool.Parse(depth);
         bool full = arguments[0] == "full" || options.TryGetValue("--full", out string? complete) && bool.Parse(complete);
         ValidationProfile profile = ValidationProfiles.Parse(options.GetValueOrDefault("--profile", full ? "full" : "pull-request"));
-        if (profile is (ValidationProfile.Fast or ValidationProfile.Performance) && (full || extended))
+        if (profile == ValidationProfile.Fast && (full || extended))
         {
             throw new ArgumentException("The selected profile cannot certify full or extended acceptance.");
         }
@@ -200,19 +188,22 @@ public static class ValidationCommand
             )
         );
         string dotnet = options.GetValueOrDefault("--dotnet", "dotnet");
-        if (options.ContainsKey("--retained-outputs") && arguments[0] != "resume")
-        {
-            throw new ArgumentException("Retained outputs may only be installed by resume.");
-        }
         Directory.CreateDirectory(output);
-        if (options.ContainsKey("--plan") && (options.ContainsKey("--native-dependencies") || options.ContainsKey("--backend-store")))
-        {
+        if (options.ContainsKey("--plan")
+            && (options.ContainsKey("--rebuild-backends")
+                || options.ContainsKey("--native-dependencies")
+                || options.ContainsKey("--backend-store"))
+        ) {
             throw new ArgumentException("The supplied plan already freezes its native dependency selection.");
         }
         if (options.ContainsKey("--plan") && (options.ContainsKey("--docs-cache-root") || options.ContainsKey("--docs-snapshot")
                                               || options.ContainsKey("--docs-base-snapshot"))
         ) {
             throw new ArgumentException("A supplied plan already fixes its documentation selection; regenerate the plan to change it.");
+        }
+        if (options.ContainsKey("--plan") && options.ContainsKey("--shared-managed"))
+        {
+            throw new ArgumentException("The supplied plan already freezes the shared managed test allocation.");
         }
         ValidationPlan plan;
         if (options.TryGetValue("--plan", out string? planPath))
@@ -235,7 +226,8 @@ public static class ValidationCommand
                 profile,
                 options.GetValueOrDefault("--native-dependencies"),
                 options.GetValueOrDefault("--backend-store"),
-                options.GetValueOrDefault("--baseline-plan"),
+                options.GetValueOrDefault("--rebuild-backends"),
+                !options.TryGetValue("--shared-managed", out string? allocation) || bool.Parse(allocation),
                 cancellationToken
             ).ConfigureAwait(false);
             if (selected.preparation is not null)
@@ -263,30 +255,6 @@ public static class ValidationCommand
         {
             throw new InvalidDataException("Backend acquisition must bind the exact packages before executing or certifying this plan.");
         }
-        if (arguments[0] == "acceptance")
-        {
-            if (planPath is null || !options.TryGetValue("--accepted-plan", out string? acceptedPath)
-                || !options.TryGetValue("--evidence", out string? acceptedEvidence)
-            ) {
-                throw new ArgumentException("Acceptance comparison requires current plan, accepted-plan and evidence.");
-            }
-            ValidationPlan accepted = ValidationPlanTransport.Read(acceptedPath, root, dotnet);
-            bool reusable = ValidationAcceptance.Matches(plan, accepted, Read<ValidationEvidence>(acceptedEvidence));
-            await File.WriteAllTextAsync(
-                Path.Combine(output, "acceptance.json"),
-                JsonSerializer.Serialize(new
-                {
-                    reusable,
-                    planIdentity = ValidationInputs.PlanIdentity(plan),
-                    acceptedPlanIdentity = ValidationInputs.PlanIdentity(accepted),
-                    reason = reusable
-                             ? "Exact completed functional inputs, checks and execution environment match."
-                             : "Functional inputs, execution environment or acceptance policy changed; execute the current plan."
-                }),
-                cancellationToken
-            ).ConfigureAwait(false);
-            return 0;
-        }
         if (arguments[0] == "join")
         {
             if (planPath is null || !options.TryGetValue("--prerequisites", out string? receiptsDirectory))
@@ -302,7 +270,7 @@ public static class ValidationCommand
             return 0;
         }
         ValidationShard? shard = options.TryGetValue("--shard", out string? shardID) ? ValidationShards.Require(plan, shardID) : null;
-        if (shard is not null && arguments[0] is not ("run" or "resume"))
+        if (shard is not null && arguments[0] != "run")
         {
             throw new ArgumentException("A shard is executed through validate run with a frozen plan.");
         }
@@ -362,23 +330,6 @@ public static class ValidationCommand
         ValidationEvidence? previous = options.TryGetValue("--evidence", out string? evidencePath)
                                        ? Read<ValidationEvidence>(evidencePath)
                                        : null;
-        bool continuation = arguments[0] == "resume";
-        string? retainedOutputs = options.GetValueOrDefault("--retained-outputs");
-        if (continuation)
-        {
-            if (planPath is null || previous is null || !options.TryGetValue("--accepted-plan", out string? acceptedPath))
-            {
-                throw new ArgumentException("Resume requires a frozen full plan, accepted-plan and completed evidence.");
-            }
-            ValidationAcceptance.RequireContinuation(plan, ValidationPlanTransport.Read(acceptedPath, root, dotnet), previous);
-            if (previous.environment != plan.environment)
-            {
-                retainedOutputs = null;
-                Console.WriteLine(
-                    "The accepted execution environment changed. Retained compilation is not imported; the current frozen checks must execute."
-                );
-            }
-        }
         if (arguments[0] == "evidence")
         {
             if (previous is null)
@@ -446,8 +397,6 @@ public static class ValidationCommand
             previous,
             shard,
             options.TryGetValue("--prerequisites", out string? receipts) ? ReadReceipts(receipts) : null,
-            continuation,
-            retainedOutputs,
             cancellationToken
         ).ConfigureAwait(false);
         _ = ValidationShards.ValidateEvidence(plan, evidence, shard?.id);

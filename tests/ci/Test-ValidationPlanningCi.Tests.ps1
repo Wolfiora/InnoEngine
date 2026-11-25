@@ -17,10 +17,10 @@ $env:GIT_ALLOW_PROTOCOL = 'file'
 try {
     foreach ($case in $cases) {
         $root = Join-Path $directory $case.name
-        $scripts = Join-Path $root 'tests/ci'
+        $scripts = Join-Path $root 'tools/ci'
         New-Item -ItemType Directory -Path $scripts -Force | Out-Null
         foreach ($script in @('Invoke-ValidationCi.ps1', 'Initialize-ValidationEntry.ps1', 'Prepare-ValidationSources.ps1', 'Initialize-NativeDependencyWorkloads.ps1')) {
-            Copy-Item -LiteralPath (Join-Path $PSScriptRoot $script) -Destination $scripts
+            Copy-Item -LiteralPath (Join-Path $PSScriptRoot "../../tools/ci/$script") -Destination $scripts
         }
         New-Item -ItemType Directory -Path (Join-Path $root '.github') | Out-Null
         '[{"target":"fixture","runner":"fixture","workloads":[]}]' | Set-Content (Join-Path $root '.github/native-targets.json')
@@ -43,6 +43,8 @@ if ($Arguments[0] -ceq 'msbuild') { Write-Output $assembly; return }
 if ($Arguments[1] -ceq 'docs') { throw 'Engine CI must not prepare a paired Docs candidate.' }
 if ($Arguments[1] -cne 'validate' -or $Arguments[2] -cne 'plan') { throw 'Unexpected hosted planning operation.' }
 if ($Arguments -notcontains '--profile' -or $Arguments -notcontains '--backend-store' -or $Arguments -contains '--native-dependencies' -or $Arguments -contains '--cache-input') { throw 'Hosted planning lost its explicit consume-only policy.' }
+$allocation = [Array]::IndexOf($Arguments, '--shared-managed')
+if ($allocation -lt 0 -or $Arguments[$allocation + 1] -cne "$IsWindows") { throw 'The hosted plan must allocate shared projects to Windows.' }
 $output = $Arguments[[Array]::IndexOf($Arguments, '--output') + 1]
 if ($case.prepare) {
     $attempts = Join-Path $PSScriptRoot 'artifacts/planning-attempts.txt'

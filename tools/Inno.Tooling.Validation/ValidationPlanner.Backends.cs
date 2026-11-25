@@ -208,7 +208,13 @@ internal static partial class ValidationPlanner
         {
             selectionBytes = File.ReadAllBytes(Path.Combine(plan.root, plan.nativeDependencies));
         }
-        string[] missing = MissingNativeProducts(plan, target, configuration, selectionBytes);
+        string[] missing = await MissingNativeProductsAsync(
+            plan,
+            target,
+            configuration,
+            selectionBytes,
+            cancellationToken
+        ).ConfigureAwait(false);
         if (configuration != plan.configuration && !plan.contexts.ContainsKey("backend-" + configuration.ToLowerInvariant())
             && (plan.nativeRequests ?? []).Any(request => request.target == target && request.configuration == configuration)
             && !plan.checks.Any(check => (
@@ -435,8 +441,8 @@ internal static partial class ValidationPlanner
                 proofInputs[project] = direct[project];
             }
             foreach (KeyValuePair<string, string> input in plan.inputs.Where(static pair => (
-                pair.Key is "tests/ci/Build-BackendPrebuilt.ps1" or "tests/ci/New-BackendPrebuiltPackage.ps1"
-                or "tests/ci/Initialize-BackendProduction.ps1" or "tests/ci/Prepare-BackendNativeInputs.ps1"
+                pair.Key is "tools/ci/Build-BackendPrebuilt.ps1" or "tools/ci/New-BackendPrebuiltPackage.ps1"
+                or "tools/ci/Initialize-BackendProduction.ps1" or "tools/ci/Prepare-BackendNativeInputs.ps1"
                 or ".github/workflows/backend-prebuilts.yml"
             ))) {
                 proofInputs[input.Key] = input.Value;
@@ -479,11 +485,12 @@ internal static partial class ValidationPlanner
         static bool IsBackend(string path) => path.StartsWith("backends/", StringComparison.Ordinal);
     }
 
-    private static string[] MissingNativeProducts(
+    private static async Task<string[]> MissingNativeProductsAsync(
         ValidationPlan plan,
         string target,
         string configuration,
-        byte[]? selection
+        byte[]? selection,
+        CancellationToken cancellationToken
     ) {
         string[] required = (plan.nativeRequests ?? []).Where(request => request.target == target && request.configuration == configuration)
             .Select(static request => request.product)
@@ -499,18 +506,11 @@ internal static partial class ValidationPlanner
         {
             return required;
         }
-        var available = new HashSet<(string? product, string? digest)>();
-        foreach (string family in new[] { "assets", "aggregates" })
-        {
-        foreach (JsonElement asset in document.RootElement.GetProperty(family).EnumerateArray())
-        {
-            if (asset.GetProperty("target").GetString() == target)
-            {
-                available.Add((asset.GetProperty("product").GetString(), asset.GetProperty("sha256").GetString()));
-            }
-        }
-        }
-        var certified = new HashSet<string>(StringComparer.Ordinal);
+        ILookup<(string? product, string? digest), JsonElement> available = new[] { "assets", "aggregates" }
+            .SelectMany(family => document.RootElement.GetProperty(family).EnumerateArray())
+            .Where(asset => asset.GetProperty("target").GetString() == target)
+            .ToLookup(asset => (asset.GetProperty("product").GetString(), asset.GetProperty("sha256").GetString()));
+        var products = new Dictionary<string, JsonElement[]>(StringComparer.Ordinal);
         foreach (JsonElement request in requests.EnumerateArray())
         {
             if (request.GetProperty("target").GetString() != target || request.GetProperty("configuration").GetString() != configuration)
@@ -523,12 +523,68 @@ internal static partial class ValidationPlanner
             {
                 throw new InvalidDataException($"Incomplete certified native closure for {target}/{product}/{configuration}.");
             }
-            if (!certified.Add(product))
-            {
+            if (!products.TryAdd(
+                product,
+                digests.EnumerateArray().SelectMany(digest => available[(product, digest.GetString())]).ToArray()
+            )) {
                 throw new InvalidDataException($"Duplicate native closure for {target}/{product}/{configuration}.");
             }
         }
-        return required.Where(product => !certified.Contains(product)).ToArray();
+        if (!required.Any(products.ContainsKey))
+        {
+            return required;
+        }
+
+        // NativeDependencySource signs Git tree entries, including directory trees and unmaterialized submodule pins.
+        // Check the recorded inputs before choosing a ZIP. This never opens its payload or invokes a producer.
+        string tree = await ValidationProcess.RunAsync(
+            "git",
+            ["ls-tree", "-r", "-t", "-z", plan.commit],
+            plan.root,
+            null,
+            cancellationToken: cancellationToken
+        ).ConfigureAwait(false);
+        Dictionary<string, string> entries = tree
+            .Split('\0', StringSplitOptions.RemoveEmptyEntries)
+            .ToDictionary(entry => entry[(entry.IndexOf('\t') + 1)..], StringComparer.Ordinal);
+        string status = await ValidationProcess.RunAsync(
+            "git",
+            ["status", "--porcelain=v1", "-z", "--no-renames", "--untracked-files=all", "--ignore-submodules=none"],
+            plan.root,
+            null,
+            cancellationToken: cancellationToken
+        ).ConfigureAwait(false);
+        string[] modified = status.Split('\0', StringSplitOptions.RemoveEmptyEntries).Select(entry => entry[3..]).ToArray();
+        var fingerprints = new Dictionary<string, string>(StringComparer.Ordinal);
+        return required
+            .Where(product => !products.TryGetValue(product, out JsonElement[]? assets) || !assets.All(MatchesSources))
+            .ToArray();
+
+        bool MatchesSources(JsonElement asset)
+        {
+            if (!asset.TryGetProperty("sources", out JsonElement sources)
+                || sources.ValueKind != JsonValueKind.Object
+                || !sources.EnumerateObject().Any()
+            ) {
+                return false;
+            }
+            foreach (JsonProperty source in sources.EnumerateObject())
+            {
+                if (!fingerprints.TryGetValue(source.Name, out string? actual))
+                {
+                    actual = entries.TryGetValue(source.Name, out string? entry)
+                             && !modified.Any(path => path == source.Name || path.StartsWith(source.Name + "/", StringComparison.Ordinal))
+                             ? NativeBuildFingerprint.Create([entry], [], cancellationToken)
+                             : string.Empty;
+                    fingerprints.Add(source.Name, actual);
+                }
+                if (actual.Length == 0 || source.Value.GetString() != actual)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 
     private sealed record BackendNativeProduct(

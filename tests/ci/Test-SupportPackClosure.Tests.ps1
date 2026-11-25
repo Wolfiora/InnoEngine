@@ -23,7 +23,7 @@ foreach ($case in $cases) {
         if ($case.name -eq 'duplicate') { $null = $zip.CreateEntry("native/duplicate/$($case.library)") }
     } finally { $zip.Dispose() }
     $accepted = $false
-    try { & "$PSScriptRoot/Test-SupportPackClosure.ps1" -Archive $archive; $accepted = $true }
+    try { & "$PSScriptRoot/../../tools/ci/Test-SupportPackClosure.ps1" -Archive $archive; $accepted = $true }
     catch { $_.Exception.Message | Set-Content -LiteralPath (Join-Path $directory ($case.name + '.log')) }
     if ($accepted -ne $case.accept) { throw "Unexpected Support Pack closure result: $($case.name)" }
 }

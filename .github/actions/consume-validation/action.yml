@@ -7,9 +7,6 @@ inputs:
   platform:
     description: Registered runner.
     required: true
-  source-run:
-    description: Trusted continuation run.
-    default: '0'
 runs:
   using: composite
   steps:
@@ -25,7 +22,7 @@ runs:
         GH_TOKEN: ${{ github.token }}
       run: |
         $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
-        ./tests/ci/Install-BackendAcquisition.ps1 -PlanPath artifacts/validation/ci-plan/plan.json -EntryAssembly $entry `
+        ./tools/ci/Install-BackendAcquisition.ps1 -PlanPath artifacts/validation/ci-plan/plan.json -EntryAssembly $entry `
           -Acquisition artifacts/backend-request/acquisition.json -Downloads artifacts/backend-downloads
     - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
       if: inputs.digest && steps.direct-cache.outputs.cache-hit != 'true'
@@ -35,4 +32,3 @@ runs:
     - uses: ./.github/actions/execute-validation
       with:
         platform: ${{ inputs.platform }}
-        source-run: ${{ inputs.source-run }}

@@ -15,6 +15,10 @@ tags: [solution, directories, new-boundary]
 - `src/composition`: default engine, Shell, Player and Editor composition entries.
 - `entry`: the two lightweight development entries and current-host routing. Other production layers must not reference it. `Inno.Packages.props` pins NuGet versions for the BGCS package family; no source-dependency entry is provided.
 - `build`, `tools`, `tests`: neutral unified builds, concrete distribution registration, validation libraries and tests. All engine-owned tests, fixtures and test support belong to the root `tests` tree; upstream tests inside `extern` retain their upstream owner. Production projects must not reference test projects or test support.
+- A test project is named after the production project it tests: `<Project>.Tests`, or `<Project>.Integration.Tests`, `<Project>.Native.Tests` and `<Project>.Product.Tests` for the heavier execution layers. A suite that proves one behavior across several projects is named after that behavior and listed with its reason in the architecture validator.
+- The `tests` tree mirrors the production tree: a test project lives in the test directory of the project it tests, `src/<layer>/<area>` as `tests/<layer>/<area>` and every other production root under `tests` with its own name, and a cross-project suite in the directory the architecture validator lists for it.
+- Test support has one owner. A helper library that several test directories use is named `Inno.Testing.*` and lives in `tests/support`; one that a single test directory uses lives in the `fixtures` directory of that directory. Module and process fixtures loaded as test input stay in the `fixtures` directory of the suite that owns them.
+- Scripts that CI executes are production tooling and live in `tools/ci`. `tests/ci` holds only the `*.Tests.ps1` contracts that prove them and their `fixtures` directory.
 - Place new files in directories matching the existing layers and responsibilities wherever possible.
 
 ## 26. Solutions and project files

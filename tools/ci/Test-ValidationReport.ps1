@@ -1,0 +1,110 @@
+param(
+    [Parameter(Mandatory)][string]$PlanPath,
+    [Parameter(Mandatory)][string]$ResultsPath,
+    [Parameter(Mandatory)][string]$ExpectedCommit,
+    [Parameter(Mandatory)][string]$JobConclusion
+)
+
+$ErrorActionPreference = 'Stop'
+if ($JobConclusion -cne 'success') { throw "The required producer job did not succeed: $JobConclusion" }
+if ($ExpectedCommit -cnotmatch '^[0-9a-f]{40}$') { throw 'Certification requires an exact commit SHA.' }
+$plan = Get-Content -LiteralPath $PlanPath -Raw | ConvertFrom-Json
+$evidence = Get-Content -LiteralPath $ResultsPath -Raw | ConvertFrom-Json
+if ($evidence.version -ne 2 -or $evidence.failures -isnot [array]) { throw 'Unsupported validation evidence format.' }
+if ($evidence.failures.Count) {
+    throw ("Run-level validation failure: " + (($evidence.failures | ForEach-Object { "$($_.stage): $($_.detail)" }) -join [Environment]::NewLine))
+}
+if ($evidence.completed -isnot [bool] -or -not $evidence.completed) {
+    throw 'The run did not complete its closing input, environment and output verification.'
+}
+$identity = (Get-FileHash -LiteralPath $PlanPath -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($evidence.planIdentity -cne $identity) { throw 'The results do not certify the exact uploaded plan bytes.' }
+if ($plan.commit -cne $ExpectedCommit -or $evidence.commit -cne $ExpectedCommit) { throw 'The evidence belongs to another commit or merge candidate.' }
+if ($plan.tree -cnotmatch '^[0-9a-f]{64}$' -or $evidence.tree -cne $plan.tree -or
+    $plan.environment -cnotmatch '^[0-9a-f]{64}$' -or $evidence.environment -cne $plan.environment) {
+    throw 'The source or execution environment identity is missing or inconsistent.'
+}
+$checks = @($plan.checks)
+$results = @($evidence.results)
+$documentation = $null
+if ($null -ne $plan.documentation) {
+    $catalogChecks = @($checks | Where-Object { $_.id -ceq 'documentation' -and $_.kind -ceq 'documentation' -and $null -eq $_.exclusion })
+    if ($catalogChecks.Count -ne 1 -or $plan.documentation.sourceTree -cnotmatch '^[a-f0-9]{40}$' `
+        -or $plan.documentation.snapshot -cnotmatch '^[a-f0-9]{64}$' `
+        -or $catalogChecks[0].documentation.contentIdentity -cnotmatch '^[a-f0-9]{64}$') {
+        throw 'Explicit documentation validation requires a complete selected snapshot identity.'
+    }
+    $documentation = [pscustomobject]@{ sourceTree = $plan.documentation.sourceTree; snapshot = $plan.documentation.snapshot;
+        contentIdentity = $catalogChecks[0].documentation.contentIdentity }
+}
+if ($checks.Count -eq 0 -or @($checks | Where-Object { $null -eq $_.exclusion }).Count -eq 0) {
+    throw 'The required plan is empty or results are missing or unplanned.'
+}
+foreach ($result in $results) {
+    if ($result.id -cnotin $checks.id) { throw "Unplanned check: $($result.id)" }
+}
+$seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+foreach ($check in $checks) {
+    if ([string]::IsNullOrWhiteSpace($check.id) -or -not $seen.Add($check.id)) { throw 'The plan contains an empty or duplicated check identity.' }
+    $matches = @($results | Where-Object { $_.id -ceq $check.id })
+    if (!$matches.Count) { throw "Missing check: $($check.id)" }
+    if ($matches.Count -gt 1) { throw "Duplicate check: $($check.id)" }
+    $result = $matches[0]
+    if ($result.inputIdentity -cnotmatch '^[0-9a-f]{64}$') { throw "Input evidence is missing: $($check.id)" }
+    if ($null -ne $check.exclusion) {
+        if ($result.status -cne 'NotApplicable' -or [string]::IsNullOrWhiteSpace($check.exclusion)) {
+            throw "An excluded check lacks its explicit applicability result: $($check.id)"
+        }
+    } elseif ($result.status -cnotin @('Passed', 'Reused')) {
+        throw "Required check did not pass: $($check.id) ($($result.status))"
+    } else {
+        if ($null -eq $result.outputs) { throw "Required output evidence is missing: $($check.id)" }
+        $compiled = $check.kind -cin @('build', 'test', 'api', 'products', 'support-pack') -or
+            ($check.kind -cin @('documentation-api', 'documentation-examples') -and @($check.inputs | Where-Object { $_ -like '@*' -and $_ -cne '@tooling' -and $_ -cne '@native-sources' }).Count -gt 0)
+        if ($compiled -and $result.dependencyIdentity -cnotmatch '^[0-9a-f]{64}$') {
+            throw "Restored dependency evidence is missing: $($check.id)"
+        }
+        if ($compiled -and @($result.outputs.PSObject.Properties).Count -eq 0) {
+            throw "Compiled output discovery is empty: $($check.id)"
+        }
+        foreach ($output in $result.outputs.PSObject.Properties) {
+            if ([IO.Path]::IsPathRooted($output.Name) -or $output.Name -match '(^|[\\/])\.\.([\\/]|$)' -or $output.Value -cnotmatch '^[0-9a-f]{64}$') {
+                throw "Invalid output identity in $($check.id): $($output.Name)"
+            }
+        }
+        foreach ($dependency in @($check.prerequisites)) {
+            $required = @($results | Where-Object { $_.id -ceq $dependency -and $_.status -cin @('Passed', 'Reused') })
+            if ($required.Count -ne 1) { throw "A prerequisite did not pass: $($check.id) -> $dependency" }
+        }
+    }
+}
+$sourceApi = if ($null -ne $documentation) {
+    @( & (Join-Path $PSScriptRoot 'Get-DocumentationSourceReceipt.ps1') -Plan $plan -Evidence $evidence `
+        -Context $documentation -Directory (Split-Path ([IO.Path]::GetFullPath($PlanPath)) -Parent))
+} else { @() }
+$sourceExamples = if ($null -ne $documentation) {
+    @( & (Join-Path $PSScriptRoot 'Get-DocumentationExampleReceipt.ps1') -Plan $plan -Evidence $evidence `
+        -Context $documentation -Directory (Split-Path ([IO.Path]::GetFullPath($PlanPath)) -Parent))
+} else { @() }
+[pscustomobject]@{
+    commit = $ExpectedCommit
+    tree = $plan.tree
+    environment = $plan.environment
+    full = [bool]$plan.full
+    planIdentity = $identity
+    resultsIdentity = (Get-FileHash -LiteralPath $ResultsPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    documentation = $documentation
+    sourceApi = @($sourceApi)
+    sourceExamples = @($sourceExamples)
+    required = @($checks | Where-Object { $null -eq $_.exclusion }).Count
+    passed = @($results | Where-Object status -CEQ 'Passed').Count
+    reused = @($results | Where-Object status -CEQ 'Reused').Count
+    notApplicable = @($results | Where-Object status -CEQ 'NotApplicable').Count
+    timings = @($checks | Where-Object { $null -eq $_.exclusion } | ForEach-Object {
+        $check = $_
+        $result = $results | Where-Object id -CEQ $check.id
+        if ($null -ne $result.seconds -and $result.status -ceq 'Passed') {
+            [pscustomobject]@{ id = $check.id; kind = $check.kind; owner = $check.owner; seconds = [double]$result.seconds }
+        }
+    })
+}

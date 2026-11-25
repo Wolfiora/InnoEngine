@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InnoValidationLayer>integration</InnoValidationLayer>
+    <InnoValidationEnvironment>windows;macos;linux</InnoValidationEnvironment>
+  </PropertyGroup>
+  <Import Project="../../../../RepositoryInput.targets" />
+  <ItemGroup>
+    <ProjectReference Include="../../../../../build/distributions/Inno.Build.Distribution.Standard/Inno.Build.Distribution.Standard.csproj" />
+    <ProjectReference Include="../../../../../build/pipeline/Inno.Build/Inno.Build.csproj" />
+    <ProjectReference Include="../../../../../build/products/Inno.Build.Products.Standard/Inno.Build.Products.Standard.csproj" />
+    <ProjectReference Include="../../../../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" />
+    <ProjectReference Include="../../../../../platforms/BrowserWasm32/build/Inno.Build.BrowserWasm32/Inno.Build.BrowserWasm32.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.6.6" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6" PrivateAssets="all" />
+    <PackageReference Include="BGCS" Version="[$(InnoBgcsPackageVersion)]" PrivateAssets="all" />
+    <PackageReference Include="BGCS.Runtime" Version="[$(InnoBgcsPackageVersion)]" />
+  </ItemGroup>
+</Project>

@@ -1,5 +1,5 @@
 ---
-paths: ["src/services/rendering/**", "src/adapters/rendering/**", "tests/rendering/**"]
+paths: ["src/services/rendering/**", "src/adapters/rendering/**", "tests/services/rendering/**"]
 tags: [rendering, content-frame]
 ---
 # Rendering

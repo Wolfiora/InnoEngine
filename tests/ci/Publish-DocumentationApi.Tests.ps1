@@ -9,7 +9,7 @@ $root = Join-Path $engineRoot ('artifacts/validation/api-publication/' + [Guid]:
 New-Item -ItemType Directory -Path $root | Out-Null
 if (!$Dotnet) { $Dotnet = (Get-Command dotnet -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source }
 if (!$BuildCli) {
-    $BuildCli = & "$PSScriptRoot/Initialize-ValidationEntry.ps1" -Dotnet $Dotnet -LogPath (Join-Path $root 'bootstrap.log') `
+    $BuildCli = & "$PSScriptRoot/../../tools/ci/Initialize-ValidationEntry.ps1" -Dotnet $Dotnet -LogPath (Join-Path $root 'bootstrap.log') `
         -WorkspaceDirectory (Join-Path $root 'artifacts/bootstrap')
 }
 if (!(Test-Path -LiteralPath $BuildCli -PathType Leaf)) { throw 'The actual managed API transport is required.' }
@@ -76,7 +76,7 @@ try {
     $package = Join-Path $root 'api-package.json'
     & $Dotnet $BuildCli docs api-package --docs-root $inputRoot --package $package
     if ($LASTEXITCODE) { throw 'Fixture API packaging failed.' }
-    $publisher = Join-Path $PSScriptRoot 'Publish-DocumentationApi.ps1'
+    $publisher = Join-Path $PSScriptRoot '../../tools/ci/Publish-DocumentationApi.ps1'
     & pwsh -NoProfile -File $publisher -EngineRoot $engine -Dotnet $Dotnet -BuildCli $BuildCli -Package $package -Workspace (Join-Path $root 'first')
     if ($LASTEXITCODE) { throw 'First publication failed.' }
     $first = (Invoke-FixtureGit $docsRemote @('rev-parse', 'draft')) -join ''

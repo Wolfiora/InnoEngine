@@ -3,8 +3,8 @@ Set-StrictMode -Version Latest
 $engine = [IO.Path]::GetFullPath('../..', $PSScriptRoot)
 $fixture = Join-Path $engine ('artifacts/documentation-preflight-test-' + [Guid]::NewGuid().ToString('N'))
 $gitApplication = (Get-Command git -CommandType Application | Select-Object -First 1).Source
-[IO.Directory]::CreateDirectory((Join-Path $fixture 'tests/ci')) | Out-Null
-Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Get-DocumentationExportPreflight.ps1') -Destination (Join-Path $fixture 'tests/ci')
+[IO.Directory]::CreateDirectory((Join-Path $fixture 'tools/ci')) | Out-Null
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot '../../tools/ci/Get-DocumentationExportPreflight.ps1') -Destination (Join-Path $fixture 'tools/ci')
 function Commit-Fixture {
     & $gitApplication -C $fixture add .
     & $gitApplication -C $fixture -c user.name=Fixture -c user.email=fixture@example.invalid commit -qm fixture
@@ -22,7 +22,7 @@ function Invoke-RestMethod {
     return @{ workflow_runs = @(@{ id=1; run_attempt=1; head_sha=$fixtureBaseline; head_repository=@{full_name='Wolfiora/InnoEngine'}; path='.github/workflows/documentation-api.yml' }) }
 }
 function Assert-Plan([string] $Expected) {
-    & (Join-Path $fixture 'tests/ci/Get-DocumentationExportPreflight.ps1')
+    & (Join-Path $fixture 'tools/ci/Get-DocumentationExportPreflight.ps1')
     $result = Get-Content (Join-Path $fixture 'artifacts/documentation-export/preflight.json') -Raw | ConvertFrom-Json
     if ($result.status -cne $Expected) { throw "Expected $Expected, received $($result.status)." }
 }

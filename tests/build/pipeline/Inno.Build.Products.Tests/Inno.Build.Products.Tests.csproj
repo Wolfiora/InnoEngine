@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InnoValidationLayer>domain</InnoValidationLayer>
+    <InnoValidationEnvironment>windows;macos;linux</InnoValidationEnvironment>
+  </PropertyGroup>
+  <Import Project="../../../RepositoryInput.targets" />
+  <ItemGroup>
+    <InnoValidationInput Include="../../../../.github/native-targets.json;../../../../.github/validation-hosts.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../support/Inno.Testing.Build/Inno.Testing.Build.csproj" />
+    <ProjectReference Include="../../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Shaders/Inno.Build.Toolchains.Bgfx.Shaders.csproj" />
+    <ProjectReference Include="../../../../backends/DotNet/build/Inno.Build.Managed.DotNet/Inno.Build.Managed.DotNet.csproj" />
+    <ProjectReference Include="../../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" />
+    <ProjectReference Include="../../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" />
+    <ProjectReference Include="../../../../backends/MiniAudio/build/Inno.Build.Toolchains.MiniAudio/Inno.Build.Toolchains.MiniAudio.csproj" />
+    <ProjectReference Include="../../../../backends/RmlUi/build/Inno.Build.Toolchains.UI/Inno.Build.Toolchains.UI.csproj" />
+    <ProjectReference Include="../../../../backends/Sdl3/build/Inno.Build.Toolchains.Sdl3/Inno.Build.Toolchains.Sdl3.csproj" />
+    <ProjectReference Include="../../../../backends/Text/build/Inno.Build.Toolchains.Text/Inno.Build.Toolchains.Text.csproj" />
+    <ProjectReference Include="../../../../build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj" />
+    <ProjectReference Include="../../../../build/composition/Inno.Build.Composition/Inno.Build.Composition.csproj" />
+    <ProjectReference Include="../../../../build/distributions/Inno.Build.Distribution.Standard/Inno.Build.Distribution.Standard.csproj" />
+    <ProjectReference Include="../../../../build/managed/Inno.Build.Managed/Inno.Build.Managed.csproj" />
+    <ProjectReference Include="../../../../build/pipeline/Inno.Build/Inno.Build.csproj" />
+    <ProjectReference Include="../../../../build/products/Inno.Build.Products.Standard/Inno.Build.Products.Standard.csproj" />
+    <ProjectReference Include="../../../../build/support/Inno.Build.SupportPacks.Core/Inno.Build.SupportPacks.Core.csproj" />
+    <ProjectReference Include="../../../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" />
+    <ProjectReference Include="../../../../platforms/BrowserWasm32/integrations/Inno.Integration.BrowserWasm32.Bgfx/Inno.Integration.BrowserWasm32.Bgfx.csproj" />
+    <ProjectReference Include="../../../../platforms/MacOSArm64/build/Inno.Build.MacOSArm64/Inno.Build.MacOSArm64.csproj" />
+    <ProjectReference Include="../../../../platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Bgfx/Inno.Integration.MacOSArm64.Bgfx.csproj" />
+    <ProjectReference Include="../../../../platforms/WindowsX64/build/Inno.Build.WindowsX64/Inno.Build.WindowsX64.csproj" />
+    <ProjectReference Include="../../../../platforms/WindowsX64/integrations/Inno.Integration.WindowsX64.Bgfx/Inno.Integration.WindowsX64.Bgfx.csproj" />
+    <ProjectReference Include="../../../../src/content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" />
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" />
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Identity/Inno.Core.Identity.csproj" />
+    <ProjectReference Include="../../../../src/runtime/engine/Inno.Runtime/Inno.Runtime.csproj" />
+    <ProjectReference Include="../../../../src/services/rendering/Inno.Rendering/Inno.Rendering.csproj" />
+    <ProjectReference Include="../../../support/Inno.Testing.Source/Inno.Testing.Source.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.6.6" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

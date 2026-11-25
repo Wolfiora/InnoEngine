@@ -1,0 +1,398 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Xunit;
+using Inno.Core.Events;
+
+namespace Inno.Core.Events.Tests;
+
+public sealed class EventDispatcherBehaviorTests
+{
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RoutedMovementSharesGlobalConsumptionAcrossDispatchers(bool consumeRouted)
+    {
+        var source = new MouseMovedEvent(17, 240f, 180f);
+        MouseMovedEvent routed = source.WithPosition(40f, 30f);
+        MouseMovedEvent routedAgain = routed.WithPosition(4f, 3f);
+        var platform = new EventDispatcher();
+        var game = new EventDispatcher();
+        using EventHub platformHub = platform.CreateHub();
+        using EventHub gameHub = game.CreateHub();
+        int deliveries = 0;
+        platformHub.Listen<MouseMovedEvent>(_ => deliveries++);
+        gameHub.Listen<MouseMovedEvent>(_ => deliveries++);
+
+        (consumeRouted ? routedAgain : source).HandleInGlobal();
+        platform.Emit(source);
+        game.Emit(routed);
+
+        Assert.Equal(0, deliveries);
+        Assert.True(source.isGlobalHandled);
+        Assert.True(routed.isGlobalHandled);
+        Assert.True(routedAgain.isGlobalHandled);
+        Assert.Equal(17u, routed.windowID);
+        Assert.Equal(40f, routed.x);
+        Assert.Equal(30f, routed.y);
+        Assert.Equal(240f, source.x);
+        Assert.Equal(180f, source.y);
+    }
+
+    [Fact]
+    public void RoutedMovementKeepsHubConsumptionLocalToEachRepresentation()
+    {
+        var source = new MouseMovedEvent(17, 240f, 180f);
+        MouseMovedEvent routed = source.WithPosition(40f, 30f);
+        var platform = new EventDispatcher();
+        var game = new EventDispatcher();
+        using EventHub platformHub = platform.CreateHub();
+        using EventHub gameHub = game.CreateHub();
+        platformHub.Listen<MouseMovedEvent>(value => value.HandleInHub());
+        int deliveries = 0;
+        gameHub.Listen<MouseMovedEvent>(_ => deliveries++);
+
+        platform.Emit(source);
+        game.Emit(routed);
+
+        Assert.Equal(1, deliveries);
+        Assert.False(source.isGlobalHandled);
+        Assert.False(routed.isGlobalHandled);
+    }
+
+    [Fact]
+    public void DisposeHubMakesHubInvalidAndPreventsFurtherListen()
+    {
+        var dispatcher = new EventDispatcher();
+        EventHub hub = dispatcher.CreateHub();
+
+        Assert.True(hub.isValid);
+        hub.Dispose();
+
+        Assert.False(hub.isValid);
+        Assert.Throws<InvalidOperationException>(() => hub.Listen<ProbeEvent>(_ => {}));
+    }
+
+    [Fact]
+    public void ListenTokenDisposeUnsubscribesListener()
+    {
+        var dispatcher = new EventDispatcher();
+        using EventHub hub = dispatcher.CreateHub();
+        int count = 0;
+
+        IDisposable token = hub.Listen<ProbeEvent>(_ => count++);
+        dispatcher.Emit(new ProbeEvent(1));
+        token.Dispose();
+        dispatcher.Emit(new ProbeEvent(2));
+
+        Assert.Equal(1, count);
+    }
+
+    [Fact]
+    public void ListenTokenDisposeConcurrentDisposeIsSafeAndIdempotent()
+    {
+        var dispatcher = new EventDispatcher();
+        using EventHub hub = dispatcher.CreateHub();
+        int count = 0;
+
+        IDisposable token = hub.Listen<ProbeEvent>(_ => Interlocked.Increment(ref count));
+        Parallel.For(0, 64, _ => token.Dispose());
+        dispatcher.Emit(new ProbeEvent(42));
+
+        Assert.Equal(0, count);
+    }
+
+    [Fact]
+    public void ListenOnceInvokesOnlyOneTime()
+    {
+        var dispatcher = new EventDispatcher();
+        using EventHub hub = dispatcher.CreateHub();
+        int count = 0;
+
+        hub.ListenOnce<ProbeEvent>(_ => count++);
+
+        dispatcher.Emit(new ProbeEvent(1));
+        dispatcher.Emit(new ProbeEvent(2));
+
+        Assert.Equal(1, count);
+    }
+
+    [Fact]
+    public async Task ConcurrentEmitInvokesOnceListenerOnlyOnce()
+    {
+        var dispatcher = new EventDispatcher();
+        using EventHub hub = dispatcher.CreateHub();
+        int count = 0;
+
+        hub.ListenOnce<ProbeEvent>(_ => Interlocked.Increment(ref count));
+        await EmitTogetherAsync(dispatcher);
+
+        Assert.Equal(1, count);
+    }
+
+    [Fact]
+    public void EnqueueAndFlushDispatchesQueuedEvents()
+    {
+        var dispatcher = new EventDispatcher();
+        using EventHub hub = dispatcher.CreateHub();
+        List<int> values = [];
+
+        hub.Listen<ProbeEvent>(e => values.Add(e.value));
+
+        dispatcher.Enqueue(new ProbeEvent(7));
+        dispatcher.Enqueue(new ProbeEvent(9));
+        dispatcher.Flush();
+
+        Assert.Equal([7, 9], values);
+    }
+
+    [Fact]
+    public void QueueCapacityIsExplicitAndRecursiveEventsWaitForAnotherFlush()
+    {
+        var dispatcher = new EventDispatcher(queueCapacity: 2, flushBudget: 1);
+        using EventHub hub = dispatcher.CreateHub();
+        List<int> values = [];
+        hub.Listen<ProbeEvent>(value =>
+        {
+            values.Add(value.value);
+            dispatcher.Enqueue(new ProbeEvent(value.value + 10));
+        });
+        Assert.True(dispatcher.TryEnqueue(new ProbeEvent(1)));
+        Assert.True(dispatcher.TryEnqueue(new ProbeEvent(2)));
+        Assert.False(dispatcher.TryEnqueue(new ProbeEvent(3)));
+        Assert.Throws<InvalidOperationException>(() => dispatcher.Enqueue(new ProbeEvent(4)));
+        dispatcher.Flush();
+        Assert.Equal(new[] { 1 }, values);
+        Assert.Equal(2, dispatcher.pendingCount);
+        dispatcher.Flush();
+        Assert.Equal(new[] { 1, 2 }, values);
+        Assert.Equal(2, dispatcher.DiscardPending());
+        Assert.Equal(0, dispatcher.pendingCount);
+    }
+
+    [Fact]
+    public void HubOrderHigherOrderRunsFirst()
+    {
+        var dispatcher = new EventDispatcher();
+        using EventHub lowHub = dispatcher.CreateHub(order: 0);
+        using EventHub highHub = dispatcher.CreateHub(order: 10);
+        List<string> order = [];
+
+        lowHub.Listen<ProbeEvent>(_ => order.Add("low"));
+        highHub.Listen<ProbeEvent>(_ => order.Add("high"));
+
+        dispatcher.Emit(new ProbeEvent(1));
+
+        Assert.Equal(["high", "low"], order);
+    }
+
+    [Fact]
+    public void HandledStopsPropagationWithinHubAndAcrossHubs()
+    {
+        var dispatcher = new EventDispatcher();
+        using EventHub firstHub = dispatcher.CreateHub(order: 10);
+        using EventHub secondHub = dispatcher.CreateHub(order: 0);
+        bool firstHubSecondListenerCalled = false;
+        bool secondHubCalled = false;
+
+        firstHub.Listen<ProbeEvent>(e => e.HandleInGlobal());
+        firstHub.Listen<ProbeEvent>(_ => firstHubSecondListenerCalled = true);
+        secondHub.Listen<ProbeEvent>(_ => secondHubCalled = true);
+
+        dispatcher.Emit(new ProbeEvent(3));
+
+        Assert.False(firstHubSecondListenerCalled);
+        Assert.False(secondHubCalled);
+    }
+
+    [Fact]
+    public void HandledEventBeforeEmitSkipsDispatch()
+    {
+        var dispatcher = new EventDispatcher();
+        using EventHub hub = dispatcher.CreateHub();
+        bool called = false;
+
+        hub.Listen<ProbeEvent>(_ => called = true);
+
+        var ev = new ProbeEvent(5);
+        ev.HandleInGlobal();
+        dispatcher.Emit(ev);
+
+        Assert.False(called);
+    }
+
+    [Fact]
+    public void HandleInHubStopsOnlyCurrentHub()
+    {
+        var dispatcher = new EventDispatcher();
+        using EventHub firstHub = dispatcher.CreateHub(order: 10);
+        using EventHub secondHub = dispatcher.CreateHub(order: 0);
+        bool firstHubSecondListenerCalled = false;
+        bool secondHubCalled = false;
+
+        firstHub.Listen<ProbeEvent>(e => e.HandleInHub());
+        firstHub.Listen<ProbeEvent>(_ => firstHubSecondListenerCalled = true);
+        secondHub.Listen<ProbeEvent>(_ => secondHubCalled = true);
+
+        dispatcher.Emit(new ProbeEvent(10));
+
+        Assert.False(firstHubSecondListenerCalled);
+        Assert.True(secondHubCalled);
+    }
+
+    [Fact]
+    public void HandleInHubDoesNotAffectNextHub()
+    {
+        var dispatcher = new EventDispatcher();
+        using EventHub firstHub = dispatcher.CreateHub(order: 10);
+        using EventHub secondHub = dispatcher.CreateHub(order: 0);
+        bool secondHubFirstListenerCalled = false;
+        bool secondHubSecondListenerCalled = false;
+
+        firstHub.Listen<ProbeEvent>(e => e.HandleInHub());
+        secondHub.Listen<ProbeEvent>(_ => secondHubFirstListenerCalled = true);
+        secondHub.Listen<ProbeEvent>(_ => secondHubSecondListenerCalled = true);
+
+        dispatcher.Emit(new ProbeEvent(11));
+
+        Assert.True(secondHubFirstListenerCalled);
+        Assert.True(secondHubSecondListenerCalled);
+    }
+
+    [Fact]
+    public async Task ConcurrentEmitDeliversBothEventsToBothHubs()
+    {
+        var dispatcher = new EventDispatcher();
+        using EventHub hubA = dispatcher.CreateHub(order: 10);
+        using EventHub hubB = dispatcher.CreateHub(order: 0);
+        int countA = 0;
+        int countB = 0;
+
+        hubA.Listen<ProbeEvent>(_ => Interlocked.Increment(ref countA));
+        hubB.Listen<ProbeEvent>(_ => Interlocked.Increment(ref countB));
+
+        await EmitTogetherAsync(dispatcher);
+
+        Assert.Equal(2, countA);
+        Assert.Equal(2, countB);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ConcurrentEmitKeepsConsumptionScopedToTheHandledEvent(bool handleGlobally)
+    {
+        var dispatcher = new EventDispatcher();
+        using EventHub first = dispatcher.CreateHub(order: 10);
+        using EventHub next = dispatcher.CreateHub(order: 0);
+        var received = new int[2];
+        var laterListeners = new int[2];
+        var laterHub = new int[2];
+        first.Listen<ProbeEvent>(evnt =>
+        {
+            Interlocked.Increment(ref received[evnt.value]);
+            if (evnt.value == 0)
+            {
+                if (handleGlobally)
+                {
+                    evnt.HandleInGlobal();
+                }
+                else
+                {
+                    evnt.HandleInHub();
+                }
+            }
+        });
+        first.Listen<ProbeEvent>(evnt => Interlocked.Increment(ref laterListeners[evnt.value]));
+        next.Listen<ProbeEvent>(evnt => Interlocked.Increment(ref laterHub[evnt.value]));
+
+        await EmitTogetherAsync(dispatcher);
+
+        Assert.Equal(new[] { 1, 1 }, received);
+        Assert.Equal(new[] { 0, 1 }, laterListeners);
+        Assert.Equal(new[] { handleGlobally ? 0 : 1, 1 }, laterHub);
+    }
+
+    [Fact]
+    public void AnnounceDispatchesImmediatelyOnlyInCurrentHub()
+    {
+        var dispatcher = new EventDispatcher();
+        using EventHub hubA = dispatcher.CreateHub(order: 10);
+        using EventHub hubB = dispatcher.CreateHub(order: 0);
+        bool hubACalled = false;
+        bool hubBCalled = false;
+
+        hubA.Listen<ProbeEvent>(_ => hubACalled = true);
+        hubB.Listen<ProbeEvent>(_ => hubBCalled = true);
+
+        hubA.Announce(new ProbeEvent(1));
+
+        Assert.True(hubACalled);
+        Assert.False(hubBCalled);
+    }
+
+    [Fact]
+    public void AnnounceRespectsHandleInHubInSameHub()
+    {
+        var dispatcher = new EventDispatcher();
+        using EventHub hub = dispatcher.CreateHub();
+        bool secondCalled = false;
+
+        hub.Listen<ProbeEvent>(e => e.HandleInHub());
+        hub.Listen<ProbeEvent>(_ => secondCalled = true);
+
+        hub.Announce(new ProbeEvent(2));
+
+        Assert.False(secondCalled);
+    }
+
+    [Fact]
+    public void DisposeHubDuringDispatchStopsRemainingListenersInSameHub()
+    {
+        var dispatcher = new EventDispatcher();
+        EventHub hub = dispatcher.CreateHub();
+        bool secondCalled = false;
+
+        hub.Listen<ProbeEvent>(_ => hub.Dispose());
+        hub.Listen<ProbeEvent>(_ => secondCalled = true);
+
+        dispatcher.Emit(new ProbeEvent(100));
+
+        Assert.False(secondCalled);
+        Assert.False(hub.isValid);
+    }
+
+    [Fact]
+    public void DisposeHubDuringAnnounceStopsRemainingListenersInSameHub()
+    {
+        var dispatcher = new EventDispatcher();
+        EventHub hub = dispatcher.CreateHub();
+        bool secondCalled = false;
+
+        hub.Listen<ProbeEvent>(_ => hub.Dispose());
+        hub.Listen<ProbeEvent>(_ => secondCalled = true);
+
+        hub.Announce(new ProbeEvent(101));
+
+        Assert.False(secondCalled);
+        Assert.False(hub.isValid);
+    }
+
+    private static async Task EmitTogetherAsync(EventDispatcher dispatcher)
+    {
+        using var start = new Barrier(2);
+        await Task.WhenAll(Task.Run(() => Emit(0)), Task.Run(() => Emit(1)));
+
+        void Emit(int value)
+        {
+            Assert.True(start.SignalAndWait(TimeSpan.FromSeconds(10)));
+            dispatcher.Emit(new ProbeEvent(value));
+        }
+    }
+
+    private sealed class ProbeEvent(int value) : Event
+    {
+        public int value { get; } = value;
+    }
+}

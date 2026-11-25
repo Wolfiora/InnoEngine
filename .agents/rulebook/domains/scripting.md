@@ -1,5 +1,5 @@
 ---
-paths: ["src/foundation/scripting/**", "src/runtime/scripting/**", "tests/scripting/**", "**/*ScriptingApi*"]
+paths: ["src/foundation/scripting/**", "src/runtime/scripting/**", "tests/runtime/scripting/**", "tests/composition/editor/features/Inno.Editor.Scripting.Tests/**", "**/*ScriptingApi*"]
 tags: [scripting]
 ---
 # Scripting

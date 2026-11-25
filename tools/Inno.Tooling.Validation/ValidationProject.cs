@@ -9,6 +9,7 @@ namespace Inno.Tooling.Validation;
 internal sealed record ValidationProject(
     string path,
     string[] references,
+    string[] subjects,
     string[] inputs,
     string layer,
     string environment,
@@ -34,6 +35,10 @@ internal sealed record ValidationProject(
             throw new InvalidDataException($"Native test owner must declare its product deployment: {path}");
         }
         var inputs = new HashSet<string>(StringComparer.Ordinal) { path };
+        if (Value("InnoDevelopmentEditorBuildProperties") is { Length: > 0 } editorProperties)
+        {
+            inputs.Add(Relative(Path.GetFullPath(editorProperties, root)));
+        }
         var references = new HashSet<string>(StringComparer.Ordinal);
         bool native = false;
         IEnumerable<JsonElement> variants = selectedVariant is JsonElement selected
@@ -86,6 +91,11 @@ internal sealed record ValidationProject(
         return new(
             path,
             references.Order(StringComparer.Ordinal).ToArray(),
+            snapshot.GetProperty("Items")
+                .GetProperty("InnoValidationSubject")
+                .EnumerateArray()
+                .Select(item => Relative(item.GetProperty("FullPath").GetString()!))
+                .ToArray(),
             inputs.Order(StringComparer.Ordinal).ToArray(),
             Value("InnoValidationLayer"),
             Value("InnoValidationEnvironment"),

@@ -1,11 +1,21 @@
 $ErrorActionPreference = 'Stop'
+. "$PSScriptRoot/../../tools/ci/BackendReleaseCatalog.ps1"
 $root = Join-Path ([IO.Path]::GetFullPath('../../artifacts/validation/backend-publication', $PSScriptRoot)) ([Guid]::NewGuid().ToString('N'))
 $platforms = @(Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.github/native-targets.json') -Raw | ConvertFrom-Json)
-$revision = 'a'*40
+$revision = (git rev-parse HEAD).Trim()
 $original = $env:GH_TOKEN
 $retiredTag = 'backend-prebuilts-2020.01.01.1'
 $retiredObject = 'f'*40
 $server = @{release=$null;tag=$null;reference=$null;uploads=@{};interrupted=$false;denyDraft=$false;wrongDigest=$false;recoveredPlaceholder=$false;changedPlaceholder=$false}
+$published = @{}
+$objects = @{}
+$tagRefs = @{}
+$assetBytes = @{}
+function Invoke-WebRequest($Uri,$Headers,$OutFile) {
+    $id = $Uri.Split('/')[-1]
+    if (!$assetBytes.ContainsKey($id)) { throw "Unexpected archive request: $Uri" }
+    [IO.File]::WriteAllBytes($OutFile,$assetBytes[$id])
+}
 function Invoke-RestMethod($Method,$Uri,$Headers,$ContentType,$Body,$InFile) {
     if ($Uri -like '*/actions/runs?status=*') { return @{total_count=0;workflow_runs=@()} }
     if ($Uri.EndsWith('/releases/3')) {
@@ -14,12 +24,12 @@ function Invoke-RestMethod($Method,$Uri,$Headers,$ContentType,$Body,$InFile) {
     if ($Uri.EndsWith("/git/ref/tags/$retiredTag")) { return $server.retiredRef }
     if ($Uri.EndsWith("/git/tags/$retiredObject")) { return @{tag=$retiredTag;object=$server.tag.object;message=$server.tag.message} }
     if ($Uri.EndsWith("/git/refs/tags/$retiredTag") -and $Method -ceq 'Delete') { $server.retiredRef = $null; return }
-    if ($Uri -like '*/releases?per_page=*') { if ($server.release) { return $server.release }; return }
+    if ($Uri -like '*/releases?per_page=*') { $published.Values; if ($server.release) { $server.release }; return }
     if ($Uri -like '*/releases' -and $Method -ceq 'Post') {
         if ($server.denyDraft) { throw 'Release write permission denied.' }
         if ($server.release) { throw 'Created a duplicate release.' }
         $server.release = $Body | ConvertFrom-Json -AsHashtable
-        $server.release.id = 7
+        $server.release.id = 7 + $published.Count
         $server.release.upload_url = 'https://fixture.invalid/uploads'
         $server.release.assets = @()
         $server.release.published_at = '2026-11-19'
@@ -34,7 +44,8 @@ function Invoke-RestMethod($Method,$Uri,$Headers,$ContentType,$Body,$InFile) {
             throw 'Interrupted test upload'
         }
         if ($server.uploads.ContainsKey($name)) { throw 'Uploaded the same asset twice.' }
-        $asset = @{id=20+$server.uploads.Count;name=$name;state='uploaded';digest='sha256:'+(Get-FileHash -LiteralPath $InFile).Hash.ToLowerInvariant()}
+        $asset = @{id=20+$assetBytes.Count;name=$name;state='uploaded';digest='sha256:'+(Get-FileHash -LiteralPath $InFile).Hash.ToLowerInvariant()}
+        $assetBytes[[string]$asset.id] = [IO.File]::ReadAllBytes($InFile)
         $server.uploads[$name] = $asset
         $server.release.assets += $asset
         return $asset
@@ -44,7 +55,7 @@ function Invoke-RestMethod($Method,$Uri,$Headers,$ContentType,$Body,$InFile) {
         $server.recoveredPlaceholder = $true
         return
     }
-    if ($Uri -like '*/releases/7') {
+    if ($server.release -and $Uri.EndsWith("/releases/$($server.release.id)")) {
         if ($server.changedPlaceholder) {
             $current = $server.release | ConvertTo-Json -Depth 5 | ConvertFrom-Json -AsHashtable
             ($current.assets | Where-Object state -CEQ 'starter').id = 99
@@ -54,20 +65,26 @@ function Invoke-RestMethod($Method,$Uri,$Headers,$ContentType,$Body,$InFile) {
         return $server.release
     }
     if ($Uri -like '*/git/ref/tags/*') {
+        $name = $Uri.Split('/')[-1]
+        if ($tagRefs.ContainsKey($name)) { return $tagRefs[$name] }
         if ($server.reference) { return $server.reference }
         $response = [Net.Http.HttpResponseMessage]::new([Net.HttpStatusCode]::NotFound)
         throw [Microsoft.PowerShell.Commands.HttpResponseException]::new('Missing test tag',$response)
     }
     if ($Uri -like '*/git/tags' -and $Method -ceq 'Post') {
         $payload = $Body | ConvertFrom-Json
-        $server.tag = @{tag=$payload.tag;object=@{type='commit';sha=$payload.object};message=$payload.message;sha='c'*40}
+        $server.tag = @{tag=$payload.tag;object=@{type='commit';sha=$payload.object};message=$payload.message;sha=(100+$published.Count).ToString('x40')}
         return $server.tag
     }
     if ($Uri -like '*/git/refs' -and $Method -ceq 'Post') {
         $server.reference = @{object=@{type='tag';sha=$server.tag.sha}}
         return $server.reference
     }
-    if ($Uri -like '*/git/tags/*') { return $server.tag }
+    if ($Uri -like '*/git/tags/*') {
+        $sha = $Uri.Split('/')[-1]
+        if ($objects.ContainsKey($sha)) { return $objects[$sha] }
+        return $server.tag
+    }
     throw "Unexpected publication request $Method $Uri"
 }
 try {
@@ -97,14 +114,14 @@ try {
           results=@(@{id='consumer';status='Passed';seconds=1.0;inputIdentity='d'*64;outputs=@{}})} |
             ConvertTo-Json -Depth 8 | Set-Content (Join-Path $directory 'results.json')
     }
-    function Publish { & "$PSScriptRoot/Publish-BackendPrebuilts.ps1" -Directory $root -Repository 'fixture/engine' -Revision $revision -ApiUrl 'https://fixture.invalid' }
+    function Publish { & "$PSScriptRoot/../../tools/ci/Publish-BackendPrebuilts.ps1" -Directory $root -Repository 'fixture/engine' -Revision $revision -ApiUrl 'https://fixture.invalid' }
     $proofPath = Join-Path (Join-Path $root $platforms[0].target) 'consumption.json'
     $completeProof = [IO.File]::ReadAllBytes($proofPath)
     $incomplete = Get-Content $proofPath -Raw | ConvertFrom-Json
     $incomplete.checks[0].source = 'backend-prebuilts-2020.01.01.1'
     $incomplete | ConvertTo-Json -Depth 6 | Set-Content $proofPath
     try { Publish; throw 'An untrusted product proof passed.' } catch {
-        if ($_.Exception.Message -cnotin @('Missing real cold product consumption.', 'Untrusted SDK proof source.')) { throw }
+        if ($_.Exception.Message -cne 'Untrusted SDK proof source.') { throw }
     }
     $incomplete.checks = @()
     $incomplete | ConvertTo-Json -Depth 6 | Set-Content $proofPath
@@ -119,6 +136,12 @@ try {
     try { Publish; throw 'An incorrect upload receipt passed.' } catch { if ($_.Exception.Message -notlike 'GitHub failed to verify *') { throw } }
     if (!$server.release.draft -or $server.reference) { throw 'A mismatched upload became consumable.' }
     $server.wrongDigest = $false
+    $originalBody = $server.release.body
+    $server.release.body = $originalBody.Replace('<!-- backend-assets ', '<!-- backend-assets another-set ')
+    try { Publish; throw 'A sibling publisher took over an interrupted draft.' } catch {
+        if ($_.Exception.Message -cne 'Another backend asset set owns the pending draft.') { throw }
+    }
+    $server.release.body = $originalBody
     try { Publish; throw 'The interrupted upload passed.' } catch { if ($_.Exception.Message -cne 'Interrupted test upload') { throw } }
     if (!$server.release.draft -or $server.tag -or $server.uploads.Count -ne 1) { throw 'A partial release became consumable.' }
     $server.changedPlaceholder = $true
@@ -139,6 +162,51 @@ try {
     $server.retiredRef.object.sha = $retiredObject
     $result = Publish
     if ($result -notlike 'Published *' -or $server.retiredRef -or $server.release.draft) { throw 'Interrupted retirement left an orphaned tag.' }
+
+    # Promote two independent candidates in sequence. Each publisher receives only its own evidence.
+    foreach ($platform in $platforms | Select-Object -First 2) {
+        $prior = $server.release
+        $published[$prior.tag_name] = $prior
+        $objects[$server.tag.sha] = $server.tag
+        $tagRefs[$prior.tag_name] = $server.reference
+        $server.release = $server.reference = $null
+        $server.uploads = @{}
+        $stage = Join-Path $root "promotion-$($platform.target)"
+        New-Item -ItemType Directory -Path $stage | Out-Null
+        Copy-Item -LiteralPath (Join-Path $root $platform.target) -Destination $stage -Recurse
+        $directory = Join-Path $stage $platform.target
+        $archive = Join-Path $directory $platform.asset
+        $zip = [IO.Compression.ZipFile]::Open($archive,[IO.Compression.ZipArchiveMode]::Update)
+        try { $null = $zip.CreateEntry('new-content') } finally { $zip.Dispose() }
+        $hash = (Get-FileHash $archive).Hash.ToLowerInvariant()
+        $proof = Get-Content "$directory/consumption.json" -Raw | ConvertFrom-Json
+        $proof.commit = 'b' * 40
+        $proof.sha256 = $hash
+        foreach ($check in $proof.checks) { $check.source = $prior.tag_name }
+        $proof | ConvertTo-Json -Depth 8 | Set-Content "$directory/consumption.json"
+        $plan = Get-Content "$directory/plan.json" -Raw | ConvertFrom-Json
+        $plan.backendPackages[0].sha256 = $hash
+        $plan | ConvertTo-Json -Depth 8 | Set-Content "$directory/plan.json"
+        $results = Get-Content "$directory/results.json" -Raw | ConvertFrom-Json
+        $results.planIdentity = (Get-FileHash "$directory/plan.json").Hash.ToLowerInvariant()
+        $results | ConvertTo-Json -Depth 8 | Set-Content "$directory/results.json"
+        $promotion = @{Directory=$stage;Repository='fixture/engine';Revision=$revision;ApiUrl='https://fixture.invalid';ChangedTargets=@($platform.target)}
+        $origin = @{commit=$proof.commit;tree=(git rev-parse 'HEAD^{tree}').Trim();run=42;attempt=1;artifact=13;digest=('sha256:'+('1'*64))}
+        $promotion.Promoted = @(@{target=$platform.target;promotion=$origin})
+        $verified = & "$PSScriptRoot/../../tools/ci/Publish-BackendPrebuilts.ps1" @promotion -VerifyOnly
+        if ($verified -notlike 'Verified candidate inputs*' -or $server.release) { throw 'Candidate verification must validate trusted reuse without publishing.' }
+        $result = & "$PSScriptRoot/../../tools/ci/Publish-BackendPrebuilts.ps1" @promotion
+        if ($result -notlike 'Published *' -or $server.release.draft -or $server.uploads[$platform.asset].digest -cne "sha256:$hash") { throw 'The independently certified platform was not published.' }
+        $catalog = Read-BackendTagCatalog $server.tag.message
+        if ($catalog.revision -cne $revision -or $catalog.platforms[$platform.target].origin.commit -cne $proof.commit) {
+            throw 'The published catalog lost the landed revision or the original producer.'
+        }
+        foreach ($asset in $prior.assets | Where-Object name -CNE $platform.asset) {
+            if ($server.uploads[$asset.name].digest -cne $asset.digest) { throw "A sibling publication changed $($asset.name)." }
+        }
+        $result = & "$PSScriptRoot/../../tools/ci/Publish-BackendPrebuilts.ps1" @promotion
+        if ($result -notlike 'Reused *') { throw 'A platform publication retry created another catalog.' }
+    }
 } finally {
     $env:GH_TOKEN = $original
     if ([IO.Directory]::Exists($root)) { [IO.Directory]::Delete($root,$true) }

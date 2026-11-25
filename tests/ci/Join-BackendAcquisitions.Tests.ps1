@@ -10,17 +10,15 @@ $owner = [IO.Directory]::CreateDirectory((Join-Path $work "backend-request-$runn
 $file = Join-Path $owner 'acquisition.json'
 function Join-Requests([array]$Packages, [string]$Commit=$revision, [string]$RebuildTargets, [bool]$Deferred=($Packages.Count -gt 0)) {
     [IO.File]::WriteAllText($file,(ConvertTo-Json @{commit=$Commit;packages=$Packages;deferred=$Deferred;executedLocally=$false} -Depth 8))
-    & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts @($runner) -Revision $revision -RebuildTargets $RebuildTargets
+    & "$PSScriptRoot/../../tools/ci/Join-BackendAcquisitions.ps1" -Received $work -Hosts @($runner) -Revision $revision -RebuildTargets $RebuildTargets
 }
 try {
     $none = Join-Requests @()
     if ($none.platforms.Count -or $none.producers.Count -or $none.deferred.Count) { throw 'An independent plan allocated a backend job.' }
-    $prior = @{target=$target;operation='consume';sha256=('b'*64);assetId=12}
+    $prior = @{target=$target;operation='consume';sha256=('b'*64);assetId=12;tag='backend-prebuilts-2026.11.19.1'}
     $warm = Join-Requests @($prior)
     if ($warm.producers.Count -or $warm.platforms.Count -ne 1 -or $warm.platforms[0].nativeInputs) { throw 'A matching backend ZIP scheduled source production.' }
-    if ($warm.deferred[0].pattern -cne "backend-candidate-$target" -or $warm.deferred[0].destination -cne "artifacts/candidates/backend-candidate-$target") {
-        throw 'The single platform archive would lose its named directory during download.'
-    }
+    if ($warm.deferred[0].pattern) { throw 'Release consumption requested a candidate artifact.' }
     $peer = $hostsRegistered | Where-Object runner -CNE $runner | Select-Object -First 1
     if ($peer) {
         $peerOwner = [IO.Directory]::CreateDirectory((Join-Path $work "backend-request-$($peer.runner)")).FullName
@@ -30,30 +28,38 @@ try {
             $peerPackage = @{target=$peer.target;operation='produce';sha256=$null;assetId=$null}
             $peerDecision = @{commit=$revision;packages=@($peerPackage);deferred=$true;executedLocally=$false;portableTestChanges=$false}
             [IO.File]::WriteAllText($peerFile,(ConvertTo-Json $peerDecision -Depth 8))
-            $split = & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
+            $split = & "$PSScriptRoot/../../tools/ci/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
             if ($split.chains.Count -ne 2) { throw 'Disjoint target requests must start independent chains.' }
+            if ($split.readerTags.Count -ne 1 -or $split.readerTags[0] -cne $prior.tag) { throw 'Publication lost a sibling reader.' }
+            $coldHost = @($platforms | Where-Object runner -CEQ $runner | ForEach-Object {
+                @{target=$_.target;operation='produce';sha256=$null;assetId=$null}
+            })
+            [IO.File]::WriteAllText($file,(ConvertTo-Json @{commit=$revision;packages=$coldHost;deferred=$true;executedLocally=$false} -Depth 8))
+            $initial = & "$PSScriptRoot/../../tools/ci/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
+            if ($initial.chains.Count -ne 1 -or $initial.chains[0].producers.include.Count -ne $platforms.Count) { throw 'The initial catalog requires the complete producer set.' }
+            $null = Join-Requests @($prior)
             $peerDecision.packages += $prior
             [IO.File]::WriteAllText($peerFile,(ConvertTo-Json $peerDecision -Depth 8))
-            $shared = & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
+            $shared = & "$PSScriptRoot/../../tools/ci/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
             if ($shared.chains.Count -ne 1 -or $shared.chains[0].consumers.include.Count -ne 2 -or $shared.chains[0].platforms.include.Count -ne 2) {
                 throw 'A shared target requires one acquisition for both consumers.'
             }
             $peerDecision.packages = @()
             $peerDecision.deferred = $false
             [IO.File]::WriteAllText($peerFile,(ConvertTo-Json $peerDecision -Depth 8))
-            $ready = & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
+            $ready = & "$PSScriptRoot/../../tools/ci/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
             if ($ready.independent.Count -ne 1 -or $ready.independent[0].runner -cne $peer.runner -or $ready.chains.Count -ne 1) {
                 throw 'A host with no pending producer must not wait for other hosts.'
             }
             $peerDecision.executedLocally = $true
             [IO.File]::WriteAllText($peerFile,(ConvertTo-Json $peerDecision -Depth 8))
             $rejected = $false
-            try { $null = & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision }
+            try { $null = & "$PSScriptRoot/../../tools/ci/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision }
             catch { $rejected = $_.Exception.Message.Contains('inline host') }
             if (!$rejected) { throw 'A product host was allowed to suppress its independent worker.' }
             $peerDecision.portableTestChanges = $true
             [IO.File]::WriteAllText($peerFile,(ConvertTo-Json $peerDecision -Depth 8))
-            $mixed = & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
+            $mixed = & "$PSScriptRoot/../../tools/ci/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
             if ($mixed.independent.Count -or $mixed.chains.Count -ne 1) { throw 'A completed domain suite was dispatched again.' }
         } finally {
             if ([IO.File]::Exists($peerFile)) { [IO.File]::Delete($peerFile) }
@@ -74,9 +80,9 @@ try {
     if ($cross) {
         $changed = @{target=$cross.target;operation='produce';sha256=$null;assetId=$null}
         $candidate = Join-Requests @($prior,$changed)
-        $expectedNames = @(($target,$cross.target) | Sort-Object -CaseSensitive)
-        if ($candidate.deferred[0].pattern -cne "backend-candidate-{$($expectedNames -join ',')}" -or $candidate.deferred[0].destination -cne 'artifacts/candidates') {
-            throw 'Multiple platform archives must each extract beneath their own named directory.'
+        $name = "backend-candidate-$($cross.target)"
+        if ($candidate.deferred[0].pattern -cne $name -or $candidate.deferred[0].destination -cne "artifacts/candidates/$name") {
+            throw 'Only a newly produced cross target should transfer through the current workflow.'
         }
         if ($candidate.producers[0].hostSeed.sha256 -cne $prior.sha256 -or $candidate.producers[0].hostSeed.assetId -ne $prior.assetId) {
             throw 'The cross-target managed SDK bootstrap lost the independently selected host package.'
