@@ -2,6 +2,7 @@
 
 import argparse
 import base64
+from datetime import datetime, timezone
 import gzip
 import io
 import hashlib
@@ -15,7 +16,7 @@ import tempfile
 import zipfile
 from pathlib import Path
 
-from github_artifacts import download, repository_json, repository_pages
+from github_artifacts import download, repository_json, repository_pages, upload_release_asset
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -48,15 +49,7 @@ def validate(*arguments):
     subprocess.run([sdk, entry["assembly"], "validate", *arguments], check=True)
 
 
-def catalog(release):
-    tag = release["tag_name"]
-    if release["draft"] or not release["prerelease"] or not RELEASE.fullmatch(tag):
-        raise ValueError("Only a published versioned prerelease can supply a backend catalog")
-    ref = repository_json(f"git/ref/tags/{tag}")["object"]
-    if ref["type"] != "tag" or not re.fullmatch("[0-9a-f]{40}", ref["sha"]):
-        raise ValueError("Expected an annotated backend tag")
-    obj = repository_json(f"git/tags/{ref['sha']}")
-    message = obj["message"]
+def tag_catalog(message):
     prefix = "InnoEngine backend prebuilt catalog v1\n\n"
     if len(message) > 8 * 1024**2 or not message.startswith(prefix):
         raise ValueError("Invalid backend tag catalog header")
@@ -66,8 +59,21 @@ def catalog(release):
     if len(body) > 32 * 1024**2:
         raise ValueError("Backend tag catalog exceeds its size limit")
     value = json.loads(body)
-    if (value["version"] != 1 or not re.fullmatch("[0-9a-f]{40}", value["revision"]) or not value["platforms"]
-            or obj["tag"] != tag or obj["object"]["type"] != "commit" or obj["object"]["sha"] != value["revision"]):
+    if value["version"] != 1 or not re.fullmatch("[0-9a-f]{40}", value["revision"]) or not value["platforms"]:
+        raise ValueError("Incomplete backend tag catalog")
+    return value
+
+
+def catalog(release):
+    tag = release["tag_name"]
+    if release["draft"] or not release["prerelease"] or not RELEASE.fullmatch(tag):
+        raise ValueError("Only a published versioned prerelease can supply a backend catalog")
+    ref = repository_json(f"git/ref/tags/{tag}")["object"]
+    if ref["type"] != "tag" or not re.fullmatch("[0-9a-f]{40}", ref["sha"]):
+        raise ValueError("Expected an annotated backend tag")
+    obj = repository_json(f"git/tags/{ref['sha']}")
+    value = tag_catalog(obj["message"])
+    if obj["tag"] != tag or obj["object"]["type"] != "commit" or obj["object"]["sha"] != value["revision"]:
         raise ValueError("Backend tag metadata and source disagree")
     names = set()
     for target, platform in value["platforms"].items():
@@ -304,6 +310,55 @@ def acquire_inputs(item):
     if archive:
         command.extend(["--input", prior])
     subprocess.run(command, check=True)
+
+
+def build_candidate(item):
+    from validation import digest, workloads
+
+    registry = registrations()
+    target = item["target"]
+    if item["asset"] != registry[target]["asset"] or item["hostTarget"] not in registry:
+        raise ValueError("Unexpected platform or host registration")
+    sdk = shutil.which("dotnet")
+    if not sdk:
+        raise RuntimeError("Missing selected .NET SDK")
+    workloads({"nativeRequests": [{"target": target}]}, sdk)
+    components = ROOT / "artifacts/components"
+    received = {path.name: path for path in components.iterdir() if path.is_dir()}
+    if received.keys() != {target, item["hostTarget"]}:
+        raise ValueError("Received a different native target or host matrix")
+    combined = {"layout": "platform-packages", "assets": [], "aggregates": []}
+    for platform, directory in received.items():
+        selection = read(directory / "selection.json")
+        store = directory / "native"
+        store.mkdir()
+        for family in ("assets", "aggregates"):
+            for component in selection[family]:
+                name, expected = component["asset"], component["sha256"]
+                if (component["target"] != platform or not re.fullmatch(r"[A-Za-z0-9._-]+\.zip", name)
+                        or not re.fullmatch("[a-f0-9]{64}", expected)):
+                    raise ValueError("Invalid transferred native input")
+                path = directory / name
+                if digest(path) != expected:
+                    raise ValueError(f"Native component changed during transfer: {name}")
+                dest = store / (expected + ".zip")
+                if not dest.exists():
+                    os.link(path, dest)
+            combined[family].extend(selection[family])
+    write(components / "selection.json", combined)
+    consumers = []
+    if item.get("tag"):
+        tag = item["tag"]
+        if not RELEASE.fullmatch(tag) or not item.get("sha256"):
+            raise ValueError("Invalid producer seed")
+        prior = catalog(repository_json(f"releases/tags/{tag}"))[target]
+        if prior["sha256"] != item["sha256"]:
+            raise ValueError("The prior product proof belongs to another platform archive")
+        consumers = prior.get("consumers") or []
+    request = components / "producer.json"
+    write(request, {**item, "consumers": consumers})
+    subprocess.run([sdk, "run", "--project", ROOT / "tools/Inno.Tooling.Cli", "-c", "Release", "--",
+                    "validate", "produce-backends", "--engine-root", ROOT, "--dotnet", sdk, "--request", request], check=True)
 
 
 def bind(platforms=()):
@@ -544,10 +599,302 @@ def receive(platform, directory):
     return (output / asset).resolve()
 
 
+def release_plan(releases, hashes, revision, active, partial):
+    targets = registrations()
+    if (not re.fullmatch("[a-f0-9]{40}", revision) or set(hashes) != {item["asset"] for item in targets.values()}
+            or not all(re.fullmatch("[0-9a-f]{64}", value) for value in hashes.values())):
+        raise ValueError("Incomplete platform matrix or revision")
+    owned = [r for r in releases if RELEASE.fullmatch(r["tag_name"])]
+    if len({r["tag_name"] for r in owned}) != len(owned) or not all(r["prerelease"] for r in owned):
+        raise ValueError("Conflicting backend release ownership")
+    drafts = [r for r in owned if r["draft"]]
+    published = sorted((r for r in owned if not r["draft"]), key=lambda r: (r["published_at"], r["id"]), reverse=True)
+    if len(drafts) > 1 or len(published) > 3:
+        raise ValueError("Unexpected backend release inventory")
+    for r in owned:
+        names = set()
+        for asset in r["assets"]:
+            name = asset["name"]
+            if (name in names or not re.fullmatch(r"[a-z0-9]+-prebuilt-backends\.zip", name)
+                    or (r["draft"] and name not in hashes)):
+                raise ValueError(f"Unexpected release asset: {name}")
+            names.add(name)
+            if r["draft"] and asset["state"] == "starter" and asset["size"] == 0 and int(asset["id"]) > 0:
+                continue
+            if asset["state"] != "uploaded" or not re.fullmatch("sha256:[a-f0-9]{64}", asset.get("digest") or ""):
+                raise ValueError(f"Uncertified release asset: {name}")
+        if not r["draft"] and not names:
+            raise ValueError("Empty published backend release")
+    for r in published[:1] if partial else published:
+        if {a["name"]: a["digest"][7:] for a in r["assets"]} == hashes:
+            return "reuse", r["tag_name"], r, None
+    date = datetime.now(timezone.utc).strftime("%Y.%m.%d")
+    prefix = "backend-prebuilts-" + date + "."
+    tag = prefix + str(1 + max((int(r["tag_name"][len(prefix):]) for r in owned if r["tag_name"].startswith(prefix)), default=0))
+    draft = drafts[0] if drafts else None
+    if draft:
+        if (draft["target_commitish"] != revision or any(a["state"] == "uploaded" and a["digest"] != "sha256:" + hashes[a["name"]]
+                                                        for a in draft["assets"])):
+            raise ValueError("Another producer owns the pending draft")
+        tag = draft["tag_name"]
+    retire = None
+    if len(published) == 3:
+        retire = next((r for r in reversed(published[1:]) if r["tag_name"] not in active), None)
+        if not retire:
+            raise ValueError("The previous catalogs are pinned by active readers")
+    return "resume" if draft else "create", tag, draft, retire
+
+
+def verify_publication(item, plan_file, result_file, candidate, revision, releases):
+    from validation import digest
+
+    plan, result = read(plan_file), read(result_file)
+    target, name = item["target"], item["asset"]
+    registered = registrations()[target]
+    path = candidate / name
+    if registered["asset"] != name or path.name != name:
+        raise ValueError("Mismatched producer platform registration")
+    identity = digest(path)
+    bound = [p for p in plan["backendPackages"] if p["target"] == target]
+    if (plan["commit"] != revision or result["commit"] != revision or result["version"] != 2 or not result["completed"]
+            or result["failures"] or result["planIdentity"] != digest(plan_file) or result["tree"] != plan["tree"]
+            or result["environment"] != plan["environment"] or len(bound) != 1 or bound[0]["sha256"] != identity):
+        raise ValueError(f"No matching certified platform archive for {target}")
+    sdk = read(candidate / "consumption.json")
+    origin = item.get("promotion")
+    source = revision
+    if origin:
+        tree = subprocess.check_output(["git", "rev-parse", "--verify", revision + "^{tree}"], text=True).strip()
+        if tree != origin["tree"] or not re.fullmatch("[0-9a-f]{40}", origin["commit"]):
+            raise ValueError("Candidate source tree differs from the landing")
+        source = origin["commit"]
+    products = [(entry["Properties"]["InnoProductId"], entry["Path"].removeprefix("$"+"{workspace}").lstrip("/\\").replace("\\", "/"))
+                for entry in plan["contexts"]["managed"]["sdkGraph"] if entry["Properties"].get("InnoProductTarget") == target
+                and entry["Properties"].get("InnoProductId")]
+    expected = {(cfg, product, project) for cfg in registered["configurations"] for product, project in products}
+    if (sdk["version"] != 2 or sdk["commit"] != source or sdk["sha256"] != identity or sdk["target"] != target
+            or not expected or len(sdk["checks"]) != len(expected)
+            or {(c["configuration"], c["product"], c["project"]) for c in sdk["checks"]} != expected):
+        raise ValueError("Incomplete SDK consumption matrix")
+    consumers = []
+    for proof in sdk["checks"]:
+        if not re.fullmatch("[0-9a-f]{64}", proof["identity"]):
+            raise ValueError("Invalid SDK proof identity")
+        record = {key: proof[key] for key in ("configuration", "product", "project", "identity")}
+        if proof["source"] != "executed":
+            prior, = [r for r in releases if r["tag_name"] == proof["source"]]
+            if catalog(prior)[target].get("consumers", []).count(record) != 1:
+                raise ValueError("Missing trusted SDK product proof")
+        consumers.append(record)
+    if plan["full"] and target not in {r["target"] for r in plan["nativeRequests"] or []}:
+        raise ValueError("Full acceptance omitted the native target")
+    ids = {r["id"] for r in plan["checks"] if r["kind"] == "test" and r["owner"].startswith("tests/backends/") and not r["exclusion"]}
+    tests = [r for r in result["results"] if r["id"] in ids]
+    if len(tests) != len(ids) or {r["id"] for r in tests if r["status"] in ("Reused", "Passed")} != ids:
+        raise ValueError("Missing backend test certification")
+    with zipfile.ZipFile(path) as archive:
+        def metadata(key):
+            if archive.namelist().count(key) != 1 or archive.getinfo(key).file_size > 16 * 1024**2:
+                raise ValueError(f"Missing or excessive package metadata: {key}")
+            return json.loads(archive.read(key))
+        manifest = metadata("manifest.json")
+        if manifest["version"] != 1 or manifest["target"] != target:
+            raise ValueError("The package declares a different target or schema")
+        configurations = {}
+        for file in manifest["files"]:
+            if file["path"].startswith("managed/"):
+                owners = configurations.setdefault(file["configuration"], {})
+                if owners.setdefault(file["owner"], file["input"]) != file["input"]:
+                    raise ValueError("Conflicting certified backend owner")
+        if not configurations:
+            raise ValueError("No compiled backend owners in package")
+        platform = {"target": target, "asset": name, "sha256": identity, "configurations": configurations,
+                    "native": metadata("native/selection.json"), "consumers": consumers, "tests": tests}
+    if origin:
+        platform["origin"] = origin
+    return path, platform
+
+
+def require_idle_readers():
+    for status in ("queued", "in_progress", "requested", "waiting", "pending"):
+        runs = repository_json(f"actions/runs?status={status}&per_page=100")
+        if runs["total_count"] > 100 or any(str(run["id"]) != os.environ["GITHUB_RUN_ID"]
+                and re.match(r"^\.github/workflows/(engine-ci|backend-prebuilts)\.yml", run["path"]) for run in runs["workflow_runs"]):
+            raise ValueError("An active run can still acquire the rollback release")
+
+
+def publish_release(releases, platforms, archives, revision, active, partial):
+    hashes = {p["asset"]: p["sha256"] for p in platforms.values()}
+    operation, tag, draft, retire = release_plan(releases, hashes, revision, active, partial)
+    if operation == "reuse":
+        catalog(draft)
+        print(f"Reused {tag}")
+        return
+    intent = "<!-- backend-assets " + " ".join(f"{name}={hashes[name]}" for name in sorted(hashes)) + " -->"
+    if draft and "<!-- backend-assets " in (draft["body"] or "") and intent not in draft["body"]:
+        raise ValueError("A different asset set owns the draft")
+    if retire:
+        require_idle_readers()
+    if not draft:
+        body = f"Certified backend platform archives for engine revision {revision}.\n\n{intent}"
+        if retire:
+            catalog(retire)
+            ref = repository_json("git/ref/tags/" + retire["tag_name"])["object"]
+            old = repository_json("git/tags/" + ref["sha"])
+            if ref["type"] != "tag" or old["object"]["sha"] != retire["target_commitish"]:
+                raise ValueError("Cannot freeze the retiring catalog identity")
+            body += f"\n\n<!-- backend-retirement {retire['id']} {retire['tag_name']} {retire['target_commitish']} {ref['sha']} -->"
+        draft = repository_json("releases", method="POST", data={"tag_name": tag, "target_commitish": revision,
+            "name": "Backend Prebuilts " + tag.removeprefix("backend-prebuilts-"), "draft": True, "prerelease": True, "body": body})
+    def check_draft(value):
+        if not value["draft"] or not value["prerelease"] or value["tag_name"] != tag or value["target_commitish"] != revision or value["id"] != draft["id"]:
+            raise ValueError("The server returned a different draft or revision")
+    check_draft(draft)
+    resource = f"releases/{draft['id']}"
+    for name, path in sorted(archives.items()):
+        existing = [asset for asset in draft["assets"] if asset["name"] == name]
+        if existing:
+            asset, = existing
+            if asset["state"] == "uploaded":
+                continue
+            current = repository_json(resource)
+            check_draft(current)
+            placeholder, = [a for a in current["assets"] if a["name"] == name]
+            if placeholder["id"] != asset["id"] or placeholder["state"] != "starter" or placeholder["size"] != 0:
+                raise ValueError("The interrupted upload changed before recovery")
+            repository_json(f"releases/assets/{placeholder['id']}", method="DELETE")
+        asset = upload_release_asset(draft, path)
+        if asset["name"] != name or asset["digest"] != "sha256:" + hashes[name] or asset["state"] != "uploaded":
+            raise ValueError("GitHub failed to verify " + name)
+    ready = repository_json(resource)
+    check_draft(ready)
+    if (len(ready["assets"]) != len(hashes) or {a["name"]: a["digest"] for a in ready["assets"] if a["state"] == "uploaded"}
+            != {name: "sha256:" + digest for name, digest in hashes.items()}):
+        raise ValueError("The uploaded matrix differs from the certified bytes")
+    metadata = {"version": 1, "revision": revision, "platforms": platforms}
+    body = gzip.compress(json.dumps(metadata, separators=(",", ":")).encode(), mtime=0)
+    message = "InnoEngine backend prebuilt catalog v1\n\n" + base64.b64encode(body).decode("ascii")
+    reference = repository_json("git/ref/tags/" + tag, optional=True)
+    if reference:
+        if reference["object"]["type"] != "tag":
+            raise ValueError("Unexpected existing backend tag")
+        annotated = repository_json("git/tags/" + reference["object"]["sha"])
+        if annotated["tag"] != tag or (annotated["object"]["type"], annotated["object"]["sha"]) != ("commit", revision) or tag_catalog(annotated["message"]) != metadata:
+            raise ValueError("The pending tag describes another platform matrix")
+    else:
+        annotated = repository_json("git/tags", method="POST", data={"tag": tag, "message": message, "object": revision, "type": "commit"})
+        if annotated["object"]["sha"] != revision or not re.fullmatch("[a-f0-9]{40}", annotated["sha"]):
+            raise ValueError("GitHub returned a different tag object")
+        repository_json("git/refs", method="POST", data={"ref": "refs/tags/" + tag, "sha": annotated["sha"]})
+    marker = re.search(r"^<!-- backend-retirement ([1-9][0-9]*) (backend-prebuilts-\d{4}\.\d{2}\.\d{2}\.[1-9]\d*) ([a-f0-9]{40}) ([a-f0-9]{40}) -->$", ready["body"] or "", re.M)
+    if retire and (not marker or marker[1] != str(retire["id"]) or marker[2] != retire["tag_name"]):
+        raise ValueError("The draft does not own the expected retirement")
+    if marker:
+        old_id, old_tag, old_commit, old_object = marker.groups()
+        if (old_tag == tag or old_tag in active or any(r["tag_name"] == old_tag and str(r["id"]) != old_id for r in releases)):
+            raise ValueError("The retirement concerns a different or pinned release")
+        require_idle_readers()
+        old = repository_json("releases/" + old_id, optional=True)
+        ref = repository_json("git/ref/tags/" + old_tag, optional=True)
+        if ref:
+            if ref["object"]["type"] != "tag" or ref["object"]["sha"] != old_object:
+                raise ValueError("The retiring tag changed")
+            annotated = repository_json("git/tags/" + old_object)
+            if (annotated["tag"] != old_tag or annotated["object"]["type"] != "commit" or annotated["object"]["sha"] != old_commit
+                    or tag_catalog(annotated["message"])["revision"] != old_commit):
+                raise ValueError("Unexpected retiring tag object")
+        if old:
+            if not ref or old["tag_name"] != old_tag or old["target_commitish"] != old_commit:
+                raise ValueError("Release ownership changed before retirement")
+            catalog(old)
+            repository_json("releases/" + old_id, method="DELETE")
+        if ref:
+            repository_json("git/refs/tags/" + old_tag, method="DELETE")
+    result = repository_json(resource, method="PATCH", data={"draft": False, "prerelease": True, "make_latest": "false"})
+    if result["draft"] or not result["prerelease"] or result["tag_name"] != tag:
+        raise ValueError("The backend release was not published as certified")
+    print(f"Published {tag}")
+
+
+def publish(verify_only=False):
+    from validation import certified_host, digest
+
+    revision = os.environ["GITHUB_SHA"]
+    producers = json.loads(os.environ["PRODUCERS"])["include"]
+    if verify_only:
+        producers = [p for p in producers if p["runner"] == os.environ["RUNNER_LABEL"]]
+        if not producers:
+            return
+    else:
+        branch = os.environ["DEFAULT_BRANCH"]
+        if os.environ["GITHUB_REF"] != "refs/heads/" + branch or os.environ["GITHUB_EVENT_NAME"] not in ("push", "workflow_dispatch"):
+            raise ValueError("Publication requires a trusted default-branch event")
+    registry = registrations()
+    selected = {p["target"] for p in producers}
+    if not producers or len(selected) != len(producers) or selected - registry.keys():
+        raise ValueError("Invalid publication target matrix")
+    releases = list(repository_pages("releases"))
+    directory = ROOT / "artifacts/promotion"
+    evidence = {}
+    if not verify_only:
+        for consumer in json.loads(os.environ["CONSUMERS"])["include"]:
+            host = consumer["runner"]
+            if host in evidence:
+                raise ValueError("Duplicate hosted consumer")
+            evidence[host] = certified_host(host, revision, directory)
+    platforms, archives = {}, {}
+    for item in producers:
+        target = item["target"]
+        if verify_only:
+            plan = PLANS / "plan.json"
+            result = ROOT / "artifacts/validation/host-certification/results.json"
+            receipt = read(result.with_name("receipt.json"))
+            if (receipt["planIdentity"] != digest(plan) or receipt["resultsIdentity"] != digest(result)
+                    or receipt["platform"] != os.environ["RUNNER_LABEL"] or str(receipt["run"]) != os.environ["GITHUB_RUN_ID"]
+                    or receipt["attempt"] != int(os.environ["GITHUB_RUN_ATTEMPT"])):
+                raise ValueError("Candidate verification has a different host or run receipt")
+            candidate = ROOT / "artifacts/candidates" / ("backend-candidate-" + target)
+        else:
+            plan, result = evidence[item["runner"]]
+            if item["operation"] == "promote":
+                receive(item, directory)
+            candidate = directory / ("backend-candidate-" + target)
+        archive, platform = verify_publication(item, plan, result, candidate, revision, releases)
+        platforms[target] = platform
+        archives[item["asset"]] = archive
+    if verify_only:
+        print("Verified candidate inputs for " + ", ".join(sorted(selected)))
+        return
+    missing = registry.keys() - selected
+    if missing:
+        latest = max((r for r in releases if not r["draft"] and r["prerelease"] and RELEASE.fullmatch(r["tag_name"])),
+                     key=lambda r: (r["published_at"], r["id"]))
+        previous = catalog(latest)
+        for target in sorted(missing):
+            platform = previous[target]
+            name = registry[target]["asset"]
+            asset, = [a for a in latest["assets"] if a["name"] == name == platform["asset"]]
+            cached = release_archive({"sha256": platform["sha256"], "assetId": asset["id"]})
+            # The upload uses the registered asset name; the local cache uses the digest.
+            package = directory / "unchanged" / name
+            package.parent.mkdir(exist_ok=True)
+            os.link(cached, package)
+            archives[name] = package
+            platforms[target] = platform
+    head = repository_json("git/ref/heads/" + branch)["object"]["sha"]
+    if head != revision:
+        print("A newer default-branch candidate owns promotion.")
+        return
+    publish_release(releases, platforms, archives, revision, set(json.loads(os.environ["READER_TAGS"])), bool(missing))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("operation", choices=["resolve", "receive", "decide", "matrix"])
+    parser.add_argument("operation", choices=["resolve", "receive", "decide", "matrix", "publish"])
+    parser.add_argument("--verify", action="store_true")
+    parser.add_argument("--scope", action="store_true")
     parser.add_argument("--directory", type=Path)
+    parser.add_argument("--build", action="store_true")
     parser.add_argument("--prepare", action="store_true")
     parser.add_argument("--bind", action="store_true")
     args = parser.parse_args()
@@ -557,6 +904,19 @@ if __name__ == "__main__":
         decide()
     elif args.operation == "matrix":
         matrix()
+    elif args.operation == "publish":
+        if args.scope:
+            producers = json.loads(os.environ["PRODUCERS"])["include"]
+            consumers = json.loads(os.environ["CONSUMERS"])["include"]
+            names = ["backend-candidate-" + p["target"] for p in producers if p["operation"] == "produce"]
+            names.extend("validation-{plan,joined,result}-" + c["runner"] + "-*" for c in consumers)
+            pattern = names[0] if len(names) == 1 else "{" + ",".join(names) + "}"
+            with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+                print("pattern=" + pattern, file=output)
+        else:
+            publish(args.verify)
+    elif args.build:
+        build_candidate(json.loads(os.environ["SPEC"]))
     elif args.prepare:
         acquire_inputs(json.loads(os.environ["SPEC"]))
     elif args.bind:

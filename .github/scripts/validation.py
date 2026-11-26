@@ -127,10 +127,10 @@ def freeze():
     append_summary(f"### Plan for {os.environ['PLATFORM']}\n\n" + "\n".join(f"- {item['owner']} ({item['kind']})" for item in engine + tooling))
 
 
-def artifact(name):
+def artifact(name, received=RECEIVED):
     attempt = int(os.environ["GITHUB_RUN_ATTEMPT"])
     matches = {}
-    for path in RECEIVED.iterdir():
+    for path in received.iterdir():
         match = re.fullmatch(re.escape(name) + r"-attempt-([1-9][0-9]*)", path.name)
         if match and path.is_dir():
             identity = int(match[1])
@@ -150,29 +150,34 @@ def join():
     if not hosts or len(hosts) != len(set(hosts)):
         raise ValueError("The required host matrix is empty or duplicated")
     for host in hosts:
-        planned = artifact(f"validation-plan-{host}")
-        certified = artifact(f"validation-joined-{host}")
-        plan = read(planned / "plan.json")
-        proof = read(certified / "receipt.json")
-        entry = read(planned / "entry.json")
-        attempt = int(certified.name.rsplit("-attempt-", 1)[1])
-        if (int(planned.name.rsplit("-attempt-", 1)[1]) != attempt or proof["attempt"] != attempt
-                or str(proof["run"]) != os.environ["GITHUB_RUN_ID"]):
-            raise ValueError(f"Plan and certification were uploaded by different runs or attempts: {host}")
-        if (proof["platform"] != host or proof["commit"] != os.environ["EXPECTED_COMMIT"]
-                or plan["commit"] != proof["commit"] or not re.fullmatch("[A-F0-9]{64}", entry["sha256"])
-                or proof["executor"] != entry["sha256"] or proof["planIdentity"] != digest(planned / "plan.json")
-                or proof["resultsIdentity"] != digest(certified / "results.json")):
-            raise ValueError(f"Changed or foreign certification for {host}")
-        shards = [item["id"] for item in plan["shards"]]
-        hashes = {item["id"]: item["sha256"] for item in proof["shards"]}
-        if not shards or len(set(shards)) != len(shards) or len(proof["shards"]) != len(shards) or set(shards) != hashes.keys():
-            raise ValueError(f"Different shard matrix for {host}")
-        for shard in shards:
-            receipt = artifact(f"validation-result-{host}-{shard}") / "results.json"
-            if int(receipt.parent.name.rsplit("-attempt-", 1)[1]) != attempt or digest(receipt) != hashes[shard]:
-                raise ValueError(f"The joined receipt differs from the uploaded {host}/{shard} result")
-        append_summary(f"{host}: {proof['passed']} passed, {proof['reused']} reused, {proof['notApplicable']} not applicable.")
+        certified_host(host, os.environ["EXPECTED_COMMIT"], RECEIVED)
+
+
+def certified_host(host, commit, received):
+    planned = artifact(f"validation-plan-{host}", received)
+    certified = artifact(f"validation-joined-{host}", received)
+    plan = read(planned / "plan.json")
+    proof = read(certified / "receipt.json")
+    entry = read(planned / "entry.json")
+    attempt = int(certified.name.rsplit("-attempt-", 1)[1])
+    if (int(planned.name.rsplit("-attempt-", 1)[1]) != attempt or proof["attempt"] != attempt
+            or str(proof["run"]) != os.environ["GITHUB_RUN_ID"]):
+        raise ValueError(f"Plan and certification were uploaded by different runs or attempts: {host}")
+    if (proof["platform"] != host or proof["commit"] != commit
+            or plan["commit"] != proof["commit"] or not re.fullmatch("[A-F0-9]{64}", entry["sha256"])
+            or proof["executor"] != entry["sha256"] or proof["planIdentity"] != digest(planned / "plan.json")
+            or proof["resultsIdentity"] != digest(certified / "results.json")):
+        raise ValueError(f"Changed or foreign certification for {host}")
+    shards = [item["id"] for item in plan["shards"]]
+    hashes = {item["id"]: item["sha256"] for item in proof["shards"]}
+    if not shards or len(set(shards)) != len(shards) or len(proof["shards"]) != len(shards) or set(shards) != hashes.keys():
+        raise ValueError(f"Different shard matrix for {host}")
+    for shard in shards:
+        receipt = artifact(f"validation-result-{host}-{shard}", received) / "results.json"
+        if int(receipt.parent.name.rsplit("-attempt-", 1)[1]) != attempt or digest(receipt) != hashes[shard]:
+            raise ValueError(f"The joined receipt differs from the uploaded {host}/{shard} result")
+    append_summary(f"{host}: {proof['passed']} passed, {proof['reused']} reused, {proof['notApplicable']} not applicable.")
+    return planned / "plan.json", certified / "results.json"
 
 
 def summarize():

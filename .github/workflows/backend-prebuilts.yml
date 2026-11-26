@@ -120,39 +120,11 @@ jobs:
           name: backend-seed-${{ matrix.target }}
           path: artifacts/backend-seed
       - name: Compile changed backend owners and assemble the platform ZIP
-        shell: pwsh
+        shell: bash
         env:
           SPEC: ${{ toJSON(matrix) }}
           GH_TOKEN: ${{ github.token }}
-        run: |
-          $PSNativeCommandUseErrorActionPreference = $true
-          $item = $env:SPEC | ConvertFrom-Json
-          $null = ./tools/ci/Initialize-NativeDependencyWorkloads.ps1 -Targets @($item.target)
-          $entry = @(./tools/ci/Initialize-ValidationEntry.ps1 -Dotnet (Get-Command dotnet).Source -LogPath artifacts/components/bootstrap.log)
-          $native = [ordered]@{layout='platform-packages';assets=@();aggregates=@()}
-          foreach ($component in Get-ChildItem artifacts/components -Directory) {
-            $source = Get-Content -LiteralPath (Join-Path $component.FullName 'selection.json') -Raw | ConvertFrom-Json -AsHashtable -Depth 80
-            $store = [IO.Directory]::CreateDirectory((Join-Path $component.FullName 'native')).FullName
-            foreach ($family in @('assets','aggregates')) {
-              foreach ($asset in $source[$family]) {
-                if ($asset.target -cne $component.Name -or $asset.sha256 -cnotmatch '^[a-f0-9]{64}$' -or $asset.asset -cnotmatch '^[A-Za-z0-9._-]+\.zip$') {
-                  throw 'Invalid native input receipt.'
-                }
-                $dest = Join-Path $store "$($asset.sha256).zip"
-                if (!(Test-Path -LiteralPath $dest)) {
-                  $src = Join-Path $component.FullName $asset.asset
-                  if ((Get-FileHash -LiteralPath $src).Hash.ToLowerInvariant() -cne $asset.sha256) { throw 'Native input changed during transfer.' }
-                  New-Item -ItemType HardLink -Path $dest -Target $src | Out-Null
-                }
-              }
-              $native[$family] += @($source[$family])
-            }
-          }
-          [IO.File]::WriteAllText([IO.Path]::GetFullPath('artifacts/components/selection.json'), (ConvertTo-Json $native -Compress -Depth 80))
-          $seed = if ($item.sha256) { Join-Path 'artifacts/backend-seed' $item.asset }
-          ./tools/ci/Build-BackendPrebuilt.ps1 -Target $item.target -HostTarget $item.hostTarget -EntryAssembly $entry[0] `
-            -NativeSelection "artifacts/components/$($item.target)/selection.json" -ConsumptionSelection artifacts/components/selection.json `
-            -PreviousPackage $seed -PreviousSha256 $item.sha256 -PreviousTag $item.tag -WorkspaceDirectory artifacts/bp -OutputDirectory artifacts/backend-candidate
+        run: python -B .github/scripts/backend_artifacts.py receive --build
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           overwrite: true
@@ -210,20 +182,12 @@ jobs:
 
       - name: Verify new backend publication inputs
         if: fromJSON(inputs.producers).include[0] != null
-        shell: pwsh
+        shell: bash
         env:
           PRODUCERS: ${{ inputs.producers }}
           RUNNER_LABEL: ${{ matrix.runner }}
           GH_TOKEN: ${{ github.token }}
-        run: |
-          $local = @(($env:PRODUCERS | ConvertFrom-Json).include | Where-Object runner -CEQ $env:RUNNER_LABEL)
-          if (!$local.Count) { return }
-          foreach ($item in $local) {
-            $candidate = "artifacts/candidates/backend-candidate-$($item.target)"
-            $owner = [IO.Directory]::CreateDirectory([IO.Path]::GetFullPath("artifacts/verified/$($item.target)"))
-            Copy-Item -LiteralPath "$candidate/$($item.asset)", "$candidate/consumption.json", 'artifacts/validation/ci-plan/plan.json', 'artifacts/validation/host-certification/results.json' -Destination $owner
-          }
-          ./tools/ci/Publish-BackendPrebuilts.ps1 -VerifyOnly -Directory artifacts/verified -Repository $env:GITHUB_REPOSITORY -Revision $env:GITHUB_SHA -ChangedTargets $local.target -Promoted @($local | Where-Object operation -CEQ promote)
+        run: python -B .github/scripts/backend_artifacts.py publish --verify
 
   publish-backends:
     name: Publish backend
@@ -250,44 +214,22 @@ jobs:
           persist-credentials: false
       - name: Select certified inputs for this producer group
         id: scope
-        shell: pwsh
+        shell: bash
         env:
           PRODUCERS: ${{ inputs.producers }}
           CONSUMERS: ${{ inputs.consumers }}
-        run: |
-          $patterns = @(foreach ($item in (($env:PRODUCERS | ConvertFrom-Json).include | Where-Object operation -CEQ produce)) { "backend-candidate-$($item.target)" })
-          foreach ($consumer in ($env:CONSUMERS | ConvertFrom-Json).include) {
-            $patterns += "validation-{plan,joined,result}-$($consumer.runner)-*"
-          }
-          $pattern = if ($patterns.Count -eq 1) { $patterns[0] } else { "{$($patterns -join ',')}" }
-          "pattern=$pattern" >> $env:GITHUB_OUTPUT
+        run: python -B .github/scripts/backend_artifacts.py publish --scope
+
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           pattern: ${{ steps.scope.outputs.pattern }}
           path: artifacts/promotion
       - name: Publish the certified backend targets
-        shell: pwsh
+        shell: bash
         env:
           PRODUCERS: ${{ inputs.producers }}
           CONSUMERS: ${{ inputs.consumers }}
           READER_TAGS: ${{ inputs.reader_tags }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           GH_TOKEN: ${{ github.token }}
-        run: |
-          $producers = ($env:PRODUCERS | ConvertFrom-Json).include
-          $consumers = ($env:CONSUMERS | ConvertFrom-Json).include
-          ./tools/ci/Join-ValidationCi.ps1 -ReceivedDirectory artifacts/promotion -Hosts $consumers.runner -ExpectedCommit $env:GITHUB_SHA `
-            -Attempt ([int]$env:GITHUB_RUN_ATTEMPT)
-          $promoted = @($producers | Where-Object operation -CEQ promote)
-          foreach ($item in $promoted) { $null = ($item | ConvertTo-Json -Depth 20 -Compress) | python -B .github/scripts/backend_artifacts.py receive --directory artifacts/promotion }
-          foreach ($item in $producers) {
-            $owner = [IO.Directory]::CreateDirectory([IO.Path]::GetFullPath("artifacts/promotion/$($item.target)")).FullName
-            $candidate = "artifacts/promotion/backend-candidate-$($item.target)"
-            Copy-Item -LiteralPath "$candidate/$($item.asset)","$candidate/consumption.json" -Destination $owner
-            $evidence = "artifacts/validation/joined/$($item.runner)"
-            Copy-Item -LiteralPath "$evidence/plan.json","$evidence/results.json" -Destination $owner
-          }
-          $head = Invoke-RestMethod -Headers @{Authorization="Bearer $env:GH_TOKEN"} -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/git/ref/heads/$env:DEFAULT_BRANCH"
-          if ($head.object.sha -cne $env:GITHUB_SHA) { Write-Host 'A newer default-branch candidate owns promotion.'; return }
-          ./tools/ci/Publish-BackendPrebuilts.ps1 -Directory artifacts/promotion -Repository $env:GITHUB_REPOSITORY `
-            -Revision $env:GITHUB_SHA -ApiUrl $env:GITHUB_API_URL -ChangedTargets $producers.target -Promoted $promoted -ActiveTags (ConvertFrom-Json -NoEnumerate $env:READER_TAGS)
+        run: python -B .github/scripts/backend_artifacts.py publish
