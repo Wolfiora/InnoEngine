@@ -28,6 +28,7 @@ runs:
         path: |
           artifacts/validation/host-certification/results.json
           artifacts/validation/host-certification/receipt.json
+          artifacts/validation/host-certification/*documentation*.json
         if-no-files-found: error
         retention-days: 30
     - name: Retain reusable backend test results for this execution environment

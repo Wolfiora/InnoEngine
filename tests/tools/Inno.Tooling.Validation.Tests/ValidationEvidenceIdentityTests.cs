@@ -139,16 +139,15 @@ public sealed class ValidationEvidenceIdentityTests : ValidationPlanFixture
             "src/Example/Example.csproj",
             ValidationRepository.Project("<Import Project=\"" + SecurityElement.Escape(dependency) + "\" />")
         );
-        string script = string.Join(
-            '\n',
-            new[] { repository.PathOf("Shared.props"), dependency }.Select(path => (
-                "$path = '" + path.Replace("'", "''", StringComparison.Ordinal) + "'; "
-                + "$stamp = [IO.File]::GetLastWriteTimeUtc($path); "
-                + "[IO.File]::WriteAllText($path, [IO.File]::ReadAllText($path).Replace('>4<', '>3<')); "
-                + "[IO.File]::SetLastWriteTimeUtc($path, $stamp)"
-            ))
-        );
-        repository.Write("tools/ci/Test-AgentRules.ps1", script);
+        using var observer = new ValidationCheckObserver(() =>
+        {
+            foreach (string path in new[] { repository.PathOf("Shared.props"), dependency })
+            {
+                DateTime stamp = File.GetLastWriteTimeUtc(path);
+                File.WriteAllText(path, File.ReadAllText(path).Replace(">4<", ">3<", StringComparison.Ordinal));
+                File.SetLastWriteTimeUtc(path, stamp);
+            }
+        });
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare check-time source and environment mutations");
         using JsonDocument plan = await repository.PlanAsync();

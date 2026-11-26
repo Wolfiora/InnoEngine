@@ -42,7 +42,7 @@ internal static class ManagedValidationFixture
         }) {
             repository.Write(path, File.ReadAllText(Path.Combine(source, path)));
         }
-        repository.Write("tools/ci/Test-AgentRules.ps1", "Write-Output 'Fixture policy passed'\n");
+        repository.Write("AGENTS.md", "# Fixture policy passed\n");
         repository.Write("README.md", "# SDK fixture\n");
         XElement rules = XElement.Load(Path.Combine(source, "Directory.Build.targets"));
         string[] compilationTargets = ["ApplyInnoCleanReferencePolicy", "UseInnoVerifiedProjectOutputs"];

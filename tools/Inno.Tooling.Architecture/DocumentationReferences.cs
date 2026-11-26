@@ -36,6 +36,11 @@ public static class DocumentationReferences
         CancellationToken cancellationToken
     ) {
         ArgumentNullException.ThrowIfNull(arguments);
+        if (arguments is ["certify", string planFile, string resultsFile, string directory, string receiptFile])
+        {
+            DocumentationValidationReceipts.Collect(planFile, resultsFile, directory, receiptFile);
+            return 0;
+        }
         if (arguments is ["export-producer", .. var producer])
         {
             return await DocumentationProducer.ExportAsync(producer, cancellationToken).ConfigureAwait(false);

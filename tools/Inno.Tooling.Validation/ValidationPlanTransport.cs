@@ -52,8 +52,7 @@ internal static class ValidationPlanTransport
         {
             ["${workspace}"] = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar),
             ["${dotnet}"] = Path.GetDirectoryName(Path.GetFullPath(host))!,
-            ["${nuget}"] = Path.GetFullPath(nuget),
-            ["${shell}"] = Path.GetDirectoryName(ToolchainEnvironment.ResolveExecutable("pwsh"))!
+            ["${nuget}"] = Path.GetFullPath(nuget)
         }.OrderByDescending(static pair => pair.Value.Length).ToArray();
     }
 

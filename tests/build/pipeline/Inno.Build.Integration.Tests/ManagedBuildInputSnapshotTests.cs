@@ -187,13 +187,8 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
             if (OperatingSystem.IsWindows())
             {
                 await ToolchainEnvironment.RunAsync(
-                    "powershell.exe",
-                    [
-                        "-NoProfile",
-                        "-NonInteractive",
-                        "-Command",
-                        "New-Item -ItemType Junction -Path '" + alias + "' -Target '" + m_root + "' | Out-Null"
-                    ],
+                    "cmd.exe",
+                    ["/d", "/c", "mklink", "/J", alias, m_root],
                     m_root,
                     cancellationToken: CancellationToken.None
                 );

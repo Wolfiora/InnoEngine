@@ -49,7 +49,7 @@ public sealed class ValidationShardExecutionTests
             )
         );
         repository.Write("src/Example/Contract.cs", "namespace Example; public static class Contract { public static int Value => 1; }");
-        repository.Write("tools/ci/Test-AgentRules.ps1", "Write-Output 'Policy passed'");
+        repository.Write("AGENTS.md", "# Policy passed\n");
         using JsonDocument cold = await repository.PlanAsync(profile: "full");
         JsonObject accepted = SelectCompilation(cold);
         repository.Write("artifacts/cold.json", accepted.ToJsonString());
@@ -116,7 +116,7 @@ public sealed class ValidationShardExecutionTests
     public async Task FrozenPlanBindsAnotherCheckoutWithoutChangingItsIdentity()
     {
         using var producer = new ValidationRepository();
-        producer.Write("tools/ci/Test-AgentRules.ps1", "Write-Output 'Actual policy execution in the consumer checkout'");
+        producer.Write("AGENTS.md", "# Actual policy execution in the consumer checkout\n");
         producer.Git("add", ".");
         producer.Git("commit", "-m", "Portable policy fixture");
         using JsonDocument generated = await producer.PlanAsync();
@@ -170,7 +170,7 @@ public sealed class ValidationShardExecutionTests
                 "<PropertyGroup><IsTestProject>true</IsTestProject><InnoTestNativeProduct>editor</InnoTestNativeProduct><InnoValidationLayer>native</InnoValidationLayer></PropertyGroup>"
             )
         );
-        repository.Write("tools/ci/Test-AgentRules.ps1", "Write-Output 'Managed change'");
+        repository.Write("AGENTS.md", "# Managed change\n");
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare a separately deployed native test");
         using JsonDocument generated = await repository.PlanAsync(profile: "fast", backendStore: "artifacts/b");
@@ -223,7 +223,7 @@ public sealed class ValidationShardExecutionTests
     public async Task IndependentShardReceiptsRequireCompleteExactCandidateCoverage()
     {
         using var repository = new ValidationRepository();
-        repository.Write("tools/ci/Test-AgentRules.ps1", "Write-Output 'Actual policy execution'");
+        repository.Write("AGENTS.md", "# Actual policy execution\n");
         using JsonDocument generated = await repository.PlanAsync();
         JsonObject plan = JsonNode.Parse(generated.RootElement.GetRawText())!.AsObject();
         JsonObject policy = plan["checks"]!

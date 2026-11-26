@@ -25,13 +25,8 @@ public sealed class NativeVerificationPhaseTests
             if (OperatingSystem.IsWindows())
             {
                 await ToolchainEnvironment.RunAsync(
-                    "powershell.exe",
-                    [
-                        "-NoProfile",
-                        "-NonInteractive",
-                        "-Command",
-                        "New-Item -ItemType Junction -Path '" + alias + "' -Target '" + physical + "' | Out-Null"
-                    ],
+                    "cmd.exe",
+                    ["/d", "/c", "mklink", "/J", alias, physical],
                     root,
                     cancellationToken: CancellationToken.None
                 );

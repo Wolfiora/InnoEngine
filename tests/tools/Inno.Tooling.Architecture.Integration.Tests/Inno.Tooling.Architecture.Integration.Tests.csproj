@@ -13,9 +13,8 @@
   <Import Project="../../RepositoryInput.targets" />
 
   <ItemGroup>
-    <InnoValidationInput Include="fixtures/rule-selection.json;../../../.agents/rulebook/**/*.md" />
+    <InnoValidationInput Include="fixtures/*.json;fixtures/documentation_publication.py;../../../.github/scripts/documentation_artifacts.py;../../../.agents/rulebook/**/*.md" />
     <InnoValidationSubject Include="../../../tools/Inno.Tooling.Architecture/Inno.Tooling.Architecture.csproj" />
-    <InnoValidationInput Include="../../../tools/ci/Get-DocumentationExampleReceipt.ps1;../../../tools/ci/Get-DocumentationSourceInputs.ps1" />
     <ProjectReference Include="../../../tools/Inno.Tooling.Documentation/Inno.Tooling.Documentation.csproj" />
     <ProjectReference Include="../../../tools/Inno.Tooling.Architecture/Inno.Tooling.Architecture.csproj" />
     <ProjectReference Include="../../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" />

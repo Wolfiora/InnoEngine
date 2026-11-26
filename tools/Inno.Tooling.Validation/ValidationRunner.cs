@@ -49,6 +49,14 @@ internal static class ValidationRunner
         DateTimeOffset started = DateTimeOffset.UtcNow;
         string planIdentity = ValidationInputs.PlanIdentity(plan);
         Directory.CreateDirectory(directory);
+        if (documentationCatalog is not null)
+        {
+            AtomicFile.WriteAllBytes(
+                Path.Combine(directory, "documentation-catalog.json"),
+                JsonSerializer.SerializeToUtf8Bytes(documentationCatalog)
+            );
+        }
+
         await File.WriteAllTextAsync(
             Path.Combine(directory, "execution-plan.json"),
             JsonSerializer.Serialize(plan, new JsonSerializerOptions { WriteIndented = true }),
@@ -173,22 +181,7 @@ internal static class ValidationRunner
                             ).ConfigureAwait(false);
                             break;
                         case "instructions":
-                            await ShellAsync(ValidationCiContracts.C_RULE_LOADER, [], "instructions.log").ConfigureAwait(false);
-                            break;
-                        case "ci-contracts":
-                            string[] contracts = check.projects ?? [];
-                            if (contracts.Length == 0)
-                            {
-                                throw new InvalidDataException("Required CI contract discovery is empty.");
-                            }
-                            foreach (string contract in contracts)
-                            {
-                                await ShellAsync(
-                                    contract,
-                                    [],
-                                    Path.GetFileNameWithoutExtension(contract) + ".log"
-                                ).ConfigureAwait(false);
-                            }
+                            _ = RepositoryRuleSelection.Execute(["--engine-root", plan.root]);
                             break;
                         case "restore-aot":
                             {
@@ -911,7 +904,7 @@ internal static class ValidationRunner
             if (!environmentStable)
             {
                 failures.Add(
-                    new ValidationRunFailure("environment-stability", "SDK, runtime, shell or imports changed during validation.")
+                    new ValidationRunFailure("environment-stability", "SDK, runtime or imports changed during validation.")
                 );
                 await SaveAsync().ConfigureAwait(false);
             }
@@ -928,18 +921,6 @@ internal static class ValidationRunner
                 ValidationWorkspace.RecordCompleted(plan, cancellationToken);
             }
         }
-
-        Task ShellAsync(
-            string script,
-            string[] arguments,
-            string log
-        ) => ValidationProcess.RunAsync(
-            "pwsh",
-            ["-NoProfile", "-File", Path.Combine(plan.root, script), ..arguments],
-            plan.root,
-            Path.Combine(directory, log),
-            cancellationToken: cancellationToken
-        );
 
         async Task<string> ResolveCompilationGraphAsync(string context)
         {

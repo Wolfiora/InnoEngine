@@ -117,8 +117,7 @@ def freeze():
     if not plan["checks"] or not plan["shards"]:
         raise ValueError("Required hosted validation discovery is empty")
     active = [item for item in plan["checks"] if not item["exclusion"]]
-    tooling = [item for item in active if item["kind"] == "ci-contracts" or
-               item["kind"] == "test" and item["owner"].startswith(("tests/tools/", "tests/build/"))]
+    tooling = [item for item in active if item["kind"] == "test" and item["owner"].startswith(("tests/tools/", "tests/build/"))]
     engine = [item for item in active if item["kind"] in ("products", "test") and item not in tooling]
     label = "Engine tests and tooling tests" if engine and tooling else "Engine tests" if engine else "Tooling tests" if tooling else "Repository checks"
     publish("execution_label", label)
@@ -207,6 +206,9 @@ def summarize():
             required = sum(check.get("exclusion") is None for check in checks)
             statuses = Counter(result["status"] for result in observed.values())
             lines.append(f"Required checks: {required}. Reused results: {statuses['Reused']}. Inapplicable checks: {statuses['NotApplicable']}.")
+            missing = [check["id"] for check in checks if check["id"] not in observed]
+            lines.append("Missing planned checks: " + ", ".join(missing) if missing else
+                         f"All {len(checks)} planned checks returned results.")
             timings = Counter()
             for check in checks:
                 result = observed.get(check["id"])
@@ -387,6 +389,28 @@ def run_workers():
                "shards": [{"id": name, "sha256": digest(result)} for name, result in completed.items()],
                "passed": sum(r["status"] == "Passed" for r in results), "reused": sum(r["status"] == "Reused" for r in results),
                "notApplicable": sum(r["status"] == "NotApplicable" for r in results)}
+    if plan.get("documentation"):
+        for shard in plan["shards"]:
+            owner = completed[shard["id"]].parent
+            reports = ["documentation-catalog.json"]
+            for check in plan["checks"]:
+                if check["id"] in shard["checks"] and not check.get("exclusion"):
+                    if check["kind"] == "documentation-api":
+                        reports.append(check["id"].replace(":", "-") + ".json")
+                    if check["kind"] == "documentation-examples":
+                        reports.append(check["context"] + "-documentation-examples.json")
+            for name in reports:
+                if not re.fullmatch(r"[A-Za-z0-9_-]+\.json", name):
+                    raise ValueError("Invalid documentation report name")
+                source = owner / name
+                destination = output / name
+                if source.is_symlink() or (destination.exists() and digest(destination) != digest(source)):
+                    raise ValueError(f"Documentation report differs across shards: {name}")
+                shutil.copyfile(source, destination)
+        certificate = output / "documentation-receipts.json"
+        run_logged([sdk, ROOT / assembly, "docs", "certify", PLAN / "plan.json", output / "results.json",
+                    output, certificate], output / "documentation-receipts.log")
+        receipt.update(read(certificate))
     (output / "receipt.json").write_text(json.dumps(receipt), encoding="utf-8")
 
 

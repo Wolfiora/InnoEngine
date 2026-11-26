@@ -168,13 +168,6 @@ internal static partial class ValidationPlanner
             cancellationToken
         ).ConfigureAwait(false);
         List<string> diagnostics = [];
-        Dictionary<string, string[]> contracts = ValidationCiContracts.Select(
-            root,
-            inputs.Keys,
-            changes,
-            full || extended || profile == ValidationProfile.Full,
-            out HashSet<string> workflowInputs
-        );
         foreach (string change in changes)
         {
             ValidationProject[] owners = projects.Where(project => (
@@ -189,7 +182,7 @@ internal static partial class ValidationPlanner
                 && inputs.GetValueOrDefault(change, "missing") != "missing"
                 && !IsDocumentation(change)
                 && change != ValidationRunner.C_TEST_EXECUTOR
-                && !workflowInputs.Contains(change) && !IsEditorProductInput(change) && IsExecutable(change)
+                && !IsWorkflowInput(change) && !IsEditorProductInput(change) && IsExecutable(change)
             ) {
                 if (change is "global.json" or "Directory.Solution.targets" or "InnoEngine.sln")
                 {
@@ -238,14 +231,12 @@ internal static partial class ValidationPlanner
                 // Only files actually present in that baseline can have a prior owner.
                 HashSet<string> deleted = removed.Intersect(priorPaths, StringComparer.Ordinal).ToHashSet(StringComparer.Ordinal);
                 var mapped = new HashSet<string>(StringComparer.Ordinal);
-                Dictionary<string, string[]> priorContracts = ValidationCiContracts.Select(
-                    checkout,
-                    priorPaths,
-                    deleted,
-                    false,
-                    out HashSet<string> priorScripts
+                mapped.UnionWith(
+                    deleted.Where(path => (
+                        IsWorkflowInput(path)
+                        || path.StartsWith("tools/ci/", StringComparison.Ordinal) || path.StartsWith("tests/ci/", StringComparison.Ordinal)
+                    ))
                 );
-                mapped.UnionWith(deleted.Where(priorScripts.Contains));
                 // Old checkouts can predate the separation of product checks and CI tooling.
                 // Resolve removed inputs to their surviving behavioral owner before evaluating the current graph.
                 foreach (string path in deleted)
@@ -269,19 +260,6 @@ internal static partial class ValidationPlanner
                         mapped.Add(path);
                         affected.Add(owner);
                     }
-                }
-                if (priorContracts.Count > 0)
-                {
-                    HashSet<string> survivingInputs = changes
-                        .Concat(priorContracts.Keys.Where(test => File.Exists(Path.Combine(root, test))))
-                        .ToHashSet(StringComparer.Ordinal);
-                    contracts = ValidationCiContracts.Select(
-                        root,
-                        inputs.Keys,
-                        survivingInputs,
-                        full || extended || profile == ValidationProfile.Full,
-                        out _
-                    );
                 }
                 MapRemoved(snapshots.RootElement, "managed");
                 JsonElement? baselineEditor = DevelopmentProject(snapshots.RootElement, checkout);
@@ -776,7 +754,7 @@ internal static partial class ValidationPlanner
         string[] policyInputs = inputs.Keys
             .Where(static path => (
                 path == "AGENTS.md" || path.StartsWith(".agents/rulebook/", StringComparison.Ordinal)
-                || path is ValidationCiContracts.C_RULE_LOADER or ValidationCiContracts.C_RULE_EXAMPLES
+                || path == "tools/Inno.Tooling.Architecture/RepositoryRuleSelection.cs"
             ))
             .Order(StringComparer.Ordinal)
             .ToArray();
@@ -868,7 +846,6 @@ internal static partial class ValidationPlanner
                     .Where(static path => (
                         path.Split('/')[0] is "src" or "entry" or "backends" or "platforms" or "build" or "tools"
                         || path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
-                        || path.EndsWith(".Tests.ps1", StringComparison.OrdinalIgnoreCase)
                         || path.EndsWith(".cs.txt", StringComparison.OrdinalIgnoreCase)
                            && !path.StartsWith(".agents/records/", StringComparison.Ordinal)
                         || Path.GetExtension(path) is ".csproj" or ".props" or ".targets"
@@ -923,26 +900,6 @@ internal static partial class ValidationPlanner
                     documentation: new ValidationDocumentationCheck([], [], documentation.catalog.contentIdentity, configuration, null)
                 )
             );
-        }
-        foreach (KeyValuePair<string, string[]> contract in contracts)
-        {
-            if (sharedManaged)
-            {
-                checks.Add(
-                    new ValidationCheck(
-                        "ci-contract:" + contract.Key,
-                        "ci-contracts",
-                        contract.Key,
-                        "Check the behavior of the affected CI script.",
-                        "any",
-                        [],
-                        contract.Value,
-                        true,
-                        null,
-                        projects: [contract.Key]
-                    )
-                );
-            }
         }
         foreach (ValidationProject project in projects.OrderBy(static project => project.path, StringComparer.Ordinal))
         {
@@ -1926,8 +1883,11 @@ internal static partial class ValidationPlanner
     private static string DirectoryOf(string project) => project[..(project.LastIndexOf('/') + 1)];
 
     private static bool IsWorkflowInput(string path)
-        => path.StartsWith(".github/", StringComparison.Ordinal) || path.StartsWith("tools/ci/", StringComparison.Ordinal)
-           || path.StartsWith("tests/ci/", StringComparison.Ordinal);
+        => path.StartsWith(".github/workflows/", StringComparison.Ordinal) && path.EndsWith(".yml", StringComparison.Ordinal)
+           || path.StartsWith(".github/actions/", StringComparison.Ordinal) && path.EndsWith("/action.yml", StringComparison.Ordinal)
+           || path is ".github/scripts/routing.py" or ".github/scripts/validation.py" or ".github/scripts/backend_artifacts.py"
+              or ".github/scripts/documentation_artifacts.py" or ".github/scripts/github_artifacts.py"
+              or ".github/native-targets.json" or ".github/validation-hosts.json";
 
     private static bool IsEditorProductInput(string path)
         => path.StartsWith("tests/product/Inno.Testing.EditorJourney/", StringComparison.Ordinal)

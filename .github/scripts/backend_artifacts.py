@@ -208,7 +208,8 @@ def release_archive(package):
     directory = ROOT / "artifacts/backend-downloads"
     directory.mkdir(parents=True, exist_ok=True)
     archive = directory / (digest + ".zip")
-    if archive.exists():
+    cached = archive.exists()
+    if cached:
         with archive.open("rb") as stream:
             if hashlib.file_digest(stream, "sha256").hexdigest() != digest:
                 raise ValueError("Cached backend ZIP differs from catalog digest")
@@ -217,6 +218,9 @@ def release_archive(package):
             partial = Path(temporary) / "download"
             download(f"releases/assets/{asset}", partial, digest)
             partial.rename(archive)
+    from validation import append_summary
+    size = archive.stat().st_size
+    append_summary(f"Backend asset {asset}: {0 if cached else size} bytes downloaded, {size if cached else 0} bytes cached.")
     return archive
 
 

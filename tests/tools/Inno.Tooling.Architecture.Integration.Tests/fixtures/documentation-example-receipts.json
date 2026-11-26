@@ -1,0 +1,1159 @@
+{
+  "bases": {
+    "actual-projected-contracts": {
+      "catalog": {
+        "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "pages": [
+          {
+            "codeBlocks": [
+              {
+                "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "declarationSymbols": [],
+                "language": "csharp"
+              },
+              {
+                "contentIdentity": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "declarationSymbols": [
+                  "T:Probe"
+                ],
+                "language": "csharp"
+              }
+            ],
+            "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "examples": {
+              "mode": "runtime-script",
+              "projects": [
+                "Probe"
+              ]
+            },
+            "id": "task.probe"
+          }
+        ],
+        "references": [
+          {
+            "configuration": "Debug",
+            "identity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "model": "runtime-script",
+            "path": "reference/api/runtime-script.json",
+            "projects": [
+              "Probe"
+            ],
+            "target": null
+          }
+        ],
+        "repository": "https://github.com/Wolfiora/InnoEngine",
+        "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sourceTree": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "context": {
+        "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sourceTree": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "evidence": {
+        "results": [
+          {
+            "documentationInputs": [
+              {
+                "configuration": "Debug",
+                "environment": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "owners": [
+                  "src/Probe.csproj"
+                ],
+                "packages": {},
+                "project": "src/Probe.csproj",
+                "sourceIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "sources": {
+                  "src/Probe.csproj": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                },
+                "target": null
+              }
+            ],
+            "id": "documentation-examples:managed",
+            "status": "Passed"
+          }
+        ]
+      },
+      "plan": {
+        "checks": [
+          {
+            "context": "managed",
+            "documentation": {
+              "configuration": "Debug",
+              "pages": [
+                "task.probe"
+              ],
+              "target": null
+            },
+            "exclusion": null,
+            "id": "documentation-examples:managed",
+            "kind": "documentation-examples",
+            "projects": [
+              "src/Probe.csproj"
+            ]
+          }
+        ],
+        "environment": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "report": {
+        "configuration": "Debug",
+        "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "results": [
+          {
+            "blocks": [
+              {
+                "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "declarationSymbols": [],
+                "language": "csharp"
+              }
+            ],
+            "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "errors": [],
+            "mode": "runtime-script",
+            "page": "task.probe",
+            "references": {
+              "Inno.ScriptApi.Runtime": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "Probe.dll": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            "status": "Passed"
+          }
+        ],
+        "scriptReferences": [
+          {
+            "configuration": "Debug",
+            "differences": [],
+            "documentationIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "identity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "model": "runtime-script",
+            "path": "reference/api/runtime-script.json",
+            "projectionIdentities": {
+              "Inno.ScriptApi.Runtime": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            "projects": [
+              "Probe"
+            ],
+            "status": "Passed"
+          }
+        ],
+        "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sourceTree": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "status": "Passed",
+        "target": null
+      }
+    },
+    "complete": {
+      "catalog": {
+        "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "pages": [
+          {
+            "codeBlocks": [
+              {
+                "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "declarationSymbols": [],
+                "language": "csharp"
+              },
+              {
+                "contentIdentity": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "declarationSymbols": [
+                  "T:Probe"
+                ],
+                "language": "csharp"
+              }
+            ],
+            "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "examples": {
+              "mode": "host",
+              "projects": [
+                "Probe"
+              ]
+            },
+            "id": "task.probe"
+          }
+        ],
+        "repository": "https://github.com/Wolfiora/InnoEngine",
+        "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sourceTree": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "context": {
+        "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sourceTree": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "evidence": {
+        "results": [
+          {
+            "documentationInputs": [
+              {
+                "configuration": "Debug",
+                "environment": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "owners": [
+                  "src/Probe.csproj"
+                ],
+                "packages": {},
+                "project": "src/Probe.csproj",
+                "sourceIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "sources": {
+                  "src/Probe.csproj": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                },
+                "target": null
+              }
+            ],
+            "id": "documentation-examples:managed",
+            "status": "Passed"
+          }
+        ]
+      },
+      "plan": {
+        "checks": [
+          {
+            "context": "managed",
+            "documentation": {
+              "configuration": "Debug",
+              "pages": [
+                "task.probe"
+              ],
+              "target": null
+            },
+            "exclusion": null,
+            "id": "documentation-examples:managed",
+            "kind": "documentation-examples",
+            "projects": [
+              "src/Probe.csproj"
+            ]
+          }
+        ],
+        "environment": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "report": {
+        "configuration": "Debug",
+        "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "results": [
+          {
+            "blocks": [
+              {
+                "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "declarationSymbols": [],
+                "language": "csharp"
+              }
+            ],
+            "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "errors": [],
+            "mode": "host",
+            "page": "task.probe",
+            "references": {
+              "Probe.dll": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            "status": "Passed"
+          }
+        ],
+        "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sourceTree": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "status": "Passed",
+        "target": null
+      }
+    },
+    "editor-script-references": {
+      "catalog": {
+        "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "pages": [
+          {
+            "codeBlocks": [
+              {
+                "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "declarationSymbols": [],
+                "language": "csharp"
+              },
+              {
+                "contentIdentity": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "declarationSymbols": [
+                  "T:Probe"
+                ],
+                "language": "csharp"
+              }
+            ],
+            "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "examples": {
+              "mode": "editor-script",
+              "projects": [
+                "Probe"
+              ]
+            },
+            "id": "task.probe"
+          }
+        ],
+        "repository": "https://github.com/Wolfiora/InnoEngine",
+        "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sourceTree": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "context": {
+        "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sourceTree": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "evidence": {
+        "results": [
+          {
+            "documentationInputs": [
+              {
+                "configuration": "Debug",
+                "environment": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "owners": [
+                  "src/Probe.csproj"
+                ],
+                "packages": {},
+                "project": "src/Probe.csproj",
+                "sourceIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "sources": {
+                  "src/Probe.csproj": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                },
+                "target": null
+              }
+            ],
+            "id": "documentation-examples:managed",
+            "status": "Passed"
+          }
+        ]
+      },
+      "plan": {
+        "checks": [
+          {
+            "context": "managed",
+            "documentation": {
+              "configuration": "Debug",
+              "pages": [
+                "task.probe"
+              ],
+              "target": null
+            },
+            "exclusion": null,
+            "id": "documentation-examples:managed",
+            "kind": "documentation-examples",
+            "projects": [
+              "src/Probe.csproj"
+            ]
+          }
+        ],
+        "environment": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "report": {
+        "configuration": "Debug",
+        "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "results": [
+          {
+            "blocks": [
+              {
+                "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "declarationSymbols": [],
+                "language": "csharp"
+              }
+            ],
+            "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "errors": [],
+            "mode": "editor-script",
+            "page": "task.probe",
+            "references": {
+              "Inno.ScriptApi.Editor": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "Inno.ScriptApi.Runtime": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "Probe.dll": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            "status": "Passed"
+          }
+        ],
+        "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sourceTree": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "status": "Passed",
+        "target": null
+      }
+    }
+  },
+  "cases": [
+    {
+      "accepted": true,
+      "base": "complete",
+      "changes": [],
+      "name": "complete"
+    },
+    {
+      "accepted": true,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "catalog",
+            "pages",
+            0,
+            "examples",
+            "mode"
+          ],
+          "value": "runtime-script"
+        },
+        {
+          "path": [
+            "catalog",
+            "references"
+          ],
+          "value": [
+            {
+              "configuration": "Debug",
+              "identity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "model": "runtime-script",
+              "path": "reference/api/runtime-script.json",
+              "projects": [
+                "Probe"
+              ],
+              "target": null
+            }
+          ]
+        },
+        {
+          "path": [
+            "report",
+            "results",
+            0,
+            "mode"
+          ],
+          "value": "runtime-script"
+        },
+        {
+          "path": [
+            "report",
+            "results",
+            0,
+            "references",
+            "Inno.ScriptApi.Runtime"
+          ],
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "path": [
+            "report",
+            "scriptReferences"
+          ],
+          "value": [
+            {
+              "configuration": "Debug",
+              "differences": [],
+              "documentationIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "identity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "model": "runtime-script",
+              "path": "reference/api/runtime-script.json",
+              "projectionIdentities": {
+                "Inno.ScriptApi.Runtime": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "projects": [
+                "Probe"
+              ],
+              "status": "Passed"
+            }
+          ]
+        }
+      ],
+      "name": "actual-projected-contracts"
+    },
+    {
+      "accepted": false,
+      "base": "actual-projected-contracts",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "scriptReferences"
+          ],
+          "value": []
+        }
+      ],
+      "name": "missing-projected-contracts"
+    },
+    {
+      "accepted": false,
+      "base": "actual-projected-contracts",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "scriptReferences"
+          ],
+          "value": [
+            {
+              "configuration": "Debug",
+              "differences": [],
+              "documentationIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "identity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "model": "runtime-script",
+              "path": "reference/api/runtime-script.json",
+              "projectionIdentities": {
+                "Inno.ScriptApi.Runtime": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "projects": [
+                "Probe"
+              ],
+              "status": "Passed"
+            },
+            {
+              "configuration": "Debug",
+              "differences": [],
+              "documentationIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "identity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "model": "runtime-script",
+              "path": "reference/api/runtime-script.json",
+              "projectionIdentities": {
+                "Inno.ScriptApi.Runtime": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "projects": [
+                "Probe"
+              ],
+              "status": "Passed"
+            }
+          ]
+        }
+      ],
+      "name": "duplicate-projected-contracts"
+    },
+    {
+      "accepted": false,
+      "base": "actual-projected-contracts",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "scriptReferences",
+            0,
+            "status"
+          ],
+          "value": "Failed"
+        }
+      ],
+      "name": "failed-projected-contracts"
+    },
+    {
+      "accepted": false,
+      "base": "actual-projected-contracts",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "scriptReferences",
+            0,
+            "projectionIdentities",
+            "Inno.ScriptApi.Runtime"
+          ],
+          "value": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      ],
+      "name": "different-projection-assembly"
+    },
+    {
+      "accepted": false,
+      "base": "actual-projected-contracts",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "scriptReferences",
+            0,
+            "identity"
+          ],
+          "value": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      ],
+      "name": "different-projection-reference"
+    },
+    {
+      "accepted": false,
+      "base": "actual-projected-contracts",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "scriptReferences",
+            0,
+            "projects",
+            0
+          ],
+          "value": "Other"
+        }
+      ],
+      "name": "different-projection-owner"
+    },
+    {
+      "accepted": false,
+      "base": "actual-projected-contracts",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "scriptReferences",
+            0,
+            "documentationIdentity"
+          ],
+          "value": "unknown"
+        }
+      ],
+      "name": "unhashed-projection-xml"
+    },
+    {
+      "accepted": true,
+      "base": "actual-projected-contracts",
+      "changes": [
+        {
+          "path": [
+            "catalog",
+            "references"
+          ]
+        },
+        {
+          "path": [
+            "report",
+            "scriptReferences"
+          ]
+        }
+      ],
+      "name": "runtime-script-references"
+    },
+    {
+      "accepted": true,
+      "base": "actual-projected-contracts",
+      "changes": [
+        {
+          "path": [
+            "catalog",
+            "pages",
+            0,
+            "examples",
+            "mode"
+          ],
+          "value": "editor-script"
+        },
+        {
+          "path": [
+            "catalog",
+            "references"
+          ]
+        },
+        {
+          "path": [
+            "report",
+            "results",
+            0,
+            "mode"
+          ],
+          "value": "editor-script"
+        },
+        {
+          "path": [
+            "report",
+            "results",
+            0,
+            "references",
+            "Inno.ScriptApi.Editor"
+          ],
+          "value": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        },
+        {
+          "path": [
+            "report",
+            "scriptReferences"
+          ]
+        }
+      ],
+      "name": "editor-script-references"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "catalog",
+            "pages",
+            0,
+            "examples",
+            "mode"
+          ],
+          "value": "runtime-script"
+        },
+        {
+          "path": [
+            "report",
+            "results",
+            0,
+            "mode"
+          ],
+          "value": "runtime-script"
+        }
+      ],
+      "name": "runtime-script-missing-runtime"
+    },
+    {
+      "accepted": false,
+      "base": "editor-script-references",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "results",
+            0,
+            "references",
+            "Inno.ScriptApi.Editor"
+          ]
+        }
+      ],
+      "name": "editor-script-missing-editor"
+    },
+    {
+      "accepted": false,
+      "base": "editor-script-references",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "results",
+            0,
+            "references",
+            "Inno.ScriptApi.Editor"
+          ],
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "path": [
+            "report",
+            "results",
+            0,
+            "references",
+            "Inno.ScriptApi.Runtime"
+          ]
+        }
+      ],
+      "name": "editor-script-missing-runtime"
+    },
+    {
+      "accepted": false,
+      "base": "actual-projected-contracts",
+      "changes": [
+        {
+          "path": [
+            "catalog",
+            "references"
+          ]
+        },
+        {
+          "path": [
+            "report",
+            "results",
+            0,
+            "references",
+            "Inno.ScriptApi.Editor"
+          ],
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "path": [
+            "report",
+            "scriptReferences"
+          ]
+        }
+      ],
+      "name": "runtime-script-borrowed-editor"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "missing"
+          ],
+          "value": true
+        }
+      ],
+      "name": "missing-report"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "evidence",
+            "results",
+            0,
+            "status"
+          ],
+          "value": "Failed"
+        }
+      ],
+      "name": "failed-check"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "sourceTree"
+          ],
+          "value": "cccccccccccccccccccccccccccccccccccccccc"
+        }
+      ],
+      "name": "stale-tree"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "snapshot"
+          ],
+          "value": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      ],
+      "name": "stale-snapshot"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "results",
+            0,
+            "contentIdentity"
+          ],
+          "value": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      ],
+      "name": "stale-page"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "results",
+            0,
+            "status"
+          ],
+          "value": "Failed"
+        }
+      ],
+      "name": "failed-compilation"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "results",
+            0,
+            "errors"
+          ],
+          "value": [
+            "CS0006"
+          ]
+        }
+      ],
+      "name": "hidden-errors"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "results",
+            0,
+            "mode"
+          ],
+          "value": "runtime-script"
+        }
+      ],
+      "name": "wrong-mode"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "target"
+          ],
+          "value": "foreign"
+        }
+      ],
+      "name": "wrong-target"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "configuration"
+          ],
+          "value": "Release"
+        }
+      ],
+      "name": "wrong-configuration"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "results"
+          ],
+          "value": []
+        }
+      ],
+      "name": "empty-discovery"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "results"
+          ],
+          "value": [
+            {
+              "blocks": [
+                {
+                  "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "declarationSymbols": [],
+                  "language": "csharp"
+                }
+              ],
+              "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "errors": [],
+              "mode": "host",
+              "page": "task.probe",
+              "references": {
+                "Probe.dll": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "status": "Passed"
+            },
+            {
+              "blocks": [
+                {
+                  "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "declarationSymbols": [],
+                  "language": "csharp"
+                }
+              ],
+              "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "errors": [],
+              "mode": "host",
+              "page": "task.probe",
+              "references": {
+                "Probe.dll": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "status": "Passed"
+            }
+          ]
+        }
+      ],
+      "name": "duplicate-page"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "results",
+            0,
+            "blocks"
+          ],
+          "value": []
+        }
+      ],
+      "name": "missing-block"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "results",
+            0,
+            "references",
+            "Probe.dll"
+          ]
+        }
+      ],
+      "name": "missing-reference"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "results",
+            0,
+            "references",
+            "Probe.dll"
+          ],
+          "value": "unknown"
+        }
+      ],
+      "name": "unhashed-reference"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "plan",
+            "checks",
+            0,
+            "id"
+          ],
+          "value": "../outside"
+        }
+      ],
+      "name": "escaping-report"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "plan",
+            "checks",
+            0,
+            "context"
+          ],
+          "value": "../outside"
+        }
+      ],
+      "name": "escaping-context"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "plan",
+            "checks",
+            0,
+            "context"
+          ],
+          "value": "native"
+        }
+      ],
+      "name": "mismatched-context"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "evidence",
+            "results",
+            0,
+            "documentationInputs"
+          ],
+          "value": []
+        }
+      ],
+      "name": "missing-input-proof"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "evidence",
+            "results",
+            0,
+            "documentationInputs",
+            0,
+            "environment"
+          ],
+          "value": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      ],
+      "name": "changed-input-environment"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "evidence",
+            "results",
+            0,
+            "documentationInputs",
+            0,
+            "project"
+          ],
+          "value": "src/Other.csproj"
+        }
+      ],
+      "name": "changed-input-owner"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "evidence",
+            "results",
+            0,
+            "documentationInputs",
+            0,
+            "sources",
+            "src/Probe.csproj"
+          ]
+        }
+      ],
+      "name": "missing-source-map"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "evidence",
+            "results",
+            0,
+            "documentationInputs",
+            0,
+            "packages",
+            "probe/1.0.0"
+          ],
+          "value": "unknown"
+        }
+      ],
+      "name": "invalid-package"
+    }
+  ]
+}

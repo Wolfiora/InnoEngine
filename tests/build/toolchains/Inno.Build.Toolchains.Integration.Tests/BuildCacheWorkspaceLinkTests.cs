@@ -99,16 +99,9 @@ public sealed class BuildCacheWorkspaceLinkTests
         string link = Path.Combine(workspace, "alias");
         if (OperatingSystem.IsWindows())
         {
-            string escapedLink = link.Replace("'", "''", StringComparison.Ordinal);
-            string escapedTarget = target.Replace("'", "''", StringComparison.Ordinal);
             await ToolchainEnvironment.RunAsync(
-                "powershell.exe",
-                [
-                    "-NoProfile",
-                    "-NonInteractive",
-                    "-Command",
-                    "New-Item -ItemType Junction -Path '" + escapedLink + "' -Target '" + escapedTarget + "' | Out-Null"
-                ],
+                "cmd.exe",
+                ["/d", "/c", "mklink", "/J", link, target],
                 root,
                 cancellationToken: CancellationToken.None
             );

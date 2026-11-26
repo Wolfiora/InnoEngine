@@ -52,16 +52,9 @@ public sealed class NativeToolchainPreparationTests
             }
             else if (OperatingSystem.IsWindows())
             {
-                string escapedAlias = aliasBin.Replace("'", "''", StringComparison.Ordinal);
-                string escapedTarget = physicalBin.Replace("'", "''", StringComparison.Ordinal);
                 await ToolchainEnvironment.RunAsync(
-                    "powershell.exe",
-                    [
-                        "-NoProfile",
-                        "-NonInteractive",
-                        "-Command",
-                        $"$ErrorActionPreference='Stop'; New-Item -ItemType Junction -Path '{escapedAlias}' -Target '{escapedTarget}' | Out-Null"
-                    ],
+                    "cmd.exe",
+                    ["/d", "/c", "mklink", "/J", aliasBin, physicalBin],
                     root,
                     cancellationToken: CancellationToken.None
                 );

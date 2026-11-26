@@ -10,6 +10,7 @@
   </PropertyGroup>
   <Import Project="../../../RepositoryInput.targets" />
   <ItemGroup>
+    <InnoValidationInput Include="../../../../backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj;../../../../backends/Bgfx/native/Inno.Native.Bgfx/Inno.Native.Bgfx.csproj" />
     <ProjectReference Include="../../../../backends/Interop/native/Inno.Native.LibraryLoading/Inno.Native.LibraryLoading.csproj" />
     <ProjectReference Include="../../../../build/composition/Inno.Build.Composition/Inno.Build.Composition.csproj" />
     <ProjectReference Include="../../../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" />

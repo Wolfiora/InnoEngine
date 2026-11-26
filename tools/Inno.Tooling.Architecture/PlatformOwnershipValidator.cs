@@ -17,14 +17,6 @@ internal static class PlatformOwnershipValidator
     ) {
         Dictionary<string, string> projects = RepositorySourceInventory.Projects(root)
             .ToDictionary(path => Path.GetFullPath(path), StringComparer.OrdinalIgnoreCase);
-        foreach (string script in RepositorySourceInventory.Files(root, "*.Tests.ps1"))
-        {
-            string relative = Path.GetRelativePath(root, script).Replace('\\', '/');
-            if (!RepositorySourceInventory.IsTestPath(relative))
-            {
-                failures.Add($"{relative}: engine-owned test scripts must belong to the root tests directory.");
-            }
-        }
         foreach (string path in projects.Keys)
         {
             string relative = Path.GetRelativePath(root, path).Replace('\\', '/');
