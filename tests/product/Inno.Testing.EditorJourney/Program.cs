@@ -275,9 +275,9 @@ internal static class Program
             const string C_QUIT = """
                 use framework "AppKit"
                 on run arguments
-                    set app to current application's NSRunningApplication's runningApplicationWithProcessIdentifier:((item 1 of arguments) as integer)
-                    if app is missing value then error "Editor process missing"
-                    if not ((app's terminate()) as boolean) then error "Editor refused quit"
+                    set ownedApplication to current application's NSRunningApplication's runningApplicationWithProcessIdentifier:((item 1 of arguments) as integer)
+                    if ownedApplication is missing value then error "Editor process missing"
+                    if not ((ownedApplication's terminate()) as boolean) then error "Editor refused quit"
                 end run
                 """;
             try
@@ -326,17 +326,28 @@ internal static class Program
         string[] arguments,
         string directory
     ) {
-        var start = new ProcessStartInfo(program) { UseShellExecute = false, WorkingDirectory = directory, RedirectStandardOutput = true };
+        var start = new ProcessStartInfo(program)
+        {
+            UseShellExecute = false,
+            WorkingDirectory = directory,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
         foreach (string value in arguments)
         {
             start.ArgumentList.Add(value);
         }
         using Process child = Process.Start(start) ?? throw new IOException($"Cannot start {program}.");
         Task<string> output = child.StandardOutput.ReadToEndAsync();
+        Task<string> errors = child.StandardError.ReadToEndAsync();
         try
         {
             await child.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(15));
-            return child.ExitCode == 0 ? await output : throw new IOException($"{program} exited with {child.ExitCode}.");
+            if (child.ExitCode != 0)
+            {
+                throw new IOException($"{program} exited with {child.ExitCode}: {(await errors).Trim()}");
+            }
+            return await output;
         }
         finally
         {

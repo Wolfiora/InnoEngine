@@ -110,7 +110,10 @@ public sealed class EditorJourneyProtocolTests
                 cancellation.Token
             ));
             using JsonDocument result = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(output, "result.json")));
-            Assert.Equal(diagnostic == null ? "Passed" : "Failed", result.RootElement.GetProperty("status").GetString());
+            string expected = diagnostic == null ? "Passed" : "Failed";
+            string? status = result.RootElement.GetProperty("status").GetString();
+            string? detail = result.RootElement.GetProperty("diagnostic").GetString();
+            Assert.True(status == expected, $"{name}/{scenario}: expected {expected}, reported {status}. {detail}");
             if (diagnostic == null)
             {
                 Assert.Null(failure);
