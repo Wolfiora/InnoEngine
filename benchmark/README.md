@@ -23,17 +23,16 @@ Each measurement project is an independent BenchmarkDotNet executable. The direc
 
 Build and select cases in one project:
 
-```powershell
-$runtime = 'benchmark/runtime/engine/Inno.Benchmark.Runtime'
-dotnet build $runtime -c Release
-dotnet run --project $runtime -c Release --no-build -- --list
-dotnet run --project $runtime -c Release --no-build -- --check-case 'SubsystemLookupBenchmarks.ResolveInterface/factoryCount=16'
-dotnet run --project $runtime -c Release --no-build -- --case 'SubsystemLookupBenchmarks.ResolveInterface/factoryCount=16' --inProcess
+```text
+dotnet build benchmark/runtime/engine/Inno.Benchmark.Runtime -c Release
+dotnet run --project benchmark/runtime/engine/Inno.Benchmark.Runtime -c Release --no-build -- --list
+dotnet run --project benchmark/runtime/engine/Inno.Benchmark.Runtime -c Release --no-build -- --check-case "SubsystemLookupBenchmarks.ResolveInterface/factoryCount=16"
+dotnet run --project benchmark/runtime/engine/Inno.Benchmark.Runtime -c Release --no-build -- --case "SubsystemLookupBenchmarks.ResolveInterface/factoryCount=16" --inProcess
 ```
 
 Each project lists only its own cases and probes. For example, the rendering project owns the resource-read probe:
 
-```powershell
+```text
 dotnet run --project benchmark/services/rendering/Inno.Benchmark.Rendering -c Release -- --probe render artifacts/benchmarks/render.md
 ```
 
@@ -62,31 +61,31 @@ The `assets`, `content`, `plugins`, `editor` and `shaders` probes preserve cold/
 
 ### Native prerequisites
 
-For NativeShader select Windows x64 (D3D11) or macOS arm64 (Metal). Set `INNO_BENCHMARK_SHADERC` to the absolute shaderc executable and `INNO_BENCHMARK_SHADER_INCLUDES` to its matching include directory. For OfflineAudio use the Release MiniAudio native deployment, including its deployment index under `native/` next to the built loader assembly. For example, with a matching prepared Release product, copy its complete deployment into a fresh benchmark output and select the in-process job so the loader sees that deployment:
+For NativeShader select Windows x64 (D3D11) or macOS arm64 (Metal). Set `INNO_BENCHMARK_SHADERC` to the absolute shaderc executable and `INNO_BENCHMARK_SHADER_INCLUDES` to its matching include directory. For OfflineAudio use the Release MiniAudio native deployment, including its deployment index under `native/` next to the built loader assembly. From the engine root, build the benchmark output with this command.
 
-```powershell
-$audio = 'benchmark/backends/MiniAudio/runtime/Inno.Benchmark.MiniAudio'
-dotnet build $audio -c Release
-$benchOutput = Join-Path $audio 'bin/Release/net10.0'
-Copy-Item -LiteralPath (Join-Path $preparedProduct 'native') -Destination $benchOutput -Recurse
-dotnet run --project $audio -c Release --no-build -- --case OfflineAudioBenchmarks.MixDry --inProcess
+```text
+dotnet build benchmark/backends/MiniAudio/runtime/Inno.Benchmark.MiniAudio -c Release
 ```
 
-`$preparedProduct` is the directory containing the matching product's `native/` deployment. Keep the index and payloads from the same build.
+Copy the complete `native/` directory from the matching Release product into `benchmark/backends/MiniAudio/runtime/Inno.Benchmark.MiniAudio/bin/Release/net10.0/`. Keep the deployment index and its payloads together. The in-process job reads this deployment.
+
+```text
+dotnet run --project benchmark/backends/MiniAudio/runtime/Inno.Benchmark.MiniAudio -c Release --no-build -- --case OfflineAudioBenchmarks.MixDry --inProcess
+```
 
 ### Product processes
 
-Build `benchmark/support/Inno.Benchmark.ProcessMetrics` in Release for frame measurements. Run the product benchmark from the engine checkout on a Windows or macOS desktop host. Supply a prebuilt Release executable or managed entry DLL. Use a disposable copy of the input project because Editor and Build may update project-local state. Pin the project, packaged plugins and scene through `--input-revision` (commit plus package hashes for external inputs). The runner also hashes the actual executable.
+The product project builds the process metrics hook used for frame measurements. Run the product benchmark from the engine checkout on a Windows or macOS desktop host. Supply a prebuilt Release executable or managed entry DLL. Use a disposable copy of the input project because Editor and Build may update project-local state. Pin the project, packaged plugins and scene through `--input-revision` (commit plus package hashes for external inputs). The runner also hashes the actual executable.
 
-```powershell
-dotnet run --project benchmark/product/Inno.Benchmark.Product -c Release -- player-short --executable $player --graphics-api $api --hardware $hardware --input-revision $inputHash
-dotnet run --project benchmark/product/Inno.Benchmark.Product -c Release -- editor --executable $editor --project $project --graphics-api $api --hardware $hardware --input-revision $inputHash
-dotnet run --project benchmark/product/Inno.Benchmark.Product -c Release -- game-warm --executable $buildCli --project $project --input-revision $inputHash --target $target --tools-target $hostTarget --support-packs $packs --startup-scene $scene --expected-artifact $relativeArtifact
-dotnet run --project benchmark/product/Inno.Benchmark.Product -c Release -- support-pack --executable $buildCli --input-revision $engineCommit --target $target --tools-target $hostTarget --expected-artifact $relativeArtifact
+```text
+dotnet run --project benchmark/product/Inno.Benchmark.Product -c Release -- player-short --executable "<Player executable>" --graphics-api "<graphics API>" --hardware "<hardware description>" --input-revision "<input revision>"
+dotnet run --project benchmark/product/Inno.Benchmark.Product -c Release -- editor --executable "<Editor executable>" --project "<project directory>" --graphics-api "<graphics API>" --hardware "<hardware description>" --input-revision "<input revision>"
+dotnet run --project benchmark/product/Inno.Benchmark.Product -c Release -- game-warm --executable "<Build executable>" --project "<project directory>" --input-revision "<input revision>" --target "<target ID>" --tools-target "<host target ID>" --support-packs "<support pack directory>" --startup-scene "<startup scene>" --expected-artifact "<relative artifact path>"
+dotnet run --project benchmark/product/Inno.Benchmark.Product -c Release -- support-pack --executable "<Build executable>" --input-revision "<engine revision>" --target "<target ID>" --tools-target "<host target ID>" --expected-artifact "<relative artifact path>"
 ```
 
-* **Player:** short = 600 frames, long = 6,000. Use the same prebuilt product and scene for both. The script verifies the reported frame count and records final-frame views, draws and dispatches. The current Player enables vsync. GPU time is left empty.
-* **Editor:** 600 visible-window frames in the supplied project. The measurement covers the entire process, including startup and shutdown. The script verifies the frame-limit and shutdown messages.
+* **Player:** short = 600 frames, long = 6,000. Use the same prebuilt product and scene for both. The runner verifies the reported frame count and records final-frame views, draws and dispatches. The current Player enables vsync. GPU time is left empty.
+* **Editor:** 600 visible-window frames in the supplied project. The measurement covers the entire process, including startup and shutdown. The runner verifies the frame-limit and shutdown messages.
 * **Game build:** cold starts with an empty output path. Warm first builds to that path outside timing, verifies the requested artifact, then repeats the identical command. Both consume an explicit existing support-pack directory. SDK, native and OS caches are left intact.
 * **Support pack:** an independent invocation of the production CLI with a fresh destination. `--expected-artifact` selects a required file relative to that destination; a successful build records its hash.
 * Each invocation creates a unique output directory under `artifacts/benchmarks/products`. Keep its JSON, stdout, stderr and managed process counters. Wall time covers launch through exit; CPU covers the launched process only. Frame cases use a BCL-only .NET startup hook to capture total managed allocations and per-generation collection counts from hook initialization through process exit. Startup-hook-incompatible deployments retain available process evidence with status unavailable (exit 3). Actual product failures, timeouts and missing expected artifacts are errors.
