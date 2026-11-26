@@ -15,22 +15,43 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Read the exact repository SDK version
+      id: declaration
+      shell: bash
+      env:
+        SDK_DECLARATION: ${{ inputs.global-json-file }}
+      run: |
+        python - <<'PY'
+        import json
+        import os
+        import re
+        from pathlib import Path
+        version = json.loads(Path(os.environ["SDK_DECLARATION"]).read_text(encoding="utf-8-sig"))["sdk"]["version"]
+        if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?", version):
+            raise ValueError("Expected an exact repository SDK version")
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+            print("version=" + version, file=output)
+        PY
+
     - name: Install declared SDK
       id: install
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
       env:
         DOTNET_INSTALL_DIR: ${{ runner.temp }}/inno-dotnet
       with:
-        global-json-file: ${{ inputs.global-json-file }}
+        dotnet-version: ${{ steps.declaration.outputs.version }}
 
     - name: Verify selected SDK
       shell: bash
       env:
-        SDK_DECLARATION: ${{ inputs.global-json-file }}
+        EXPECTED_SDK: ${{ steps.declaration.outputs.version }}
       run: |
-        expected=$(python -c 'import json, os; print(json.load(open(os.environ["SDK_DECLARATION"], encoding="utf-8"))["sdk"]["version"])')
-        actual=$(dotnet --version)
-        if [[ "$actual" != "$expected" ]]; then
-          echo "Expected SDK $expected, got $actual" >&2
-          exit 1
-        fi
+        python - <<'PY'
+        import os
+        import subprocess
+        actual = subprocess.check_output(["dotnet", "--version"], text=True).strip()
+        expected = os.environ["EXPECTED_SDK"]
+        if actual != expected:
+            raise SystemExit(f"Expected SDK {expected}, got {actual}")
+        print(f"Selected repository SDK {actual}")
+        PY
