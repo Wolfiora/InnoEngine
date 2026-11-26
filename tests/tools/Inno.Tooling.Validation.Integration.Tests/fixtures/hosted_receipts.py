@@ -1,9 +1,14 @@
 """Replay the retained hosted validation and backend publication incidents offline."""
+import base64
+import copy
+import gzip
 import hashlib
 import json
 import os
 from pathlib import Path
 import sys
+import subprocess
+import zipfile
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -11,6 +16,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(sys.argv.pop(1))))
 import backend_artifacts as backends
 import validation
+import routing
 
 
 class HostedReceiptTests(unittest.TestCase):
@@ -32,6 +38,30 @@ class HostedReceiptTests(unittest.TestCase):
         file = directory / filename
         file.write_text(json.dumps(value), encoding="utf-8")
         return validation.digest(file)
+
+    def test_route_and_required_check_agree_on_manual_and_mixed_changes(self):
+        revision = "a" * 40
+        data = {"ref": "refs/heads/benchmark", "repository": {"default_branch": "master"}, "before": "b" * 40,
+                "pull_request": {"base": {"sha": "b" * 40}}, "merge_group": {"base_sha": "b" * 40}}
+        for event in ("push", "pull_request", "merge_group"):
+            for paths, reason in ((b"benchmark/domain/a.cs\0", "benchmark-only"),
+                                  (b"benchmark/domain/a.cs\0src/owner/b.cs\0", "validation"),
+                                  (b"tests/old.cs\0benchmark/new.cs\0", "validation")):
+                with patch.object(routing.subprocess, "check_output", return_value=paths), patch.object(routing, "matching_pull", return_value=None):
+                    profile, result, _ = routing.select(event, data, revision)
+                self.assertEqual(reason, result)
+                with patch.dict(os.environ, {"GITHUB_EVENT_NAME": event, "ROUTE_RESULT": "success", "ROUTE_REASON": result,
+                                             "SHOULD_RUN": str(reason == "validation").lower(),
+                                             "PLATFORM_RESULT": "success" if reason == "validation" else "skipped"}):
+                    validation.verify_route()
+                    with patch.dict(os.environ, {"PLATFORM_RESULT": "failure"}), self.assertRaises(RuntimeError):
+                        validation.verify_route()
+        with patch.object(routing, "benchmark_only", return_value=False), patch.object(routing, "matching_pull", return_value=27):
+            self.assertEqual(("fast", "open-pull-request", 27), routing.select("push", data, revision))
+        with patch.dict(os.environ, {"GITHUB_EVENT_NAME": "push", "ROUTE_RESULT": "success", "SHOULD_RUN": "false",
+                                     "PLATFORM_RESULT": "skipped", "ROUTE_REASON": "open-pull-request", "ROUTE_PULL": "27"}):
+            validation.verify_route()
+            self.assertIn("#27", self.summary.read_text())
 
     def test_first_failed_test_and_missing_owner(self):
         case = json.loads(Path(__file__).with_name("pr88-managed-failure.json").read_bytes())
@@ -80,6 +110,75 @@ class HostedReceiptTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             certify()
 
+    def test_pinned_sources_are_prepared_for_the_exact_clean_candidate(self):
+        def git(repo, *args):
+            return subprocess.check_output(["git", "-C", repo, *args], text=True).strip()
+        source, engine = self.root / "native", self.root / "engine"
+        with patch.dict(os.environ, {"GIT_ALLOW_PROTOCOL": "file", "GIT_CONFIG_COUNT": "0", "GIT_CONFIG_NOSYSTEM": "1",
+                                     "GIT_CONFIG_GLOBAL": str(self.root / "gitconfig")}):
+            for repo in (source, engine):
+                repo.mkdir()
+                git(repo, "init", "-q")
+                git(repo, "config", "user.name", "Source fixture")
+                git(repo, "config", "user.email", "fixture@example.invalid")
+            (source / "header").write_text("pinned")
+            git(source, "add", "header")
+            git(source, "commit", "-qm", "source")
+            git(engine, "submodule", "add", "-q", str(source), "extern/native")
+            git(engine, "commit", "-qm", "pin")
+            pin, revision = git(source, "rev-parse", "HEAD"), git(engine, "rev-parse", "HEAD")
+            git(engine, "submodule", "deinit", "-f", "--", "extern/native")
+            for commit, paths in ((revision, {"extern/native": "f" * 40}), (revision, {"other": pin}),
+                                  ("f" * 40, {"extern/native": pin})):
+                with self.assertRaises(ValueError):
+                    validation.prepare_sources(engine, commit, paths)
+            validation.prepare_sources(engine, revision, {"extern/native": pin})
+            self.assertEqual("pinned", (engine / "extern/native/header").read_text())
+            (engine / "changed").write_text("uncommitted")
+            with self.assertRaisesRegex(ValueError, "unchanged candidate"):
+                validation.prepare_sources(engine, revision, {"extern/native": pin})
+
+    def test_backend_test_reuse_requires_the_successful_default_branch_attempt(self):
+        commit, identity = "a" * 40, "b" * 64
+        event = self.root / "event.json"
+        event.write_text('{"repository":{"default_branch":"master"}}')
+        brief = dict(id=3, head_branch="master", head_sha=commit, repository_id=2, head_repository_id=2)
+        asset = dict(id=4, expired=False, name=f"backend-tests-fixture-{identity}", size_in_bytes=384,
+                     digest="sha256:" + identity, workflow_run=brief)
+        run = dict(status="completed", conclusion="success", head_sha=commit, head_branch="master",
+                   head_repository={"id": 2}, event="push", path=".github/workflows/engine-ci.yml", run_attempt=1)
+        proof = dict(version=2, commit=commit, environment=identity, hostTarget="fixture", attempt=1, tests=[{"id": "test:fixture"}])
+        def download(_, destination, expected):
+            with zipfile.ZipFile(destination, "w") as package:
+                package.writestr("backend-tests.json", json.dumps(proof))
+            self.assertEqual(identity, expected)
+        with (patch.dict(os.environ, {"GITHUB_REPOSITORY_ID": "2", "GITHUB_EVENT_PATH": str(event)}),
+              patch.object(backends, "repository_pages", return_value=[asset]), patch.object(backends, "repository_json", return_value=run),
+              patch.object(backends, "download", side_effect=download)):
+            read = lambda: list(backends.test_evidence({"environment": identity, "backendHost": "fixture"}))
+            self.assertEqual(proof["tests"], read())
+            for target, field, value in ((run, "event", "pull_request"), (run, "run_attempt", 2),
+                                         (brief, "head_repository_id", 7), (asset, "expired", True)):
+                with patch.dict(target, {field: value}):
+                    self.assertEqual([], read())
+
+    def test_annotated_catalog_must_bind_the_release_and_asset(self):
+        revision, digest = "a" * 40, "b" * 64
+        platform = {"target": "fixture", "asset": "fixture-prebuilt-backends.zip", "sha256": digest}
+        body = {"version": 1, "revision": revision, "platforms": {"fixture": platform}}
+        tag = "backend-prebuilts-2026.01.01.1"
+        message = "InnoEngine backend prebuilt catalog v1\n\n" + base64.b64encode(gzip.compress(json.dumps(body).encode())).decode()
+        obj = {"tag": tag, "message": message, "object": {"type": "commit", "sha": revision}}
+        ref = {"object": {"type": "tag", "sha": revision}}
+        asset = {"name": platform["asset"], "state": "uploaded", "digest": "sha256:" + digest}
+        release = {"tag_name": tag, "prerelease": True, "draft": False, "assets": [asset]}
+        with patch.object(backends, "repository_json", side_effect=lambda path: ref if path.startswith("git/ref/") else obj):
+            self.assertEqual(body["platforms"], backends.catalog(release))
+            for target, field, value in ((ref["object"], "type", "commit"), (obj["object"], "sha", "c" * 40),
+                                         (asset, "digest", "sha256:" + "c" * 64), (release, "assets", [asset, asset])):
+                with patch.dict(target, {field: value}), self.assertRaises(ValueError):
+                    backends.catalog(release)
+
     def test_release_rotation_resume_pins_and_rollback(self):
         revision = "a" * 40
         releases = []
@@ -106,6 +205,50 @@ class HostedReceiptTests(unittest.TestCase):
             self.assertEqual(("reuse", tag), decide()[:2])
         oldest = {a["name"]: a["digest"][7:] for a in releases[0]["assets"]}
         self.assertEqual("create", backends.release_plan(releases, oldest, revision, [], True)[0])
+
+    def test_interrupted_draft_reuses_only_the_exact_placeholder(self):
+        revision = "a" * 40
+        registrations = backends.registrations()
+        platforms = {name: {"target": name, "asset": value["asset"], "sha256": "b" * 64}
+                     for name, value in registrations.items()}
+        archives = {p["asset"]: self.root / p["asset"] for p in platforms.values()}
+        name = sorted(archives)[0]
+        placeholder = {"name": name, "id": 123, "size": 0, "state": "starter"}
+        draft = {"tag_name": "backend-prebuilts-2026.01.01.1", "draft": True, "prerelease": True,
+                 "id": 1, "target_commitish": revision, "body": "", "assets": [placeholder]}
+        current = copy.deepcopy(draft)
+        current["assets"][0]["id"] = 124
+        def publish():
+            backends.publish_release([draft], platforms, archives, revision, set(), False)
+        with patch.object(backends, "repository_json", return_value=current) as api:
+            with self.assertRaisesRegex(ValueError, "changed before recovery"):
+                publish()
+            api.assert_called_once_with("releases/1")
+        current["assets"][0]["id"] = 123
+        uploaded = []
+        def api(resource, *, method="GET", **kwargs):
+            if (resource, method) == ("releases/assets/123", "DELETE"):
+                current["assets"].clear()
+            elif resource == "releases/1" and method == "GET":
+                return copy.deepcopy(current)
+            elif resource.startswith("git/ref/tags/") and method == "GET":
+                return None
+            elif (resource, method) == ("git/tags", "POST"):
+                return {"sha": "c" * 40, "object": {"sha": revision}}
+            elif (resource, method) == ("git/refs", "POST"):
+                self.assertCountEqual(uploaded, archives.keys())
+            elif (resource, method) == ("releases/1", "PATCH"):
+                return {**current, "draft": False}
+            else:
+                self.fail(f"Unexpected release request {method} {resource}")
+        def upload(_, path):
+            asset = {"name": path.name, "state": "uploaded", "digest": "sha256:" + "b" * 64}
+            current["assets"].append(asset)
+            uploaded.append(path.name)
+            return asset
+        with patch.object(backends, "repository_json", side_effect=api), patch.object(backends, "upload_release_asset", side_effect=upload):
+            publish()
+            self.assertCountEqual(uploaded, archives.keys())
 
     def test_cached_archive_requires_the_certified_bytes(self):
         data = b"certified platform"

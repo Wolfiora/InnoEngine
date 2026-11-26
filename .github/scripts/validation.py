@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import stat
 import subprocess
 
 from github_artifacts import repository_json, repository_pages
@@ -46,6 +47,45 @@ def run_logged(command, path):
     if result.returncode:
         print(path.read_text(encoding="utf-8", errors="replace")[-12000:], flush=True)
         result.check_returncode()
+
+
+def prepare_sources(root, commit, pins):
+    def git(*args):
+        return subprocess.check_output(["git", "-C", root, *args])
+
+    def verify_checkout():
+        if (git("rev-parse", "HEAD").decode().strip() != commit
+                or git("status", "--porcelain", "--untracked-files=all", "--ignore-submodules=none")):
+            raise ValueError("Native source preparation requires the unchanged candidate checkout")
+
+    verify_checkout()
+    links = {}
+    for entry in git("ls-files", "--stage", "-z").split(b"\0"):
+        if entry.startswith(b"160000 "):
+            header, name = entry.split(b"\t", 1)
+            mode, revision, stage = header.split()
+            if stage == b"0":
+                links[os.fsdecode(name)] = revision.decode("ascii")
+    if not pins or any(links.get(name) != revision or not re.fullmatch("[0-9a-f]{40}", revision)
+                       for name, revision in pins.items()):
+        raise ValueError("The requested sources differ from the candidate gitlinks")
+    for name in pins:
+        relative = Path(name)
+        if relative.is_absolute() or ".." in relative.parts:
+            raise ValueError("Native source escapes the checkout")
+        path = root
+        for part in relative.parts:
+            path = path / part
+            if os.path.lexists(path):
+                info = path.lstat()
+                if stat.S_ISLNK(info.st_mode) or getattr(info, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT:
+                    raise ValueError(f"Linked native source: {name}")
+    git("submodule", "sync", "--recursive", "--", *sorted(pins))
+    git("submodule", "update", "--init", "--recursive", "--", *sorted(pins))
+    for name, revision in pins.items():
+        if git("-C", name, "rev-parse", "HEAD").decode().strip() != revision:
+            raise ValueError(f"Unexpected native source revision: {name}")
+    verify_checkout()
 
 
 def workloads(plan, sdk):
@@ -108,7 +148,17 @@ def freeze():
                    "--backend-store", "artifacts/b"]
         if os.getenv("REBUILD_BACKENDS"):
             command.extend(["--rebuild-backends", os.environ["REBUILD_BACKENDS"]])
-        run_logged(command, PLAN / "planning.log")
+        try:
+            run_logged(command, PLAN / "planning.log")
+        except subprocess.CalledProcessError as error:
+            if error.returncode != 2:
+                raise
+            request = read(PLAN / "preparation.json")
+            if (request["status"] != "Blocked" or request["kind"] != "NativeSources" or not request["owners"]
+                    or request["commit"] != commit or Path(request["root"]).resolve() != ROOT):
+                raise ValueError("Unexpected native preparation request") from error
+            prepare_sources(ROOT, commit, request["sources"])
+            run_logged(command, PLAN / "planning-with-sources.log")
         plan = read(plan_path)
         if workloads(plan, sdk):
             shutil.copyfile(plan_path, PLAN / "plan-before-workloads.json")
@@ -284,6 +334,9 @@ def run_workers():
 
     def copy_inputs(checkout):
         subprocess.run(["git", "worktree", "add", "--detach", checkout, commit], check=True)
+        preparation = ROOT / PLAN / "preparation.json"
+        if preparation.exists():
+            prepare_sources(checkout, commit, read(preparation)["sources"])
         shutil.copytree(ROOT / PLAN, checkout / PLAN)
         shutil.copytree((ROOT / assembly).parent, (checkout / assembly).parent)
         if not plan["backendStore"] or not plan.get("nativeDependencies"):

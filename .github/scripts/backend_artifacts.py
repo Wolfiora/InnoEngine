@@ -233,7 +233,7 @@ def acquire_inputs(item):
         raise ValueError("Unexpected platform or asset registration")
     operation = item["operation"]
     output = ROOT / "artifacts/backend-input"
-    output.mkdir()
+    output.mkdir(parents=True)
     native = ROOT / "artifacts/backend-native"
     work = ROOT / "artifacts/bn"
     work.mkdir()
