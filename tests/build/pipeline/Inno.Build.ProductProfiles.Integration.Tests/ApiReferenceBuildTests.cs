@@ -31,6 +31,9 @@ public sealed class ApiReferenceBuildTests
         [
             Path.Combine("backends", backend, "runtime", project, project + ".csproj"),
             "-t:" + target,
+            // Exercise shader preparation from source even when the outer test run consumes compiled backends.
+            "-p:InnoBackendPackageDirectory=",
+            "-p:InnoBackendPrebuiltRoot=",
             "-p:InnoNativeTarget=api-contract-fixture",
             "-p:" + apiProperty + "=",
             "-p:ArtifactsPath=" + outputs.directory
