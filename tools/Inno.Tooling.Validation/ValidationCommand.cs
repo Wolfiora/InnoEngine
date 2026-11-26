@@ -63,13 +63,14 @@ public static class ValidationCommand
                                     or "full"
                                     or "evidence"
                                     or "join"
+                                    or "assemble-backends"
                                     or "pack-backends"
                                     or "import-backends"
                                     or "backend-inputs"
                                     or "bind-backends")
         ) {
             throw new ArgumentException(
-                "Usage: validate <plan|run|full|evidence|join|pack-backends|import-backends|backend-inputs|bind-backends> --engine-root ROOT --dotnet HOST [--base REV] [--output DIR] [--plan FILE] [--evidence FILE] [--profile NAME] [--shared-managed true|false] [--native-dependencies FILE] [--shard ID] [--prerequisites DIR]"
+                "Usage: validate <plan|run|full|evidence|join|assemble-backends|pack-backends|import-backends|backend-inputs|bind-backends> --engine-root ROOT --dotnet HOST [--base REV] [--output DIR] [--plan FILE] [--evidence FILE] [--profile NAME] [--shared-managed true|false] [--native-dependencies FILE] [--shard ID] [--prerequisites DIR]"
             );
         }
         var options = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -77,6 +78,7 @@ public static class ValidationCommand
         {
             "bind-backends" => ["--plan", "--engine-root", "--dotnet", "--packages", "--output"],
             "backend-inputs" => ["--plan", "--engine-root", "--dotnet", "--target", "--output"],
+            "assemble-backends" => ["--artifacts-path", "--plans", "--selection", "--target", "--output"],
             "pack-backends" => ["--artifacts-path", "--inventory", "--output"],
             "import-backends" => ["--archive", "--sha256", "--target", "--output"],
             _ => null
@@ -152,6 +154,17 @@ public static class ValidationCommand
                     cancellationToken
                 ).ConfigureAwait(false);
                 AtomicFile.WriteAllBytes(options["--output"], JsonSerializer.SerializeToUtf8Bytes(selection));
+            }
+            else if (arguments[0] == "assemble-backends")
+            {
+                BackendPackageInventory.Assemble(
+                    options["--artifacts-path"],
+                    options["--plans"],
+                    options["--selection"],
+                    options["--target"],
+                    options["--output"],
+                    cancellationToken
+                );
             }
             else if (arguments[0] == "pack-backends")
             {

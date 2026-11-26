@@ -156,8 +156,10 @@ $inputPlans = @(foreach ($configuration in $platform[0].configurations) {
     Write-Host "$Target/$configuration selected $($changed.Count) backend owners for compilation and $($matching.Count) for prebuilt consumption."
     $inputs
 })
-$archive = @(& "$PSScriptRoot/New-BackendPrebuiltPackage.ps1" -Staging $staging -InputPlans $inputPlans -NativeSelection $native -Target $Target `
-    -EntryAssembly $entry -Dotnet $dotnetPath -OutputDirectory $OutputDirectory)[-1]
+$planList = Join-Path $work 'input-plans.json'
+[IO.File]::WriteAllText($planList, (ConvertTo-Json -InputObject $inputPlans -Compress))
+$archive = Join-Path $OutputDirectory $platform[0].asset
+Invoke-Sdk @($entry,'validate','assemble-backends','--artifacts-path',$staging,'--plans',$planList,'--selection',$native,'--target',$Target,'--output',$archive)
 $digest = (Get-FileHash -LiteralPath $archive).Hash.ToLowerInvariant()
 $coldStore = [IO.Directory]::CreateDirectory((Join-Path $work 'certified')).FullName
 $installed = Join-Path $coldStore $Target

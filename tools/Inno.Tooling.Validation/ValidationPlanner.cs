@@ -260,7 +260,7 @@ internal static partial class ValidationPlanner
                         or "tests/product/Invoke-EditorSmoke.ps1" or "tests/product/Invoke-EditorUiProductJourney.ps1" =>
                             "tests/product/Inno.Testing.EditorJourney/Inno.Testing.EditorJourney.csproj",
                         "tests/Invoke-BuildCacheChecks.ps1" or "tests/Invoke-IsolatedTests.ps1" or "tools/ci/Invoke-BuildCacheChecks.ps1"
-                        or "tools/ci/Test-SupportPackClosure.ps1" =>
+                        or "tools/ci/Invoke-IsolatedTests.ps1" or "tools/ci/Test-SupportPackClosure.ps1" =>
                             "tools/Inno.Tooling.Validation/Inno.Tooling.Validation.csproj",
                         _ => null
                     };

@@ -102,7 +102,7 @@ public sealed class ValidationSelectionTests : ValidationPlanFixture
     public async Task SharedTestExecutorSelectsItsBehaviorContractAndRemainsAnExecutionInput()
     {
         using var repository = new ValidationRepository();
-        const string C_EXECUTOR = "tools/ci/Invoke-IsolatedTests.ps1";
+        const string C_EXECUTOR = "tools/Inno.Tooling.Validation/ValidationTestExecution.cs";
         const string C_UNRELATED = "tests/Unrelated.Tests/Unrelated.Tests.csproj";
         repository.Write(
             C_UNRELATED,
@@ -110,13 +110,13 @@ public sealed class ValidationSelectionTests : ValidationPlanFixture
                 "<PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>contract</InnoValidationLayer></PropertyGroup>"
             )
         );
-        repository.Write(C_EXECUTOR, "Write-Host 'before'");
+        repository.Write(C_EXECUTOR, "// Original executor.");
         const string C_SUBJECT = "tests/Example.Tests/Example.Tests.csproj";
         repository.Write(
             C_SUBJECT,
             File.ReadAllText(repository.PathOf(C_SUBJECT)).Replace(
                 "</Project>",
-                "<ItemGroup><InnoValidationInput Include=\"../../tools/ci/Invoke-IsolatedTests.ps1\" /></ItemGroup></Project>",
+                "<ItemGroup><InnoValidationInput Include=\"../../tools/Inno.Tooling.Validation/ValidationTestExecution.cs\" /></ItemGroup></Project>",
                 StringComparison.Ordinal
             )
         );
@@ -124,7 +124,7 @@ public sealed class ValidationSelectionTests : ValidationPlanFixture
         repository.Git("commit", "-m", "Declare the shared test executor");
         using JsonDocument initial = await repository.PlanAsync();
         string original = initial.RootElement.GetProperty("inputs").GetProperty(C_EXECUTOR).GetString()!;
-        repository.Write(C_EXECUTOR, "Write-Host 'after'");
+        repository.Write(C_EXECUTOR, "// Changed executor.");
         using JsonDocument changed = await repository.PlanAsync();
         Assert.False(changed.RootElement.GetProperty("full").GetBoolean());
         Assert.Contains("tests/Example.Tests/Example.Tests.csproj", Owners(changed));

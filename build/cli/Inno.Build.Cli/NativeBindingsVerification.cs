@@ -16,6 +16,7 @@ using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
+using Inno.Tooling.Validation;
 
 namespace Inno.Build.Cli;
 
@@ -59,12 +60,6 @@ internal static partial class NativeBindingsVerification
                 .ResolveAsync(nativeContext, execution.host, options.target, cancellationToken)
                 .ConfigureAwait(false);
             nativeContext = nativeContext.WithToolchain(sdk);
-            string testHost = ToolchainEnvironment.ResolveExecutable("pwsh");
-            string testEntry = Path.Combine(repositoryRoot, "tools", "ci", "Invoke-IsolatedTests.ps1");
-            if (!File.Exists(testEntry))
-            {
-                throw new FileNotFoundException("The common test execution entry is unavailable.", testEntry);
-            }
             IReadOnlyList<string> bindingProjects = DiscoverBindingProjects(repositoryRoot, contribution.plan);
             ValidateInputs(bindingProjects);
 
@@ -167,8 +162,6 @@ internal static partial class NativeBindingsVerification
                 testProjects,
                 native.products,
                 native.plan,
-                testHost,
-                testEntry,
                 artifactsPath,
                 cancellationToken
             ).ConfigureAwait(false);
@@ -336,33 +329,37 @@ internal static partial class NativeBindingsVerification
         IReadOnlyList<string> testProjects,
         IReadOnlyList<NativeBuildProduct> nativeProducts,
         ProductNativeBuildPlan nativePlan,
-        string testHost,
-        string testEntry,
         string artifactsPath,
         CancellationToken cancellationToken
     ) {
         Console.WriteLine("[inno-bindings] Run every native binding, Text, and UI test project.");
-        foreach (string project in testProjects)
+        async Task<string> TargetPathAsync(string project)
         {
-            string output = (await ToolchainEnvironment.CaptureOutputAsync(
+            string path = (await ToolchainEnvironment.CaptureOutputAsync(
                 options.dotnet,
                 [
                     "msbuild",
                     project,
-                    "-getProperty:TargetDir",
-                    $"-p:Configuration={options.configuration}",
-                    $"-p:InnoToolTarget={options.target}",
-                    $"-p:ArtifactsPath={artifactsPath}"
+                    "-nologo",
+                    "-getProperty:TargetPath",
+                    "-p:Configuration=" + options.configuration,
+                    "-p:InnoToolTarget=" + options.target,
+                    "-p:ArtifactsPath=" + artifactsPath
                 ],
                 repositoryRoot,
                 DotNetSdkEnvironment.Create(options.dotnet),
                 cancellationToken
             ).ConfigureAwait(false)).Trim();
-            if (!Path.IsPathFullyQualified(output))
-            {
-                throw new InvalidDataException("The test project did not declare an absolute target output directory.");
-            }
-            await ProductNativeDeployment.InstallAsync(nativeProducts, nativePlan, output, cancellationToken)
+            return Path.IsPathFullyQualified(path) && File.Exists(path)
+                   ? path
+                   : throw new FileNotFoundException("Missing compiled test output.", path);
+        }
+        var assemblies = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (string project in testProjects)
+        {
+            string assembly = await TargetPathAsync(project).ConfigureAwait(false);
+            assemblies.Add(project, assembly);
+            await ProductNativeDeployment.InstallAsync(nativeProducts, nativePlan, Path.GetDirectoryName(assembly)!, cancellationToken)
                 .ConfigureAwait(false);
         }
         string results = Path.Combine(
@@ -386,27 +383,24 @@ internal static partial class NativeBindingsVerification
                 }
             })
         );
-        await ToolchainEnvironment.RunAsync(
-            testHost,
-            [
-                "-NoLogo",
-                "-NoProfile",
-                "-NonInteractive",
-                "-File",
-                testEntry,
-                "-Configuration",
-                "Source" + options.configuration,
-                "-Dotnet",
-                options.dotnet,
-                "-Solution",
-                selection,
-                "-ResultsDirectory",
-                results,
-                "-ArtifactsPath",
-                artifactsPath
-            ],
+        string logger = await TargetPathAsync(
+            Path.Combine(repositoryRoot, "tests/support/Inno.Testing.Discovery.TestLogger/Inno.Testing.Discovery.TestLogger.csproj")
+        ).ConfigureAwait(false);
+        await ValidationTestExecution.RunAsync(
             repositoryRoot,
-            DotNetSdkEnvironment.Create(options.dotnet),
+            options.dotnet,
+            selection,
+            results,
+            Path.Combine(results, "shared.log"),
+            assemblies,
+            logger,
+            new Dictionary<string, string>
+            {
+                ["Configuration"] = "Source" + options.configuration,
+                ["ArtifactsPath"] = artifactsPath,
+                ["InnoToolTarget"] = options.target
+            },
+            null,
             cancellationToken
         ).ConfigureAwait(false);
         return Path.GetRelativePath(repositoryRoot, results).Replace('\\', '/');

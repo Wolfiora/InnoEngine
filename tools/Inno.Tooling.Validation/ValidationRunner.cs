@@ -19,7 +19,7 @@ internal static class ValidationRunner
 {
     internal const string C_BUILD_CACHE = "tools/Inno.Tooling.Validation/ValidationBuildReuse.cs";
     internal const string C_SUPPORT_PACK = "tools/Inno.Tooling.Validation/ValidationSupportPack.cs";
-    internal const string C_TEST_EXECUTOR = "tools/ci/Invoke-IsolatedTests.ps1";
+    internal const string C_TEST_EXECUTOR = "tools/Inno.Tooling.Validation/ValidationTestExecution.cs";
 
     internal static async Task<ValidationEvidence> RunAsync(
         ValidationPlan plan,
@@ -692,42 +692,40 @@ internal static class ValidationRunner
                                 string solution = WriteUnion(contextID, "Tests", tests);
                                 string resultsDirectory = Path.Combine(directory, contextID + "-trx");
                                 Dictionary<string, string> properties = plan.contexts[contextID].properties;
-                                string[] productArguments = contextID == "native"
-                                                            ? [
-                                                                "-Target",
-                                                                properties["InnoNativeTarget"],
-                                                                "-ToolTarget",
-                                                                properties["InnoToolTarget"],
-                                                                "-ProductProperties",
-                                                                properties["InnoProductBuildProperties"]
-                                                            ]
-                                                            : [];
+                                string TargetPath(string project)
+                                    => plan.contexts[contextID].sdkGraph.EnumerateArray()
+                                        .Single(
+                                            snapshot => (
+                                                Path.GetRelativePath(plan.root, snapshot.GetProperty("Path").GetString()!)
+                                                    .Replace('\\', '/') == project
+                                            )
+                                        )
+                                        .GetProperty("Properties")
+                                        .GetProperty("TargetPath")
+                                        .GetString()!;
+                                Dictionary<string, string> testAssemblies = tests.ToDictionary(
+                                    project => project,
+                                    TargetPath,
+                                    StringComparer.Ordinal
+                                );
                                 try
                                 {
                                     long batchStart = Stopwatch.GetTimestamp();
                                     try
                                     {
-                                        await ShellAsync(
-                                            C_TEST_EXECUTOR,
-                                            [
-                                                "-Solution",
-                                                solution,
-                                                "-Configuration",
-                                                properties["Configuration"],
-                                                "-ArtifactsPath",
-                                                properties["ArtifactsPath"],
-                                                "-Dotnet",
-                                                plan.dotnet,
-                                                "-SdkSnapshot",
-                                                graphPath,
-                                                "-ResultsDirectory",
-                                                resultsDirectory,
-                                                ..productArguments,
-                                                ..plan.nativeDependencies is null
-                                                  ? Array.Empty<string>()
-                                                  : ["-NativeDependencies", Path.Combine(plan.root, plan.nativeDependencies)]
-                                            ],
-                                            contextID + "-tests.log"
+                                        await ValidationTestExecution.RunAsync(
+                                            plan.root,
+                                            plan.dotnet,
+                                            solution,
+                                            resultsDirectory,
+                                            Path.Combine(directory, contextID + "-tests.log"),
+                                            testAssemblies,
+                                            TargetPath(
+                                                "tests/support/Inno.Testing.Discovery.TestLogger/Inno.Testing.Discovery.TestLogger.csproj"
+                                            ),
+                                            properties,
+                                            plan.nativeDependencies is null ? null : Path.Combine(plan.root, plan.nativeDependencies),
+                                            cancellationToken
                                         ).ConfigureAwait(false);
                                     }
                                     catch (Exception failure) when (failure is not OperationCanceledException)
@@ -749,19 +747,7 @@ internal static class ValidationRunner
                                         batchSeconds[contextID] = Stopwatch.GetElapsedTime(batchStart).TotalSeconds;
                                     }
                                     foreach (KeyValuePair<string, (bool passed, string detail, int cases, double seconds)> evidence
-                                        in ValidationTestEvidence.Read(
-                                            plan.root,
-                                            tests.ToDictionary(static project => project, project =>
-                                                plan.contexts[contextID].sdkGraph.EnumerateArray()
-                                                    .Single(snapshot => (
-                                                        Path.GetRelativePath(plan.root, snapshot.GetProperty("Path").GetString()!)
-                                                            .Replace('\\', '/') == project
-                                                    ))
-                                                    .GetProperty("Properties")
-                                                    .GetProperty("TargetPath")
-                                                    .GetString()!, StringComparer.Ordinal),
-                                            resultsDirectory
-                                        )
+                                        in ValidationTestEvidence.Read(plan.root, testAssemblies, resultsDirectory)
                                     ) {
                                         testDetails.Add(evidence.Key, evidence.Value);
                                     }

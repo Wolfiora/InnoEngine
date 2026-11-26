@@ -36,7 +36,7 @@ internal static class ManagedValidationFixture
         string source = TestRepository.GetRoot(typeof(ManagedValidationFixture).Assembly);
         foreach (string path in new[]
         {
-            "tools/ci/Invoke-IsolatedTests.ps1",
+            "tools/Inno.Tooling.Validation/ValidationTestExecution.cs",
             C_LOGGER,
             "tests/support/Inno.Testing.Discovery.TestLogger/DiscoveryLogger.cs"
         }) {
