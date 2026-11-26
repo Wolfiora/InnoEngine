@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../../../Benchmark.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" />
+    <ProjectReference Include="../../../../src/foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj" />
+    <ProjectReference Include="../../../../src/foundation/extensibility/Inno.Extensibility.Reload/Inno.Extensibility.Reload.csproj" />
+    <ProjectReference Include="../../../../src/foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../tests/foundation/extensibility/fixtures/Inno.Extensibility.Modules.TestModule.V1/Inno.Extensibility.Modules.TestModule.V1.csproj" ReferenceOutputAssembly="false" OutputItemType="BenchmarkModuleV1" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../tests/foundation/extensibility/fixtures/Inno.Extensibility.Modules.TestModule.V2/Inno.Extensibility.Modules.TestModule.V2.csproj" ReferenceOutputAssembly="false" OutputItemType="BenchmarkModuleV2" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../tests/foundation/extensibility/fixtures/Inno.Extensibility.Modules.TestDependency/Inno.Extensibility.Modules.TestDependency.csproj" ReferenceOutputAssembly="false" OutputItemType="BenchmarkModuleDependency" PrivateAssets="compile" />
+  </ItemGroup>
+
+  <Target Name="CopyBenchmarkReloadModules" AfterTargets="Build">
+    <Copy SourceFiles="@(BenchmarkModuleV1)" DestinationFolder="$(OutDir)Modules/V1" />
+    <Copy SourceFiles="@(BenchmarkModuleV2)" DestinationFolder="$(OutDir)Modules/V2" />
+    <Copy SourceFiles="@(BenchmarkModuleDependency)" DestinationFolder="$(OutDir)Modules/V1" />
+    <Copy SourceFiles="@(BenchmarkModuleDependency)" DestinationFolder="$(OutDir)Modules/V2" />
+  </Target>
+</Project>

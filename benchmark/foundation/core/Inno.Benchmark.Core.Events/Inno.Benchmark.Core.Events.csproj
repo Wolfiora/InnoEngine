@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../../../Benchmark.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Events/Inno.Core.Events.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../../../../Benchmark.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../support/Inno.Benchmark.AssetFixtures/Inno.Benchmark.AssetFixtures.csproj" />
+    <ProjectReference Include="../../../../../src/content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" />
+  </ItemGroup>
+</Project>

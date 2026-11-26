@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../../../Benchmark.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../src/runtime/engine/Inno.Runtime/Inno.Runtime.csproj" />
+    <ProjectReference Include="../../../../src/content/deployment/Inno.Content/Inno.Content.csproj" />
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,12 @@
+<Project>
+  <Import Project="../Directory.Solution.targets" />
+
+  <!-- Engine dependencies live outside this manual solution and must inherit the selected configuration. -->
+  <Target Name="PreserveBenchmarkConfiguration" BeforeTargets="Build;Rebuild;Clean;Restore;Publish">
+    <ItemGroup>
+      <ProjectReference Update="@(ProjectReference)">
+        <AdditionalProperties>%(ProjectReference.AdditionalProperties);ShouldUnsetParentConfigurationAndPlatform=false</AdditionalProperties>
+      </ProjectReference>
+    </ItemGroup>
+  </Target>
+</Project>

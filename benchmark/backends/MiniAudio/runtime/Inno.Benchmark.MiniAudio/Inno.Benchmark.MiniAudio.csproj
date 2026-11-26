@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../../../../Benchmark.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../../src/services/audio/Inno.Audio/Inno.Audio.csproj" />
+    <ProjectReference Include="../../../../../backends/MiniAudio/runtime/Inno.Adapter.Audio.MiniAudio/Inno.Adapter.Audio.MiniAudio.csproj" />
+    <ProjectReference Include="../../../../../backends/Interop/native/Inno.Native.LibraryLoading/Inno.Native.LibraryLoading.csproj" />
+  </ItemGroup>
+</Project>

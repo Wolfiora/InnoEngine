@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../../../Benchmark.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../src/runtime/engine/Inno.Runtime/Inno.Runtime.csproj" />
+    <ProjectReference Include="../../../../src/runtime/contracts/Inno.Runtime.Contracts/Inno.Runtime.Contracts.csproj" />
+    <ProjectReference Include="../../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" />
+    <ProjectReference Include="../../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" />
+  </ItemGroup>
+</Project>
