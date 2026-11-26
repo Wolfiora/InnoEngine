@@ -13,11 +13,11 @@ $planArtifact = & "$PSScriptRoot/Select-ValidationArtifact.ps1" -Artifacts $avai
 $entryArtifact = & "$PSScriptRoot/Select-ValidationArtifact.ps1" -Artifacts $available -Name "validation-entry-$Platform" -MaximumAttempt $Attempt
 $plan = Get-Content -LiteralPath (Join-Path $planArtifact.directory 'plan.json') -Raw | ConvertFrom-Json
 $identity = Get-Content -LiteralPath (Join-Path $planArtifact.directory 'entry.json') -Raw | ConvertFrom-Json
-if ((Get-FileHash -LiteralPath (Join-Path $entryArtifact.directory 'ValidationEntry.dll')).Hash -cne $identity.sha256) {
+if ((Get-FileHash -LiteralPath (Join-Path $entryArtifact.directory 'Inno.Tooling.Cli.dll')).Hash -cne $identity.sha256) {
     throw 'The prepared entry does not match the selected frozen plan.'
 }
 $entryDirectory = [IO.Path]::GetDirectoryName([IO.Path]::GetFullPath($identity.assembly, $repository))
-if ([IO.Path]::GetRelativePath($repository, $entryDirectory).Replace('\', '/') -cne 'artifacts/validation/bootstrap/outputs/bin/ValidationEntry/debug') {
+if ([IO.Path]::GetRelativePath($repository, $entryDirectory).Replace('\', '/') -cne 'artifacts/validation/bootstrap/outputs/bin/Inno.Tooling.Cli/debug') {
     throw 'The frozen entry escaped the validation bootstrap owner.'
 }
 $planDirectory = Join-Path $repository 'artifacts/validation/ci-plan'

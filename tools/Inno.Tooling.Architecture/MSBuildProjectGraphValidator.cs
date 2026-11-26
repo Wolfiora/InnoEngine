@@ -201,8 +201,11 @@ internal static class MSBuildProjectGraphValidator
         ) {
             failures.Add($"{project.path}: effective compilation-wide using imports are forbidden.");
         }
-        if (!test && project.outputType == "Exe" && !EXECUTABLE_PRODUCTS.Contains(project.assemblyName))
-        {
+        if (!test
+            && project.outputType == "Exe"
+            && project.path != "tools/Inno.Tooling.Cli/Inno.Tooling.Cli.csproj"
+            && !EXECUTABLE_PRODUCTS.Contains(project.assemblyName)
+        ) {
             failures.Add($"{project.path}: effective production executable is not an approved product.");
         }
         if (project.path.StartsWith("platforms/", StringComparison.Ordinal) && project.outputType == "Exe"
@@ -316,6 +319,10 @@ internal static class MSBuildProjectGraphValidator
             }
             string name = Path.GetFileNameWithoutExtension(project.path);
             string directory = Path.GetDirectoryName(Path.GetDirectoryName(project.path))!.Replace('\\', '/');
+            if (project.path == "tests/product/Inno.Testing.EditorJourney/Inno.Testing.EditorJourney.csproj" && project.outputType == "Exe")
+            {
+                continue;
+            }
             if (directory == C_SUPPORT)
             {
                 if (!name.StartsWith(C_SHARED, StringComparison.Ordinal))

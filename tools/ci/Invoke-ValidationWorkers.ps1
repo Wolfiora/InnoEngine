@@ -100,7 +100,7 @@ while ($pending.Count -gt 0) {
                 $entryOwner = Join-Path $inputs "validation-entry-$Platform-attempt-$Attempt"
                 New-Item -ItemType Directory -Path $planOwner, $entryOwner -Force | Out-Null
                 foreach ($name in @('plan.json','entry.json')) { Copy-Item -LiteralPath (Join-Path $planRoot $name) -Destination $planOwner }
-                $entry = Join-Path $repository 'artifacts/validation/bootstrap/outputs/bin/ValidationEntry/debug'
+                $entry = Join-Path $repository 'artifacts/validation/bootstrap/outputs/bin/Inno.Tooling.Cli/debug'
                 Get-ChildItem -LiteralPath $entry | Copy-Item -Destination $entryOwner -Recurse
                 foreach ($dependency in $shard.prerequisites) {
                     $owner = New-Item -ItemType Directory -Path (Join-Path $inputs "validation-result-$Platform-$dependency-attempt-$Attempt")

@@ -3,7 +3,7 @@ name: inno-change
 description: Scope an InnoEngine implementation by actual owners, behavior changes, applicable rules and finite acceptance.
 ---
 
-Confirm the branch, workspace changes and implementing owner; protect other sessions. Run `tools/ci/Test-AgentRules.ps1` from the engine root to select rule files by repository-relative paths and work tags. The [rulebook](../../rulebook/README.md) is their sole authority.
+Confirm the branch, workspace changes and implementing owner; protect other sessions. Run `dotnet run --project tools/Inno.Tooling.Cli -- rules select` from the engine root to select rule files by repository-relative paths and work tags. The [rulebook](../../rulebook/README.md) is their sole authority.
 
 When task guidance or an API contract is needed, select a prepared documentation snapshot. Use Build `docs search/read/symbol`, then verify relevant source and actual project relationships. Reuse loaded content while its identity and scope remain unchanged. Refresh after relevant edits; a query never creates a Docs candidate or certifies source API correctness.
 

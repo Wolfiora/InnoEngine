@@ -12,10 +12,10 @@ try {
         $entryDirectory = Join-Path $received "validation-entry-fixture-attempt-$attempt"
         New-Item -ItemType Directory -Path $scripts, $planDirectory, $entryDirectory -Force | Out-Null
         Copy-Item -LiteralPath "$PSScriptRoot/../../tools/ci/Prepare-ValidationShard.ps1", "$PSScriptRoot/../../tools/ci/Select-ValidationArtifact.ps1" -Destination $scripts
-        'prepared entry bytes' | Set-Content (Join-Path $entryDirectory 'ValidationEntry.dll')
-        $entry = 'artifacts/validation/bootstrap/outputs/bin/ValidationEntry/debug/ValidationEntry.dll'
-        if ($case -ceq 'escaped-entry') { $entry = 'src/ValidationEntry.dll' }
-        @{ assembly = $entry; sha256 = $(if ($case -ceq 'changed-entry') { '0' * 64 } else { (Get-FileHash (Join-Path $entryDirectory 'ValidationEntry.dll')).Hash }) } |
+        'prepared entry bytes' | Set-Content (Join-Path $entryDirectory 'Inno.Tooling.Cli.dll')
+        $entry = 'artifacts/validation/bootstrap/outputs/bin/Inno.Tooling.Cli/debug/Inno.Tooling.Cli.dll'
+        if ($case -ceq 'escaped-entry') { $entry = 'src/Inno.Tooling.Cli.dll' }
+        @{ assembly = $entry; sha256 = $(if ($case -ceq 'changed-entry') { '0' * 64 } else { (Get-FileHash (Join-Path $entryDirectory 'Inno.Tooling.Cli.dll')).Hash }) } |
             ConvertTo-Json | Set-Content (Join-Path $planDirectory 'entry.json')
         $shard = if ($case -cin @('native', 'absent-native')) { 'native' } else { 'managed' }
         $shards = @(if ($case -cne 'absent-native') { @{ id = $shard; checks = @('fixture'); prerequisites = @('architecture') } })

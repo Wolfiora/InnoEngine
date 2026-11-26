@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using Inno.Tooling.Architecture;
 using Inno.Tooling.Validation;
 
-using ToolingCommand = Inno.Tooling.Documentation.DocumentationCommand;
-
 namespace Inno.Build.Cli;
 
 /// <summary>
@@ -36,7 +34,7 @@ public static partial class BuildApplication
         if (arguments.Length == 0 || arguments[0] is "help" or "--help" or "-h")
         {
             Console.WriteLine(
-                "InnoEngine.Build <docs|validate|native-dependencies|support|editor|clean|bindings|support-pack|game|plugin|scripts|import-sample|verify|style|verify-native|shader> [options]"
+                "InnoEngine.Build <docs|rules select|validate|native-dependencies|support|editor|clean|bindings|support-pack|game|plugin|scripts|import-sample|verify|style|verify-native|shader> [options]"
             );
             Console.WriteLine("Default entry command: support --product editor (current SDK host and entry configuration).");
             Console.WriteLine(
@@ -65,34 +63,9 @@ public static partial class BuildApplication
                 case "style":
                     return StyleCommand.Execute(options);
                 case "docs":
-                    if (options.Length != 0 && options[0] == "export-plan")
-                    {
-                        return await DocumentationReferences.PlanExportAsync(options[1..], cancellationToken).ConfigureAwait(false);
-                    }
-                    if (options.Length != 0 && options[0] == "export-projects")
-                    {
-                        return DocumentationReferences.ExportProjects(options[1..], cancellationToken);
-                    }
-                    if (options.Length > 0 && options[0] == "export-api")
-                    {
-                        return DocumentationReferences.ExportApi(options[1..], cancellationToken);
-                    }
-                    if (options.Length > 0 && options[0] == "validate-api")
-                    {
-                        return await DocumentationReferences.ValidateApiAsync(options[1..], cancellationToken).ConfigureAwait(false);
-                    }
-                    if (options.Length > 0 && options[0] == "validate-examples")
-                    {
-                        return await DocumentationExamples.ExecuteAsync(options[1..], cancellationToken).ConfigureAwait(false);
-                    }
-                    if (options.Length > 0 && options[0] == "example-plan")
-                    {
-                        return await DocumentationExamples.ExecuteAsync(
-                            [..options[1..], "--operation", "plan"],
-                            cancellationToken
-                        ).ConfigureAwait(false);
-                    }
-                    return await ToolingCommand.ExecuteAsync(options, cancellationToken).ConfigureAwait(false);
+                    return await DocumentationReferences.ExecuteAsync(options, cancellationToken).ConfigureAwait(false);
+                case "rules" when options is ["select", .. var selection]:
+                    return RepositoryRuleSelection.Execute(selection);
                 case "validate":
                     return await ValidationCommand.ExecuteAsync(options, cancellationToken).ConfigureAwait(false);
                 case "verify-native":

@@ -142,11 +142,11 @@ int main(int argc, const char *argv[])
             $output = Join-Path $root "$($case.scenario)-$($case.name)"
             $hostExecutable = if ($case.name.StartsWith('appkit-', [StringComparison]::Ordinal)) { $cocoa } else { $dotnet }
             $deadline = if ($hostExecutable -ceq $cocoa) { 30 } else { 5 }
-            & $pwsh -NoProfile -File (Join-Path $repository 'tests/product/Invoke-EditorUiProductJourney.ps1') `
-                -EditorAssembly (Join-Path $root 'bin/Debug/net10.0/Fixture.dll') `
-                -ResultsDirectory $output -Dotnet $hostExecutable -GraphicsApi ProtocolFixture -Scenario $case.scenario `
-                -TimeoutSeconds $deadline *> "$output.log"
+            & $dotnet run --project "$repository/tests/product/Inno.Testing.EditorJourney" -- $case.scenario `
+                --editor (Join-Path $root 'bin/Debug/net10.0/Fixture.dll') --engine-root $repository `
+                --output $output --dotnet $hostExecutable --graphics-api ProtocolFixture --timeout-seconds $deadline *> "$output.log"
             $code = $LASTEXITCODE
+            if (!(Test-Path -LiteralPath (Join-Path $output 'result.json'))) { throw "Journey did not produce a report: $(Get-Content -Raw -LiteralPath "$output.log")" }
             $result = Get-Content -LiteralPath (Join-Path $output 'result.json') -Raw | ConvertFrom-Json
             if ($case.success) {
                 if ($code -ne 0 -or $result.status -ne 'Passed') { throw "Required protocol acceptance failed: $output`n$(Get-Content "$output.log" -Raw)" }

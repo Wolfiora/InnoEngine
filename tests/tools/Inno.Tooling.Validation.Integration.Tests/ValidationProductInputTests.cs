@@ -16,11 +16,20 @@ public sealed class ValidationProductInputTests
     {
         using var repository = new ValidationRepository();
         // Stop at the external product boundary: this regression certifies the project the Editor receives, not a journey.
+        const string C_DIRECTORY = "tests/product/Inno.Testing.EditorJourney/";
         repository.Write(
-            "tests/product/Invoke-EditorSmoke.ps1",
-            "Set-Content -LiteralPath \"$PSScriptRoot/smoke-project.txt\" -NoNewline "
-            + "-Value $args[[array]::IndexOf($args, '-ProjectDirectory') + 1]\n"
-            + "throw 'Product input reached the product boundary.'\n"
+            C_DIRECTORY + "Inno.Testing.EditorJourney.csproj",
+            "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>"
+        );
+        repository.Write(
+            C_DIRECTORY + "Program.cs",
+            """
+            using System;
+            using System.IO;
+            File.WriteAllText("tests/product/smoke-project.txt", args[Array.IndexOf(args, "--output") + 1]);
+            Console.Error.WriteLine("Product input reached the product boundary.");
+            return 1;
+            """
         );
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare the product boundary");

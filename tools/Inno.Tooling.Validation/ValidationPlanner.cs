@@ -234,7 +234,9 @@ internal static partial class ValidationPlanner
                     cancellationToken: cancellationToken
                 ).ConfigureAwait(false);
                 using JsonDocument snapshots = JsonDocument.Parse(prior);
-                HashSet<string> deleted = removed.ToHashSet(StringComparer.Ordinal);
+                // The working tree may remove a file introduced after the comparison baseline.
+                // Only files actually present in that baseline can have a prior owner.
+                HashSet<string> deleted = removed.Intersect(priorPaths, StringComparer.Ordinal).ToHashSet(StringComparer.Ordinal);
                 var mapped = new HashSet<string>(StringComparer.Ordinal);
                 Dictionary<string, string[]> priorContracts = ValidationCiContracts.Select(
                     checkout,
@@ -244,6 +246,30 @@ internal static partial class ValidationPlanner
                     out HashSet<string> priorScripts
                 );
                 mapped.UnionWith(deleted.Where(priorScripts.Contains));
+                // Old checkouts can predate the separation of product checks and CI tooling.
+                // Resolve removed inputs to their surviving behavioral owner before evaluating the current graph.
+                foreach (string path in deleted)
+                {
+                    string? owner = path switch
+                    {
+                        "tests/ci/Test-ApiReferenceBuild.ps1" or "tools/ci/Test-ApiReferenceBuild.ps1" =>
+                            "tests/build/pipeline/Inno.Build.ProductProfiles.Integration.Tests/Inno.Build.ProductProfiles.Integration.Tests.csproj",
+                        _ when path.StartsWith("tests/fixtures/editor-ui/", StringComparison.Ordinal) =>
+                            "tests/product/Inno.Testing.EditorJourney/Inno.Testing.EditorJourney.csproj",
+                        "tests/Invoke-EditorSmoke.ps1" or "tests/Invoke-EditorUiProductJourney.ps1"
+                        or "tests/product/Invoke-EditorSmoke.ps1" or "tests/product/Invoke-EditorUiProductJourney.ps1" =>
+                            "tests/product/Inno.Testing.EditorJourney/Inno.Testing.EditorJourney.csproj",
+                        "tests/Invoke-BuildCacheChecks.ps1" or "tests/Invoke-IsolatedTests.ps1" or "tools/ci/Invoke-BuildCacheChecks.ps1"
+                        or "tools/ci/Test-SupportPackClosure.ps1" =>
+                            "tools/Inno.Tooling.Validation/Inno.Tooling.Validation.csproj",
+                        _ => null
+                    };
+                    if (owner is not null && byPath.ContainsKey(owner))
+                    {
+                        mapped.Add(path);
+                        affected.Add(owner);
+                    }
+                }
                 if (priorContracts.Count > 0)
                 {
                     HashSet<string> survivingInputs = changes
@@ -1092,7 +1118,8 @@ internal static partial class ValidationPlanner
                         .Concat(
                             inputs.Keys.Where(static path => (
                                 path.StartsWith("tests/product/fixtures/editor-ui/", StringComparison.Ordinal)
-                                || path is "tests/product/Invoke-EditorSmoke.ps1" or "tests/product/Invoke-EditorUiProductJourney.ps1"
+                                || path.StartsWith("tests/product/Inno.Testing.EditorJourney/", StringComparison.Ordinal)
+                                || path.StartsWith("tests/support/Inno.Testing.Processes/", StringComparison.Ordinal)
                             ))
                         )
                         .Distinct()
@@ -1104,7 +1131,8 @@ internal static partial class ValidationPlanner
                     "product",
                     scenarios: new[] { "Workflows", "Lifecycle" }.Where(scenario => (
                         full || changes.Any(path => (
-                            path == "tests/product/Invoke-EditorUiProductJourney.ps1"
+                            path.StartsWith("tests/product/Inno.Testing.EditorJourney/", StringComparison.Ordinal)
+                            || path.StartsWith("tests/support/Inno.Testing.Processes/", StringComparison.Ordinal)
                             || scenario == "Lifecycle" && (path.EndsWith("PanelLifecycle.editor.cs", StringComparison.Ordinal)
                                                            || path.StartsWith("src/composition/editor/panels/", StringComparison.Ordinal))
                             || scenario == "Workflows" && (path.Contains("/Workflow", StringComparison.Ordinal)
@@ -1902,7 +1930,8 @@ internal static partial class ValidationPlanner
            || path.StartsWith("tests/ci/", StringComparison.Ordinal);
 
     private static bool IsEditorProductInput(string path)
-        => path is "tests/product/Invoke-EditorSmoke.ps1" or "tests/product/Invoke-EditorUiProductJourney.ps1"
+        => path.StartsWith("tests/product/Inno.Testing.EditorJourney/", StringComparison.Ordinal)
+           || path.StartsWith("tests/support/Inno.Testing.Processes/", StringComparison.Ordinal)
            || path.StartsWith("tests/product/fixtures/editor-ui/", StringComparison.Ordinal);
 
     private static bool IsExecutable(string path)

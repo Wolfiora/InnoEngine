@@ -52,6 +52,11 @@ public static class ValidationCommand
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(arguments);
+        if (arguments is ["support-pack", "--archive", string archive])
+        {
+            ValidationSupportPack.Check(archive);
+            return 0;
+        }
         if (arguments.Length == 0
             || arguments[0] is not ("plan"
                                     or "run"

@@ -2,7 +2,7 @@ $ErrorActionPreference = 'Stop'
 $fixture = Join-Path ([IO.Path]::GetFullPath('../../artifacts/validation/worker-contracts', $PSScriptRoot)) ([Guid]::NewGuid().ToString('N'))
 $scripts = Join-Path $fixture 'tools/ci'
 $plan = Join-Path $fixture 'artifacts/validation/ci-plan'
-$entry = 'artifacts/validation/bootstrap/outputs/bin/ValidationEntry/debug/ValidationEntry.dll'
+$entry = 'artifacts/validation/bootstrap/outputs/bin/Inno.Tooling.Cli/debug/Inno.Tooling.Cli.dll'
 New-Item -ItemType Directory -Force -Path $scripts, $plan, (Split-Path (Join-Path $fixture $entry)) | Out-Null
 foreach ($script in @('Invoke-ValidationWorkers.ps1','Prepare-ValidationShard.ps1','Select-ValidationArtifact.ps1')) {
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot "../../tools/ci/$script") -Destination $scripts

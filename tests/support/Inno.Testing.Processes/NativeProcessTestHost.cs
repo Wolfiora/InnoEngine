@@ -82,11 +82,7 @@ public static class NativeProcessTestHost
         {
             try
             {
-                process.Kill(entireProcessTree: true);
-                if (!process.WaitForExit(10_000))
-                {
-                    cleanup = "The process tree did not exit within the cleanup budget.";
-                }
+                TerminateIfRunning(process);
             }
             catch (Exception failure)
             {
@@ -106,6 +102,36 @@ public static class NativeProcessTestHost
                 throw new TimeoutException(diagnostic);
             }
             throw new InvalidOperationException(diagnostic);
+        }
+    }
+
+    /// <summary>
+    /// Terminates an owned child and its descendants, waiting for the host process to exit.
+    /// </summary>
+    /// <param name="process">
+    /// A started process owned by the current test.
+    /// </param>
+    /// <exception cref="TimeoutException">
+    /// The process remains alive after the cleanup deadline.
+    /// </exception>
+    public static void TerminateIfRunning(Process process)
+    {
+        ArgumentNullException.ThrowIfNull(process);
+        if (process.HasExited)
+        {
+            return;
+        }
+        try
+        {
+            process.Kill(entireProcessTree: true);
+        }
+        catch (InvalidOperationException) when (process.HasExited)
+        {
+            return;
+        }
+        if (!process.WaitForExit(10_000))
+        {
+            throw new TimeoutException("The process tree did not exit within the cleanup budget.");
         }
     }
 
