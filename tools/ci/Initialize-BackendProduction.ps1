@@ -91,5 +91,8 @@ $relativeEntry = [IO.Path]::GetRelativePath($sdk,$buildEntry[0])
 if ([IO.Path]::IsPathRooted($relativeEntry) -or $relativeEntry.Split([IO.Path]::DirectorySeparatorChar)[0] -ceq '..') {
     throw 'The producer Build entry is outside its SDK output directory.'
 }
-& "$PSScriptRoot/Prepare-BackendNativeInputs.ps1" -Target $Target -HostTarget $HostTarget -BuildEntry $buildEntry[0] -Dotnet $dotnetPath `
-    -Directory $NativeDirectory -PreviousDirectory $previous
+$argsForBuild = @($buildEntry[0],'native-dependencies','--operation','prepare-platform','--engine-root',$root,'--target',$Target,
+    '--tools-target',$HostTarget,'--output',$NativeDirectory,'--configurations',($platform[0].configurations -join ','))
+if ($previous) { $argsForBuild += @('--input',$previous) }
+& $dotnetPath @argsForBuild
+if ($LASTEXITCODE) { throw 'Native platform preparation failed.' }

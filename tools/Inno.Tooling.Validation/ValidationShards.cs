@@ -245,6 +245,49 @@ internal static class ValidationShards
             ValidationInputs.PlanIdentity(plan),
             completed: true
         );
+        Dictionary<string, ValidationResult> completed = results.ToDictionary(result => result.id, StringComparer.Ordinal);
+        if (plan.checks.Length == 0 || plan.checks.All(check => check.exclusion is not null))
+        {
+            throw new InvalidDataException("Required validation discovery is empty.");
+        }
+        foreach (ValidationCheck check in plan.checks)
+        {
+            ValidationResult result = completed[check.id];
+            if (string.IsNullOrWhiteSpace(check.id) || check.exclusion != null && string.IsNullOrWhiteSpace(check.exclusion))
+            {
+                throw new InvalidDataException("Invalid check identity or exclusion: " + check.id);
+            }
+            if (check.exclusion != null)
+            {
+                continue;
+            }
+            bool compiled = check.kind is "build" or "test" or "api" or "products" or "support-pack"
+                            || ValidationDependencyInputs.Required(check);
+            if (result.outputs is null || compiled && (result.outputs.Count == 0 || !IsDigest(result.dependencyIdentity)))
+            {
+                throw new InvalidDataException("Missing output or dependency evidence: " + check.id);
+            }
+            foreach (var (path, identity) in result.outputs)
+            {
+                if (string.IsNullOrWhiteSpace(path) || Path.IsPathRooted(path) || path.Contains(':') || path.StartsWith('\\')
+                    || path.Replace('\\', '/').Split('/').Contains("..") || !IsDigest(identity)
+                ) {
+                    throw new InvalidDataException("Invalid output identity: " + path);
+                }
+            }
+            foreach (string dependency in check.prerequisites)
+            {
+                if (!completed.TryGetValue(dependency, out ValidationResult? prerequisite)
+                    || prerequisite.status is not ("Passed" or "Reused")
+                ) {
+                    throw new InvalidDataException($"Unsuccessful prerequisite: {check.id} -> {dependency}");
+                }
+            }
+        }
+
+        static bool IsDigest(string? value)
+            => value?.Length == 64 && value.All(character => char.IsAsciiDigit(character) || character is >= 'a' and <= 'f');
+
         _ = ValidateEvidence(plan, joined);
         return joined;
     }

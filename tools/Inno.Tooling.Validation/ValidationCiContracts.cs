@@ -9,7 +9,7 @@ namespace Inno.Tooling.Validation;
 internal static class ValidationCiContracts
 {
     internal const string C_RULE_LOADER = "tools/ci/Test-AgentRules.ps1";
-    internal const string C_RULE_EXAMPLES = "tools/ci/Test-AgentRules.examples.json";
+    internal const string C_RULE_EXAMPLES = "tests/tools/Inno.Tooling.Architecture.Integration.Tests/fixtures/rule-selection.json";
 
     internal static Dictionary<string, string[]> Select(
         string root,
@@ -29,6 +29,7 @@ internal static class ValidationCiContracts
             .ToLookup(path => Path.GetFileName(path), StringComparer.OrdinalIgnoreCase);
         owned = new HashSet<string>(StringComparer.Ordinal)
         {
+            ".github/scripts/github_artifacts.py",
             C_RULE_LOADER,
             C_RULE_EXAMPLES,
             ValidationRunner.C_BUILD_CACHE,

@@ -80,7 +80,7 @@ public static partial class BuildApplication
                     BuildCommandLine parsed = BuildCommandLine.Parse(options);
                     string[] specific = command switch
                     {
-                        "native-dependencies" => ["product", "release", "input", "output", "operation"],
+                        "native-dependencies" => ["product", "release", "input", "output", "operation", "configurations"],
                         "support" => ["product"],
                         "editor" => ["clean"],
                         "clean" => ["scope", "dry-run"],

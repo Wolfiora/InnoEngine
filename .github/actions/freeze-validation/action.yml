@@ -30,7 +30,7 @@ runs:
         path: artifacts/validation
     - name: Freeze candidate, actual inputs, checks and shard ownership
       id: freeze
-      shell: pwsh
+      shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
         PLATFORM: ${{ inputs.runner-label }}
@@ -39,8 +39,4 @@ runs:
         EXPECTED_COMMIT: ${{ github.sha }}
         SCHEDULED: ${{ inputs.scheduled }}
         PROFILE: ${{ inputs.profile }}
-      run: |
-        $baseline = $env:BASE_REVISION
-        if ($env:GITHUB_EVENT_NAME -ceq 'workflow_dispatch' -and $env:PROFILE -ceq 'pull-request') { $baseline = 'HEAD^' }
-        if ($baseline -match '^0+$') { $baseline = 'origin/master' }
-        ./tools/ci/Invoke-ValidationCi.ps1 -Stage Plan -Platform $env:PLATFORM -Scheduled:($env:SCHEDULED -ceq 'true') -BaseRevision $baseline -ExpectedCommit $env:EXPECTED_COMMIT -RebuildBackends $env:REBUILD_BACKENDS -Profile $env:PROFILE -BackendStore artifacts/b -PlanDirectory artifacts/validation/ci-plan
+      run: python -B .github/scripts/validation.py plan

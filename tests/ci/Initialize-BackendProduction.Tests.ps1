@@ -26,15 +26,10 @@ try {
     '<Project />' | Set-Content "$root/Directory.Build.targets"
     '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>' |
         Set-Content "$project/InnoEngine.Build.csproj"
-    'System.Console.WriteLine("backend-entry-verified");' | Set-Content "$project/Program.cs"
-    '[{"target":"fixture-host"}]' | Set-Content "$root/.github/native-targets.json"
+    'System.IO.File.WriteAllText(args[System.Array.IndexOf(args, "--output") + 1], typeof(Program).Assembly.Location);' | Set-Content "$project/Program.cs"
+    '[{"target":"fixture-host","configurations":["Release"]}]' | Set-Content "$root/.github/native-targets.json"
     Copy-Item "$PSScriptRoot/../../tools/ci/Initialize-BackendProduction.ps1" $scripts
     'return $false' | Set-Content "$scripts/Initialize-NativeDependencyWorkloads.ps1"
-    @'
-param($Target,$HostTarget,$BuildEntry,$Dotnet,$Directory,$PreviousDirectory)
-if ((& $Dotnet $BuildEntry) -cne 'backend-entry-verified' -or $LASTEXITCODE) { throw 'Could not execute the produced Build entry.' }
-[IO.File]::WriteAllText($Directory,$BuildEntry)
-'@ | Set-Content "$scripts/Prepare-BackendNativeInputs.ps1"
     $observed = Join-Path $root 'observed.txt'
     & "$scripts/Initialize-BackendProduction.ps1" -Target fixture-host -HostTarget fixture-host -Operation produce `
         -OutputDirectory "$root/candidate" -NativeDirectory $observed | Out-Null

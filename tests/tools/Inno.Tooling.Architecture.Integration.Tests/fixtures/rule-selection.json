@@ -2,7 +2,7 @@
   { "path": "src/foundation/core/Inno.Core.Mathematics/Vector2.cs", "includes": ["coding", "csharp-style/README", "csharp-style/03-naming", "csharp-style/17-example"], "excludes": ["domains/editor/state", "domains/identity-reload", "validation", "projects"] },
   { "path": "src/foundation/core/Inno.Core.Execution/StateMachine.cs", "excludes": ["domains/editor/state", "domains/editor/projects"] },
   { "path": "tools/Inno.Tooling.Validation/ValidationWorkspace.cs", "includes": ["validation"], "excludes": ["domains/editor/state"] },
-  { "path": "tools/ci/Invoke-ValidationGate.ps1", "includes": ["validation"], "excludes": ["coding"] },
+  { "path": ".github/scripts/validation.py", "includes": ["validation"], "excludes": ["coding"] },
   { "path": "assets/branding/logo.svg", "excludes": ["domains/identity-reload"] },
   { "path": "tools/Inno.Tooling.Validation/AssetsReport.cs", "includes": ["coding"], "excludes": ["domains/identity-reload"] },
   { "path": "src/composition/editor/framework/Inno.Editor.Core/History/UndoStack.cs", "includes": ["coding", "domains/editor/projects", "domains/editor/state"], "excludes": ["domains/editor/ui"] },

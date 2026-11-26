@@ -33,7 +33,7 @@ public static class RepositoryRuleSelection
         List<string> paths = [];
         List<string> tags = [];
         List<string> ids = [];
-        string root = Directory.GetCurrentDirectory();
+        string? requestedRoot = null;
         string? docs = null;
         for (int index = 0; index < arguments.Length; index += 2)
         {
@@ -46,7 +46,7 @@ public static class RepositoryRuleSelection
             switch (key)
             {
                 case "--engine-root":
-                    root = Path.GetFullPath(value);
+                    requestedRoot = Path.GetFullPath(value);
                     break;
                 case "--docs-root":
                     docs = Path.TrimEndingDirectorySeparator(Path.GetFullPath(value));
@@ -61,6 +61,7 @@ public static class RepositoryRuleSelection
                     throw new ArgumentException($"Unknown option: {key}");
             }
         }
+        string root = requestedRoot ?? FindEngineRoot();
         int bytes = Encoding.UTF8.GetByteCount(File.ReadAllText(Path.Combine(root, "AGENTS.md")));
         if (bytes > 8192)
         {
@@ -127,6 +128,20 @@ public static class RepositoryRuleSelection
             }
         }
         return 0;
+    }
+
+    private static string FindEngineRoot()
+    {
+        var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "InnoEngine.sln")))
+            {
+                return directory.FullName;
+            }
+            directory = directory.Parent;
+        }
+        throw new DirectoryNotFoundException("Select the engine checkout with --engine-root.");
     }
 
     private static bool IsContained(string path)

@@ -76,8 +76,8 @@ try {
     $package = Join-Path $root 'api-package.json'
     & $Dotnet $BuildCli docs api-package --docs-root $inputRoot --package $package
     if ($LASTEXITCODE) { throw 'Fixture API packaging failed.' }
-    $publisher = Join-Path $PSScriptRoot '../../tools/ci/Publish-DocumentationApi.ps1'
-    & pwsh -NoProfile -File $publisher -EngineRoot $engine -Dotnet $Dotnet -BuildCli $BuildCli -Package $package -Workspace (Join-Path $root 'first')
+    $publisher = Join-Path $PSScriptRoot '../../.github/scripts/documentation_artifacts.py'
+    & python -B $publisher publish --engine-root $engine --assembly $BuildCli --package $package --workspace (Join-Path $root 'first')
     if ($LASTEXITCODE) { throw 'First publication failed.' }
     $first = (Invoke-FixtureGit $docsRemote @('rev-parse', 'draft')) -join ''
     if (((Invoke-FixtureGit $docsRemote @('rev-parse', 'main')) -join '') -cne $mainBefore) { throw 'The publisher modified main.' }
@@ -90,7 +90,7 @@ try {
     [void](Invoke-FixtureGit $docs @('add', 'release-note.txt'))
     [void](Invoke-FixtureGit $docs @('commit', '-m', 'fixture(docs): advance main without API changes'))
     [void](Invoke-FixtureGit $docs @('push', $docsRemote, 'main'))
-    & pwsh -NoProfile -File $publisher -EngineRoot $engine -Dotnet $Dotnet -BuildCli $BuildCli -Package $package -Workspace (Join-Path $root 'repeat')
+    & python -B $publisher publish --engine-root $engine --assembly $BuildCli --package $package --workspace (Join-Path $root 'repeat')
     if ($LASTEXITCODE -or ((Invoke-FixtureGit $docsRemote @('rev-parse', 'draft')) -join '') -cne $first) { throw 'Identical API export created another commit.' }
     # Intercept only the fixture process's first push. A real competing author commits before
     # the ordinary Git fast-forward push; production code receives no test hooks or bypasses.
@@ -111,24 +111,20 @@ try {
     Write-Text (Join-Path $inputRoot 'reference/api/probe.json') $facts
     & $Dotnet $BuildCli docs api-package --docs-root $inputRoot --package $package
     if ($LASTEXITCODE) { throw 'Updated fixture packaging failed.' }
-    $wrapper = Join-Path $root 'concurrent-publication.ps1'
-    Write-Text $wrapper @'
-param([string]$GitExe, [string]$Publisher, [string]$Engine, [string]$Dotnet, [string]$Cli, [string]$Package, [string]$Workspace, [string]$Author)
-$ErrorActionPreference = 'Stop'
-$global:fixtureApiRaceInjected = $false
-function git {
-    if (!$global:fixtureApiRaceInjected -and $args -contains 'HEAD:refs/heads/draft') {
-        $global:fixtureApiRaceInjected = $true
-        & $GitExe -C $Author push origin HEAD:refs/heads/draft | Out-Null
-        if ($LASTEXITCODE) { throw 'The concurrent fixture author failed to push.' }
-    }
-    & $GitExe @args
-}
-& $Publisher -EngineRoot $Engine -Dotnet $Dotnet -BuildCli $Cli -Package $Package -Workspace $Workspace
+    $hook = Join-Path $docsRemote 'hooks/pre-receive'
+    $hookCode = @'
+#!/bin/sh
+set -eu
+rm -- "$0"
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_QUARANTINE_PATH GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES
+git -C "$INNO_FIXTURE_AUTHOR" push origin HEAD:refs/heads/draft
 '@
-    & pwsh -NoProfile -File $wrapper -GitExe (Get-Command git -CommandType Application).Source -Publisher $publisher `
-        -Engine $engine -Dotnet $Dotnet -Cli $BuildCli -Package $package -Workspace (Join-Path $root 'concurrent') -Author $author `
-        *> (Join-Path $root 'concurrent-result.log')
+    Write-Text $hook ($hookCode.Replace("`r`n", "`n") + "`n")
+    if (!$IsWindows) { & chmod +x $hook }
+    $env:INNO_FIXTURE_AUTHOR = $author
+    try {
+        & python -B $publisher publish --engine-root $engine --assembly $BuildCli --package $package --workspace (Join-Path $root 'concurrent') *> (Join-Path $root 'concurrent-result.log')
+    } finally { Remove-Item Env:INNO_FIXTURE_AUTHOR }
     if ($LASTEXITCODE) { throw "Concurrent publication failed; see $root/concurrent-result.log." }
     $concurrentLog = [IO.File]::ReadAllText((Join-Path $root 'concurrent-result.log'))
     if (!$concurrentLog.Contains('Recompute ownership')) { throw 'The competing push did not exercise ownership recomputation.' }
@@ -149,7 +145,7 @@ function git {
     [void](Invoke-FixtureGit $engine @('add', '.'))
     [void](Invoke-FixtureGit $engine @('commit', '-m', 'fixture(engine): advance master'))
     [void](Invoke-FixtureGit $engine @('push', 'origin', 'master'))
-    & pwsh -NoProfile -File $publisher -EngineRoot $engine -Dotnet $Dotnet -BuildCli $BuildCli -Package $package -Workspace (Join-Path $root 'stale') *> (Join-Path $root 'stale-result.log')
+    & python -B $publisher publish --engine-root $engine --assembly $BuildCli --package $package --workspace (Join-Path $root 'stale') *> (Join-Path $root 'stale-result.log')
     if ($LASTEXITCODE -eq 0 -or ((Invoke-FixtureGit $docsRemote @('rev-parse', 'draft')) -join '') -cne $first) { throw 'A superseded API export was accepted.' }
     if ((Get-Content (Join-Path $root 'stale-result.log') -Raw) -notmatch 'superseded') { throw 'Superseded export did not explain its rejection.' }
     $success = $true

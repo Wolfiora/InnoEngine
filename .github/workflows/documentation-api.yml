@@ -7,16 +7,13 @@ on:
   pull_request:
     paths:
       - .github/workflows/documentation-api.yml
-      - tools/ci/Export-DocumentationApi.ps1
-      - tools/ci/Join-DocumentationApi.ps1
-      - tools/ci/Invoke-ManagedApiPreparation.ps1
-      - tools/ci/Get-DocumentationScriptReferences.ps1
-      - tests/ci/Test-ManagedPreparationSolution.Tests.ps1
-      - tests/ci/Test-DocumentationScriptReferences.Tests.ps1
       - tools/Inno.Tooling.Architecture/Documentation*.cs
       - tools/Inno.Tooling.Documentation/**
-      - tools/ci/Get-DocumentationExportPreflight.ps1
-      - tests/ci/Test-DocumentationExportPreflight.Tests.ps1
+      - tests/tools/Inno.Tooling.Architecture.Integration.Tests/Documentation*.cs
+      - tests/tools/Inno.Tooling.Documentation.Integration.Tests/**
+      - .github/scripts/documentation_artifacts.py
+      - .github/scripts/github_artifacts.py
+      - tools/Inno.Tooling.Cli/**
   workflow_dispatch: null
 permissions:
   contents: read
@@ -33,22 +30,22 @@ jobs:
     outputs:
       required: ${{ steps.plan.outputs.required }}
     steps:
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c
+        with:
+          python-version: '3.12'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ env.API_SOURCE_REVISION }}
           fetch-depth: 1
           sparse-checkout: |
-            tests/ci
-            tools/ci
+            .github/scripts
           persist-credentials: false
       - name: Compare the complete input manifest before SDK or submodule preparation
         id: plan
-        shell: pwsh
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          ./tests/ci/Test-DocumentationExportPreflight.Tests.ps1
-          ./tools/ci/Get-DocumentationExportPreflight.ps1
+        run: python -B .github/scripts/documentation_artifacts.py preflight
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: api-preflight-${{ github.run_attempt }}
@@ -68,6 +65,9 @@ jobs:
           - Debug
           - Release
     steps:
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c
+        with:
+          python-version: '3.12'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ env.API_SOURCE_REVISION }}
@@ -84,10 +84,14 @@ jobs:
           restore-keys: |
             api-extraction-${{ runner.os }}-${{ matrix.configuration }}-${{ hashFiles('global.json') }}-
       - name: Export actual managed and projected contracts
-        shell: pwsh
+        shell: bash
+        env:
+          CONFIGURATION: ${{ matrix.configuration }}
         run: |
-          ./tools/ci/Export-DocumentationApi.ps1 -Dotnet (Get-Command dotnet -CommandType Application | Select-Object -First 1).Source `
-            -Configuration '${{ matrix.configuration }}' -Output artifacts/documentation-export/current
+          set -o pipefail
+          output=artifacts/documentation-export/current
+          mkdir -p "$output"
+          dotnet run --project tools/Inno.Tooling.Cli -c Release -- docs export-producer . dotnet "$CONFIGURATION" "$output" 2>&1 | tee "$output/producer.log"
       - name: Retain verified extraction payloads for future inputs
         if: success() && steps.extraction-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
@@ -119,18 +123,22 @@ jobs:
       - export
     runs-on: windows-2025
     steps:
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c
+        with:
+          python-version: '3.12'
       - name: Reject missing or unsuccessful producers
-        shell: pwsh
+        shell: bash
         env:
           EXPORT_RESULT: ${{ needs.export.result }}
           PREFLIGHT_RESULT: ${{ needs.preflight.result }}
           REQUIRED: ${{ needs.preflight.outputs.required }}
         run: |
-          if ($env:PREFLIGHT_RESULT -cne 'success') { throw 'API input planning failed; no successful export can be reported.' }
-          if ($env:REQUIRED -ceq 'false') {
-            if ($env:EXPORT_RESULT -cne 'skipped') { throw 'Unexpected no-change export execution.' }
-            'NoRelevantChanges: no SDK, submodule, export matrix or synchronization work.' >> $env:GITHUB_STEP_SUMMARY
-          } elseif ($env:REQUIRED -cne 'true' -or $env:EXPORT_RESULT -cne 'success') { throw "Required API producer is $env:EXPORT_RESULT; no package can be published." }
+          test "$PREFLIGHT_RESULT" = success
+          case "$REQUIRED/$EXPORT_RESULT" in
+            true/success) ;;
+            false/skipped) echo "NoRelevantChanges" >> "$GITHUB_STEP_SUMMARY" ;;
+            *) echo "API export result is $EXPORT_RESULT, required=$REQUIRED" >&2; exit 1 ;;
+          esac
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ env.API_SOURCE_REVISION }}
@@ -144,15 +152,10 @@ jobs:
           path: artifacts/documentation-export/producers
         if: needs.preflight.outputs.required == 'true'
       - name: Reconcile complete exact-source API package
-        shell: pwsh
+        shell: bash
         env:
           EXPECTED_COMMIT: ${{ env.API_SOURCE_REVISION }}
-        run: |
-          $dotnet = (Get-Command dotnet -CommandType Application | Select-Object -First 1).Source
-          $transport = ./tools/ci/Initialize-ValidationEntry.ps1 -Dotnet $dotnet -LogPath artifacts/api-aggregation-bootstrap.log
-          ./tools/ci/Join-DocumentationApi.ps1 -Dotnet $dotnet -Transport $transport `
-            -InputDirectory artifacts/documentation-export/producers -OutputDirectory artifacts/documentation-export/package `
-            -ExpectedCommit $env:EXPECTED_COMMIT -Configurations Debug,Release
+        run: python -B .github/scripts/documentation_artifacts.py collect
         if: needs.preflight.outputs.required == 'true'
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
@@ -169,6 +172,9 @@ jobs:
     if: github.repository == 'Wolfiora/InnoEngine' && github.ref == 'refs/heads/master' && needs.preflight.outputs.required == 'true'
     runs-on: windows-2025
     steps:
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c
+        with:
+          python-version: '3.12'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ env.API_SOURCE_REVISION }}
@@ -180,18 +186,8 @@ jobs:
           name: documentation-api-package-${{ github.run_attempt }}
           path: artifacts/documentation-export/package
       - name: Prepare trusted transport before acquiring write credentials
-        id: transport
-        shell: pwsh
-        run: |
-          $assembly = ./tools/ci/Initialize-ValidationEntry.ps1 -Dotnet (Get-Command dotnet -CommandType Application | Select-Object -First 1).Source -LogPath artifacts/api-publisher-bootstrap.log
-          "assembly=$assembly" >> $env:GITHUB_OUTPUT
-      - name: Require the restricted synchronization installation
-        shell: pwsh
-        env:
-          APP_ID: ${{ vars.INNO_DOCS_APP_ID }}
-          APP_KEY: ${{ secrets.INNO_DOCS_APP_PRIVATE_KEY }}
-        run: |
-          if (!$env:APP_ID -or !$env:APP_KEY) { throw 'Blocked: configure the GitHub App with Docs Contents write and no workflow/main bypass permission.' }
+        shell: bash
+        run: dotnet build tools/Inno.Tooling.Cli/Inno.Tooling.Cli.csproj --configuration Release
       - id: app
         uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
         with:
@@ -201,19 +197,7 @@ jobs:
           repositories: InnoEngine.Docs
           permission-contents: write
       - name: Atomically update only the persistent draft branch
-        shell: pwsh
+        shell: bash
         env:
           DOCS_TOKEN: ${{ steps.app.outputs.token }}
-          API_TRANSPORT: ${{ steps.transport.outputs.assembly }}
-        run: |
-          # URL-scoped ephemeral authentication is never written to repository config or logs.
-          $env:GIT_CONFIG_COUNT = '1'
-          $env:GIT_CONFIG_KEY_0 = 'http.https://github.com/Wolfiora/InnoEngine.Docs.git.extraheader'
-          $env:GIT_CONFIG_VALUE_0 = 'AUTHORIZATION: basic ' + [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes('x-access-token:' + $env:DOCS_TOKEN))
-          try {
-            ./tools/ci/Publish-DocumentationApi.ps1 -EngineRoot $env:GITHUB_WORKSPACE -Dotnet (Get-Command dotnet -CommandType Application | Select-Object -First 1).Source `
-              -BuildCli $env:API_TRANSPORT -Package artifacts/documentation-export/package/api-package.json `
-              -Workspace artifacts/documentation-export/publication
-          } finally {
-            Remove-Item Env:GIT_CONFIG_COUNT, Env:GIT_CONFIG_KEY_0, Env:GIT_CONFIG_VALUE_0, Env:DOCS_TOKEN -ErrorAction SilentlyContinue
-          }
+        run: python -B .github/scripts/documentation_artifacts.py publish

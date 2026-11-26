@@ -43,6 +43,6 @@ tags: [rendering]
 - `tags` lists the work tags that select the file.
 - Declare at least one of the two, each as a one-line list.
 - Keep one topic per file and every file within 16 KiB. Split a larger topic into a directory.
-- When routing changes, add a path that must select the file and one that must not to the [routing examples](../../tools/ci/Test-AgentRules.examples.json).
+- When routing changes, add a path that must select the file and one that must not to the [routing examples](../../tests/tools/Inno.Tooling.Architecture.Integration.Tests/fixtures/rule-selection.json).
 
-Run the script without arguments to check every rule file, the root instruction size and the routing examples.
+Run `rules select` without arguments to check every rule file and the root instruction size. Architecture integration tests verify the routing examples.

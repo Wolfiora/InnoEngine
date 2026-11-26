@@ -64,18 +64,6 @@ function Select-ByPath([string]$path) {
     }
 }
 
-$examplesPath = Join-Path $PSScriptRoot 'Test-AgentRules.examples.json'
-if (Test-Path -LiteralPath $examplesPath) {
-    foreach ($example in Get-Content -LiteralPath $examplesPath -Raw | ConvertFrom-Json) {
-        $actual = @(Select-ByPath $example.path | ForEach-Object { $_.rule.id })
-        foreach ($id in @($example.includes) + @($example.excludes)) {
-            if ($id -and -not @($catalog | Where-Object id -CEQ $id).Count) { throw "Routing example names an unknown rule: $id" }
-        }
-        foreach ($id in $example.includes) { if ($id -cnotin $actual) { throw "Routing example failed: $($example.path) must select $id" } }
-        foreach ($id in $example.excludes) { if ($id -cin $actual) { throw "Routing example failed: $($example.path) must not select $id" } }
-    }
-}
-
 $selected = [ordered]@{}
 function Add-Selection($rule, [string]$reason) {
     if (-not $selected.Contains($rule.id)) { $selected[$rule.id] = @{ rule = $rule; reasons = [Collections.Generic.List[string]]::new() } }

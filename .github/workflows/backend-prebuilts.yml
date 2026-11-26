@@ -35,6 +35,9 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(inputs.platforms) }}
     steps:
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c
+        with:
+          python-version: '3.12'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: ${{ matrix.operation == 'produce' && '0' || '1' }}
@@ -55,30 +58,11 @@ jobs:
           path: artifacts/backend-downloads/${{ matrix.hostSeed.sha256 }}.zip
       - name: Acquire the exact prior platform and prepare requested native inputs
         if: matrix.operation == 'produce' || matrix.nativeInputs
-        shell: pwsh
+        shell: bash
         env:
           SPEC: ${{ toJSON(matrix) }}
           GH_TOKEN: ${{ github.token }}
-        run: |
-          $item = $env:SPEC | ConvertFrom-Json
-          $operation = $item.operation
-          $digest = $item.sha256
-          $zip = if ($operation -ceq 'promote') {
-            $operation = 'consume'
-            $file = ./tools/ci/Receive-BackendCandidate.ps1 -Platform $item -Directory artifacts/promoted
-            $digest = (Get-FileHash $file).Hash.ToLowerInvariant()
-            $file
-          } elseif ($item.sha256) {
-            ./tools/ci/Get-BackendPlatformArchive.ps1 -Sha256 $item.sha256 -AssetId $item.assetId -Directory artifacts/backend-downloads
-          }
-          $hostInputs = @{}
-          if ($item.hostSeed) {
-            $hostInputs.HostSeedDigest = $item.hostSeed.sha256
-            $hostInputs.HostSeedZip = ./tools/ci/Get-BackendPlatformArchive.ps1 -Sha256 $item.hostSeed.sha256 -AssetId $item.hostSeed.assetId -Directory artifacts/backend-downloads
-          }
-          ./tools/ci/Initialize-BackendProduction.ps1 -Target $item.target -HostTarget $item.hostTarget -Operation $operation `
-            -OutputDirectory artifacts/backend-input -NativeDirectory artifacts/backend-native `
-            -PreviousZip $zip -PreviousDigest $digest @hostInputs -PrepareNative:$item.nativeInputs
+        run: python -B .github/scripts/backend_artifacts.py receive --prepare
       - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         if: matrix.operation != 'promote' && matrix.sha256 && (matrix.operation == 'produce' || matrix.nativeInputs) && steps.cache.outputs.cache-hit != 'true'
         with:
@@ -112,6 +96,9 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(inputs.builders) }}
     steps:
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c
+        with:
+          python-version: '3.12'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
@@ -138,6 +125,7 @@ jobs:
           SPEC: ${{ toJSON(matrix) }}
           GH_TOKEN: ${{ github.token }}
         run: |
+          $PSNativeCommandUseErrorActionPreference = $true
           $item = $env:SPEC | ConvertFrom-Json
           $null = ./tools/ci/Initialize-NativeDependencyWorkloads.ps1 -Targets @($item.target)
           $entry = @(./tools/ci/Initialize-ValidationEntry.ps1 -Dotnet (Get-Command dotnet).Source -LogPath artifacts/components/bootstrap.log)
@@ -183,6 +171,9 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(inputs.consumers) }}
     steps:
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c
+        with:
+          python-version: '3.12'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
@@ -205,19 +196,13 @@ jobs:
           pattern: ${{ matrix.pattern }}
           path: ${{ matrix.destination }}
       - name: Bind verified platform archives and the runner SDK
-        shell: pwsh
+        shell: bash
         env:
           REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
           PLATFORMS: ${{ inputs.platforms }}
           REQUIRED_TARGETS: ${{ toJSON(matrix.targets) }}
           GH_TOKEN: ${{ github.token }}
-        run: |
-          $platforms = ($env:PLATFORMS | ConvertFrom-Json).include
-          $promoted = @($platforms | Where-Object { $_.operation -ceq 'promote' -and $_.target -cin ($env:REQUIRED_TARGETS | ConvertFrom-Json) })
-          foreach ($item in $promoted) { $null = ./tools/ci/Receive-BackendCandidate.ps1 -Platform $item -Directory artifacts/candidates }
-          $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
-          ./tools/ci/Install-BackendAcquisition.ps1 -PlanPath artifacts/validation/ci-plan/plan.json -EntryAssembly $entry `
-            -Acquisition artifacts/backend-request/acquisition.json -Downloads artifacts/backend-downloads -Candidates artifacts/candidates -Promoted $promoted -RebuildTargets $env:REBUILD_TARGETS
+        run: python -B .github/scripts/backend_artifacts.py receive --bind
       - name: ${{ steps.freeze.outputs.execution-label }}
         uses: ./.github/actions/execute-validation
         with:
@@ -257,6 +242,9 @@ jobs:
       group: trusted-backend-publication
       queue: max
     steps:
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c
+        with:
+          python-version: '3.12'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
@@ -291,7 +279,7 @@ jobs:
           ./tools/ci/Join-ValidationCi.ps1 -ReceivedDirectory artifacts/promotion -Hosts $consumers.runner -ExpectedCommit $env:GITHUB_SHA `
             -Attempt ([int]$env:GITHUB_RUN_ATTEMPT)
           $promoted = @($producers | Where-Object operation -CEQ promote)
-          foreach ($item in $promoted) { $null = ./tools/ci/Receive-BackendCandidate.ps1 -Platform $item -Directory artifacts/promotion }
+          foreach ($item in $promoted) { $null = ($item | ConvertTo-Json -Depth 20 -Compress) | python -B .github/scripts/backend_artifacts.py receive --directory artifacts/promotion }
           foreach ($item in $producers) {
             $owner = [IO.Directory]::CreateDirectory([IO.Path]::GetFullPath("artifacts/promotion/$($item.target)")).FullName
             $candidate = "artifacts/promotion/backend-candidate-$($item.target)"
