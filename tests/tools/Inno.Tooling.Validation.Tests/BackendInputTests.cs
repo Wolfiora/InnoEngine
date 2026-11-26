@@ -327,6 +327,72 @@ public sealed class BackendInputTests
         );
     }
 
+    [Fact]
+    public async Task AggregateChangesInvalidateUnboundBackendsOnlyInsideTheProductGraph()
+    {
+        using var repository = new ValidationRepository();
+        const string C_BACKEND = "backends/Interop/Loader.csproj";
+        const string C_UNRELATED = "backends/Other/Other.csproj";
+        repository.Write(C_BACKEND, ValidationRepository.Project());
+        repository.Write(C_UNRELATED, ValidationRepository.Project());
+        repository.Write(
+            "platforms/Fixture/player/Player.csproj",
+            ValidationRepository.Project("""
+            <PropertyGroup><InnoProductId>player</InnoProductId><InnoProductTarget>fixture</InnoProductTarget></PropertyGroup>
+            <ItemGroup><ProjectReference Include="../../../backends/Interop/Loader.csproj" /></ItemGroup>
+            """)
+        );
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Register the aggregate player and its backend");
+        using JsonDocument plan = await repository.PlanAsync(profile: "fast");
+        using JsonDocument before = await EvaluateAsync('a');
+        using JsonDocument after = await EvaluateAsync('b');
+        Assert.NotEqual(Identity(before, C_BACKEND), Identity(after, C_BACKEND));
+        Assert.Equal(Identity(before, C_UNRELATED), Identity(after, C_UNRELATED));
+
+        async Task<JsonDocument> EvaluateAsync(char revision)
+        {
+            repository.Write(
+                "artifacts/native.json",
+                JsonSerializer.Serialize(new
+                {
+                    assets = Array.Empty<object>(),
+                    aggregates = new[]
+                    {
+                        new
+                        {
+                            product = "player",
+                            target = "fixture",
+                            configuration = "debug",
+                            fingerprint = new string(revision, 64),
+                            bindings = new Dictionary<string, object>()
+                        }
+                    }
+                })
+            );
+            string output = repository.PathOf("artifacts/backend-inputs.json");
+            Assert.Equal(
+                0,
+                await ValidationCommand.ExecuteAsync([
+                    "backend-inputs",
+                    "--plan",
+                    repository.PathOf("artifacts/plan/plan.json"),
+                    "--target",
+                    "fixture",
+                    "--engine-root",
+                    repository.PathOf("."),
+                    "--dotnet",
+                    repository.dotnet,
+                    "--selection",
+                    repository.PathOf("artifacts/native.json"),
+                    "--output",
+                    output
+                ])
+            );
+            return JsonDocument.Parse(File.ReadAllBytes(output));
+        }
+    }
+
     private static async Task<JsonDocument> InputsAsync(ValidationRepository repository)
     {
         using JsonDocument plan = await repository.PlanAsync(profile: "fast");
