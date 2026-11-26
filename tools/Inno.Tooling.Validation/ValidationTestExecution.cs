@@ -19,6 +19,42 @@ public static class ValidationTestExecution
     /// <summary>
     /// Runs the selected solution and records per-owner discovery, execution receipts and TRX files.
     /// </summary>
+    /// <param name="root">
+    /// The checkout that owns the compiled test inputs.
+    /// </param>
+    /// <param name="dotnet">
+    /// Absolute path to the SDK host selected for this run.
+    /// </param>
+    /// <param name="solution">
+    /// Solution containing the selected test projects.
+    /// </param>
+    /// <param name="results">
+    /// Owned directory receiving discovery, execution receipts and test result files.
+    /// </param>
+    /// <param name="sharedLog">
+    /// Path for the shared test process output.
+    /// </param>
+    /// <param name="assemblies">
+    /// Maps each repository project path to its frozen test assembly.
+    /// </param>
+    /// <param name="logger">
+    /// Path to the compiled VSTest discovery logger.
+    /// </param>
+    /// <param name="properties">
+    /// SDK properties used to compile the solution, including configuration and artifacts path.
+    /// </param>
+    /// <param name="nativeDependencies">
+    /// Optional native dependency selection to expose to test hosts.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels active SDK and test processes.
+    /// </param>
+    /// <returns>
+    /// A task that completes after all required shared and isolated executions have been reconciled.
+    /// </returns>
+    /// <exception cref="InvalidDataException">
+    /// A required input, discovery result or execution receipt is incomplete or unsuccessful.
+    /// </exception>
     public static async Task RunAsync(
         string root,
         string dotnet,
@@ -249,6 +285,15 @@ public static class ValidationTestExecution
     /// <summary>
     /// Requires nonempty successful TRX evidence for the exact isolated contract.
     /// </summary>
+    /// <param name="path">
+    /// The TRX file produced by the isolated process.
+    /// </param>
+    /// <param name="name">
+    /// The exact fully qualified contract the host was asked to execute.
+    /// </param>
+    /// <exception cref="InvalidDataException">
+    /// The report does not certify the requested contract.
+    /// </exception>
     public static void Verify(
         string path,
         string name
