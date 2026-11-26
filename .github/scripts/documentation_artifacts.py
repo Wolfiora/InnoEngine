@@ -99,10 +99,71 @@ def ancestor(directory, older, newer):
     return status.returncode == 0
 
 
+def producer_names(jobs, revision, run, attempt):
+    first = set()
+    producers = {}
+    for job in jobs:
+        match = re.fullmatch(r"API facts / ([a-zA-Z0-9-]+) / (Debug|Release)", job["name"])
+        if not match:
+            continue
+        key = match.groups()
+        number = job["run_attempt"]
+        if (job["run_id"] != run or job["head_sha"] != revision or not 1 <= number <= attempt
+                or number in producers.setdefault(key, {})):
+            raise ValueError(f"Foreign or duplicate API producer: {job['name']}")
+        producers[key][number] = job
+        if number == 1:
+            first.add(key)
+    if not first or first != producers.keys():
+        raise ValueError("The retry differs from the original API producer matrix")
+    names = set()
+    for (host, configuration), attempts in producers.items():
+        number = max(attempts)
+        job = attempts[number]
+        if job["status"] != "completed" or job["conclusion"] != "success":
+            raise ValueError(f"Missing successful API producer for {host}/{configuration} in attempt {number}")
+        # GitHub copies successful jobs into later attempts with their original execution timestamps.
+        def execution(item):
+            return item["runner_id"], item["started_at"], item["completed_at"]
+
+        if not all(execution(job)):
+            raise ValueError(f"Missing API producer execution for {host}/{configuration}")
+        original = min(index for index, item in attempts.items()
+                       if item["conclusion"] == "success" and execution(item) == execution(job))
+        names.add(f"api-facts-{host}-{configuration}-{original}")
+    return names
+
+
+def select_producers():
+    run = int(os.environ["GITHUB_RUN_ID"])
+    attempt = int(os.environ["GITHUB_RUN_ATTEMPT"])
+    prefix = f"actions/runs/{run}"
+    jobs = repository_pages(prefix + "/jobs", key="jobs", filters={"filter": "all"})
+    names = producer_names(jobs, os.environ["EXPECTED_COMMIT"], run, attempt)
+    selected = {}
+    for artifact in repository_pages(prefix + "/artifacts", key="artifacts"):
+        name = artifact["name"]
+        if name in names:
+            if (name in selected or artifact["expired"] or not re.fullmatch("sha256:[0-9a-f]{64}", artifact.get("digest") or "")
+                    or artifact["id"] <= 0):
+                raise ValueError(f"Expired, duplicate or uncertified API artifact: {name}")
+            selected[name] = artifact["id"]
+    if names != selected.keys():
+        raise ValueError(f"Missing API artifacts: {sorted(names - selected.keys())}")
+    EXPORT.mkdir(parents=True, exist_ok=True)
+    (EXPORT / "selected-producers.json").write_text(json.dumps(selected, sort_keys=True), encoding="utf-8")
+    with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as outputs:
+        print("ids=" + ",".join(str(selected[name]) for name in sorted(names)), file=outputs)
+
+
 def collect():
     commit = os.environ["EXPECTED_COMMIT"]
     if git(ROOT, "rev-parse", "HEAD") != commit:
         raise ValueError("The collection checkout differs from its producers")
+    expected = json.loads((EXPORT / "selected-producers.json").read_bytes())
+    received = {path.name for path in (EXPORT / "producers").iterdir() if path.is_dir() and not path.is_symlink()}
+    if received != expected.keys():
+        raise ValueError("Downloaded API producer directories differ from the selected workflow artifacts")
     subprocess.run(["dotnet", "run", "--project", CLI_PROJECT, "-c", "Release", "--", "docs", "collect-producers", ROOT,
                     EXPORT / "producers", EXPORT / "package", commit, git(ROOT, "rev-parse", "HEAD^{tree}"),
                     "Debug", "Release"], check=True)
@@ -203,10 +264,14 @@ if __name__ == "__main__":
     parser.add_argument("--assembly", type=Path, default=CLI_PROJECT.parent / "bin/Release/net10.0/Inno.Tooling.Cli.dll")
     parser.add_argument("--package", type=Path, default=EXPORT / "package/api-package.json")
     parser.add_argument("--workspace", type=Path, default=EXPORT / "publication")
+    parser.add_argument("--select", action="store_true", help="Select completed workflow producer artifacts for collection")
     args = parser.parse_args()
     if args.operation == "preflight":
         preflight()
     elif args.operation == "collect":
-        collect()
+        if args.select:
+            select_producers()
+        else:
+            collect()
     else:
         publish(args.engine_root.resolve(), args.assembly.resolve(), args.package.resolve(), args.workspace.resolve())

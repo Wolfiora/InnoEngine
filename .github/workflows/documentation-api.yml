@@ -146,9 +146,18 @@ jobs:
         if: needs.preflight.outputs.required == 'true'
       - uses: ./.github/actions/setup-dotnet
         if: needs.preflight.outputs.required == 'true'
+      - name: Select the exact successful attempt for each API producer
+        id: producers
+        if: needs.preflight.outputs.required == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_COMMIT: ${{ env.API_SOURCE_REVISION }}
+        run: python -B .github/scripts/documentation_artifacts.py collect --select
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
-          pattern: api-facts-*-${{ github.run_attempt }}
+          github-token: ${{ github.token }}
+          artifact-ids: ${{ steps.producers.outputs.ids }}
           path: artifacts/documentation-export/producers
         if: needs.preflight.outputs.required == 'true'
       - name: Reconcile complete exact-source API package

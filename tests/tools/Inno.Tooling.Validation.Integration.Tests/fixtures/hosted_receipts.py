@@ -15,6 +15,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(sys.argv.pop(1))))
 import backend_artifacts as backends
+import documentation_artifacts as documentation
 import validation
 import routing
 
@@ -76,6 +77,33 @@ class HostedReceiptTests(unittest.TestCase):
               patch.object(routing, "benchmark_only", return_value=True) as compare):
             self.assertEqual(("fast", "benchmark-only", None), routing.select("push", data, candidate))
             compare.assert_called_once_with(before, candidate)
+
+    def test_partial_doc_retry_requires_each_actual_successful_execution(self):
+        revision = "a" * 40
+        jobs, assets = [], []
+        for i, (host, configuration) in enumerate((("macos", "Debug"), ("macos", "Release"),
+                                                    ("windows", "Debug"), ("windows", "Release"))):
+            original = dict(name=f"API facts / {host} / {configuration}", run_id=123, head_sha=revision,
+                            run_attempt=1, status="completed", conclusion="success", runner_id=i + 1,
+                            started_at="first-start", completed_at="first-end")
+            retry = {**original, "run_attempt": 2}
+            if i == 0:
+                original["conclusion"] = "cancelled"
+                retry.update(started_at="second-start", completed_at="second-end")
+            jobs.extend((original, retry))
+            assets.append(dict(id=i + 1, expired=False, digest="sha256:" + "b" * 64,
+                               name=f"api-facts-{host}-{configuration}-{2 if i == 0 else 1}"))
+        def pages(path, **kwargs):
+            return jobs if path.endswith("/jobs") else assets
+        with (patch.object(documentation, "EXPORT", self.root), patch.object(documentation, "repository_pages", side_effect=pages),
+              patch.dict(os.environ, {"EXPECTED_COMMIT": revision, "GITHUB_OUTPUT": str(self.summary)})):
+            documentation.select_producers()
+            selected = json.loads((self.root / "selected-producers.json").read_bytes())
+            self.assertEqual({asset["name"]: asset["id"] for asset in assets}, selected)
+            for item, override in ((jobs[1], {"conclusion": "failure"}), (jobs[0], {"head_sha": "f" * 40}),
+                                   (assets[0], {"name": "api-facts-macos-Debug-1"}), (assets[2], {"expired": True})):
+                with patch.dict(item, override), self.assertRaises(ValueError):
+                    documentation.select_producers()
 
     def test_first_failed_test_and_missing_owner(self):
         case = json.loads(Path(__file__).with_name("pr88-managed-failure.json").read_bytes())
