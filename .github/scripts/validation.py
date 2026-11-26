@@ -116,6 +116,13 @@ def freeze():
         base = "HEAD^"
     elif base == "0" * 40:
         base = "origin/master"
+    elif os.environ["GITHUB_EVENT_NAME"] == "push" and read(Path(os.environ["GITHUB_EVENT_PATH"])).get("forced"):
+        if profile == "full":
+            base = commit
+        else:
+            from routing import ensure_push_base
+            if not ensure_push_base(base):
+                raise ValueError(f"Runner cannot retrieve the previous push commit selected by routing: {base}")
     scheduled = os.environ.get("SCHEDULED") == "true"
     matched = False
     plan_path = PLAN / "plan.json"

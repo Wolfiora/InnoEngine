@@ -10,6 +10,17 @@ from pathlib import Path
 from github_artifacts import repository_pages
 
 
+def ensure_push_base(base):
+    if not re.fullmatch("[0-9a-f]{40}", base):
+        raise ValueError("Expected an exact previous push commit")
+    check = ["git", "cat-file", "-e", base + "^{commit}"]
+    if subprocess.run(check, stderr=subprocess.DEVNULL).returncode == 0:
+        return True
+    # Rewritten commits can still be fetched by object ID after their branch ref moves.
+    fetched = subprocess.run(["git", "fetch", "--no-tags", "--no-recurse-submodules", "origin", base])
+    return fetched.returncode == 0 and subprocess.run(check, stderr=subprocess.DEVNULL).returncode == 0
+
+
 def benchmark_only(base, candidate):
     if base == "0" * 40:
         return False  # A new branch has no previous push to compare.
@@ -43,6 +54,14 @@ def select(event, data, commit):
     if event == "push":
         profile = "master" if data["ref"] == "refs/heads/" + data["repository"]["default_branch"] else "fast"
         base = data["before"]
+        if data.get("forced") and base != "0" * 40:
+            if profile == "fast":
+                pull = matching_pull(commit, data["ref"])
+                if pull is not None:
+                    return profile, "open-pull-request", pull
+            if not ensure_push_base(base):
+                print(f"Previous push commit {base} is unavailable after the rewrite. Selecting full validation of {commit}.")
+                return "full", "validation", None
     elif event == "pull_request":
         base = data["pull_request"]["base"]["sha"]
     elif event == "merge_group":

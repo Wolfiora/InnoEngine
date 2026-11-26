@@ -63,6 +63,20 @@ class HostedReceiptTests(unittest.TestCase):
             validation.verify_route()
             self.assertIn("#27", self.summary.read_text())
 
+    def test_rewritten_push_with_an_unadvertised_previous_commit(self):
+        candidate, before = "a" * 40, "b" * 40
+        data = {"ref": "refs/heads/benchmark", "repository": {"default_branch": "master"},
+                "before": before, "forced": True}
+        with patch.object(routing, "matching_pull", return_value=94), patch.object(routing, "ensure_push_base") as fetch:
+            self.assertEqual(("fast", "open-pull-request", 94), routing.select("push", data, candidate))
+            fetch.assert_not_called()
+        with patch.object(routing, "matching_pull", return_value=None), patch.object(routing, "ensure_push_base", return_value=False):
+            self.assertEqual(("full", "validation", None), routing.select("push", data, candidate))
+        with (patch.object(routing, "matching_pull", return_value=None), patch.object(routing, "ensure_push_base", return_value=True),
+              patch.object(routing, "benchmark_only", return_value=True) as compare):
+            self.assertEqual(("fast", "benchmark-only", None), routing.select("push", data, candidate))
+            compare.assert_called_once_with(before, candidate)
+
     def test_first_failed_test_and_missing_owner(self):
         case = json.loads(Path(__file__).with_name("pr88-managed-failure.json").read_bytes())
         failed = case["failedOwner"]
