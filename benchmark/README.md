@@ -37,7 +37,7 @@ Each project lists only its own cases and probes. For example, the rendering pro
 dotnet run --project benchmark/services/rendering/Inno.Benchmark.Rendering -c Release -- --probe render artifacts/benchmarks/render.md
 ```
 
-To build all domains and the product process metrics hook manually, use `dotnet build benchmark/Inno.Benchmarks.slnx -c Release -m:1`. To list the six external product scenarios, use `./benchmark/product/Measure-Product.ps1 -Case list`. Neither discovery command runs a workload.
+To build all domains and the product process metrics hook manually, use `dotnet build benchmark/Inno.Benchmarks.slnx -c Release -m:1`. To list the six external product scenarios, use `dotnet run --project benchmark/product/Inno.Benchmark.Product -c Release -- list`. Neither discovery command runs a workload.
 
 `--list` discovers BenchmarkDotNet methods, arguments and parameter values without initializing fixtures. Copy an exact ID to `--case`; IDs are case sensitive. `--check-case` accepts one or more IDs and only validates selection. BenchmarkDotNet options such as `--filter`, `--job` and `--artifacts` also work. The in-process toolchain uses the built Release output and its native deployment. A Dry run checks execution only. Keep statistical comparisons on the same job, binary, hardware and power configuration.
 
@@ -76,19 +76,19 @@ dotnet run --project $audio -c Release --no-build -- --case OfflineAudioBenchmar
 
 ### Product processes
 
-Build `benchmark/support/Inno.Benchmark.ProcessMetrics` in Release for frame measurements. Run `benchmark/product/Measure-Product.ps1` from a PowerShell 7.2+ desktop host. Supply a prebuilt Release executable or managed entry DLL. Use a disposable copy of the input project because Editor and Build may update project-local state. Pin the project, packaged plugins and scene through `-InputRevision` (commit plus package hashes for external inputs). The script also hashes the actual executable.
+Build `benchmark/support/Inno.Benchmark.ProcessMetrics` in Release for frame measurements. Run the product benchmark from the engine checkout on a Windows or macOS desktop host. Supply a prebuilt Release executable or managed entry DLL. Use a disposable copy of the input project because Editor and Build may update project-local state. Pin the project, packaged plugins and scene through `--input-revision` (commit plus package hashes for external inputs). The runner also hashes the actual executable.
 
 ```powershell
-./benchmark/product/Measure-Product.ps1 -Case player-short -Executable $player -GraphicsApi $api -Hardware $hardware -InputRevision $inputHash
-./benchmark/product/Measure-Product.ps1 -Case editor -Executable $editor -Project $project -GraphicsApi $api -Hardware $hardware -InputRevision $inputHash
-./benchmark/product/Measure-Product.ps1 -Case game-warm -Executable $buildCli -Project $project -InputRevision $inputHash -Target $target -ToolsTarget $hostTarget -SupportPacks $packs -StartupScene $scene -ExpectedArtifact $relativeArtifact
-./benchmark/product/Measure-Product.ps1 -Case support-pack -Executable $buildCli -InputRevision $engineCommit -Target $target -ToolsTarget $hostTarget -ExpectedArtifact $relativeArtifact
+dotnet run --project benchmark/product/Inno.Benchmark.Product -c Release -- player-short --executable $player --graphics-api $api --hardware $hardware --input-revision $inputHash
+dotnet run --project benchmark/product/Inno.Benchmark.Product -c Release -- editor --executable $editor --project $project --graphics-api $api --hardware $hardware --input-revision $inputHash
+dotnet run --project benchmark/product/Inno.Benchmark.Product -c Release -- game-warm --executable $buildCli --project $project --input-revision $inputHash --target $target --tools-target $hostTarget --support-packs $packs --startup-scene $scene --expected-artifact $relativeArtifact
+dotnet run --project benchmark/product/Inno.Benchmark.Product -c Release -- support-pack --executable $buildCli --input-revision $engineCommit --target $target --tools-target $hostTarget --expected-artifact $relativeArtifact
 ```
 
 * **Player:** short = 600 frames, long = 6,000. Use the same prebuilt product and scene for both. The script verifies the reported frame count and records final-frame views, draws and dispatches. The current Player enables vsync. GPU time is left empty.
 * **Editor:** 600 visible-window frames in the supplied project. The measurement covers the entire process, including startup and shutdown. The script verifies the frame-limit and shutdown messages.
 * **Game build:** cold starts with an empty output path. Warm first builds to that path outside timing, verifies the requested artifact, then repeats the identical command. Both consume an explicit existing support-pack directory. SDK, native and OS caches are left intact.
-* **Support pack:** an independent invocation of the production CLI with a fresh destination. `-ExpectedArtifact` selects a required file relative to that destination; a successful build records its hash.
+* **Support pack:** an independent invocation of the production CLI with a fresh destination. `--expected-artifact` selects a required file relative to that destination; a successful build records its hash.
 * Each invocation creates a unique output directory under `artifacts/benchmarks/products`. Keep its JSON, stdout, stderr and managed process counters. Wall time covers launch through exit; CPU covers the launched process only. Frame cases use a BCL-only .NET startup hook to capture total managed allocations and per-generation collection counts from hook initialization through process exit. Startup-hook-incompatible deployments retain available process evidence with status unavailable (exit 3). Actual product failures, timeouts and missing expected artifacts are errors.
 
 Use FlappyBird only with mutually compatible project scripts, plugins and Player. A previous package or smoke trace cannot identify the current checkout. No product binaries, device setup or timing jobs are required to list the inventory.

@@ -28,6 +28,9 @@
   <Folder Name="/foundation/extensibility/">
     <Project Path="foundation/extensibility/Inno.Benchmark.Reload/Inno.Benchmark.Reload.csproj" />
   </Folder>
+  <Folder Name="/product/">
+    <Project Path="product/Inno.Benchmark.Product/Inno.Benchmark.Product.csproj" />
+  </Folder>
   <Folder Name="/runtime/engine/">
     <Project Path="runtime/engine/Inno.Benchmark.Runtime/Inno.Benchmark.Runtime.csproj" />
   </Folder>
