@@ -23,7 +23,8 @@ class _ReleaseRedirect(HTTPRedirectHandler):
 
 def download(resource, destination, expected):
     url = f"{os.environ['GITHUB_API_URL']}/repos/{os.environ['GITHUB_REPOSITORY']}/{resource}"
-    request = Request(url, headers={"Accept": "application/octet-stream", "Authorization": f"Bearer {os.environ['GH_TOKEN']}"})
+    accept = "application/octet-stream" if resource.startswith("releases/assets/") else "application/vnd.github+json"
+    request = Request(url, headers={"Accept": accept, "Authorization": f"Bearer {os.environ['GH_TOKEN']}"})
     with build_opener(_ReleaseRedirect()).open(request, timeout=90) as response, destination.open("xb") as target:
         shutil.copyfileobj(response, target)
     with destination.open("rb") as target:
