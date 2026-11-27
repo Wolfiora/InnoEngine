@@ -144,6 +144,42 @@ public sealed class CoroutineScheduler : IDisposable
     }
 
     /// <summary>
+    /// Stops routines whose owner, execution stack or current wait belongs to a retiring type at a safe point.
+    /// </summary>
+    /// <param name="retiring">
+    /// A synchronous type membership query used only during this call.
+    /// </param>
+    public void StopCoroutinesUsing(Predicate<Type> retiring)
+    {
+        ArgumentNullException.ThrowIfNull(retiring);
+        lock (m_tickGate)
+        {
+            ObjectDisposedException.ThrowIf(Volatile.Read(ref m_disposed) != 0, this);
+            if (m_operationDepth != 0)
+            {
+                throw new InvalidOperationException("Type retirement requires a coroutine safe point.");
+            }
+            m_operationDepth++;
+            try
+            {
+                ApplyPendingCommands();
+                foreach (long id in m_active.ToArray())
+                {
+                    if (m_states.TryGetValue(id, out CoroutineState? state) && state.UsesType(retiring))
+                    {
+                        Retire(state);
+                    }
+                }
+            }
+            finally
+            {
+                PruneInactive();
+                CompleteOperation();
+            }
+        }
+    }
+
+    /// <summary>
     /// Closes admission and disposes all active and pending enumerators.
     /// Reentrant disposal retires the executing enumerator after its callback returns.
     /// </summary>
@@ -335,6 +371,7 @@ public sealed class CoroutineScheduler : IDisposable
                 return true;
             }
             state.waiter = null;
+            state.waitType = null;
         }
 
         if (state.waitingTask is { IsCompleted: false } || state.waitingHandle.isValid)
@@ -391,6 +428,7 @@ public sealed class CoroutineScheduler : IDisposable
 
             if (yielded is YieldInstruction instruction)
             {
+                state.waitType = instruction.GetType();
                 state.waitStartTime = m_now;
                 state.waitStartFrame = m_frame;
                 state.waiter = instruction.CreateWaiter()
@@ -629,11 +667,6 @@ public sealed class CoroutineScheduler : IDisposable
         /// </summary>
         public Func<double, ulong, bool>? waiter { get; set; }
 
-        public double waitStartTime { get; set; }
-        public ulong waitStartFrame { get; set; }
-        public Task? waitingTask { get; set; }
-        public CoroutineHandle waitingHandle { get; set; }
-
         /// <summary>
         /// Gets whether a user callback is borrowing the enumerator stack.
         /// </summary>
@@ -643,5 +676,27 @@ public sealed class CoroutineScheduler : IDisposable
         /// Gets whether call admission has closed and the remaining stack must retire.
         /// </summary>
         public bool retired { get; set; }
+
+        internal double waitStartTime { get; set; }
+        internal ulong waitStartFrame { get; set; }
+        internal Task? waitingTask { get; set; }
+        internal CoroutineHandle waitingHandle { get; set; }
+        internal Type? waitType { get; set; }
+
+        internal bool UsesType(Predicate<Type> retiring)
+        {
+            if (owner is not null && retiring(owner.GetType())
+                || waitType is not null && retiring(waitType)
+                || waiter?.Target is { } target && retiring(target.GetType())
+                || waitingTask is not null && retiring(waitingTask.GetType())
+            ) {
+                return true;
+            }
+            foreach (IEnumerator enumerator in stack)
+            {
+                if (retiring(enumerator.GetType())) return true;
+            }
+            return false;
+        }
     }
 }

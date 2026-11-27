@@ -336,15 +336,20 @@ public sealed class CoroutineSchedulerTests
         }
     }
 
-    private sealed class WaitTwoPolls : YieldInstruction
+    [Fact]
+    public void RetiringAnExternalWaitPreservesAnUnrelatedPendingRoutine()
     {
-        protected override Func<double, ulong, bool> CreateWaiter()
+        using var scheduler = new CoroutineScheduler();
+        CoroutineHandle plugin = scheduler.StartCoroutine(Wait());
+        scheduler.Tick(0.01f);
+        CoroutineHandle unrelated = scheduler.StartCoroutine(Loop(static () => {}));
+        scheduler.StopCoroutinesUsing(static type => type == typeof(WaitTwoPolls));
+        Assert.False(plugin.isValid);
+        Assert.True(unrelated.isValid);
+
+        static IEnumerator Wait()
         {
-            int polls = 0;
-            return (
-                _,
-                _
-            ) => ++polls < 2;
+            yield return new WaitTwoPolls();
         }
     }
 
@@ -390,6 +395,18 @@ public sealed class CoroutineSchedulerTests
         {
             GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
             GC.WaitForPendingFinalizers();
+        }
+    }
+
+    private sealed class WaitTwoPolls : YieldInstruction
+    {
+        protected override Func<double, ulong, bool> CreateWaiter()
+        {
+            int polls = 0;
+            return (
+                _,
+                _
+            ) => ++polls < 2;
         }
     }
 }

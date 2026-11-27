@@ -96,6 +96,10 @@ internal static class SceneReloadIntegration
         public void Complete()
         {
             using IDisposable scope = runtimeSession.EnterExecutionScope();
+            foreach (object retiredObject in migration.retiredObjects)
+            {
+                runtimeSession.StopCoroutines(retiredObject);
+            }
             migration.Complete();
             SceneStateDiagnosticPublisher.PublishReload(migration.diagnostics);
             SceneStateDiagnosticPublisher.PublishMissingElements(runtimeSession.scenes.loadedScenes);

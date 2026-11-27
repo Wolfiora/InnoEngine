@@ -421,8 +421,8 @@ public sealed class ScriptReloadHost : IDisposable
     }
 
     /// <summary>
-    /// Applies the latest compiled generation, or commits a Plugin-unavailability generation when changed
-    /// Plugin code cannot produce a replacement, at a caller-controlled main-thread safe point.
+    /// Applies the latest compiled generation at a main-thread safe point. When compilation fails, removal
+    /// retires the unavailable modules and their dependents. A failed update to an installed module retains its active code.
     /// </summary>
     /// <returns>
     /// <see langword="true"/> when modules were replaced or retired; otherwise, <see langword="false"/>.

@@ -37,12 +37,10 @@ public enum InputDeviceChangeKind
     /// A new instance joined the session.
     /// </summary>
     Connected,
-
     /// <summary>
     /// A control reported a new scalar value.
     /// </summary>
     ValueChanged,
-
     /// <summary>
     /// The instance left the session.
     /// </summary>

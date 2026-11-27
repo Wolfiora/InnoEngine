@@ -153,9 +153,10 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     /// </summary>
     public AudioStatistics statistics
         => new(m_voices.count, m_clipCache.count, m_clipCache.decodedBytes, m_stolenVoiceCount + m_voices.stolenCount)
-        {
-            processorUnderrunFrames = m_device.statistics.processorUnderrunFrames
-        };
+    {
+        processorUnderrunFrames = m_device.statistics.processorUnderrunFrames,
+        lastProcessorFailure = m_device.statistics.lastProcessorFailure
+    };
 
     /// <summary>
     /// Gets bounded provider admission counts from the most recent content collection on this device generation.

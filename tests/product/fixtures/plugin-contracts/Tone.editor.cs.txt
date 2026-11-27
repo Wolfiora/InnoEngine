@@ -1,0 +1,38 @@
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using InnoEditor.Assets;
+using InnoEngine.Audio;
+
+[AssetImporter("fixture.unsigned-pcm")]
+public sealed class ToneImporter : AssetImporter<AudioClipAsset>
+{
+    public override IReadOnlyList<string> supportedExtensions { get; } = [".knobpcm"];
+
+    protected override async ValueTask ImportAsync(
+        AssetImportContext context,
+        AssetImportWriter<AudioClipAsset> output,
+        CancellationToken cancellationToken
+    ) {
+        var metadata = new AudioClipMetadata(new AudioCodecID("fixture/unsigned-pcm"), 1, 48000, context.sourceBytes.Length, context.sourceBytes.Length);
+        output.SetAsset(new AudioClipAsset());
+        await output.WriteArtifactAsync("runtime", AudioClipMetadataCodec.Encode(metadata), cancellationToken: cancellationToken);
+        await output.WriteArtifactAsync("audio-data", context.sourceBytes, cancellationToken: cancellationToken);
+    }
+}
+
+[AssetImporter("fixture.controller-mixer")]
+public sealed class ControllerMixerImporter : AssetImporter<AudioMixerAsset>
+{
+    public override IReadOnlyList<string> supportedExtensions { get; } = [".knobmix"];
+
+    protected override ValueTask ImportAsync(
+        AssetImportContext context,
+        AssetImportWriter<AudioMixerAsset> output,
+        CancellationToken cancellationToken
+    ) {
+        cancellationToken.ThrowIfCancellationRequested();
+        output.SetAsset(new AudioMixerAsset { mixerTypeId = "fixture.mixer" });
+        return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken);
+    }
+}

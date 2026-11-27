@@ -6,17 +6,23 @@ namespace Inno.Runtime;
 
 internal sealed class SessionCoroutineRegistry(
     TypeCatalog types,
-    RuntimeSession session
-) : TypeRegistry<CoroutineScheduler>(types)
+    RuntimeSession session,
+    CoroutineScheduler scheduler
+) : TypeRegistry<TypeCacheSnapshot>(types)
 {
-    internal CoroutineScheduler scheduler => current;
+    /// <inheritdoc/>
+    protected override TypeCacheSnapshot Build(TypeCacheSnapshot types) => types;
 
-    protected override CoroutineScheduler Build(TypeCacheSnapshot types) => new();
-
-    protected override void DisposeSnapshot(CoroutineScheduler snapshot)
-    {
+    /// <inheritdoc/>
+    protected override void OnActivationCompleted(
+        TypeCacheSnapshot? previous,
+        TypeCacheSnapshot candidate
+    ) {
+        if (previous is null) return;
         using IDisposable scope = session.EnterExecutionScope();
         using IDisposable admission = SessionCoroutines.Suspend();
-        snapshot.Dispose();
+        scheduler.StopCoroutinesUsing(type => previous.ContainsAssembly(type.Assembly) && !candidate.ContainsAssembly(type.Assembly));
     }
+
+    internal void EnsureRegistered() => _ = current;
 }

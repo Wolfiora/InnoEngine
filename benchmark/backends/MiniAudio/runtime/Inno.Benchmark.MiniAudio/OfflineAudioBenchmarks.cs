@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading;
+using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Inno.Adapter.Audio.MiniAudio;
 using Inno.Audio;
@@ -110,7 +111,10 @@ public class OfflineAudioBenchmarks
             int sampleRate,
             AudioProcessorConfiguration configuration
         ) {
-            for (int index = 0; index < samples.Length; index++) samples[index] *= 0.5f;
+            for (int index = 0; index < samples.Length; index++)
+            {
+                samples[index] *= 0.5f;
+            }
         }
     }
 
@@ -132,11 +136,18 @@ public class OfflineAudioBenchmarks
             return true;
         }
 
-        public override int Read(Span<float> samples)
-        {
+        public override ValueTask<int> ReadAsync(
+            Memory<float> output,
+            CancellationToken cancellationToken
+        ) {
+            cancellationToken.ThrowIfCancellationRequested();
+            Span<float> samples = output.Span;
             int count = (int)Math.Min(samples.Length, (m_pcm.BaseStream.Length - m_pcm.BaseStream.Position) / sizeof(short));
-            for (int index = 0; index < count; index++) samples[index] = m_pcm.ReadInt16() / 32768f;
-            return count;
+            for (int index = 0; index < count; index++)
+            {
+                samples[index] = m_pcm.ReadInt16() / 32768f;
+            }
+            return new ValueTask<int>(count);
         }
 
         public override void Dispose() => m_pcm.Dispose();

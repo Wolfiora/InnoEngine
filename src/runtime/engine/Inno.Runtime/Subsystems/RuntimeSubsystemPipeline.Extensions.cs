@@ -16,6 +16,7 @@ public sealed partial class RuntimeSubsystemPipeline
     {
         internal IRuntimeSubsystemFactory[] ordered => current.ordered;
 
+        /// <inheritdoc/>
         protected override Generation Build(TypeCacheSnapshot types)
         {
             List<IRuntimeSubsystemFactory> factories = [.. configured];
@@ -41,6 +42,7 @@ public sealed partial class RuntimeSubsystemPipeline
             return new Generation(Order(factories));
         }
 
+        /// <inheritdoc/>
         protected override void OnActivating(
             Generation? previous,
             Generation candidate
@@ -51,25 +53,26 @@ public sealed partial class RuntimeSubsystemPipeline
                 throw new InvalidOperationException("Subsystem generations can change only between active frames.");
             }
 
-            var active = pipeline.m_entries.ToDictionary(static entry => entry.descriptor.id);
-            var oldFactories = previous.ordered.ToDictionary(static factory => factory.descriptor.id);
+            Dictionary<RuntimeSubsystemID, Entry> active = pipeline.m_entries.ToDictionary(static entry => entry.descriptor.id);
+            Dictionary<RuntimeSubsystemID, IRuntimeSubsystemFactory> oldFactories = previous.ordered
+                .ToDictionary(static factory => factory.descriptor.id);
             var changed = new HashSet<RuntimeSubsystemID>();
             foreach (IRuntimeSubsystemFactory factory in candidate.ordered)
             {
                 RuntimeSubsystemID id = factory.descriptor.id;
                 oldFactories.TryGetValue(id, out IRuntimeSubsystemFactory? prior);
                 if (factory is DiscoveredFactory discovered && (prior as DiscoveredFactory)?.type != discovered.type
-                    || factory.descriptor.dependencies.Any(changed.Contains))
-                {
+                    || factory.descriptor.dependencies.Any(changed.Contains)
+                ) {
                     changed.Add(id);
                     if (active.ContainsKey(id) && (prior is not DiscoveredFactory { requiresRestart: false }
-                                                    || factory is not DiscoveredFactory { requiresRestart: false }))
-                    {
+                                                   || factory is not DiscoveredFactory { requiresRestart: false })
+                    ) {
                         throw new InvalidOperationException($"Replacing subsystem '{id}' requires a host restart.");
                     }
                 }
             }
-            var retainedIDs = candidate.ordered.Select(static factory => factory.descriptor.id).ToHashSet();
+            HashSet<RuntimeSubsystemID> retainedIDs = candidate.ordered.Select(static factory => factory.descriptor.id).ToHashSet();
             foreach (DiscoveredFactory removed in previous.ordered.OfType<DiscoveredFactory>())
             {
                 if (!retainedIDs.Contains(removed.descriptor.id) && active.ContainsKey(removed.descriptor.id) && removed.requiresRestart)
@@ -92,13 +95,21 @@ public sealed partial class RuntimeSubsystemPipeline
                     continue;
                 }
                 if (!descriptor.dependencies.All(available.Contains)
-                    || !descriptor.requiredCapabilities.All(pipeline.m_context.capabilities.Contains))
-                {
+                    || !descriptor.requiredCapabilities.All(pipeline.m_context.capabilities.Contains)
+                ) {
                     throw new InvalidOperationException($"Subsystem '{descriptor.id}' has unavailable dependencies or capabilities.");
                 }
                 var entry = new Entry(descriptor);
                 candidate.release.Add(entry);
-                pipeline.Attach(entry, factory);
+                try
+                {
+                    pipeline.Attach(entry, factory);
+                }
+                catch (Exception failure) when (RetirementPendingException.Find(failure) is null)
+                {
+                    // Exception stack frames can keep a collectible candidate alive beyond rollback.
+                    throw new InvalidOperationException($"Subsystem '{descriptor.id}' rejected activation: {failure.Message}");
+                }
                 entries.Add(entry);
                 available.Add(descriptor.id);
             }
@@ -106,6 +117,7 @@ public sealed partial class RuntimeSubsystemPipeline
             pipeline.m_entries = entries;
         }
 
+        /// <inheritdoc/>
         protected override void OnActivationRolledBack(
             Generation? previous,
             Generation candidate
@@ -114,17 +126,19 @@ public sealed partial class RuntimeSubsystemPipeline
             candidate.before = null;
         }
 
+        /// <inheritdoc/>
         protected override void OnActivationCompleted(
             Generation? previous,
             Generation candidate
         ) {
             if (previous is null || candidate.before is null) return;
-            var retained = pipeline.m_entries.ToHashSet();
+            HashSet<Entry> retained = pipeline.m_entries.ToHashSet();
             previous.release.AddRange(candidate.before.Where(entry => !retained.Contains(entry)));
             candidate.before = null;
             candidate.release.Clear();
         }
 
+        /// <inheritdoc/>
         protected override void DisposeSnapshot(Generation snapshot)
         {
             while (snapshot.release.Count != 0)
@@ -161,6 +175,7 @@ public sealed partial class RuntimeSubsystemPipeline
         RuntimeSubsystemExtensionAttribute declaration
     ) : IRuntimeSubsystemFactory
     {
+        /// <inheritdoc/>
         public RuntimeSubsystemDescriptor descriptor { get; } = new(
             new RuntimeSubsystemID(declaration.id),
             dependencies: declaration.dependencies.Select(static id => new RuntimeSubsystemID(id)).ToArray(),
@@ -168,14 +183,15 @@ public sealed partial class RuntimeSubsystemPipeline
             requiredCapabilities: declaration.requiredCapabilities.Select(static id => new RuntimeCapabilityID(id)).ToArray()
         );
 
-        internal Type type { get; } = activatorType;
-        internal bool requiresRestart { get; } = declaration.requiresRestart;
-
+        /// <inheritdoc/>
         public IRuntimeSubsystem Create(RuntimeSubsystemContext context)
         {
-            var activator = (IRuntimeSubsystemActivator)types.CreateInstance(type);
+            IRuntimeSubsystemActivator activator = (IRuntimeSubsystemActivator)types.CreateInstance(type);
             if (activator is IDisposable disposable) context.resources.Own(disposable);
             return activator.Create(context);
         }
+
+        internal Type type { get; } = activatorType;
+        internal bool requiresRestart { get; } = declaration.requiresRestart;
     }
 }

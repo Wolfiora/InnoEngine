@@ -143,6 +143,16 @@ public sealed class InputSnapshot
     public IReadOnlyCollection<MouseButton> mouseButtonsReleased => m_mouseButtonsReleased;
 
     /// <summary>
+    /// Gets the connected plugin devices at this frame boundary.
+    /// </summary>
+    public IReadOnlyList<InputDeviceState> devices { get; private set; } = [];
+
+    /// <summary>
+    /// Gets the ordered connection and control transitions since the previous capture.
+    /// </summary>
+    public IReadOnlyList<InputDeviceChange> deviceChanges { get; private set; } = [];
+
+    /// <summary>
     /// Determines whether a key is currently held.
     /// </summary>
     /// <param name="key">
@@ -209,16 +219,6 @@ public sealed class InputSnapshot
     public bool WasMouseButtonReleased(MouseButton button) => m_mouseButtonsReleased.Contains(button);
 
     /// <summary>
-    /// Gets the connected plugin devices at this frame boundary.
-    /// </summary>
-    public IReadOnlyList<InputDeviceState> devices { get; private set; } = [];
-
-    /// <summary>
-    /// Gets the ordered connection and control transitions since the previous capture.
-    /// </summary>
-    public IReadOnlyList<InputDeviceChange> deviceChanges { get; private set; } = [];
-
-    /// <summary>
     /// Combines this backend capture with independently owned device input from the same frame.
     /// </summary>
     /// <param name="states">
@@ -236,7 +236,7 @@ public sealed class InputSnapshot
     ) {
         ArgumentNullException.ThrowIfNull(states);
         ArgumentNullException.ThrowIfNull(changes);
-        var result = (InputSnapshot)MemberwiseClone();
+        InputSnapshot result = (InputSnapshot)MemberwiseClone();
         result.devices = Array.AsReadOnly(states.ToArray());
         result.deviceChanges = Array.AsReadOnly(changes.ToArray());
         return result;

@@ -192,7 +192,7 @@ internal sealed class AudioClipCache : IDisposable
         AudioClipHandle handle = externalDecoder
                                  ? (m_device as IAudioStreamClipDevice
                                     ?? throw new NotSupportedException("This device does not support external audio decoders."))
-                                   .CreateStreamClip(descriptor, () => m_extensions.OpenDecoder(descriptor, source))
+                                     .CreateStreamClip(descriptor, () => m_extensions.OpenDecoder(descriptor, source))
                                  : m_device.CreateClip(descriptor, source);
         if (!handle.isValid)
         {

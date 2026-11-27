@@ -54,6 +54,17 @@ public sealed class TypeCacheSnapshot
     public IReadOnlyList<TypeRef> types => m_typeRefs;
 
     /// <summary>
+    /// Tests whether this generation includes an exact assembly instance, including assemblies with no discoverable public types.
+    /// </summary>
+    /// <param name="assembly">
+    /// The loaded module identity whose membership is being checked.
+    /// </param>
+    /// <returns>
+    /// Whether the assembly belongs to this snapshot.
+    /// </returns>
+    public bool ContainsAssembly(Assembly assembly) => m_typesByAssembly.ContainsKey(assembly);
+
+    /// <summary>
     /// Gets all concrete discovered types assignable to <typeparamref name="T"/>.
     /// </summary>
     /// <typeparam name="T">

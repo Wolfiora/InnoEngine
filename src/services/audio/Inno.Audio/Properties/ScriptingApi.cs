@@ -6,6 +6,7 @@ using Inno.Scripting.Api;
 [assembly: ScriptingApiExport(typeof(Audio), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AudioClipAsset), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AudioClipMetadata), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(AudioClipMetadataCodec), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(AudioClipLoadMode), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AudioDeviceState), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AudioPlaybackState), ScriptingApiScope.Runtime)]

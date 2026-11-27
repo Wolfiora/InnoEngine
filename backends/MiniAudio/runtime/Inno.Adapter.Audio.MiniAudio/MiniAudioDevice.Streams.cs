@@ -13,6 +13,7 @@ namespace Inno.Adapter.Audio.MiniAudio;
 public sealed unsafe partial class MiniAudioDevice
 {
     private readonly Dictionary<ulong, StreamClip> m_streamClips = [];
+    private readonly List<MiniAudioDecoderBuffer> m_retiringDecoders = [];
 
     /// <inheritdoc/>
     public AudioClipHandle CreateStreamClip(
@@ -32,30 +33,6 @@ public sealed unsafe partial class MiniAudioDevice
         return CreateClipHandle(identity, generation);
     }
 
-    private sealed class StreamClip(
-        AudioClipDescriptor descriptor,
-        Func<AudioStreamReader> open
-    ) : IDisposable
-    {
-        private MiniAudioDecoderBuffer? m_prepared = new(descriptor, open());
-
-        internal MiniAudioDecoderBuffer Take()
-        {
-            MiniAudioDecoderBuffer? first = m_prepared;
-            m_prepared = null;
-            return first ?? new MiniAudioDecoderBuffer(descriptor, open());
-        }
-
-        internal MiniAudioDecoderBuffer OpenAt(long frame) => new(descriptor, open(), frame);
-
-        public void Dispose()
-        {
-            MiniAudioDecoderBuffer? first = m_prepared;
-            m_prepared = null;
-            first?.Dispose();
-        }
-    }
-
     private void PumpStreams()
     {
         if (m_streamClips.Count == 0) return;
@@ -65,11 +42,47 @@ public sealed unsafe partial class MiniAudioDevice
             try
             {
                 voice.stream.Fill(C_PROCESS_BLOCK_FRAMES, voice.loop);
+                if (voice.startPending && voice.stream.ready)
+                {
+                    if (NativeApi.Raw.SoundStart(voice.sound) != MaResult.MA_SUCCESS)
+                    {
+                        throw new InvalidOperationException("The prepared decoder voice could not start.");
+                    }
+                    voice.startPending = false;
+                }
             }
             catch (Exception exception) when (RetirementPendingException.Find(exception) is null)
             {
                 CompleteVoice(id, voice, AudioCompletionReason.DecodeFailed);
             }
+        }
+    }
+
+    private void RetireDecoder(MiniAudioDecoderBuffer decoder)
+    {
+        try
+        {
+            decoder.Dispose();
+        }
+        catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
+        {
+            m_retiringDecoders.Add(decoder);
+        }
+    }
+
+    private void DrainDecoders(bool requireCompletion)
+    {
+        for (int index = m_retiringDecoders.Count - 1; index >= 0; index--)
+        {
+            try
+            {
+                m_retiringDecoders[index].Dispose();
+            }
+            catch (Exception pending) when (!requireCompletion && RetirementPendingException.Find(pending) is not null)
+            {
+                continue;
+            }
+            m_retiringDecoders.RemoveAt(index);
         }
     }
 
@@ -103,7 +116,8 @@ public sealed unsafe partial class MiniAudioDevice
             {
                 NativeApi.Raw.SoundSetStartTimeInPcmFrames(sound, checked((ulong)Math.Round(start * capabilities.sampleRate)));
             }
-            if (voice.state != AudioPlaybackState.Paused && NativeApi.Raw.SoundStart(sound) != MaResult.MA_SUCCESS)
+            bool deferred = !replacement.ready;
+            if (!deferred && voice.state != AudioPlaybackState.Paused && NativeApi.Raw.SoundStart(sound) != MaResult.MA_SUCCESS)
             {
                 return false;
             }
@@ -111,10 +125,11 @@ public sealed unsafe partial class MiniAudioDevice
             MiniAudioDecoderBuffer previous = voice.stream;
             voice.sound = sound;
             voice.stream = replacement;
+            voice.startPending = deferred;
             sound = null;
             NativeApi.Raw.SoundUninit(old);
             NativeMemory.Free(old);
-            previous.Dispose();
+            RetireDecoder(previous);
             return true;
         }
         finally
@@ -123,8 +138,39 @@ public sealed unsafe partial class MiniAudioDevice
             {
                 if (initialized) NativeApi.Raw.SoundUninit(sound);
                 NativeMemory.Free(sound);
-                replacement.Dispose();
+                RetireDecoder(replacement);
             }
         }
+    }
+
+    private sealed class StreamClip(
+        AudioClipDescriptor descriptor,
+        Func<AudioStreamReader> open
+    ) : IDisposable
+    {
+        private MiniAudioDecoderBuffer? m_prepared = new(descriptor, open());
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            m_prepared?.Dispose();
+            m_prepared = null;
+        }
+
+        internal bool Prepare()
+        {
+            if (m_prepared is null || m_prepared.ready) return true;
+            m_prepared.Fill(256, false);
+            return m_prepared.ready;
+        }
+
+        internal MiniAudioDecoderBuffer Take()
+        {
+            MiniAudioDecoderBuffer? first = m_prepared;
+            m_prepared = null;
+            return first ?? new MiniAudioDecoderBuffer(descriptor, open());
+        }
+
+        internal MiniAudioDecoderBuffer OpenAt(long frame) => new(descriptor, open(), frame);
     }
 }

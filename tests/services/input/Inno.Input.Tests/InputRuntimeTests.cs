@@ -190,9 +190,9 @@ public sealed class InputRuntimeTests
     public void DeviceFramesPreserveConnectionsAndOrderedChangesAfterRetirement()
     {
         var events = new EventDispatcher();
-        using var hub = events.CreateHub();
+        using EventHub hub = events.CreateHub();
         List<InputDeviceChange> observed = [];
-        using var subscription = hub.Listen<InputDeviceEvent>(evnt => observed.Add(evnt.change));
+        using IDisposable subscription = hub.Listen<InputDeviceEvent>(evnt => observed.Add(evnt.change));
         using var runtime = new InputRuntime(new EventInputBackend(0), new IdentityAllocator(), events);
         runtime.Attach();
 

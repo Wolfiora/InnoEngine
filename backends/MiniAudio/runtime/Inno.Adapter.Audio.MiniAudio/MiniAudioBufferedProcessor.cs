@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Inno.Audio;
+using Inno.Core.Execution;
 using Inno.Native.MiniAudio;
 
 using NativeApi = Inno.Native.MiniAudio.MiniAudio;
@@ -59,12 +60,30 @@ internal sealed unsafe class MiniAudioBufferedProcessor : IDisposable
         }
     }
 
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        if (m_processing) throw new InvalidOperationException("An executing audio processor cannot release its block.");
+        try
+        {
+            m_processor?.Dispose();
+        }
+        catch (Exception exception) when (RetirementPendingException.Find(exception) is null)
+        {
+            ReleaseNodes();
+            throw;
+        }
+        ReleaseNodes();
+    }
+
     internal void* output => m_node;
+    internal string? lastFailure { get; private set; }
 
     internal long underrunFrames
     {
         get
         {
+            if (!m_nodeReady) return 0;
             ulong requested = NativeApi.Raw.NodeGetTime(m_node);
             ulong consumed = m_submitted - NativeApi.Raw.PcmRbAvailableRead(m_output);
             return requested > consumed ? checked((long)(requested - consumed)) : 0;
@@ -90,7 +109,11 @@ internal sealed unsafe class MiniAudioBufferedProcessor : IDisposable
 
     internal void Pump(uint maximumFrames)
     {
-        if (m_processing) throw new InvalidOperationException("An audio effect cannot recursively process its own bus.");
+        lastFailure = null;
+        if (m_processing)
+        {
+            throw new InvalidOperationException("An audio effect cannot recursively process its own bus.");
+        }
         uint remaining = Math.Min(maximumFrames, NativeApi.Raw.PcmRbAvailableWrite(m_output));
         m_processing = true;
         try
@@ -112,13 +135,10 @@ internal sealed unsafe class MiniAudioBufferedProcessor : IDisposable
                 {
                     m_processor!.Process(samples, m_channels, m_sampleRate, m_configuration);
                 }
-                catch
+                catch (Exception failure) when (RetirementPendingException.Find(failure) is null)
                 {
                     samples.Clear();
-                    samples.CopyTo(new Span<float>(destination, samples.Length));
-                    Check(NativeApi.Raw.PcmRbCommitWrite(m_output, count));
-                    m_submitted += count;
-                    throw;
+                    lastFailure = $"Processor '{m_configuration.id}' silenced its block: {failure.Message}";
                 }
                 samples.CopyTo(new Span<float>(destination, samples.Length));
                 Check(NativeApi.Raw.PcmRbCommitWrite(m_output, count));
@@ -132,9 +152,9 @@ internal sealed unsafe class MiniAudioBufferedProcessor : IDisposable
         }
     }
 
-    public void Dispose()
+    private void ReleaseNodes()
     {
-        if (m_processing) throw new InvalidOperationException("An executing audio processor cannot release its block.");
+        m_processor = null;
         if (m_nodeReady) NativeApi.Raw.DataSourceNodeUninit(m_node, null);
         if (m_graphReady) NativeApi.Raw.NodeGraphUninit(m_input, null);
         if (m_ringReady) NativeApi.Raw.PcmRbUninit(m_output);
@@ -145,13 +165,13 @@ internal sealed unsafe class MiniAudioBufferedProcessor : IDisposable
         m_node = null;
         m_input = null;
         m_output = null;
-        AudioBlockProcessor? processor = m_processor;
-        m_processor = null;
-        processor?.Dispose();
     }
 
     private static void Check(MaResult result)
     {
-        if (result != MaResult.MA_SUCCESS) throw new InvalidOperationException($"Audio block processing failed: {result}.");
+        if (result != MaResult.MA_SUCCESS)
+        {
+            throw new InvalidOperationException($"Audio block processing failed: {result}.");
+        }
     }
 }

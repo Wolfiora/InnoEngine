@@ -13,7 +13,7 @@ public static class SessionCoroutines
     private static readonly ExecutionSlot<RuntimeSession> SESSION = new("session coroutines");
 
     /// <summary>
-    /// Transfers an enumerator to the active session. A committed generation change retires its remaining routines.
+    /// Transfers an enumerator to the active session. Retirement of its owner, executing module or wait ends the routine.
     /// </summary>
     /// <param name="owner">
     /// The object that owns this routine until completion or explicit retirement.

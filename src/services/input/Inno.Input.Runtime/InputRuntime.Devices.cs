@@ -43,6 +43,12 @@ public sealed partial class InputRuntime
         }
     }
 
+    private void PublishDeviceChange(InputDeviceChange change)
+    {
+        m_changes.Add(change);
+        m_events.Emit(new InputDeviceEvent(change));
+    }
+
     private sealed class Connection(
         InputRuntime source,
         string typeID
@@ -52,6 +58,7 @@ public sealed partial class InputRuntime
         private InputRuntime? m_source = source;
         private InputDeviceState? m_cached;
 
+        /// <inheritdoc/>
         public override void SetValue(
             string controlID,
             double value
@@ -65,6 +72,7 @@ public sealed partial class InputRuntime
             Publish(InputDeviceChangeKind.ValueChanged, controlID, value);
         }
 
+        /// <inheritdoc/>
         public override void Dispose()
         {
             if (m_source is not { } owner) return;
@@ -90,11 +98,5 @@ public sealed partial class InputRuntime
             string? controlID,
             double value
         ) => new(identity.runtimeIdentity!.Value, typeID, kind, controlID, value);
-    }
-
-    private void PublishDeviceChange(InputDeviceChange change)
-    {
-        m_changes.Add(change);
-        m_events.Emit(new InputDeviceEvent(change));
     }
 }

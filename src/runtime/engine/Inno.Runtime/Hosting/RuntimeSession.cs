@@ -24,7 +24,8 @@ public sealed class RuntimeSession : IDisposable
 {
     private readonly EngineHost m_host;
     private readonly IdentityAllocator m_identities;
-    private readonly SessionCoroutineRegistry m_coroutines;
+    private readonly CoroutineScheduler m_coroutines = new();
+    private readonly SessionCoroutineRegistry m_coroutineGenerations;
     private readonly RuntimeClock m_clock = new();
     private readonly RetirementBarrier m_retirement;
     private JobScheduler m_jobs = null!;
@@ -45,7 +46,7 @@ public sealed class RuntimeSession : IDisposable
         this.options = Validate(options);
         this.sessionID = LogSessionID.Create();
         m_identities = new IdentityAllocator();
-        m_coroutines = new SessionCoroutineRegistry(host.types, this);
+        m_coroutineGenerations = new SessionCoroutineRegistry(host.types, this, m_coroutines);
         this.events = new EventDispatcher();
         m_retirement = new RetirementBarrier($"Runtime session {sessionID}", host.retirementTimeout);
     }
@@ -181,7 +182,7 @@ public sealed class RuntimeSession : IDisposable
             subsystemFrameActive = true;
             subsystems.BeginFrame(frame);
             events.Flush();
-            m_coroutines.scheduler.Tick(frame.deltaTime);
+            m_coroutines.Tick(frame.deltaTime);
             if (options.kind != RuntimeSessionKind.Edit && !frame.isPaused)
             {
                 m_fixedAccumulator += frame.deltaTime;
@@ -243,7 +244,7 @@ public sealed class RuntimeSession : IDisposable
     {
         ArgumentNullException.ThrowIfNull(owner);
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        m_coroutines.scheduler.StopAllCoroutines(owner);
+        m_coroutines.StopAllCoroutines(owner);
     }
 
     /// <summary>
@@ -270,9 +271,12 @@ public sealed class RuntimeSession : IDisposable
     internal CoroutineHandle StartCoroutine(
         object owner,
         IEnumerator routine
-    ) => m_coroutines.scheduler.StartCoroutine(owner, routine);
+    ) {
+        m_coroutineGenerations.EnsureRegistered();
+        return m_coroutines.StartCoroutine(owner, routine);
+    }
 
-    internal bool StopCoroutine(CoroutineHandle handle) => m_coroutines.scheduler.StopCoroutine(handle);
+    internal bool StopCoroutine(CoroutineHandle handle) => m_coroutines.StopCoroutine(handle);
 
     internal void Start()
     {
@@ -380,7 +384,11 @@ public sealed class RuntimeSession : IDisposable
         try
         {
             using IDisposable? scope = scenes is null ? null : EnterExecutionScope();
-            DisposeStage(m_coroutines, ref m_retirementFailures);
+            using (SessionCoroutines.Suspend())
+            {
+                DisposeStage(m_coroutineGenerations, ref m_retirementFailures);
+                DisposeStage(m_coroutines, ref m_retirementFailures);
+            }
             if (m_subsystems is not null)
             {
                 DisposeStage(m_subsystems, ref m_retirementFailures);

@@ -14,14 +14,14 @@ namespace Inno.Runtime;
 /// </summary>
 public sealed partial class RuntimeSubsystemPipeline : IDisposable
 {
-    private List<Entry> m_entries = [];
-    private ExtensionRegistry? m_extensions;
     private readonly LifetimeScope m_resources;
     private readonly RuntimeSubsystemContext m_context;
     private readonly List<Exception> m_retirementFailures = [];
     private readonly List<Diagnostic> m_startupDiagnostics = [];
     private readonly TimeSpan m_retirementTimeout;
     private readonly GenerationCoordinator m_generations;
+    private List<Entry> m_entries = [];
+    private ExtensionRegistry? m_extensions;
     private DiagnosticReporter? m_reporter;
     private int m_begunEntryCount;
     private bool m_frameOpen;
@@ -294,7 +294,9 @@ public sealed partial class RuntimeSubsystemPipeline : IDisposable
         ArgumentNullException.ThrowIfNull(configuredFactories);
         try
         {
-            var configured = configuredFactories.Select(static factory => (IRuntimeSubsystemFactory)new FactorySnapshot(factory)).ToArray();
+            IRuntimeSubsystemFactory[] configured = configuredFactories
+                .Select(static factory => (IRuntimeSubsystemFactory)new FactorySnapshot(factory))
+                .ToArray();
             m_extensions = new ExtensionRegistry(this, configured);
             IRuntimeSubsystemFactory[] ordered = m_extensions.ordered;
             if (ordered.Any(factory => factory.descriptor.lifetime != m_context.lifetime))
