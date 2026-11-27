@@ -3,6 +3,7 @@ import base64
 import copy
 import gzip
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
@@ -16,6 +17,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(sys.argv.pop(1))))
 import backend_artifacts as backends
 import documentation_artifacts as documentation
+import github_artifacts
 import validation
 import routing
 
@@ -221,32 +223,87 @@ class HostedReceiptTests(unittest.TestCase):
                 with patch.dict(target, {field: value}), self.assertRaises(ValueError):
                     backends.catalog(release)
 
-    def test_release_rotation_resume_pins_and_rollback(self):
-        revision = "a" * 40
-        releases = []
-        for generation in range(1, 6):
-            hashes = {item["asset"]: str(generation) * 64 for item in backends.registrations().values()}
-            decide = lambda active=(), partial=False: backends.release_plan(releases, hashes, revision, active, partial)
-            operation, tag, _, retire = decide()
-            self.assertEqual("create", operation)
-            if len(releases) == 3:
-                self.assertEqual(releases[0]["id"], retire["id"])
-                self.assertEqual(releases[1]["id"], decide([retire["tag_name"]])[3]["id"])
-                with self.assertRaisesRegex(ValueError, "pinned"):
-                    decide([item["tag_name"] for item in releases])
-            draft = dict(id=generation, tag_name=tag, draft=True, prerelease=True, target_commitish=revision, assets=[])
-            releases.append(draft)
-            self.assertEqual("resume", decide()[0])
-            draft["target_commitish"] = "b" * 40
-            with self.assertRaisesRegex(ValueError, "Another producer"):
-                decide()
-            draft.update(target_commitish=revision, draft=False, published_at=f"2026-01-0{generation}",
-                         assets=[{"name": name, "digest": "sha256:" + digest, "state": "uploaded"} for name, digest in hashes.items()])
-            if retire:
-                releases.remove(retire)
-            self.assertEqual(("reuse", tag), decide()[:2])
-        oldest = {a["name"]: a["digest"][7:] for a in releases[0]["assets"]}
-        self.assertEqual("create", backends.release_plan(releases, oldest, revision, [], True)[0])
+    def test_only_the_current_release_can_skip_publication(self):
+        hashes = {item["asset"]: "a" * 64 for item in backends.registrations().values()}
+        revision = "b" * 40
+        def release(index, digit):
+            return dict(id=index, tag_name=f"backend-prebuilts-2026.01.01.{index}", draft=False, prerelease=True,
+                        published_at=f"2026-01-0{index}", assets=[dict(name=name, digest="sha256:" + digit * 64, state="uploaded")
+                                                                 for name in hashes])
+        old, current = release(1, "a"), release(2, "b")
+        self.assertEqual("reuse", backends.release_plan([old], hashes, revision)[0])
+        operation, tag, _ = backends.release_plan([old, current], hashes, revision)
+        self.assertEqual("create", operation)
+        draft = dict(id=3, tag_name=tag, draft=True, prerelease=True, target_commitish=revision, assets=[])
+        self.assertEqual("resume", backends.release_plan([old, current, draft], hashes, revision)[0])
+        with self.assertRaisesRegex(ValueError, "Another producer"):
+            backends.release_plan([old, current, {**draft, "target_commitish": "c" * 40}], hashes, revision)
+
+    def test_legacy_release_rotation_survives_an_interrupted_tag_deletion(self):
+        releases, refs, objects = {}, {}, {}
+        for i in range(1, 5):
+            tag = f"backend-prebuilts-2026.01.01.{i}"
+            revision, obj = str(min(i, 3)) * 40, str(i + 4) * 40
+            name, digest = "fixture-prebuilt-backends.zip", str(i) * 64
+            metadata = {"version": 1, "revision": revision, "platforms": {"fixture": dict(target="fixture", asset=name, sha256=digest)}}
+            encoded = base64.b64encode(gzip.compress(json.dumps(metadata).encode())).decode()
+            objects[obj] = {"tag": tag, "object": {"type": "commit", "sha": revision},
+                            "message": "InnoEngine backend prebuilt catalog v1\n\n" + encoded}
+            refs[tag] = {"object": {"type": "tag", "sha": obj}}
+            releases[i] = dict(id=i, name=f"Backend Prebuilts {i}", tag_name=tag, target_commitish=revision,
+                               published_at=str(i), prerelease=True, draft=False, body="Certified.", assets=[
+                                   dict(name=name, state="uploaded", digest="sha256:" + digest)])
+        def api(path, *, method="GET", data=None, optional=False):
+            if path == "git/ref/heads/master":
+                return {"object": {"sha": "f" * 40}}
+            kind, key = path.rsplit("/", 1)
+            store = {"releases": releases, "git/ref/tags": refs, "git/refs/tags": refs, "git/tags": objects}[kind]
+            key = int(key) if kind == "releases" else key
+            if method == "PATCH":
+                store[key].update(data)
+            if method == "DELETE":
+                if kind == "git/refs/tags" and interrupt:
+                    interrupt.pop()
+                    raise ConnectionError("interrupted retirement")
+                del store[key]
+                return
+            return store.get(key) if optional else store[key]
+        current, backup = releases[4], releases[2]
+        def rotate(active):
+            inventory = backends.published_backends(releases.values())
+            backends.rotate_releases(inventory[0], inventory[1:], active)
+        interrupt = [True]
+        environment = {"DEFAULT_BRANCH": "master", "GITHUB_EVENT_NAME": "push", "GITHUB_REF": "refs/heads/master", "GITHUB_SHA": "f" * 40}
+        with (patch.object(backends, "repository_json", side_effect=api), patch.object(backends, "require_idle_readers"),
+              patch.object(backends, "repository_pages", side_effect=lambda _: list(releases.values())), patch.dict(os.environ, environment)):
+            with patch.dict(os.environ, {"GITHUB_EVENT_NAME": "pull_request"}), self.assertRaisesRegex(ValueError, "trusted"):
+                backends.retain_releases()
+            with self.assertRaisesRegex(ValueError, "pinned"):
+                rotate({releases[1]["tag_name"]})
+            self.assertEqual(4, len(releases))
+            with self.assertRaises(ConnectionError):
+                backends.retain_releases()
+            backends.retain_releases()
+            backends.retain_releases()
+        self.assertEqual({2, 4}, releases.keys())
+        self.assertEqual({current["tag_name"], backup["tag_name"]}, refs.keys())
+        self.assertEqual("Backend Prebuilts 4", current["name"])
+        self.assertEqual("Backend Prebuilts 2 (Backup)", backup["name"])
+        self.assertEqual("Certified.", current["body"])
+
+    def test_download_negotiates_the_media_type_for_each_github_endpoint(self):
+        payload = b"certified archive"
+        digest = hashlib.sha256(payload).hexdigest()
+        with (patch.dict(os.environ, {"GITHUB_API_URL": "https://api.github.com", "GITHUB_REPOSITORY": "owner/repo"}),
+              patch.object(github_artifacts, "build_opener") as transport):
+            for resource, accept in (("actions/artifacts/1/zip", "application/vnd.github+json"),
+                                     ("releases/assets/2", "application/octet-stream")):
+                transport.return_value.open.return_value = io.BytesIO(payload)
+                destination = self.root / resource.split("/")[-1]
+                github_artifacts.download(resource, destination, digest)
+                request = transport.return_value.open.call_args.args[0]
+                self.assertEqual(accept, request.get_header("Accept"))
+                self.assertEqual(payload, destination.read_bytes())
 
     def test_interrupted_draft_reuses_only_the_exact_placeholder(self):
         revision = "a" * 40
@@ -261,7 +318,7 @@ class HostedReceiptTests(unittest.TestCase):
         current = copy.deepcopy(draft)
         current["assets"][0]["id"] = 124
         def publish():
-            backends.publish_release([draft], platforms, archives, revision, set(), False)
+            backends.publish_release([draft], platforms, archives, revision, set())
         with patch.object(backends, "repository_json", return_value=current) as api:
             with self.assertRaisesRegex(ValueError, "changed before recovery"):
                 publish()

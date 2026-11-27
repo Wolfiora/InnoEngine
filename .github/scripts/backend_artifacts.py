@@ -603,7 +603,12 @@ def receive(platform, directory):
     return (output / asset).resolve()
 
 
-def release_plan(releases, hashes, revision, active, partial):
+def published_backends(releases):
+    return sorted((r for r in releases if r["prerelease"] and not r["draft"] and RELEASE.fullmatch(r["tag_name"])),
+                  key=lambda r: (r["published_at"], r["id"]), reverse=True)
+
+
+def release_plan(releases, hashes, revision):
     targets = registrations()
     if (not re.fullmatch("[a-f0-9]{40}", revision) or set(hashes) != {item["asset"] for item in targets.values()}
             or not all(re.fullmatch("[0-9a-f]{64}", value) for value in hashes.values())):
@@ -612,8 +617,8 @@ def release_plan(releases, hashes, revision, active, partial):
     if len({r["tag_name"] for r in owned}) != len(owned) or not all(r["prerelease"] for r in owned):
         raise ValueError("Conflicting backend release ownership")
     drafts = [r for r in owned if r["draft"]]
-    published = sorted((r for r in owned if not r["draft"]), key=lambda r: (r["published_at"], r["id"]), reverse=True)
-    if len(drafts) > 1 or len(published) > 3:
+    published = published_backends(owned)
+    if len(drafts) > 1:
         raise ValueError("Unexpected backend release inventory")
     for r in owned:
         names = set()
@@ -629,9 +634,10 @@ def release_plan(releases, hashes, revision, active, partial):
                 raise ValueError(f"Uncertified release asset: {name}")
         if not r["draft"] and not names:
             raise ValueError("Empty published backend release")
-    for r in published[:1] if partial else published:
-        if {a["name"]: a["digest"][7:] for a in r["assets"]} == hashes:
-            return "reuse", r["tag_name"], r, None
+    if not drafts and published:
+        current = published[0]
+        if {a["name"]: a["digest"][7:] for a in current["assets"]} == hashes:
+            return "reuse", current["tag_name"], current
     date = datetime.now(timezone.utc).strftime("%Y.%m.%d")
     prefix = "backend-prebuilts-" + date + "."
     tag = prefix + str(1 + max((int(r["tag_name"][len(prefix):]) for r in owned if r["tag_name"].startswith(prefix)), default=0))
@@ -641,12 +647,7 @@ def release_plan(releases, hashes, revision, active, partial):
                                                         for a in draft["assets"])):
             raise ValueError("Another producer owns the pending draft")
         tag = draft["tag_name"]
-    retire = None
-    if len(published) == 3:
-        retire = next((r for r in reversed(published[1:]) if r["tag_name"] not in active), None)
-        if not retire:
-            raise ValueError("The previous catalogs are pinned by active readers")
-    return "resume" if draft else "create", tag, draft, retire
+    return "resume" if draft else "create", tag, draft
 
 
 def verify_publication(item, plan_file, result_file, candidate, revision, releases):
@@ -727,27 +728,92 @@ def require_idle_readers():
             raise ValueError("An active run can still acquire the rollback release")
 
 
-def publish_release(releases, platforms, archives, revision, active, partial):
+# Store pending deletions on the published release so a retry can finish after either DELETE.
+RETIREMENT = re.compile(r"^<!-- backend-retirement ([1-9][0-9]*) (backend-prebuilts-\d{4}\.\d{2}\.\d{2}\.[1-9]\d*) ([a-f0-9]{40}) ([a-f0-9]{40}) -->$", re.M)
+
+
+def rotate_releases(current, previous, active):
+    resource = f"releases/{current['id']}"
+    # Separate host jobs can publish successive platform updates for one landing.
+    backup = next((r for r in previous if r["target_commitish"] != current["target_commitish"]),
+                  previous[0] if previous else None)
+    protected = {current["tag_name"]}
+    if backup:
+        protected.add(backup["tag_name"])
+        if not (backup["name"] or "").endswith(" (Backup)"):
+            catalog(backup)
+            repository_json(f"releases/{backup['id']}", method="PATCH", data={"name": (backup["name"] or backup["tag_name"]) + " (Backup)"})
+    body = current["body"] or ""
+    markers = {tag: (int(old_id), commit, obj) for old_id, tag, commit, obj in RETIREMENT.findall(body)}
+    obsolete = [r for r in previous if r["tag_name"] not in protected]
+    if not obsolete and not markers:
+        return
+    if protected.intersection(markers) or active.intersection({r["tag_name"] for r in obsolete} | markers.keys()):
+        raise ValueError("Cannot retire the current, backup or a pinned backend release")
+    require_idle_readers()
+    pending = body
+    for old in obsolete:
+        tag = old["tag_name"]
+        catalog(old)
+        ref = repository_json("git/ref/tags/" + tag)["object"]
+        frozen = (old["id"], old["target_commitish"], ref["sha"])
+        if tag in markers and markers[tag] != frozen:
+            raise ValueError("Backend retirement identity changed")
+        if tag not in markers:
+            markers[tag] = frozen
+            pending += f"\n\n<!-- backend-retirement {frozen[0]} {tag} {frozen[1]} {frozen[2]} -->"
+    if pending != body:
+        repository_json(resource, method="PATCH", data={"body": pending})
+    for tag, (old_id, commit, obj) in markers.items():
+        old = repository_json(f"releases/{old_id}", optional=True)
+        ref = repository_json("git/ref/tags/" + tag, optional=True)
+        if ref:
+            if (ref["object"]["type"], ref["object"]["sha"]) != ("tag", obj):
+                raise ValueError("The retiring tag changed")
+            annotated = repository_json("git/tags/" + obj)
+            if (annotated["tag"] != tag or annotated["object"]["type"] != "commit" or annotated["object"]["sha"] != commit
+                    or tag_catalog(annotated["message"])["revision"] != commit):
+                raise ValueError("Unexpected retiring tag object")
+        if old:
+            if not ref or old["tag_name"] != tag or old["target_commitish"] != commit:
+                raise ValueError("Release ownership changed before retirement")
+            catalog(old)
+            repository_json(f"releases/{old_id}", method="DELETE")
+        if ref:
+            repository_json("git/refs/tags/" + tag, method="DELETE")
+    repository_json(resource, method="PATCH", data={"body": RETIREMENT.sub("", pending).rstrip()})
+
+
+def retain_releases():
+    branch = os.environ["DEFAULT_BRANCH"]
+    if os.environ["GITHUB_REF"] != "refs/heads/" + branch or os.environ["GITHUB_EVENT_NAME"] not in ("push", "workflow_dispatch"):
+        raise ValueError("Backend retention requires a trusted default-branch event")
+    if repository_json("git/ref/heads/" + branch)["object"]["sha"] != os.environ["GITHUB_SHA"]:
+        print("A newer default-branch revision owns retention.")
+        return
+    previous = published_backends(repository_pages("releases"))
+    if previous:
+        catalog(previous[0])
+        rotate_releases(previous[0], previous[1:], set())
+
+
+def publish_release(releases, platforms, archives, revision, active):
     hashes = {p["asset"]: p["sha256"] for p in platforms.values()}
-    operation, tag, draft, retire = release_plan(releases, hashes, revision, active, partial)
+    operation, tag, draft = release_plan(releases, hashes, revision)
+    previous = published_backends(releases)
     if operation == "reuse":
         catalog(draft)
         print(f"Reused {tag}")
         return
+    # Recover an interrupted rotation before a later landing replaces its journal owner.
+    if previous and (RETIREMENT.search(previous[0]["body"] or "") or
+                     (len(previous) > 2 and previous[0]["target_commitish"] != revision)):
+        rotate_releases(previous[0], previous[1:], active)
     intent = "<!-- backend-assets " + " ".join(f"{name}={hashes[name]}" for name in sorted(hashes)) + " -->"
     if draft and "<!-- backend-assets " in (draft["body"] or "") and intent not in draft["body"]:
         raise ValueError("A different asset set owns the draft")
-    if retire:
-        require_idle_readers()
     if not draft:
         body = f"Certified backend platform archives for engine revision {revision}.\n\n{intent}"
-        if retire:
-            catalog(retire)
-            ref = repository_json("git/ref/tags/" + retire["tag_name"])["object"]
-            old = repository_json("git/tags/" + ref["sha"])
-            if ref["type"] != "tag" or old["object"]["sha"] != retire["target_commitish"]:
-                raise ValueError("Cannot freeze the retiring catalog identity")
-            body += f"\n\n<!-- backend-retirement {retire['id']} {retire['tag_name']} {retire['target_commitish']} {ref['sha']} -->"
         draft = repository_json("releases", method="POST", data={"tag_name": tag, "target_commitish": revision,
             "name": "Backend Prebuilts " + tag.removeprefix("backend-prebuilts-"), "draft": True, "prerelease": True, "body": body})
     def check_draft(value):
@@ -790,30 +856,6 @@ def publish_release(releases, platforms, archives, revision, active, partial):
         if annotated["object"]["sha"] != revision or not re.fullmatch("[a-f0-9]{40}", annotated["sha"]):
             raise ValueError("GitHub returned a different tag object")
         repository_json("git/refs", method="POST", data={"ref": "refs/tags/" + tag, "sha": annotated["sha"]})
-    marker = re.search(r"^<!-- backend-retirement ([1-9][0-9]*) (backend-prebuilts-\d{4}\.\d{2}\.\d{2}\.[1-9]\d*) ([a-f0-9]{40}) ([a-f0-9]{40}) -->$", ready["body"] or "", re.M)
-    if retire and (not marker or marker[1] != str(retire["id"]) or marker[2] != retire["tag_name"]):
-        raise ValueError("The draft does not own the expected retirement")
-    if marker:
-        old_id, old_tag, old_commit, old_object = marker.groups()
-        if (old_tag == tag or old_tag in active or any(r["tag_name"] == old_tag and str(r["id"]) != old_id for r in releases)):
-            raise ValueError("The retirement concerns a different or pinned release")
-        require_idle_readers()
-        old = repository_json("releases/" + old_id, optional=True)
-        ref = repository_json("git/ref/tags/" + old_tag, optional=True)
-        if ref:
-            if ref["object"]["type"] != "tag" or ref["object"]["sha"] != old_object:
-                raise ValueError("The retiring tag changed")
-            annotated = repository_json("git/tags/" + old_object)
-            if (annotated["tag"] != old_tag or annotated["object"]["type"] != "commit" or annotated["object"]["sha"] != old_commit
-                    or tag_catalog(annotated["message"])["revision"] != old_commit):
-                raise ValueError("Unexpected retiring tag object")
-        if old:
-            if not ref or old["tag_name"] != old_tag or old["target_commitish"] != old_commit:
-                raise ValueError("Release ownership changed before retirement")
-            catalog(old)
-            repository_json("releases/" + old_id, method="DELETE")
-        if ref:
-            repository_json("git/refs/tags/" + old_tag, method="DELETE")
     result = repository_json(resource, method="PATCH", data={"draft": False, "prerelease": True, "make_latest": "false"})
     if result["draft"] or not result["prerelease"] or result["tag_name"] != tag:
         raise ValueError("The backend release was not published as certified")
@@ -889,12 +931,12 @@ def publish(verify_only=False):
     if head != revision:
         print("A newer default-branch candidate owns promotion.")
         return
-    publish_release(releases, platforms, archives, revision, set(json.loads(os.environ["READER_TAGS"])), bool(missing))
+    publish_release(releases, platforms, archives, revision, set(json.loads(os.environ["READER_TAGS"])))
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("operation", choices=["resolve", "receive", "decide", "matrix", "publish"])
+    parser.add_argument("operation", choices=["resolve", "receive", "decide", "matrix", "publish", "retain"])
     parser.add_argument("--verify", action="store_true")
     parser.add_argument("--scope", action="store_true")
     parser.add_argument("--directory", type=Path)
@@ -902,7 +944,9 @@ if __name__ == "__main__":
     parser.add_argument("--prepare", action="store_true")
     parser.add_argument("--bind", action="store_true")
     args = parser.parse_args()
-    if args.operation == "resolve":
+    if args.operation == "retain":
+        retain_releases()
+    elif args.operation == "resolve":
         resolve()
     elif args.operation == "decide":
         decide()
