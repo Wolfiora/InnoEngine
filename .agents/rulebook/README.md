@@ -17,7 +17,7 @@ Tags describe the work: for example, `new-boundary`, `public-api`, `ownership`, 
 | C# names, layout, line breaks and idioms, with examples | [C# code style](csharp-style/README.md) |
 | Documentation, API, examples and content ownership | [Documentation](documentation.md), owned by InnoEngine.Docs |
 | Tests, compilation, completion and review | [Validation](validation.md) |
-| Commits, PRs and notifications | [Delivery](delivery.md) |
+| Branch names, commits, issues, PRs and notifications | [Delivery](delivery.md) |
 | Editor | [Projects](domains/editor/projects.md), [state](domains/editor/state.md) and [UI](domains/editor/ui.md) |
 | Identity, Missing and reload | [Identity and reload](domains/identity-reload.md) |
 | Scripting | [Scripting](domains/scripting.md) |

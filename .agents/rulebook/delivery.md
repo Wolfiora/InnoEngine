@@ -3,8 +3,9 @@ tags: [delivery, notification]
 ---
 # Delivery
 
-## 31. Commits, issues and pull requests
+## 31. Branches, commits, issues and pull requests
 
+- Name new work branches in English as `type/short-description`. Choose a lowercase type that describes the work (for example, `feat`, `fix`, `refactor` or `docs`) and write the description in lowercase kebab-case. Examples include `feat/extend-plugin-contracts` and `refactor/decouple-ui-engine`.
 - Write commit subjects, issue titles and pull request titles in English as `type(scope): description`. Name the affected area in the scope and describe the actual change. Write issue and pull request bodies in English.
 - Issues must distinguish reproduced defects from risks awaiting verification, and state the responsible owner, reproduction conditions, actual result, expected result and executable acceptance criteria. Search existing issues before submission to avoid duplicates.
 - Pull request bodies must explain the problem, final behavior and actual verification against the complete difference from the target branch, and identify checks that were not run. Search existing PRs before creation. Never describe partial acceptance as a passed complete matrix.

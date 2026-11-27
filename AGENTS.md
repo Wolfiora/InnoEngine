@@ -6,7 +6,7 @@ Architecture, responsibility, dependency direction, low coupling and resource ow
 
 1. Confirm the branch, workspace changes, owner, behavioral scope and finite acceptance. Protect other sessions. Adjacent repositories are read-only unless explicitly authorized; InnoEngine.Docs owns product documentation.
 2. Run `dotnet run --project tools/Inno.Tooling.Cli -- rules select --paths <repository-relative paths>` from the engine root. Absolute paths are also accepted. Add work tags with `--tags` or explicit rule files with `--rules`; each rule file declares its own paths and tags. Documentation rules require `--docs-root <explicit-checkout>`; the command never guesses or downloads their authority. Do not depend on a client discovering nested instructions.
-3. Read every listed rule file completely; never truncate or skip requirements. A rule file has a 16 KiB limit and root instructions an 8 KiB hard limit. Use `new-boundary` for new boundaries and `delivery` for delivery work.
+3. Read every listed rule file completely; never truncate or skip requirements. A rule file has a 16 KiB limit and root instructions an 8 KiB hard limit. Use `new-boundary` for new boundaries. Select `delivery` before naming a work branch and for other [delivery work](.agents/rulebook/delivery.md).
 4. When documentation is needed, select an explicit Docs snapshot. Build `docs index --docs-root <checkout>` prepares it; `docs search/read/symbol` query the published snapshot. Reuse loaded rules and documentation while their identities and scope remain unchanged. Refresh after relevant edits. Never guess sibling paths, silently compile during a query or require a Docs candidate for an ordinary engine task.
 
 ## Task workflows
