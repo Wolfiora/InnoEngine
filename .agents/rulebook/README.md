@@ -4,7 +4,7 @@ This directory owns requirements for changing the engine. Product design, mechan
 
 ## Read the rules for a change
 
-Run `pwsh tools/ci/Test-AgentRules.ps1 -Paths <repository-relative paths>` from the engine root. It lists the rule files that apply to those paths; read each listed file completely. Add `-Tags` for the kind of work and `-Rules` for a specific file. A rule ID is the file path under this directory without `.md`, for example `coding` or `csharp-style/03-naming`.
+Run `dotnet run --project tools/Inno.Tooling.Cli -- rules select --paths <repository-relative paths>` from the engine root. It lists the rule files that apply to those paths; read each listed file completely. Add `--tags` for the kind of work and `--rules` for a specific file. A rule ID is the file path under this directory without `.md`, for example `coding` or `csharp-style/03-naming`.
 
 Tags describe the work: for example, `new-boundary`, `public-api`, `ownership`, `serialization`, `reload`, `native`, `documentation`, `rules`, `skills`, `records` and `delivery`.
 
@@ -43,6 +43,6 @@ tags: [rendering]
 - `tags` lists the work tags that select the file.
 - Declare at least one of the two, each as a one-line list.
 - Keep one topic per file and every file within 16 KiB. Split a larger topic into a directory.
-- When routing changes, add a path that must select the file and one that must not to the [routing examples](../../tools/ci/Test-AgentRules.examples.json).
+- When routing changes, add a path that must select the file and one that must not to the [routing examples](../../tests/tools/Inno.Tooling.Architecture.Integration.Tests/fixtures/rule-selection.json).
 
-Run the script without arguments to check every rule file, the root instruction size and the routing examples.
+Run `rules select` without arguments to check every rule file and the root instruction size. Architecture integration tests verify the routing examples.

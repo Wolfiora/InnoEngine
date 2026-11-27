@@ -47,8 +47,7 @@ public sealed class ValidationDocumentationCompilationTests
                 + "<ItemGroup><PackageReference Include=\"Inno.ProofFixture\" Version=\"1.0.0\" /></ItemGroup>"
             )
         );
-        repository.Write("tools/ci/Test-AgentRules.ps1", "Write-Output 'Fixture instructions passed'\n");
-        repository.Write("tests/ci/Policy.Tests.ps1", "Write-Output 'Fixture compilation policy passed'\n");
+        repository.Write("AGENTS.md", "# Fixture instructions passed\n");
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare actual package and finite compilation policy");
         var docs = new ValidationDocumentationFixture(repository);
@@ -121,8 +120,8 @@ public sealed class ValidationDocumentationCompilationTests
                 // architecture policy is verified independently, not synthesized by this small fixture.
                 if (kind == "architecture")
                 {
-                    item["kind"] = "ci-contracts";
-                    item["projects"] = new JsonArray("tests/ci/Policy.Tests.ps1");
+                    item["kind"] = "instructions";
+                    item["projects"] = null;
                 }
                 selected.Add(item);
             }

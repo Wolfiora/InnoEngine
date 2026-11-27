@@ -3,10 +3,7 @@ description: Match the frozen SDK inputs against authenticated platform catalogs
 runs:
   using: composite
   steps:
-    - shell: pwsh
+    - shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
-      run: |
-        $plan = 'artifacts/validation/ci-plan/plan.json'
-        $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
-        $null = ./tools/ci/Resolve-BackendAcquisition.ps1 -PlanPath $plan -EntryAssembly $entry -OutputDirectory artifacts/backend-request
+      run: python -B .github/scripts/backend_artifacts.py resolve

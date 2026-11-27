@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Inno.Benchmark.Runner/Inno.Benchmark.Runner.csproj" />
+    <ProjectReference Include="../Inno.Benchmark.Services/Inno.Benchmark.Services.csproj" />
+    <ProjectReference Include="../../../src/content/assets/Inno.Assets/Inno.Assets.csproj" />
+    <ProjectReference Include="../../../src/content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" />
+  </ItemGroup>
+</Project>

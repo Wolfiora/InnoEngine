@@ -17,9 +17,9 @@ namespace Inno.Tooling.Validation;
 
 internal static class ValidationRunner
 {
-    internal const string C_BUILD_CACHE = "tools/ci/Invoke-BuildCacheChecks.ps1";
-    internal const string C_SUPPORT_PACK = "tools/ci/Test-SupportPackClosure.ps1";
-    internal const string C_TEST_EXECUTOR = "tools/ci/Invoke-IsolatedTests.ps1";
+    internal const string C_BUILD_CACHE = "tools/Inno.Tooling.Validation/ValidationBuildReuse.cs";
+    internal const string C_SUPPORT_PACK = "tools/Inno.Tooling.Validation/ValidationSupportPack.cs";
+    internal const string C_TEST_EXECUTOR = "tools/Inno.Tooling.Validation/ValidationTestExecution.cs";
 
     internal static async Task<ValidationEvidence> RunAsync(
         ValidationPlan plan,
@@ -49,6 +49,14 @@ internal static class ValidationRunner
         DateTimeOffset started = DateTimeOffset.UtcNow;
         string planIdentity = ValidationInputs.PlanIdentity(plan);
         Directory.CreateDirectory(directory);
+        if (documentationCatalog is not null)
+        {
+            AtomicFile.WriteAllBytes(
+                Path.Combine(directory, "documentation-catalog.json"),
+                JsonSerializer.SerializeToUtf8Bytes(documentationCatalog)
+            );
+        }
+
         await File.WriteAllTextAsync(
             Path.Combine(directory, "execution-plan.json"),
             JsonSerializer.Serialize(plan, new JsonSerializerOptions { WriteIndented = true }),
@@ -165,34 +173,15 @@ internal static class ValidationRunner
                             }
                             break;
                         case "hot-builds":
-                            await ShellAsync(C_BUILD_CACHE, [
-                                "-Dotnet",
-                                plan.dotnet,
-                                "-PlanPath",
-                                Path.Combine(directory, "execution-plan.json"),
-                                "-Context",
-                                contextID,
-                                "-ResultsDirectory",
-                                Path.Combine(directory, "hot-builds")
-                            ], "hot-builds.log").ConfigureAwait(false);
+                            await ValidationBuildReuse.CheckAsync(
+                                plan,
+                                plan.contexts[contextID],
+                                Path.Combine(directory, "hot-builds"),
+                                cancellationToken
+                            ).ConfigureAwait(false);
                             break;
                         case "instructions":
-                            await ShellAsync(ValidationCiContracts.C_RULE_LOADER, [], "instructions.log").ConfigureAwait(false);
-                            break;
-                        case "ci-contracts":
-                            string[] contracts = check.projects ?? [];
-                            if (contracts.Length == 0)
-                            {
-                                throw new InvalidDataException("Required CI contract discovery is empty.");
-                            }
-                            foreach (string contract in contracts)
-                            {
-                                await ShellAsync(
-                                    contract,
-                                    [],
-                                    Path.GetFileNameWithoutExtension(contract) + ".log"
-                                ).ConfigureAwait(false);
-                            }
+                            _ = RepositoryRuleSelection.Execute(["--engine-root", plan.root]);
                             break;
                         case "restore-aot":
                             {
@@ -494,21 +483,35 @@ internal static class ValidationRunner
                                 Directory.CreateDirectory(productDirectory);
                                 // Each product step starts the Editor on its own empty project inside the results.
                                 string project = Path.Combine(productDirectory, "Smoke");
-                                await ShellAsync(
-                                    "tests/product/Invoke-EditorSmoke.ps1",
+                                const string C_JOURNEY = "tests/product/Inno.Testing.EditorJourney/Inno.Testing.EditorJourney.csproj";
+                                string[] journey =
+                                [
+                                    "run",
+                                    "--project",
+                                    C_JOURNEY,
+                                    "--artifacts-path",
+                                    Path.Combine(plan.artifacts, "editor-journey"),
+                                    "--"
+                                ];
+                                await ValidationProcess.RunAsync(
+                                    plan.dotnet,
                                     [
-                                        "-EditorAssembly",
+                                        ..journey,
+                                        "smoke",
+                                        "--editor",
                                         assembly,
-                                        "-ProjectDirectory",
+                                        "--output",
                                         project,
-                                        "-BackendPattern",
+                                        "--backend-pattern",
                                         backendPattern,
-                                        "-Dotnet",
+                                        "--dotnet",
                                         plan.dotnet,
-                                        "-HiddenWindow"
+                                        "--window-visible",
+                                        "false"
                                     ],
-                                    check.id
-                                    + "-smoke.log"
+                                    plan.root,
+                                    Path.Combine(directory, check.id + "-smoke.log"),
+                                    cancellationToken: cancellationToken
                                 ).ConfigureAwait(false);
                                 string[] renderers = Directory.GetFiles(Path.Combine(project, "Logs"), "*.log").SelectMany(path =>
                                     Regex
@@ -520,24 +523,26 @@ internal static class ValidationRunner
                                 }
                                 foreach (string scenario in check.scenarios ?? [])
                                 {
-                                    await ShellAsync(
-                                        "tests/product/Invoke-EditorUiProductJourney.ps1",
+                                    await ValidationProcess.RunAsync(
+                                        plan.dotnet,
                                         [
-                                            "-EditorAssembly",
-                                            assembly,
-                                            "-ResultsDirectory",
-                                            Path.Combine(productDirectory, scenario),
-                                            "-Dotnet",
-                                            plan.dotnet,
-                                            "-GraphicsApi",
-                                            renderers[0],
-                                            "-Scenario",
+                                            ..journey,
                                             scenario,
+                                            "--editor",
+                                            assembly,
+                                            "--output",
+                                            Path.Combine(productDirectory, scenario),
+                                            "--dotnet",
+                                            plan.dotnet,
+                                            "--graphics-api",
+                                            renderers[0],
                                             ..(plan.nativeDependencies is null
                                                ? Array.Empty<string>()
-                                               : ["-NativeDependencies", Path.Combine(plan.root, plan.nativeDependencies)])
+                                               : ["--native-dependencies", Path.Combine(plan.root, plan.nativeDependencies)])
                                         ],
-                                        check.id + "-" + scenario + ".log"
+                                        plan.root,
+                                        Path.Combine(directory, check.id + "-" + scenario + ".log"),
+                                        cancellationToken: cancellationToken
                                     ).ConfigureAwait(false);
                                 }
                             }
@@ -577,11 +582,7 @@ internal static class ValidationRunner
                                     Path.Combine(directory, "support-pack.log"),
                                     cancellationToken: cancellationToken
                                 ).ConfigureAwait(false);
-                                await ShellAsync(
-                                    C_SUPPORT_PACK,
-                                    ["-Archive", Path.Combine(deliverables, "PlayerSupportPack.zip")],
-                                    "support-pack-closure.log"
-                                ).ConfigureAwait(false);
+                                ValidationSupportPack.Check(Path.Combine(deliverables, "PlayerSupportPack.zip"));
                             }
                             break;
                         case "build":
@@ -684,42 +685,40 @@ internal static class ValidationRunner
                                 string solution = WriteUnion(contextID, "Tests", tests);
                                 string resultsDirectory = Path.Combine(directory, contextID + "-trx");
                                 Dictionary<string, string> properties = plan.contexts[contextID].properties;
-                                string[] productArguments = contextID == "native"
-                                                            ? [
-                                                                "-Target",
-                                                                properties["InnoNativeTarget"],
-                                                                "-ToolTarget",
-                                                                properties["InnoToolTarget"],
-                                                                "-ProductProperties",
-                                                                properties["InnoProductBuildProperties"]
-                                                            ]
-                                                            : [];
+                                string TargetPath(string project)
+                                    => plan.contexts[contextID].sdkGraph.EnumerateArray()
+                                        .Single(
+                                            snapshot => (
+                                                Path.GetRelativePath(plan.root, snapshot.GetProperty("Path").GetString()!)
+                                                    .Replace('\\', '/') == project
+                                            )
+                                        )
+                                        .GetProperty("Properties")
+                                        .GetProperty("TargetPath")
+                                        .GetString()!;
+                                Dictionary<string, string> testAssemblies = tests.ToDictionary(
+                                    project => project,
+                                    TargetPath,
+                                    StringComparer.Ordinal
+                                );
                                 try
                                 {
                                     long batchStart = Stopwatch.GetTimestamp();
                                     try
                                     {
-                                        await ShellAsync(
-                                            C_TEST_EXECUTOR,
-                                            [
-                                                "-Solution",
-                                                solution,
-                                                "-Configuration",
-                                                properties["Configuration"],
-                                                "-ArtifactsPath",
-                                                properties["ArtifactsPath"],
-                                                "-Dotnet",
-                                                plan.dotnet,
-                                                "-SdkSnapshot",
-                                                graphPath,
-                                                "-ResultsDirectory",
-                                                resultsDirectory,
-                                                ..productArguments,
-                                                ..plan.nativeDependencies is null
-                                                  ? Array.Empty<string>()
-                                                  : ["-NativeDependencies", Path.Combine(plan.root, plan.nativeDependencies)]
-                                            ],
-                                            contextID + "-tests.log"
+                                        await ValidationTestExecution.RunAsync(
+                                            plan.root,
+                                            plan.dotnet,
+                                            solution,
+                                            resultsDirectory,
+                                            Path.Combine(directory, contextID + "-tests.log"),
+                                            testAssemblies,
+                                            TargetPath(
+                                                "tests/support/Inno.Testing.Discovery.TestLogger/Inno.Testing.Discovery.TestLogger.csproj"
+                                            ),
+                                            properties,
+                                            plan.nativeDependencies is null ? null : Path.Combine(plan.root, plan.nativeDependencies),
+                                            cancellationToken
                                         ).ConfigureAwait(false);
                                     }
                                     catch (Exception failure) when (failure is not OperationCanceledException)
@@ -741,19 +740,7 @@ internal static class ValidationRunner
                                         batchSeconds[contextID] = Stopwatch.GetElapsedTime(batchStart).TotalSeconds;
                                     }
                                     foreach (KeyValuePair<string, (bool passed, string detail, int cases, double seconds)> evidence
-                                        in ValidationTestEvidence.Read(
-                                            plan.root,
-                                            tests.ToDictionary(static project => project, project =>
-                                                plan.contexts[contextID].sdkGraph.EnumerateArray()
-                                                    .Single(snapshot => (
-                                                        Path.GetRelativePath(plan.root, snapshot.GetProperty("Path").GetString()!)
-                                                            .Replace('\\', '/') == project
-                                                    ))
-                                                    .GetProperty("Properties")
-                                                    .GetProperty("TargetPath")
-                                                    .GetString()!, StringComparer.Ordinal),
-                                            resultsDirectory
-                                        )
+                                        in ValidationTestEvidence.Read(plan.root, testAssemblies, resultsDirectory)
                                     ) {
                                         testDetails.Add(evidence.Key, evidence.Value);
                                     }
@@ -917,7 +904,7 @@ internal static class ValidationRunner
             if (!environmentStable)
             {
                 failures.Add(
-                    new ValidationRunFailure("environment-stability", "SDK, runtime, shell or imports changed during validation.")
+                    new ValidationRunFailure("environment-stability", "SDK, runtime or imports changed during validation.")
                 );
                 await SaveAsync().ConfigureAwait(false);
             }
@@ -934,18 +921,6 @@ internal static class ValidationRunner
                 ValidationWorkspace.RecordCompleted(plan, cancellationToken);
             }
         }
-
-        Task ShellAsync(
-            string script,
-            string[] arguments,
-            string log
-        ) => ValidationProcess.RunAsync(
-            "pwsh",
-            ["-NoProfile", "-File", Path.Combine(plan.root, script), ..arguments],
-            plan.root,
-            Path.Combine(directory, log),
-            cancellationToken: cancellationToken
-        );
 
         async Task<string> ResolveCompilationGraphAsync(string context)
         {

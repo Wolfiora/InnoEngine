@@ -36,13 +36,13 @@ internal static class ManagedValidationFixture
         string source = TestRepository.GetRoot(typeof(ManagedValidationFixture).Assembly);
         foreach (string path in new[]
         {
-            "tools/ci/Invoke-IsolatedTests.ps1",
+            "tools/Inno.Tooling.Validation/ValidationTestExecution.cs",
             C_LOGGER,
             "tests/support/Inno.Testing.Discovery.TestLogger/DiscoveryLogger.cs"
         }) {
             repository.Write(path, File.ReadAllText(Path.Combine(source, path)));
         }
-        repository.Write("tools/ci/Test-AgentRules.ps1", "Write-Output 'Fixture policy passed'\n");
+        repository.Write("AGENTS.md", "# Fixture policy passed\n");
         repository.Write("README.md", "# SDK fixture\n");
         XElement rules = XElement.Load(Path.Combine(source, "Directory.Build.targets"));
         string[] compilationTargets = ["ApplyInnoCleanReferencePolicy", "UseInnoVerifiedProjectOutputs"];

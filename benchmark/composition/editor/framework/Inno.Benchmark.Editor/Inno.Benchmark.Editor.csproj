@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../../../../Benchmark.props" />
+
+  <PropertyGroup>
+    <InnoAssemblyDomain>InnoInternal</InnoAssemblyDomain>
+    <InnoAssemblyScope>Editor</InnoAssemblyScope>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../support/Inno.Benchmark.Services/Inno.Benchmark.Services.csproj" />
+    <ProjectReference Include="../../../../../src/composition/editor/framework/Inno.Editor.Core/Inno.Editor.Core.csproj" />
+    <ProjectReference Include="../../../../../src/composition/editor/framework/Inno.Editor.Graph/Inno.Editor.Graph.csproj" />
+    <ProjectReference Include="../../../../../src/composition/editor/framework/Inno.Editor.Inspection/Inno.Editor.Inspection.csproj" />
+    <ProjectReference Include="../../../../../src/composition/editor/framework/Inno.Editor.Interactions/Inno.Editor.Interactions.csproj" />
+    <ProjectReference Include="../../../../../src/composition/editor/contracts/Inno.Editor.Annotations/Inno.Editor.Annotations.csproj" />
+    <ProjectReference Include="../../../../../src/foundation/core/Inno.Core.Events/Inno.Core.Events.csproj" />
+    <ProjectReference Include="../../../../../src/foundation/core/Inno.Core.Graphs/Inno.Core.Graphs.csproj" />
+    <ProjectReference Include="../../../../../src/foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" />
+    <ProjectReference Include="../../../../../src/foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
+    <ProjectReference Include="../../../../../src/foundation/core/Inno.Core.Logging/Inno.Core.Logging.csproj" />
+  </ItemGroup>
+</Project>

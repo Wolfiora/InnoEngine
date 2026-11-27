@@ -117,6 +117,7 @@ internal static partial class ArchitectureRules
                 bool test = RepositorySourceInventory.IsTestPath(Relative(repositoryRoot, project));
                 if (document.Descendants("OutputType").Any(static value => value.Value == "Exe")
                     && !test
+                    && Relative(repositoryRoot, project) != "tools/Inno.Tooling.Cli/Inno.Tooling.Cli.csproj"
                     && !executables.Contains(Path.GetFileNameWithoutExtension(project))
                 ) {
                     failures.Add(

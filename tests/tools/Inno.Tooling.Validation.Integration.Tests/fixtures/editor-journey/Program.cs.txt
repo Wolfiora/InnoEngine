@@ -1,0 +1,32 @@
+string project = args[0];
+string mode = Environment.GetEnvironmentVariable("INNO_JOURNEY_PROTOCOL_CASE")!;
+string scenario = Environment.GetEnvironmentVariable("INNO_JOURNEY_PROTOCOL_SCENARIO")!;
+string evidence = Path.Combine(project, "Library", "Acceptance");
+Directory.CreateDirectory(evidence);
+Directory.CreateDirectory(Path.Combine(project, "Logs"));
+File.WriteAllText(Path.Combine(project, "Logs", "EditorBoot.log"), mode == "missing-retirement" ? "Starting" :
+    mode == "teardown-failure" ? "Dispose end.\nTeardown failure" : "Dispose end.");
+if (mode == "timeout") { Thread.Sleep(Timeout.Infinite); return 0; }
+if (mode == "extension-failure")
+{
+    File.WriteAllText(Path.Combine(evidence, "workflow-failure.txt"), "Original source failure");
+    Thread.Sleep(Timeout.Infinite);
+}
+if (mode != "missing-evidence")
+{
+    if (scenario == "Workflows")
+        File.WriteAllLines(Path.Combine(evidence, "workflow-journey.tsv"),
+            Enumerable.Range(0, mode == "missing-stage" ? 7 : 8).Select(index => "Verified stage " + index));
+    else
+    {
+        File.WriteAllLines(Path.Combine(evidence, "panel-lifecycle.tsv"),
+            new[] { "panel\tcompleted-open-close-cycles", "protocol\tfixture" }.Concat(
+                Enumerable.Range(0, 8).Select(index => $"panel-{index}\t{(mode == "missing-cycle" && index == 0 ? 0 : 1)}")));
+    }
+}
+if (mode == "wrong-notification")
+{
+    File.WriteAllText(Path.Combine(evidence, "journey-completed.txt"), "Lifecycle");
+    Thread.Sleep(30000);
+}
+return mode == "failed-process" ? 3 : mode == "canceled-process" ? 2 : 0;

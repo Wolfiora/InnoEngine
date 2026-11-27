@@ -1,5 +1,5 @@
 ---
-paths: ["tests/**", "**/tests/**", "tools/ci/**", "tools/Inno.Tooling.Validation/**", ".github/workflows/engine-ci.yml", ".github/workflows/engine-platform.yml", ".github/workflows/backend-prebuilts.yml", ".github/actions/**", "AGENTS.md", "CONTRIBUTING.md", ".agents/**"]
+paths: ["tests/**", "**/tests/**", ".github/scripts/**", "tools/Inno.Tooling.Validation/**", ".github/workflows/engine-ci.yml", ".github/workflows/engine-platform.yml", ".github/workflows/backend-prebuilts.yml", ".github/actions/**", "AGENTS.md", "CONTRIBUTING.md", ".agents/**"]
 tags: [tests, compilation, completion, review, new-boundary, public-api, ownership, delivery, rules, skills, records]
 ---
 # Validation

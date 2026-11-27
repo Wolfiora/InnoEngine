@@ -17,35 +17,25 @@ runs:
         retention-days: 30
     - name: Execute the frozen shards
       id: workers
-      shell: pwsh
+      shell: bash
       env:
         VALIDATION_PLATFORM: ${{ inputs.platform }}
         GH_TOKEN: ${{ github.token }}
-      run: |
-        ./tools/ci/Invoke-ValidationWorkers.ps1 -Platform $env:VALIDATION_PLATFORM -ExpectedCommit $env:GITHUB_SHA `
-        -WorkerDirectory (Join-Path $env:RUNNER_TEMP 'inno-shards') -Attempt ([int]$env:GITHUB_RUN_ATTEMPT)
+      run: python -B .github/scripts/validation.py run
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
       with:
         name: validation-joined-${{ inputs.platform }}-attempt-${{ github.run_attempt }}
         path: |
           artifacts/validation/host-certification/results.json
           artifacts/validation/host-certification/receipt.json
+          artifacts/validation/host-certification/*documentation*.json
         if-no-files-found: error
         retention-days: 30
     - name: Retain reusable backend test results for this execution environment
       id: backend-tests
       if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-      shell: pwsh
-      run: |
-        $plan = Get-Content artifacts/validation/ci-plan/plan.json -Raw | ConvertFrom-Json -AsHashtable -Depth 100
-        $ids = @($plan.checks | Where-Object { $_.kind -ceq 'test' -and $_.owner.StartsWith('tests/backends/') -and $_.reusable -and !$_.exclusion } | ForEach-Object id)
-        if (!$ids.Count) { return }
-        $joined = Get-Content artifacts/validation/host-certification/results.json -Raw | ConvertFrom-Json -AsHashtable -Depth 40
-        $tests = @($joined.results | Where-Object { $_.id -cin $ids -and $_.status -cin @('Passed','Reused') })
-        if ($joined.version -ne 2 -or $joined.failures -isnot [array] -or $joined.failures.Count -or !$joined.completed -or $tests.Count -ne $ids.Count -or $joined.environment -cne $plan.environment) { throw 'Backend test certification is incomplete.' }
-        $proof = @{version=$joined.version;commit=$plan.commit;environment=$plan.environment;hostTarget=$plan.backendHost;attempt=[int]$env:GITHUB_RUN_ATTEMPT;tests=$tests}
-        [IO.File]::WriteAllText([IO.Path]::GetFullPath('artifacts/validation/backend-tests.json'), (ConvertTo-Json $proof -Depth 25 -Compress))
-        "name=backend-tests-$($plan.backendHost)-$($plan.environment)" >> $env:GITHUB_OUTPUT
+      shell: bash
+      run: python -B .github/scripts/validation.py run --backend-tests
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
       if: steps.backend-tests.outputs.name
       with:

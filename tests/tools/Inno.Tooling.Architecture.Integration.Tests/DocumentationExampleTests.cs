@@ -631,46 +631,62 @@ public sealed class DocumentationExampleTests : IDisposable
         DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
         Write("receipt/documentation-catalog.json", JsonSerializer.Serialize(catalog));
         File.Copy(reportPath, Path.Combine(m_root, "receipt/managed-documentation-examples.json"), overwrite: true);
-        Write("receipt/check.ps1", """
-            param([string]$Repository, [string]$Page)
-            $ErrorActionPreference = 'Stop'
-            $catalog = Get-Content "$PSScriptRoot/documentation-catalog.json" -Raw | ConvertFrom-Json
-            $hash = 'a' * 64
-            $owner = 'src/Inno.Probe/Inno.Probe.csproj'
-            $plan = @{ environment = $hash; checks = @(@{ id = 'documentation-examples:managed'; kind = 'documentation-examples'; context = 'managed'
-                exclusion = $null; projects = @($owner); documentation = @{ pages = @($Page); configuration = 'Debug'; target = $null } }) }
-            $evidence = @{ results = @(@{ id = 'documentation-examples:managed'; status = 'Passed'; documentationInputs = @(@{
-                project = $owner; owners = @($owner); sourceIdentity = $hash; environment = $hash; configuration = 'Debug'; target = $null
-                packages = @{}; sources = @{ $owner = (Get-FileHash "$PSScriptRoot/../$owner" -Algorithm SHA256).Hash.ToLowerInvariant() } }) }) }
-            $context = @{ snapshot = $catalog.snapshot; contentIdentity = $catalog.contentIdentity; sourceTree = $catalog.sourceTree }
-            $receipt = @(& "$Repository/tools/ci/Get-DocumentationExampleReceipt.ps1" -Plan $plan -Evidence $evidence -Context $context -Directory $PSScriptRoot)
-            if ($receipt.Count -ne 1 -or $receipt[0].pages.Count -ne 1 -or $receipt[0].pages[0].page -cne $Page) {
-                throw 'The real compiler report lost its selected example during CI reconciliation.'
-            }
-            "Reconciled $Page against the actual example compiler report."
-            """);
-        var start = new ProcessStartInfo("pwsh")
+        string directory = Path.Combine(m_root, "receipt");
+        var hash = new string('a', 64);
+        const string C_OWNER = "src/Inno.Probe/Inno.Probe.csproj";
+        const string C_ID = "documentation-examples:managed";
+        var context = new { catalog.sourceTree, catalog.snapshot, catalog.contentIdentity };
+        var check = new
         {
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
+            id = C_ID,
+            kind = "documentation-examples",
+            context = "managed",
+            projects = new[] { C_OWNER },
+            documentation = new { pages = new[] { pageID }, configuration = "Debug", target = (string?)null }
         };
-        foreach (string argument in new[]
+        var policy = new { id = "documentation", kind = "documentation", documentation = context };
+        Write(
+            "receipt/plan.json",
+            JsonSerializer.Serialize(new { environment = hash, documentation = context, checks = new object[] { check, policy } })
+        );
+        using FileStream owner = File.OpenRead(Path.Combine(m_root, C_OWNER));
+        var proof = new
         {
-            "-NoProfile",
-            "-File",
-            Path.Combine(m_root, "receipt/check.ps1"),
-            TestRepository.GetRoot(typeof(DocumentationExampleTests).Assembly),
-            pageID
-        }) {
-            start.ArgumentList.Add(argument);
-        }
-        using Process process = Process.Start(start)!;
-        Task<string> stdout = process.StandardOutput.ReadToEndAsync();
-        Task<string> stderr = process.StandardError.ReadToEndAsync();
-        await process.WaitForExitAsync();
-        Assert.True(process.ExitCode == 0, await stdout + await stderr);
+            project = C_OWNER,
+            owners = new[]
+            {
+                C_OWNER
+            },
+            sourceIdentity = hash,
+            environment = hash,
+            configuration = "Debug",
+            target = (string?)null,
+            packages = new Dictionary<string, string>(),
+            sources = new Dictionary<string, string>
+            {
+                [C_OWNER] = Convert.ToHexStringLower(SHA256.HashData(owner))
+            }
+        };
+        Write(
+            "receipt/results.json",
+            JsonSerializer.Serialize(
+                new { results = new[] { new { id = C_ID, status = "Passed", documentationInputs = new[] { proof } } } }
+            )
+        );
+        string receipt = Path.Combine(directory, "receipt.json");
+        Assert.Equal(
+            0,
+            await DocumentationReferences.ExecuteAsync([
+                "certify",
+                Path.Combine(directory, "plan.json"),
+                Path.Combine(directory, "results.json"),
+                directory,
+                receipt
+            ], CancellationToken.None)
+        );
+        using JsonDocument certificate = JsonDocument.Parse(File.ReadAllBytes(receipt));
+        JsonElement example = Assert.Single(certificate.RootElement.GetProperty("sourceExamples").EnumerateArray());
+        Assert.Equal(pageID, Assert.Single(example.GetProperty("pages").EnumerateArray()).GetProperty("page").GetString());
     }
 
     private string EmitReference(

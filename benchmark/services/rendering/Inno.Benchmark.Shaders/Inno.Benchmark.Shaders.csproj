@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../../../Benchmark.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="../../../support/Inno.Benchmark.Services/Inno.Benchmark.Services.csproj" />
+    <ProjectReference Include="../../../../src/services/rendering/Inno.Rendering/Inno.Rendering.csproj" />
+    <ProjectReference Include="../../../../src/services/rendering/Inno.Rendering.Shaders/Inno.Rendering.Shaders.csproj" />
+    <ProjectReference Include="../../../../src/services/rendering/Inno.Rendering.Assets.Authoring/Inno.Rendering.Assets.Authoring.csproj" />
+    <ProjectReference Include="../../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Tools/Inno.Build.Toolchains.Bgfx.Tools.csproj" />
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Graphs/Inno.Core.Graphs.csproj" />
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
+    <ProjectReference Include="../fixtures/Inno.Benchmark.Rendering.Fixtures/Inno.Benchmark.Rendering.Fixtures.csproj" />
+  </ItemGroup>
+</Project>

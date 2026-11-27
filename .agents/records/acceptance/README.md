@@ -10,6 +10,7 @@ Start from [current acceptance](current.md). Data files, probes and attachment d
 
 - [CI/CD test ownership](cicd-test-migration.md) and [CI/CD performance](cicd-performance.md): test ownership, hosted certification and matched latency measurements.
 - [Source certificate normalization](SOURCE_CERTIFICATE_NORMALIZATION_2026_11_13.md): real aggregate memory failure, shared input tables, exact input preservation and bounded imports.
+- [Benchmark domain coverage](BENCHMARK_DOMAIN_COVERAGE_2026_11_22.md): asset, content pack, shader, plugin scan, reload, editor and deployment benchmarks with Linux-only evidence and unavailable native checks.
 - [Full matrix and actual draft release](FULL_MATRIX_AND_DRAFT_RELEASE_2026_11_13.md): both extended platform jobs, ten warm samples, 1,000-cycle product journeys, exact-artifact draft upload and protected cleanup.
 - [Script example receipt integration](CI_43191512147.md): 334 successful macOS checks followed by a reproduced report-format failure, real compiler/receipt regression and strict surface identities.
 - [Documentation input compatibility](DOCUMENTATION_INPUT_COMPATIBILITY_2026_11_12.md): per-owner source/example provenance, authenticated baseline import, precise compatibility rejection and current query observations.

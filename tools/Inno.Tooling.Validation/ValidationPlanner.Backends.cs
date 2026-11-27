@@ -289,6 +289,7 @@ internal static partial class ValidationPlanner
             }
         }
 
+        List<(string product, string fingerprint)> aggregates = [];
         if (selectionBytes is not null)
         {
             using JsonDocument dependencies = JsonDocument.Parse(selectionBytes);
@@ -307,6 +308,10 @@ internal static partial class ValidationPlanner
                         .ToHashSet(StringComparer.Ordinal);
                 if (product.target == target && string.Equals(product.configuration, configuration, StringComparison.OrdinalIgnoreCase))
                 {
+                    if (family == "aggregates")
+                    {
+                        aggregates.Add((product.product, asset.GetProperty("fingerprint").GetString()!));
+                    }
                     consumers.UnionWith(
                         family == "assets"
                         ? new[] { asset.GetProperty("nativeProject").GetString()!, asset.GetProperty("toolchainProject").GetString()! }
@@ -362,8 +367,30 @@ internal static partial class ValidationPlanner
         }
 
         string[] submodules = plan.inputSets["native-sources"];
+        Dictionary<string, string[]> references = owners.ToDictionary(
+            static pair => pair.Key,
+            pair => pair.Value.Where(owners.ContainsKey).ToArray(),
+            StringComparer.Ordinal
+        );
+        // The Support Pack passes its aggregate fingerprint to the compiler for the entire product graph.
+        ILookup<string, string> variants = aggregates.ToLookup(
+            static item => item.product,
+            static item => "aggregate:" + item.product + "/" + item.fingerprint
+        );
+        foreach (JsonElement snapshot in graph.sdkGraph.EnumerateArray())
+        {
+            JsonElement entry = snapshot.GetProperty("Properties");
+            if (entry.GetProperty("InnoProductTarget").GetString() == target
+                && entry.GetProperty("InnoProductId").GetString() is { Length: > 0 } product && variants.Contains(product)
+            ) {
+                string productProject = Path.GetRelativePath(plan.root, snapshot.GetProperty("Path").GetString()!).Replace('\\', '/');
+                foreach (string backend in Closure(productProject).Where(IsBackend))
+                {
+                    properties[backend].UnionWith(variants[product]);
+                }
+            }
+        }
         var direct = new Dictionary<string, string>(StringComparer.Ordinal);
-        var references = new Dictionary<string, string[]>(StringComparer.Ordinal);
         foreach (KeyValuePair<string, HashSet<string>> pair in owners)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -385,7 +412,6 @@ internal static partial class ValidationPlanner
                 current["@" + property] = string.Empty;
             }
             direct[pair.Key] = ValidationInputs.Identity(current);
-            references[pair.Key] = pair.Value.Where(owners.ContainsKey).ToArray();
         }
         var identities = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (string project in owners.Keys.Where(IsBackend).Order(StringComparer.Ordinal))
@@ -441,9 +467,9 @@ internal static partial class ValidationPlanner
                 proofInputs[project] = direct[project];
             }
             foreach (KeyValuePair<string, string> input in plan.inputs.Where(static pair => (
-                pair.Key is "tools/ci/Build-BackendPrebuilt.ps1" or "tools/ci/New-BackendPrebuiltPackage.ps1"
-                or "tools/ci/Initialize-BackendProduction.ps1" or "tools/ci/Prepare-BackendNativeInputs.ps1"
-                or ".github/workflows/backend-prebuilts.yml"
+                pair.Key is "tools/Inno.Tooling.Validation/BackendProductBuild.cs" or "tools/Inno.Tooling.Validation/BackendPackageInventory.cs"
+                or "build/cli/Inno.Build.Cli/Commands/NativePlatformInputs.cs"
+                or ".github/workflows/backend-prebuilts.yml" or ".github/scripts/backend_artifacts.py"
             ))) {
                 proofInputs[input.Key] = input.Value;
             }

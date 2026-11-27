@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../../../Benchmark.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../src/services/input/Inno.Input/Inno.Input.csproj" />
+    <ProjectReference Include="../../../../src/adapters/input/Inno.Adapter.Input/Inno.Adapter.Input.csproj" />
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Events/Inno.Core.Events.csproj" />
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" />
+  </ItemGroup>
+</Project>

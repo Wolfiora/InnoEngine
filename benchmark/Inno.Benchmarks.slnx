@@ -1,0 +1,56 @@
+<Solution>
+  <Folder Name="/backends/Bgfx/build/">
+    <Project Path="backends/Bgfx/build/Inno.Benchmark.Bgfx.Shaderc/Inno.Benchmark.Bgfx.Shaderc.csproj" />
+  </Folder>
+  <Folder Name="/backends/MiniAudio/runtime/">
+    <Project Path="backends/MiniAudio/runtime/Inno.Benchmark.MiniAudio/Inno.Benchmark.MiniAudio.csproj" />
+  </Folder>
+  <Folder Name="/composition/editor/features/">
+    <Project Path="composition/editor/features/Inno.Benchmark.Editor.Search/Inno.Benchmark.Editor.Search.csproj" />
+  </Folder>
+  <Folder Name="/composition/editor/framework/">
+    <Project Path="composition/editor/framework/Inno.Benchmark.Editor/Inno.Benchmark.Editor.csproj" />
+  </Folder>
+  <Folder Name="/content/assets/">
+    <Project Path="content/assets/Inno.Benchmark.Assets/Inno.Benchmark.Assets.csproj" />
+  </Folder>
+  <Folder Name="/content/deployment/">
+    <Project Path="content/deployment/Inno.Benchmark.Content/Inno.Benchmark.Content.csproj" />
+  </Folder>
+  <Folder Name="/content/scene/">
+    <Project Path="content/scene/Inno.Benchmark.Scene/Inno.Benchmark.Scene.csproj" />
+  </Folder>
+  <Folder Name="/foundation/core/">
+    <Project Path="foundation/core/Inno.Benchmark.Core.Coroutines/Inno.Benchmark.Core.Coroutines.csproj" />
+    <Project Path="foundation/core/Inno.Benchmark.Core.Events/Inno.Benchmark.Core.Events.csproj" />
+    <Project Path="foundation/core/Inno.Benchmark.Core.Jobs/Inno.Benchmark.Core.Jobs.csproj" />
+  </Folder>
+  <Folder Name="/foundation/extensibility/">
+    <Project Path="foundation/extensibility/Inno.Benchmark.Reload/Inno.Benchmark.Reload.csproj" />
+  </Folder>
+  <Folder Name="/product/">
+    <Project Path="product/Inno.Benchmark.Product/Inno.Benchmark.Product.csproj" />
+  </Folder>
+  <Folder Name="/runtime/engine/">
+    <Project Path="runtime/engine/Inno.Benchmark.Runtime/Inno.Benchmark.Runtime.csproj" />
+  </Folder>
+  <Folder Name="/runtime/plugins/">
+    <Project Path="runtime/plugins/Inno.Benchmark.Plugins/Inno.Benchmark.Plugins.csproj" />
+  </Folder>
+  <Folder Name="/services/input/">
+    <Project Path="services/input/Inno.Benchmark.Input/Inno.Benchmark.Input.csproj" />
+  </Folder>
+  <Folder Name="/services/rendering/">
+    <Project Path="services/rendering/Inno.Benchmark.Rendering/Inno.Benchmark.Rendering.csproj" />
+    <Project Path="services/rendering/Inno.Benchmark.Shaders/Inno.Benchmark.Shaders.csproj" />
+  </Folder>
+  <Folder Name="/services/rendering/fixtures/">
+    <Project Path="services/rendering/fixtures/Inno.Benchmark.Rendering.Fixtures/Inno.Benchmark.Rendering.Fixtures.csproj" />
+  </Folder>
+  <Folder Name="/support/">
+    <Project Path="support/Inno.Benchmark.AssetFixtures/Inno.Benchmark.AssetFixtures.csproj" />
+    <Project Path="support/Inno.Benchmark.ProcessMetrics/Inno.Benchmark.ProcessMetrics.csproj" />
+    <Project Path="support/Inno.Benchmark.Runner/Inno.Benchmark.Runner.csproj" />
+    <Project Path="support/Inno.Benchmark.Services/Inno.Benchmark.Services.csproj" />
+  </Folder>
+</Solution>

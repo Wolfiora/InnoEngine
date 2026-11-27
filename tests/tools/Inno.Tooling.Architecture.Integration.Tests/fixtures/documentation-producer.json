@@ -1,0 +1,87 @@
+{
+  "editor-script": {
+    "projectionIdentities": {
+      "Inno.ScriptApi.Editor": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "Inno.ScriptApi.Runtime": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "configuration": "Debug",
+    "sourceApiStatus": "Unverified",
+    "projects": [],
+    "target": "fixture-host",
+    "model": "editor-script"
+  },
+  "plan": {
+    "configuration": "Debug",
+    "hostTarget": "fixture-host",
+    "projects": [
+      {
+        "name": "Inno.Probe",
+        "path": "src/Inno.Probe/Inno.Probe.csproj",
+        "authoredSurfaceEmpty": true,
+        "target": ""
+      }
+    ],
+    "schema": "inno-api-export-plan/1",
+    "sdkRuntime": "fixture-sdk"
+  },
+  "producer": {
+    "projectManifestIdentity": "c24e57b2ea1abfd551943492851ecfca52278a91e0edae3fb075f2f983f73553",
+    "sdkRuntime": "fixture-sdk",
+    "hostTarget": "fixture-host",
+    "planIdentity": "ca16306b24406875deeca303ead5f2dec8790d97a414261865b1aaf475b21212",
+    "repository": "https://github.com/Wolfiora/InnoEngine",
+    "schema": "inno-api-producer/1",
+    "revision": "66d7398fe6dbed27a3a9de612e168072c0f3b07f",
+    "captures": [
+      {
+        "configuration": "Debug",
+        "path": "source-clr.json",
+        "target": "fixture-host",
+        "model": "source-clr",
+        "sha256": "28071c199d4d1f02e38fc618f43a4612cc4157b11847eb5fc097fbd8085c0d5e"
+      },
+      {
+        "configuration": "Debug",
+        "path": "runtime-script.json",
+        "target": "fixture-host",
+        "model": "runtime-script",
+        "sha256": "01f9fa5cfa873979a011a550aa43387267c436d7e55dad3efcd00b86e6f1dd85"
+      },
+      {
+        "configuration": "Debug",
+        "path": "editor-script.json",
+        "target": "fixture-host",
+        "model": "editor-script",
+        "sha256": "add5e2a15eb365781bd063b43043fc31068b9fce5e48d90d9f7faa6107b7e19a"
+      }
+    ],
+    "sourceTree": "b0c4ce509d2a8fed8a94a97adf85e27623bf27e7",
+    "configuration": "Debug",
+    "toolingRevision": "66d7398fe6dbed27a3a9de612e168072c0f3b07f"
+  },
+  "runtime-script": {
+    "projectionIdentities": {
+      "Inno.ScriptApi.Runtime": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "configuration": "Debug",
+    "sourceApiStatus": "Unverified",
+    "projects": [],
+    "target": "fixture-host",
+    "model": "runtime-script"
+  },
+  "source-clr": {
+    "configuration": "Debug",
+    "sourceApiStatus": "Unverified",
+    "projects": [
+      {
+        "name": "Inno.Probe",
+        "symbols": [],
+        "assembly": "Inno.Probe",
+        "project": "src/Inno.Probe/Inno.Probe.csproj",
+        "scriptExports": []
+      }
+    ],
+    "target": "fixture-host",
+    "model": "source-clr"
+  }
+}

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../../../Benchmark.props" />
+
+  <PropertyGroup>
+    <InnoAssemblyDomain>InnoInternal</InnoAssemblyDomain>
+    <InnoAssemblyScope>Runtime</InnoAssemblyScope>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../src/content/scene/Inno.Scene/Inno.Scene.csproj" />
+    <ProjectReference Include="../../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" />
+    <ProjectReference Include="../../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" />
+    <ProjectReference Include="../../../../src/content/assets/Inno.Assets/Inno.Assets.csproj" />
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Identity/Inno.Core.Identity.csproj" />
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
+    <ProjectReference Include="../../../../src/foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj" />
+    <ProjectReference Include="../../../../src/foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" />
+  </ItemGroup>
+</Project>

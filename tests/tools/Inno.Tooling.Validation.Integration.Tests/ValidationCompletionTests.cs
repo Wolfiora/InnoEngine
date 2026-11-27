@@ -12,6 +12,7 @@ using Inno.Tooling.Documentation;
 
 namespace Inno.Tooling.Validation.Integration.Tests;
 
+[Collection(nameof(ValidationProgressCollection))]
 public sealed class ValidationCompletionTests
 {
     [Fact]
@@ -32,18 +33,24 @@ public sealed class ValidationCompletionTests
         using var cancellation = new CancellationTokenSource(TimeSpan.FromHours(1));
         const string C_PROBE = "tests/services/input/Inno.Input.Tests/CompilationInputProbe.cs";
         const string C_DEPENDENCY = "src/foundation/core/Inno.Core.IO/CompilationDependencyProbe.cs";
-        const string C_RULES = "tools/ci/Test-AgentRules.ps1";
         string gate = repository.PathOf("artifacts/change-compilation-input");
         string source = repository.PathOf(C_PROBE);
-        repository.Write(
-            C_RULES,
-            File.ReadAllText(repository.PathOf(C_RULES)) + "\n"
-            + "$gate = '" + gate.Replace("'", "''", StringComparison.Ordinal) + "'\n"
-            + "if (Test-Path -LiteralPath $gate) {\n"
-            + "  $source = '" + source.Replace("'", "''", StringComparison.Ordinal) + "'\n"
-            + "  [IO.File]::WriteAllText($source, [IO.File]::ReadAllText($source).Replace('Assert.Equal(2, CompilationDependencyProbe.value)', 'Assert.Equal(3, CompilationDependencyProbe.value)'))\n"
-            + "  Remove-Item -LiteralPath $gate\n}\n"
-        );
+        using var observer = new ValidationCheckObserver(() =>
+        {
+            if (!File.Exists(gate))
+            {
+                return;
+            }
+            File.WriteAllText(
+                source,
+                File.ReadAllText(source).Replace(
+                    "Assert.Equal(2, CompilationDependencyProbe.value)",
+                    "Assert.Equal(3, CompilationDependencyProbe.value)",
+                    StringComparison.Ordinal
+                )
+            );
+            File.Delete(gate);
+        });
         repository.Write(C_DEPENDENCY, """
             namespace Inno.Core.IO;
 
@@ -59,7 +66,7 @@ public sealed class ValidationCompletionTests
             }
 
             """);
-        repository.Git("add", C_RULES, C_DEPENDENCY);
+        repository.Git("add", C_DEPENDENCY);
         repository.Git("commit", "-m", "Declare a coordinated compilation input mutation");
         repository.Write(C_PROBE, """
             using Xunit;
@@ -162,22 +169,21 @@ public sealed class ValidationCompletionTests
         );
         string signal = repository.PathOf("artifacts/check-ready");
         string release = repository.PathOf("artifacts/check-release");
-        const string C_RULES = "tools/ci/Test-AgentRules.ps1";
-        repository.Write(
-            C_RULES,
-            File.ReadAllText(repository.PathOf(C_RULES)) + "\n"
-            + "[IO.File]::WriteAllText('" + signal.Replace("'", "''", StringComparison.Ordinal) + "', 'ready')\n"
-            + "while (-not (Test-Path -LiteralPath '"
-            + release.Replace("'", "''", StringComparison.Ordinal)
-            + "')) { Start-Sleep -Milliseconds 10 }\n"
-        );
+        using var observer = new ValidationCheckObserver(() =>
+        {
+            File.WriteAllText(signal, "ready");
+            if (!SpinWait.SpinUntil(() => File.Exists(release), TimeSpan.FromMinutes(4)))
+            {
+                throw new TimeoutException("The external input reader did not release the check.");
+            }
+        });
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare a coordinated closing-read failure fixture");
         repository.Write("README.md", File.ReadAllText(repository.PathOf("README.md")) + "\nClosing evidence acceptance.\n");
         using JsonDocument plan = await repository.PlanAsync();
         Assert.Empty(plan.RootElement.GetProperty("owners").EnumerateArray());
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(5));
-        Task<int> execution = repository.RunAsync(cancellationToken: cancellation.Token);
+        Task<int> execution = Task.Run(() => repository.RunAsync(cancellationToken: cancellation.Token));
         try
         {
             while (!File.Exists(signal))

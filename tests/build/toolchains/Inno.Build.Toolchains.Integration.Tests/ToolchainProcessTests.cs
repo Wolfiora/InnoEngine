@@ -52,32 +52,8 @@ public sealed class ToolchainProcessTests : IDisposable
     {
         Directory.CreateDirectory(m_root);
         string marker = Path.Combine(m_root, "processes.txt");
-        string script = Path.Combine(m_root, OperatingSystem.IsWindows() ? "wait.ps1" : "wait.sh");
-        string[] arguments;
-        string executable;
-        if (OperatingSystem.IsWindows())
-        {
-            File.WriteAllText(script, """
-                $child = Start-Process -FilePath 'ping.exe' -ArgumentList '-n 120 127.0.0.1' -PassThru -WindowStyle Hidden
-                Set-Content -LiteralPath (Join-Path $PSScriptRoot 'processes.pending') -Value "$PID,$($child.Id)"
-                Move-Item -LiteralPath (Join-Path $PSScriptRoot 'processes.pending') -Destination (Join-Path $PSScriptRoot 'processes.txt')
-                $child.WaitForExit()
-                """);
-            executable = "powershell.exe";
-            arguments = ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", script];
-        }
-        else
-        {
-            File.WriteAllText(script, """
-                sleep 120 &
-                child=$!
-                printf '%s,%s' $$ $child > "$(dirname "$0")/processes.pending"
-                mv "$(dirname "$0")/processes.pending" "$(dirname "$0")/processes.txt"
-                wait $child
-                """);
-            executable = "/bin/sh";
-            arguments = [script];
-        }
+        (string executable, string assembly) = await BuildTreeAsync();
+        string[] arguments = [assembly];
 
         using var cancellation = new CancellationTokenSource();
         Task running = rawArguments
@@ -143,36 +119,8 @@ public sealed class ToolchainProcessTests : IDisposable
     {
         Directory.CreateDirectory(m_root);
         string marker = Path.Combine(m_root, "processes.txt");
-        string script = Path.Combine(m_root, OperatingSystem.IsWindows() ? "output.ps1" : "output.sh");
-        string executable;
-        string[] arguments;
-        if (OperatingSystem.IsWindows())
-        {
-            string emission = standardError ? "[Console]::Error.WriteLine('ready')" : "[Console]::Out.WriteLine('ready')";
-            File.WriteAllText(script, $$"""
-                $child = Start-Process -FilePath 'ping.exe' -ArgumentList '-n 120 127.0.0.1' -PassThru -WindowStyle Hidden
-                Set-Content -LiteralPath (Join-Path $PSScriptRoot 'processes.pending') -Value "$PID,$($child.Id)"
-                Move-Item -LiteralPath (Join-Path $PSScriptRoot 'processes.pending') -Destination (Join-Path $PSScriptRoot 'processes.txt')
-                {{emission}}
-                $child.WaitForExit()
-                """);
-            executable = "powershell.exe";
-            arguments = ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", script];
-        }
-        else
-        {
-            string emission = standardError ? "printf 'ready\\n' >&2" : "printf 'ready\\n'";
-            File.WriteAllText(script, $$"""
-                sleep 120 &
-                child=$!
-                printf '%s,%s' $$ $child > "$(dirname "$0")/processes.pending"
-                mv "$(dirname "$0")/processes.pending" "$(dirname "$0")/processes.txt"
-                {{emission}}
-                wait $child
-                """);
-            executable = "/bin/sh";
-            arguments = [script];
-        }
+        (string executable, string assembly) = await BuildTreeAsync();
+        string[] arguments = [assembly, standardError ? "stderr" : "stdout"];
 
         TextWriter original = standardError ? Console.Error : Console.Out;
         using var failing = new FailingWriter();
@@ -221,6 +169,33 @@ public sealed class ToolchainProcessTests : IDisposable
                 }
             }
         }
+    }
+
+    private async Task<(string executable, string assembly)> BuildTreeAsync()
+    {
+        string executable = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
+        File.WriteAllText(Path.Combine(m_root, "Tree.csproj"), """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings></PropertyGroup>
+            </Project>
+            """);
+        File.WriteAllText(Path.Combine(m_root, "Program.cs"), """
+            using System.Diagnostics;
+            using System.Reflection;
+
+            if (args is ["child"]) { Thread.Sleep(Timeout.Infinite); return; }
+            var start = new ProcessStartInfo(Environment.ProcessPath!) { UseShellExecute = false, CreateNoWindow = true };
+            start.ArgumentList.Add(Assembly.GetExecutingAssembly().Location);
+            start.ArgumentList.Add("child");
+            using Process child = Process.Start(start)!;
+            File.WriteAllText("processes.pending", $"{Environment.ProcessId},{child.Id}");
+            File.Move("processes.pending", "processes.txt");
+            if (args is ["stdout"]) { Console.Out.WriteLine("ready"); }
+            if (args is ["stderr"]) { Console.Error.WriteLine("ready"); }
+            child.WaitForExit();
+            """);
+        await ToolchainEnvironment.RunAsync(executable, ["build", "Tree.csproj", "--disable-build-servers"], m_root);
+        return (executable, Path.Combine(m_root, "bin/Debug/net10.0/Tree.dll"));
     }
 
     private static string Quote(string argument) => '"' + argument.Replace("\"", "\\\"", StringComparison.Ordinal) + '"';

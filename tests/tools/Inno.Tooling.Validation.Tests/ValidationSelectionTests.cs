@@ -102,7 +102,7 @@ public sealed class ValidationSelectionTests : ValidationPlanFixture
     public async Task SharedTestExecutorSelectsItsBehaviorContractAndRemainsAnExecutionInput()
     {
         using var repository = new ValidationRepository();
-        const string C_EXECUTOR = "tools/ci/Invoke-IsolatedTests.ps1";
+        const string C_EXECUTOR = "tools/Inno.Tooling.Validation/ValidationTestExecution.cs";
         const string C_UNRELATED = "tests/Unrelated.Tests/Unrelated.Tests.csproj";
         repository.Write(
             C_UNRELATED,
@@ -110,13 +110,13 @@ public sealed class ValidationSelectionTests : ValidationPlanFixture
                 "<PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>contract</InnoValidationLayer></PropertyGroup>"
             )
         );
-        repository.Write(C_EXECUTOR, "Write-Host 'before'");
+        repository.Write(C_EXECUTOR, "// Original executor.");
         const string C_SUBJECT = "tests/Example.Tests/Example.Tests.csproj";
         repository.Write(
             C_SUBJECT,
             File.ReadAllText(repository.PathOf(C_SUBJECT)).Replace(
                 "</Project>",
-                "<ItemGroup><InnoValidationInput Include=\"../../tools/ci/Invoke-IsolatedTests.ps1\" /></ItemGroup></Project>",
+                "<ItemGroup><InnoValidationInput Include=\"../../tools/Inno.Tooling.Validation/ValidationTestExecution.cs\" /></ItemGroup></Project>",
                 StringComparison.Ordinal
             )
         );
@@ -124,7 +124,7 @@ public sealed class ValidationSelectionTests : ValidationPlanFixture
         repository.Git("commit", "-m", "Declare the shared test executor");
         using JsonDocument initial = await repository.PlanAsync();
         string original = initial.RootElement.GetProperty("inputs").GetProperty(C_EXECUTOR).GetString()!;
-        repository.Write(C_EXECUTOR, "Write-Host 'after'");
+        repository.Write(C_EXECUTOR, "// Changed executor.");
         using JsonDocument changed = await repository.PlanAsync();
         Assert.False(changed.RootElement.GetProperty("full").GetBoolean());
         Assert.Contains("tests/Example.Tests/Example.Tests.csproj", Owners(changed));
@@ -244,42 +244,36 @@ public sealed class ValidationSelectionTests : ValidationPlanFixture
     }
 
     [Fact]
-    public async Task SharedScriptSelectsOnlyItsConsumer()
+    public async Task HostedRoutingChangesSelectRepositoryChecksWithoutInventingTestProjects()
     {
         using var repository = new ValidationRepository();
-        repository.Write("tools/ci/Shared.ps1", "Write-Output 1");
-        repository.Write("tests/ci/Consumer.Tests.ps1", "& ./tools/ci/Shared.ps1");
-        repository.Write("tests/ci/Other.Tests.ps1", "Write-Output 0");
-        repository.Git("add", ".");
-        repository.Git("commit", "-m", "Declare scripts");
-        repository.Write("tools/ci/Shared.ps1", "Write-Output 2");
+        repository.Write(".github/scripts/routing.py", "# Select the hosted matrix\n");
         using JsonDocument plan = await repository.PlanAsync();
-        JsonElement check = plan.RootElement
-            .GetProperty("checks")
-            .EnumerateArray()
-            .Single(item => item.GetProperty("id").GetString() == "ci-contract:tests/ci/Consumer.Tests.ps1");
-        Assert.Equal("tests/ci/Consumer.Tests.ps1", Assert.Single(check.GetProperty("projects").EnumerateArray()).GetString());
         Assert.Empty(Owners(plan));
+        Assert.Contains(
+            plan.RootElement.GetProperty("checks").EnumerateArray(),
+            item => item.GetProperty("kind").GetString() == "architecture"
+        );
     }
 
     [Fact]
     public async Task StaticContractRecognitionDoesNotHideAnExplicitProjectConsumer()
     {
         using var repository = new ValidationRepository();
-        const string C_SCRIPT = "tools/ci/Invoke-ValidationGate.ps1";
+        const string C_SCRIPT = ".github/scripts/validation.py";
         const string C_OWNER = "tests/Example.Tests/Example.Tests.csproj";
-        repository.Write(C_SCRIPT, "Write-Output 'Original'\n");
+        repository.Write(C_SCRIPT, "# Original\n");
         repository.Write(
             C_OWNER,
             File.ReadAllText(repository.PathOf(C_OWNER)).Replace(
                 "</Project>",
-                "<ItemGroup><InnoValidationInput Include=\"../../tools/ci/Invoke-ValidationGate.ps1\" /></ItemGroup></Project>",
+                "<ItemGroup><InnoValidationInput Include=\"../../.github/scripts/validation.py\" /></ItemGroup></Project>",
                 StringComparison.Ordinal
             )
         );
         repository.Git("add", C_SCRIPT, C_OWNER);
         repository.Git("commit", "-m", "Declare the contract's additional runtime consumer");
-        repository.Write(C_SCRIPT, "Write-Output 'Changed'\n");
+        repository.Write(C_SCRIPT, "# Changed\n");
         using JsonDocument plan = await repository.PlanAsync();
         Assert.False(plan.RootElement.GetProperty("full").GetBoolean());
         Assert.Contains(C_OWNER, Owners(plan));
@@ -429,13 +423,13 @@ public sealed class ValidationSelectionTests : ValidationPlanFixture
     }
 
     [Theory]
-    [InlineData("tools/ci/unknown.ps1")]
-    [InlineData(".agents/check.ps1")]
+    [InlineData(".github/scripts/unknown.py")]
+    [InlineData(".agents/check.py")]
     [InlineData("Unimported.props")]
     public async Task UnownedExecutableInputsIdentifyTheirPath(string path)
     {
         using var repository = new ValidationRepository();
-        repository.Write(path, path.EndsWith(".props", StringComparison.Ordinal) ? "<Project />" : "Write-Output 1");
+        repository.Write(path, path.EndsWith(".props", StringComparison.Ordinal) ? "<Project />" : "print(1)");
         InvalidDataException error = await Assert.ThrowsAsync<InvalidDataException>(() => repository.PlanAsync());
         Assert.Contains(path, error.Message);
         Assert.Contains("no declared project or workflow owner", error.Message);

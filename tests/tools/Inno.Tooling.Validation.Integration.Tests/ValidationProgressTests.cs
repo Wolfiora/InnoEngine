@@ -17,17 +17,25 @@ public sealed class ValidationProgressTests
     public async Task QuietChildReportsActivityBeforeExitAndCancellationRetainsItsFailureEvidence()
     {
         using var repository = new ValidationRepository();
-        repository.Write("tools/ci/Test-AgentRules.ps1", """
-            [Console]::Out.WriteLine('first stdout evidence')
-            [Console]::Error.WriteLine('first stderr evidence')
-            [Console]::Out.Write('::error::this is child text, not a workflow command')
-            while ($true) { Start-Sleep -Milliseconds 100 }
+        repository.WriteRestoreProbe("""
+            <UsingTask TaskName="WaitingDiagnostic" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+              <Task><Code Type="Fragment" Language="cs"><![CDATA[
+                System.Console.Out.WriteLine("first stdout evidence");
+                System.Console.Error.WriteLine("first stderr evidence");
+                System.Console.Out.WriteLine("::error::this is child text, not a workflow command");
+                System.Threading.Thread.Sleep(System.Threading.Timeout.Infinite);
+              ]]></Code></Task>
+            </UsingTask>
+            <Target Name="Restore"><WaitingDiagnostic /></Target>
             """);
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare an intentionally waiting validation child");
         using JsonDocument generated = await repository.PlanAsync();
         JsonObject plan = JsonNode.Parse(generated.RootElement.GetRawText())!.AsObject();
         JsonNode policy = plan["checks"]!.AsArray().Single(check => check!["kind"]!.GetValue<string>() == "instructions")!.DeepClone();
+        policy["id"] = "restore-probe";
+        policy["kind"] = "restore-aot";
+        policy["owner"] = "src/Example/Example.csproj";
         policy["prerequisites"] = new JsonArray();
         plan["checks"] = new JsonArray(policy);
         repository.Write("artifacts/plan/plan.json", plan.ToJsonString());
@@ -42,19 +50,19 @@ public sealed class ValidationProgressTests
             running = repository.RunAsync(cancellationToken: cancellation.Token);
             string activity = await capture.activity.Task.WaitAsync(TimeSpan.FromMinutes(2));
             Assert.False(running.IsCompleted);
-            Assert.StartsWith("Process active: instructions.log;", activity);
+            Assert.StartsWith("Process active: native-aot-restore.log;", activity);
             Assert.Contains("parentCpu=", activity);
             Assert.Contains("outputCharacters=", activity);
             Assert.Contains("lastOutputAge=", activity);
             Assert.Contains("lastOutputExcerpt=", activity);
-            Assert.Contains("Validation check: instructions;", capture.Read());
-            Assert.Contains("Process started: instructions.log;", capture.Read());
+            Assert.Contains("Validation check: restore-probe;", capture.Read());
+            Assert.Contains("Process started: native-aot-restore.log;", capture.Read());
             cancellation.Cancel();
             await Assert.ThrowsAsync<InvalidDataException>(async () => await running);
             using JsonDocument evidence = JsonDocument.Parse(File.ReadAllText(repository.PathOf("artifacts/run/results.json")));
             Assert.Equal("Blocked", evidence.RootElement.GetProperty("results")[0].GetProperty("status").GetString());
             Assert.False(evidence.RootElement.GetProperty("completed").GetBoolean());
-            string log = File.ReadAllText(repository.PathOf("artifacts/run/instructions.log"));
+            string log = File.ReadAllText(repository.PathOf("artifacts/run/native-aot-restore.log"));
             Assert.Contains("first stdout evidence", log);
             Assert.Contains("first stderr evidence", log);
             Assert.Contains("::error::this is child text", log);

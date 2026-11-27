@@ -81,14 +81,6 @@ internal static class ValidationEnvironment
                 files.Add(Path.Combine(hostRoot, directory));
             }
         }
-        string shell = ToolchainEnvironment.ResolveExecutable("pwsh");
-        shell = File.ResolveLinkTarget(shell, returnFinalTarget: true)?.FullName ?? shell;
-        files.Add(shell);
-        string automation = Path.Combine(Path.GetDirectoryName(shell)!, "System.Management.Automation.dll");
-        if (File.Exists(automation))
-        {
-            files.Add(automation);
-        }
         return new(sdk, inputs, CaptureContents(root, sdk.hostPath, files, cancellationToken));
     }
 

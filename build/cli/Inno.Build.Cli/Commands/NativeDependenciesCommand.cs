@@ -37,6 +37,18 @@ internal static class NativeDependenciesCommand
             return;
         }
 
+        if (operation == "prepare-platform")
+        {
+            await NativePlatformInputs.PrepareAsync(
+                request,
+                options.Require("output"),
+                options.Read("input", string.Empty),
+                options.Require("configurations").Split(','),
+                cancellationToken
+            ).ConfigureAwait(false);
+            return;
+        }
+
         if (operation == "describe")
         {
             BuildPlatformContribution platform = request.distribution.platforms.SingleOrDefault(
@@ -61,45 +73,7 @@ internal static class NativeDependenciesCommand
             {
                 throw new ArgumentException("Producer binding verification cannot consume a prebuilt selection.");
             }
-            IGrouping<string, ProductNativeBuildStep>[] steps = product.plan.steps
-                .Where(static step => step.component.bindingDefinition is not null)
-                .GroupBy(static step => step.component.nativeProject, StringComparer.Ordinal)
-                .ToArray();
-            if (steps.Length == 0)
-            {
-                return;
-            }
-            INativeBindingGenerator generator = request.distribution.ResolveBindingGenerator(request.target.value);
-            NativeBuildContext bindingContext = new NativeBuildContext(
-                request.root,
-                request.configuration.ToLowerInvariant()
-            ).WithBindingGenerator(generator);
-            bindingContext = bindingContext.WithToolchain(
-                await request.distribution.ResolveNativeToolchain(request.target.value)
-                    .ResolveAsync(bindingContext, request.composition.host, request.target.value, cancellationToken)
-                    .ConfigureAwait(false)
-            );
-            // Verify the exact target publications being released, with their product linkage/options.
-            // Authored host descriptors contain the author's SDK paths and are not target package evidence.
-            var bindingRequest = new NativeBindingGenerationRequest(
-                steps.Select(static group => group.First().component),
-                request.target.value,
-                NativeBindingOutputMode.TargetArtifacts,
-                checkOnly: true,
-                componentOptions: steps.ToDictionary(
-                    static group => group.Key,
-                    static group => group.First().options,
-                    StringComparer.Ordinal
-                )
-            );
-            using NativeBindingGenerationResult verified = await generator.GenerateAsync(
-                bindingContext,
-                bindingRequest,
-                cancellationToken
-            ).ConfigureAwait(false);
-            Console.WriteLine(
-                $"Verified target binding publications: {steps.Length}; native processes: {bindingContext.statistics.nativeProcesses}."
-            );
+            await VerifyBindingsAsync(request, product, request.configuration, cancellationToken).ConfigureAwait(false);
             return;
         }
 
@@ -139,11 +113,68 @@ internal static class NativeDependenciesCommand
         {
             throw new ArgumentException("Dependency production cannot consume a prebuilt selection.");
         }
+        _ = await ProduceAsync(request, product, request.configuration, options.Require("output"), cancellationToken).ConfigureAwait(false);
+    }
+
+    internal static async Task VerifyBindingsAsync(
+        BuildCommandContext request,
+        NativeProductContribution product,
+        string configuration,
+        CancellationToken cancellationToken
+    ) {
+        IGrouping<string, ProductNativeBuildStep>[] steps = product.plan.steps
+            .Where(static step => step.component.bindingDefinition is not null)
+            .GroupBy(static step => step.component.nativeProject, StringComparer.Ordinal)
+            .ToArray();
+        if (steps.Length == 0)
+        {
+            return;
+        }
+        INativeBindingGenerator generator = request.distribution.ResolveBindingGenerator(request.target.value);
+        NativeBuildContext bindingContext = new NativeBuildContext(
+            request.root,
+            configuration.ToLowerInvariant()
+        ).WithBindingGenerator(generator);
+        bindingContext = bindingContext.WithToolchain(
+            await request.distribution.ResolveNativeToolchain(request.target.value)
+                .ResolveAsync(bindingContext, request.composition.host, request.target.value, cancellationToken)
+                .ConfigureAwait(false)
+        );
+        // Verify the exact target publications being released, with their product linkage/options.
+        // Authored host descriptors contain the author's SDK paths and are not target package evidence.
+        var bindingRequest = new NativeBindingGenerationRequest(
+            steps.Select(static group => group.First().component),
+            request.target.value,
+            NativeBindingOutputMode.TargetArtifacts,
+            checkOnly: true,
+            componentOptions: steps.ToDictionary(
+                static group => group.Key,
+                static group => group.First().options,
+                StringComparer.Ordinal
+            )
+        );
+        using NativeBindingGenerationResult verified = await generator.GenerateAsync(
+            bindingContext,
+            bindingRequest,
+            cancellationToken
+        ).ConfigureAwait(false);
+        Console.WriteLine(
+            $"Verified target binding publications: {steps.Length}; native processes: {bindingContext.statistics.nativeProcesses}."
+        );
+    }
+
+    internal static async Task<string> ProduceAsync(
+        BuildCommandContext request,
+        NativeProductContribution product,
+        string configuration,
+        string output,
+        CancellationToken cancellationToken
+    ) {
         Stopwatch phase = Stopwatch.StartNew();
         Console.WriteLine(
-            $"Native producer: {product.plan.productID}/{request.target.value}/{request.configuration}; resolving the explicit toolchain."
+            $"Native producer: {product.plan.productID}/{request.target.value}/{configuration}; resolving the explicit toolchain."
         );
-        NativeBuildContext context = new NativeBuildContext(request.root, request.configuration.ToLowerInvariant()).WithBindingGenerator(
+        NativeBuildContext context = new NativeBuildContext(request.root, configuration.ToLowerInvariant()).WithBindingGenerator(
             request.distribution.ResolveBindingGenerator(request.target.value)
         );
         context = context.WithToolchain(
@@ -171,7 +202,7 @@ internal static class NativeDependenciesCommand
             context,
             product.plan,
             products,
-            options.Require("output"),
+            output,
             cancellationToken
         ).ConfigureAwait(false);
         Report("export");
@@ -186,6 +217,8 @@ internal static class NativeDependenciesCommand
         Report("closing-verification");
         Console.WriteLine("Native dependency selection: " + selection);
         Console.WriteLine($"Native processes: {context.statistics.nativeProcesses}; hashed bytes: {context.statistics.hashedBytes}.");
+
+        return selection;
 
         void Report(string name)
         {

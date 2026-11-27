@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../support/Inno.Benchmark.ProcessMetrics/Inno.Benchmark.ProcessMetrics.csproj" />
+  </ItemGroup>
+</Project>

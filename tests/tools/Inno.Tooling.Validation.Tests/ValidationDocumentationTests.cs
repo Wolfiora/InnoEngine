@@ -433,8 +433,7 @@ public sealed class ValidationDocumentationTests
                 "src/Example/Changed.cs",
                 "namespace Example; /// <summary>A captured source contract.</summary>\npublic class Changed { }"
             );
-            repository.Write("tools/ci/Test-AgentRules.ps1", "Write-Output 'Fixture policy passed'");
-            repository.Write("tests/ci/CapturePolicy.Tests.ps1", "Write-Output 'Fixture compilation policy passed'");
+            repository.Write("AGENTS.md", "# Fixture policy passed\n");
         }
         using JsonDocument plan = await docs.PlanAsync(current, baseline);
         JsonElement[] checks = plan.RootElement.GetProperty("checks").EnumerateArray().ToArray();
@@ -470,8 +469,8 @@ public sealed class ValidationDocumentationTests
                 JsonNode item = JsonNode.Parse(check.GetRawText())!;
                 if (item["id"]!.GetValue<string>() == "architecture")
                 {
-                    item["kind"] = "ci-contracts";
-                    item["projects"] = new JsonArray("tests/ci/CapturePolicy.Tests.ps1");
+                    item["kind"] = "instructions";
+                    item["projects"] = null;
                 }
                 selected.Add(item);
             }

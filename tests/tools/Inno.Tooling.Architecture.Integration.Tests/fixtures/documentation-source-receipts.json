@@ -1,0 +1,608 @@
+{
+  "bases": {
+    "complete": {
+      "catalog": {
+        "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "references": [
+          {
+            "configuration": "Debug",
+            "identity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "model": "source-clr",
+            "path": "reference/api/probe.json",
+            "target": null
+          }
+        ],
+        "repository": "https://github.com/Wolfiora/InnoEngine",
+        "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sourceTree": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "context": {
+        "contentIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sourceTree": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "evidence": {
+        "results": [
+          {
+            "documentationInputs": [
+              {
+                "configuration": "Debug",
+                "environment": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "owners": [
+                  "src/Probe.csproj"
+                ],
+                "packages": {
+                  "probe/1.0.0": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                },
+                "project": "src/Probe.csproj",
+                "sourceIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "sources": {
+                  "src/Probe.csproj": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                },
+                "target": null
+              }
+            ],
+            "id": "documentation-api:managed:default",
+            "status": "Passed"
+          }
+        ]
+      },
+      "plan": {
+        "checks": [
+          {
+            "documentation": {
+              "configuration": "Debug",
+              "references": [
+                "reference/api/probe.json"
+              ],
+              "target": null
+            },
+            "exclusion": null,
+            "id": "documentation-api:managed:default",
+            "inputs": [
+              "@src/Probe.csproj"
+            ],
+            "kind": "documentation-api",
+            "projects": [
+              "src/Probe.csproj"
+            ]
+          }
+        ],
+        "environment": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "report": {
+        "configuration": "Debug",
+        "documentationSourceTree": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "projects": [
+          {
+            "differences": [],
+            "name": "Probe",
+            "project": "src/Probe.csproj",
+            "referenceIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "status": "Passed"
+          }
+        ],
+        "references": [
+          {
+            "identity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "path": "reference/api/probe.json"
+          }
+        ],
+        "scope": "SelectedSourceReferenceComparison",
+        "snapshot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "status": "Passed",
+        "target": null
+      }
+    }
+  },
+  "cases": [
+    {
+      "accepted": true,
+      "base": "complete",
+      "changes": [],
+      "name": "complete"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "missing"
+          ],
+          "value": true
+        }
+      ],
+      "name": "missing-report"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "evidence",
+            "results",
+            0,
+            "status"
+          ],
+          "value": "Failed"
+        }
+      ],
+      "name": "failed-check"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "documentationSourceTree"
+          ],
+          "value": "cccccccccccccccccccccccccccccccccccccccc"
+        }
+      ],
+      "name": "changed-tree"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "snapshot"
+          ],
+          "value": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      ],
+      "name": "changed-snapshot"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "catalog",
+            "contentIdentity"
+          ],
+          "value": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      ],
+      "name": "changed-catalog"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "status"
+          ],
+          "value": "Failed"
+        }
+      ],
+      "name": "failed-comparison"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "projects",
+            0,
+            "status"
+          ],
+          "value": "Failed"
+        }
+      ],
+      "name": "failed-owner"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "projects",
+            0,
+            "differences"
+          ],
+          "value": [
+            "Changed declaration"
+          ]
+        }
+      ],
+      "name": "hidden-differences"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "projects"
+          ],
+          "value": []
+        }
+      ],
+      "name": "missing-owner"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "projects"
+          ],
+          "value": [
+            {
+              "differences": [],
+              "name": "Probe",
+              "project": "src/Probe.csproj",
+              "referenceIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "status": "Passed"
+            },
+            {
+              "differences": [],
+              "name": "Probe",
+              "project": "src/Probe.csproj",
+              "referenceIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "status": "Passed"
+            }
+          ]
+        }
+      ],
+      "name": "extra-owner"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "target"
+          ],
+          "value": "another-platform"
+        }
+      ],
+      "name": "wrong-target"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "references",
+            0,
+            "identity"
+          ],
+          "value": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      ],
+      "name": "changed-reference"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "references"
+          ],
+          "value": []
+        }
+      ],
+      "name": "missing-reference"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "references"
+          ],
+          "value": [
+            {
+              "identity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "path": "reference/api/probe.json"
+            },
+            {
+              "identity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "path": "reference/api/probe.json"
+            }
+          ]
+        }
+      ],
+      "name": "repeated-reference"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "plan",
+            "checks",
+            0,
+            "id"
+          ],
+          "value": "../outside"
+        }
+      ],
+      "name": "escaping-report"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "evidence",
+            "results",
+            0,
+            "documentationInputs"
+          ],
+          "value": []
+        }
+      ],
+      "name": "missing-input-proof"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "evidence",
+            "results",
+            0,
+            "documentationInputs"
+          ],
+          "value": [
+            {
+              "configuration": "Debug",
+              "environment": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "owners": [
+                "src/Probe.csproj"
+              ],
+              "packages": {
+                "probe/1.0.0": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "project": "src/Probe.csproj",
+              "sourceIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "sources": {
+                "src/Probe.csproj": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "target": null
+            },
+            {
+              "configuration": "Debug",
+              "environment": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "owners": [
+                "src/Probe.csproj"
+              ],
+              "packages": {
+                "probe/1.0.0": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "project": "src/Probe.csproj",
+              "sourceIdentity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "sources": {
+                "src/Probe.csproj": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "target": null
+            }
+          ]
+        }
+      ],
+      "name": "duplicate-input-proof"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "evidence",
+            "results",
+            0,
+            "documentationInputs",
+            0,
+            "project"
+          ],
+          "value": "src/Other.csproj"
+        }
+      ],
+      "name": "wrong-input-owner"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "evidence",
+            "results",
+            0,
+            "documentationInputs",
+            0,
+            "environment"
+          ],
+          "value": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      ],
+      "name": "wrong-input-environment"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "evidence",
+            "results",
+            0,
+            "documentationInputs",
+            0,
+            "configuration"
+          ],
+          "value": "Release"
+        }
+      ],
+      "name": "wrong-input-context"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "evidence",
+            "results",
+            0,
+            "documentationInputs",
+            0,
+            "owners"
+          ],
+          "value": []
+        }
+      ],
+      "name": "missing-input-closure"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "evidence",
+            "results",
+            0,
+            "documentationInputs",
+            0,
+            "owners"
+          ],
+          "value": [
+            "src/Probe.csproj",
+            "../outside.csproj"
+          ]
+        }
+      ],
+      "name": "escaped-input-closure"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "evidence",
+            "results",
+            0,
+            "documentationInputs",
+            0,
+            "sourceIdentity"
+          ],
+          "value": ""
+        }
+      ],
+      "name": "missing-source-content"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "evidence",
+            "results",
+            0,
+            "documentationInputs",
+            0,
+            "packages",
+            "probe/1.0.0"
+          ],
+          "value": "missing"
+        }
+      ],
+      "name": "unhashed-package"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "evidence",
+            "results",
+            0,
+            "documentationInputs",
+            0,
+            "packages",
+            "../outside"
+          ],
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "name": "escaped-package"
+    },
+    {
+      "accepted": false,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "report",
+            "projects",
+            0,
+            "referenceIdentity"
+          ],
+          "value": ""
+        }
+      ],
+      "name": "unhashed-owner-reference"
+    },
+    {
+      "accepted": true,
+      "base": "complete",
+      "changes": [
+        {
+          "path": [
+            "evidence",
+            "results",
+            0,
+            "documentationInputs",
+            0,
+            "packages",
+            "probe/1.0.0"
+          ]
+        },
+        {
+          "path": [
+            "plan",
+            "checks",
+            0,
+            "inputs"
+          ],
+          "value": []
+        }
+      ],
+      "name": "source-only-empty-surface"
+    }
+  ]
+}

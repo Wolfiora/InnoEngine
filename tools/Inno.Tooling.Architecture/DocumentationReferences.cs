@@ -20,6 +20,88 @@ namespace Inno.Tooling.Architecture;
 public static class DocumentationReferences
 {
     /// <summary>
+    /// Runs a documentation command against the caller's explicit source and artifact inputs.
+    /// </summary>
+    /// <param name="arguments">
+    /// The documentation operation and its options.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels the operation and its owned work.
+    /// </param>
+    /// <returns>
+    /// The command's exit status.
+    /// </returns>
+    public static async Task<int> ExecuteAsync(
+        string[] arguments,
+        CancellationToken cancellationToken
+    ) {
+        ArgumentNullException.ThrowIfNull(arguments);
+        if (arguments is ["certify", string planFile, string resultsFile, string directory, string receiptFile])
+        {
+            DocumentationValidationReceipts.Collect(planFile, resultsFile, directory, receiptFile);
+            return 0;
+        }
+        if (arguments is ["export-producer", .. var producer])
+        {
+            return await DocumentationProducer.ExportAsync(producer, cancellationToken).ConfigureAwait(false);
+        }
+        if (arguments is ["prepare-references", string engine, string sdk, string configuration,
+            string managed, string solution, string log, .. var projects]
+        ) {
+            await DocumentationProducer.PrepareAsync(
+                engine,
+                sdk,
+                configuration,
+                managed,
+                solution,
+                log,
+                projects,
+                cancellationToken
+            ).ConfigureAwait(false);
+            return 0;
+        }
+        if (arguments is ["script-references", string project])
+        {
+            Console.WriteLine(JsonSerializer.Serialize(DocumentationProducer.LogicalReferences(project)));
+            return 0;
+        }
+
+        if (arguments is ["collect-producers", .. var collection])
+        {
+            return await DocumentationProducerCollection.ExecuteAsync(collection, cancellationToken).ConfigureAwait(false);
+        }
+
+        if (arguments.Length != 0 && arguments[0] == "export-plan")
+        {
+            return await PlanExportAsync(arguments[1..], cancellationToken).ConfigureAwait(false);
+        }
+        if (arguments.Length != 0 && arguments[0] == "export-projects")
+        {
+            return ExportProjects(arguments[1..], cancellationToken);
+        }
+        if (arguments.Length > 0 && arguments[0] == "export-api")
+        {
+            return ExportApi(arguments[1..], cancellationToken);
+        }
+        if (arguments.Length > 0 && arguments[0] == "validate-api")
+        {
+            return await ValidateApiAsync(arguments[1..], cancellationToken).ConfigureAwait(false);
+        }
+        if (arguments.Length > 0 && arguments[0] == "validate-examples")
+        {
+            return await DocumentationExamples.ExecuteAsync(arguments[1..], cancellationToken).ConfigureAwait(false);
+        }
+        if (arguments.Length > 0 && arguments[0] == "example-plan")
+        {
+            return await DocumentationExamples.ExecuteAsync(
+                [..arguments[1..], "--operation", "plan"],
+                cancellationToken
+            ).ConfigureAwait(false);
+        }
+        return await DocumentationCommand.ExecuteAsync(arguments, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Plans complete API export owners and managed preparation from the actual SDK project graph.
     /// </summary>
     /// <param name="arguments">

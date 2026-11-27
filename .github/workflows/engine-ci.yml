@@ -5,6 +5,7 @@ on:
   pull_request:
   push:
     branches: ['**']
+    paths-ignore: ['benchmark/**']
   merge_group:
     types: [checks_requested]
   workflow_dispatch:
@@ -38,55 +39,24 @@ jobs:
     outputs:
       run: ${{ steps.select.outputs.run }}
       profile: ${{ steps.select.outputs.profile }}
+      reason: ${{ steps.select.outputs.reason }}
+      pull: ${{ steps.select.outputs.pull }}
       hosts: ${{ steps.select.outputs.hosts }}
       groups: ${{ steps.select.outputs.groups }}
     steps:
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c
+        with:
+          python-version: '3.12'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          fetch-depth: 2
+          fetch-depth: 0
           persist-credentials: false
       - id: select
-        shell: pwsh
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          CANDIDATE: ${{ github.sha }}
           REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
-        run: |
-          $selected = ./tools/ci/Get-ValidationCadence.ps1 -EventPath $env:GITHUB_EVENT_PATH -Event $env:GITHUB_EVENT_NAME `
-            -Commit $env:CANDIDATE -Repository $env:GITHUB_REPOSITORY -ApiUrl $env:GITHUB_API_URL | ConvertFrom-Json
-          $hosts = @(Get-Content .github/validation-hosts.json -Raw | ConvertFrom-Json | Where-Object { $selected.profile -cne 'fast' -or $_.fast })
-          if ($hosts.Count -eq 0 -or @($hosts.runner | Sort-Object -Unique).Count -ne $hosts.Count) { throw 'Hosted execution registration is empty or duplicated.' }
-          # Recheck an ordinary push immediately before scheduling expensive jobs; PR event delivery can race the first lookup.
-          if ($env:GITHUB_EVENT_NAME -ceq 'push' -and $selected.profile -ceq 'fast' -and $selected.run) {
-            $selected = ./tools/ci/Get-ValidationCadence.ps1 -EventPath $env:GITHUB_EVENT_PATH -Event $env:GITHUB_EVENT_NAME `
-              -Commit $env:CANDIDATE -Repository $env:GITHUB_REPOSITORY -ApiUrl $env:GITHUB_API_URL | ConvertFrom-Json
-          }
-          $targets = @(Get-Content .github/native-targets.json -Raw | ConvertFrom-Json)
-          $requested = @($env:REBUILD_TARGETS -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
-          if (@($requested | Where-Object { $_ -cnotin $targets.target }).Count -or @($requested | Sort-Object -Unique).Count -ne $requested.Count) {
-            throw 'Unknown or duplicate manual backend target.'
-          }
-          # Only the first complete backend catalog requires a cross-host publication.
-          $bootstrap = $false
-          if ($selected.run -and $hosts.Count -gt 1) {
-            for ($page = 1; ; $page++) {
-              $releases = @(Invoke-RestMethod -Headers @{Authorization="Bearer $env:GH_TOKEN"} -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/releases?per_page=100&page=$page" | Write-Output)
-              if (@($releases | Where-Object { $_.prerelease -and !$_.draft -and $_.tag_name -cmatch '^backend-prebuilts-[0-9.]+$' }).Count) { break }
-              if ($releases.Count -lt 100) { $bootstrap = $true; break }
-            }
-          }
-          $groups = if ($bootstrap) {
-            @{name='Initial catalog';hosts=@{include=$hosts};rebuild=($requested -join ',')}
-          } else {
-            foreach ($hostSpec in $hosts) {
-              $ids = @($targets | Where-Object runner -CEQ $hostSpec.runner | ForEach-Object target)
-              @{name=$hostSpec.runner;hosts=@{include=@($hostSpec)};rebuild=(@($requested | Where-Object { $_ -cin $ids }) -join ',')}
-            }
-          }
-          "groups=$(@{include=@($groups)} | ConvertTo-Json -Depth 8 -Compress)" >> $env:GITHUB_OUTPUT
-          "run=$($selected.run.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
-          "profile=$($selected.profile)" >> $env:GITHUB_OUTPUT
-          "hosts=$(@{ include = $hosts } | ConvertTo-Json -Depth 4 -Compress)" >> $env:GITHUB_OUTPUT
+        run: python -B .github/scripts/routing.py select
 
   platforms:
     needs: route
@@ -109,11 +79,14 @@ jobs:
     # Branch routing must never publish success under the pull-request merge gate's name.
     name: ${{ github.event_name == 'push' && github.ref_name != github.event.repository.default_branch && 'Branch validation' || 'Engine validation' }}
     # Reconcile failed prerequisites on a live run. A cancelled run has no candidate to certify.
-    if: ${{ !cancelled() && needs.route.outputs.run != 'false' }}
+    if: ${{ !cancelled() }}
     needs: [route, platforms]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c
+        with:
+          python-version: '3.12'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
@@ -122,22 +95,21 @@ jobs:
         with:
           pattern: validation-{plan,joined,result}-*
           path: artifacts/validation/received
-      - name: Reconcile the exact required host and shard matrix
-        shell: pwsh
+      - name: Reconcile the route and exact required host and shard matrix
+        shell: bash
         env:
           ROUTE_RESULT: ${{ needs.route.result }}
           PLATFORM_RESULT: ${{ needs.platforms.result }}
           SHOULD_RUN: ${{ needs.route.outputs.run }}
+          ROUTE_REASON: ${{ needs.route.outputs.reason }}
+          ROUTE_PULL: ${{ needs.route.outputs.pull }}
           HOSTS: ${{ needs.route.outputs.hosts }}
           EXPECTED_COMMIT: ${{ github.sha }}
-        run: ./tools/ci/Invoke-ValidationGate.ps1
+        run: python -B .github/scripts/validation.py join
       - name: Retain first failures and timing by check category
         if: ${{ !cancelled() && needs.route.outputs.run == 'true' }}
-        shell: pwsh
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           HOSTS: ${{ needs.route.outputs.hosts }}
-        run: |
-          ./tools/ci/Write-ValidationSummary.ps1 -ReceivedDirectory artifacts/validation/received -Repository $env:GITHUB_REPOSITORY `
-            -Attempt ([int]$env:GITHUB_RUN_ATTEMPT) -RunId ([long]$env:GITHUB_RUN_ID) -ApiUrl $env:GITHUB_API_URL `
-            -Hosts (($env:HOSTS | ConvertFrom-Json).include.runner)
+        run: python -B .github/scripts/validation.py summary

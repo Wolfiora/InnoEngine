@@ -16,18 +16,20 @@ public sealed class ValidationFailureExecutionTests
     public async Task FailedContractBlocksItsDependentButIndependentContextStillExecutes()
     {
         using var repository = new ValidationRepository();
-        repository.Write("tools/ci/Test-AgentRules.ps1", "Write-Output 'Independent policy executed'");
-        repository.Write("tests/ci/Failure.Tests.ps1", "Write-Output ('x' * 20000)\nthrow 'Original contract failure'");
+        repository.WriteRestoreProbe(
+            "<Target Name=\"Restore\"><Message Importance=\"high\" Text=\"" + new string('x', 20_000)
+            + "\" /><Error Text=\"Original contract failure\" /></Target>"
+        );
         repository.Git("add", ".");
-        repository.Git("commit", "-m", "Declare independent verification scripts");
+        repository.Git("commit", "-m", "Declare the failing restore target");
         using JsonDocument generated = await repository.PlanAsync();
         JsonObject plan = JsonNode.Parse(generated.RootElement.GetRawText())!.AsObject();
         JsonNode policy = plan["checks"]!.AsArray().Single(check => check!["kind"]!.GetValue<string>() == "instructions")!;
         JsonObject failure = policy.DeepClone().AsObject();
         failure["id"] = "contract-failure";
-        failure["kind"] = "ci-contracts";
-        failure["projects"] = new JsonArray("tests/ci/Failure.Tests.ps1");
-        failure["inputs"] = new JsonArray("tests/ci/Failure.Tests.ps1");
+        failure["kind"] = "restore-aot";
+        failure["owner"] = "src/Example/Example.csproj";
+        failure["inputs"] = new JsonArray("src/Example/Example.csproj");
         JsonObject independent = policy.DeepClone().AsObject();
         independent["id"] = "independent-policy";
         independent["context"] = "managed";
@@ -52,7 +54,7 @@ public sealed class ValidationFailureExecutionTests
             .GetProperty("detail")
             .GetString()!;
         Assert.True(detail.Length < 5000, "An owner receipt must not duplicate the complete process log.");
-        string log = repository.PathOf("artifacts/run/Failure.Tests.log");
+        string log = repository.PathOf("artifacts/run/native-aot-restore.log");
         Assert.Contains(log, detail);
         Assert.Contains(new string('x', 20_000), File.ReadAllText(log));
         Assert.Equal(

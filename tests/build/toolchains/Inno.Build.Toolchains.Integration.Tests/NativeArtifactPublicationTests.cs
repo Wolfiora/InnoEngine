@@ -625,16 +625,9 @@ public sealed class NativeArtifactPublicationTests : IDisposable
             Directory.CreateSymbolicLink(path, target);
             return;
         }
-        string escapedPath = path.Replace("'", "''", StringComparison.Ordinal);
-        string escapedTarget = target.Replace("'", "''", StringComparison.Ordinal);
         await ToolchainEnvironment.RunAsync(
-            "powershell.exe",
-            [
-                "-NoProfile",
-                "-NonInteractive",
-                "-Command",
-                $"$ErrorActionPreference='Stop'; New-Item -ItemType Junction -Path '{escapedPath}' -Target '{escapedTarget}' | Out-Null"
-            ],
+            "cmd.exe",
+            ["/d", "/c", "mklink", "/J", path, target],
             Path.GetDirectoryName(path)!,
             cancellationToken: CancellationToken.None
         );

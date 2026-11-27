@@ -16,7 +16,8 @@
     <InnoValidationSubject Include="../../../tools/Inno.Tooling.Validation/Inno.Tooling.Validation.csproj" />
     <ProjectReference Include="../fixtures/Inno.Testing.Validation/Inno.Testing.Validation.csproj" />
 
-    <InnoValidationInput Include="../../../tools/ci/Invoke-IsolatedTests.ps1" />
+    <InnoValidationInput Include="../../../tools/Inno.Tooling.Validation/ValidationTestExecution.cs;fixtures/editor-journey/*;fixtures/hosted_receipts.py;fixtures/pr88-managed-failure.json;../../../.github/scripts/*.py" />
+    <InnoValidationSubject Include="../../product/Inno.Testing.EditorJourney/Inno.Testing.EditorJourney.csproj" />
   </ItemGroup>
 
   <ItemGroup>

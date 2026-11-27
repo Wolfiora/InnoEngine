@@ -65,6 +65,8 @@ public sealed class ValidationRepository : IDisposable
         Write(".gitignore", "artifacts/\n**/obj/\n**/bin/\n");
         Write("InnoEngine.sln", "Microsoft Visual Studio Solution File, Format Version 12.00\n");
         Write("Shared.props", "<Project />");
+        Write("AGENTS.md", "# Fixture policy\n");
+        Write(".agents/rulebook/fixture.md", "---\ntags: [fixture]\n---\n# Test policy\n");
         if (initialize is null)
         {
             Write("src/Example/Example.csproj", Project("<Import Project=\"../../Shared.props\" />"));
@@ -260,6 +262,13 @@ public sealed class ValidationRepository : IDisposable
             throw new InvalidOperationException(await output + await error);
         }
     }
+
+    public void WriteRestoreProbe(string target)
+        => Write(
+            "src/Example/Example.csproj",
+            "<Project><Import Project=\"Sdk.props\" Sdk=\"Microsoft.NET.Sdk\" /><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>"
+            + "<Import Project=\"Sdk.targets\" Sdk=\"Microsoft.NET.Sdk\" />" + target + "</Project>"
+        );
 
     public static string Project(string content = "")
         => "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework><ImplicitUsings>disable</ImplicitUsings></PropertyGroup>" + content + "</Project>";

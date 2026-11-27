@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../../../Benchmark.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="../../../support/Inno.Benchmark.Services/Inno.Benchmark.Services.csproj" />
+    <ProjectReference Include="../../../../src/runtime/plugins/Inno.Plugins/Inno.Plugins.csproj" />
+    <ProjectReference Include="../../../../src/runtime/plugins/Inno.Plugins.Authoring/Inno.Plugins.Authoring.csproj" />
+    <ProjectReference Include="../../../../src/content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" />
+  </ItemGroup>
+</Project>

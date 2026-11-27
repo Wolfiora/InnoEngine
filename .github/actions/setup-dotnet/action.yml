@@ -15,16 +15,23 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Read SDK baseline
+    - name: Read the exact repository SDK version
       id: declaration
-      shell: pwsh
+      shell: bash
       env:
-        INNO_SDK_DECLARATION: ${{ inputs.global-json-file }}
+        SDK_DECLARATION: ${{ inputs.global-json-file }}
       run: |
-        $path = [IO.Path]::GetFullPath($env:INNO_SDK_DECLARATION, $env:GITHUB_WORKSPACE)
-        $version = (Get-Content -LiteralPath $path -Raw | ConvertFrom-Json).sdk.version
-        if ([string]::IsNullOrWhiteSpace($version)) { throw 'The repository must declare its SDK baseline.' }
-        "version=$version" >> $env:GITHUB_OUTPUT
+        python - <<'PY'
+        import json
+        import os
+        import re
+        from pathlib import Path
+        version = json.loads(Path(os.environ["SDK_DECLARATION"]).read_text(encoding="utf-8-sig"))["sdk"]["version"]
+        if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?", version):
+            raise ValueError("Expected an exact repository SDK version")
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+            print("version=" + version, file=output)
+        PY
 
     - name: Install declared SDK
       id: install
@@ -35,12 +42,16 @@ runs:
         dotnet-version: ${{ steps.declaration.outputs.version }}
 
     - name: Verify selected SDK
-      shell: pwsh
+      shell: bash
       env:
-        INNO_EXPECTED_SDK: ${{ steps.declaration.outputs.version }}
+        EXPECTED_SDK: ${{ steps.declaration.outputs.version }}
       run: |
-        $actual = & dotnet --version
-        if ($LASTEXITCODE -ne 0 -or $actual -ne $env:INNO_EXPECTED_SDK) {
-          throw "Selected SDK '$actual' does not match the installed baseline '$env:INNO_EXPECTED_SDK'."
-        }
-        Write-Host "Selected repository SDK: $actual"
+        python - <<'PY'
+        import os
+        import subprocess
+        actual = subprocess.check_output(["dotnet", "--version"], text=True).strip()
+        expected = os.environ["EXPECTED_SDK"]
+        if actual != expected:
+            raise SystemExit(f"Expected SDK {expected}, got {actual}")
+        print(f"Selected repository SDK {actual}")
+        PY

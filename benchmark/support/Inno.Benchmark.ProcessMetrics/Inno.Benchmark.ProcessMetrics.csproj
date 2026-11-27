@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <!-- A startup hook loads before the product assembly resolver and uses only the BCL. -->
+    <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+</Project>

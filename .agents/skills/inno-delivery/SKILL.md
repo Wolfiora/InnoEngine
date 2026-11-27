@@ -3,7 +3,7 @@ name: inno-delivery
 description: Review InnoEngine semantic risks and matching evidence, then prepare accurate issues or pull requests and diagnose CI failures.
 ---
 
-Select the `delivery`, `review` and `notification` tags through the rule script; use the [delivery rules](../../rulebook/delivery.md). Review changed dependency directions, input authority, rollback, concurrency and resource retirement. Directory neatness and test counts do not prove correctness.
+Run `rules select --tags delivery,review,notification` and use the [delivery rules](../../rulebook/delivery.md). Review changed dependency directions, input authority, rollback, concurrency and resource retirement. Directory neatness and test counts do not prove correctness.
 
 Reconcile the approved plan and every required result with current inputs. Distinguish missing implementation, unexecuted acceptance and external blockers. Report final behavior, actual checks, outstanding work and necessary action. Check commit subjects before pushing and issue or PR text before submitting against the delivery rules. Never promote historical evidence to a current pass.
 

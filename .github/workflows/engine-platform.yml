@@ -31,6 +31,9 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(inputs.hosts) }}
     steps:
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c
+        with:
+          python-version: '3.12'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
@@ -44,26 +47,12 @@ jobs:
           profile: ${{ inputs.profile }}
       - uses: ./.github/actions/resolve-backends
       - id: decision
-        shell: pwsh
+        shell: bash
         env:
           MULTI_HOST: ${{ fromJSON(inputs.hosts).include[1] != null }}
           REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
-        run: |
-          $decision = Get-Content artifacts/backend-request/acquisition.json -Raw | ConvertFrom-Json
-          $forced = @($env:REBUILD_TARGETS -split ',' | Where-Object { $_ })
-          $deferred = @($decision.packages | Where-Object { $_.operation -ceq 'produce' -or $_.target -cin $forced }).Count -gt 0
-          if (!$deferred -and $decision.packages.Count -eq 1) {
-            $digest = $decision.packages[0].sha256
-            if ($digest -cnotmatch '^[a-f0-9]{64}$') { throw 'Direct backend consumption requires an exact archive digest.' }
-            "digest=$digest" >> $env:GITHUB_OUTPUT
-          }
-          $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
-          "entry-directory=$((Split-Path $entry).Replace('\','/'))" >> $env:GITHUB_OUTPUT
-          $inline = !$deferred -and ($env:MULTI_HOST -ine 'true' -or ($decision.portableTestChanges -and !$decision.packages.Count))
-          $decision | Add-Member -NotePropertyName executedLocally -NotePropertyValue $inline
-          $decision | Add-Member -NotePropertyName deferred -NotePropertyValue $deferred
-          [IO.File]::WriteAllText([IO.Path]::GetFullPath('artifacts/backend-request/acquisition.json'), (ConvertTo-Json $decision -Depth 30 -Compress))
-          "dispatch=$((!$inline).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+        run: python -B .github/scripts/backend_artifacts.py decide
+
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: fromJSON(inputs.hosts).include[1] != null || steps.decision.outputs.dispatch == 'true'
         with:
@@ -105,6 +94,9 @@ jobs:
       independent: ${{ steps.join.outputs.independent }}
       required: ${{ steps.join.outputs.required }}
     steps:
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c
+        with:
+          python-version: '3.12'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
@@ -114,22 +106,13 @@ jobs:
           merge-multiple: ${{ fromJSON(inputs.hosts).include[1] == null }}
           path: ${{ fromJSON(inputs.hosts).include[1] == null && format('artifacts/requests/backend-request-{0}', fromJSON(inputs.hosts).include[0].runner) || 'artifacts/requests' }}
       - id: join
-        shell: pwsh
+        shell: bash
         env:
           HOSTS: ${{ inputs.hosts }}
           REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           GH_TOKEN: ${{ github.token }}
-        run: |
-          $options = @{}
-          if ($env:GITHUB_EVENT_NAME -ceq 'push' -and $env:GITHUB_REF -ceq "refs/heads/$env:DEFAULT_BRANCH") { $options.DefaultBranch = $env:DEFAULT_BRANCH }
-          $jobs = ./tools/ci/Join-BackendAcquisitions.ps1 @options -RebuildTargets $env:REBUILD_TARGETS -Received artifacts/requests -Hosts (($env:HOSTS | ConvertFrom-Json).include.runner) `
-            -Revision $env:GITHUB_SHA
-          foreach ($name in 'chains','independent') {
-            "$name=$(@{include=@($jobs.$name)} | ConvertTo-Json -Compress -Depth 8)" >> $env:GITHUB_OUTPUT
-          }
-          "reader_tags=$(ConvertTo-Json -InputObject $jobs.readerTags -Compress)" >> $env:GITHUB_OUTPUT
-          "required=$(($jobs.platforms.Count -gt 0).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+        run: python -B .github/scripts/backend_artifacts.py matrix
 
   independent:
     name: Engine tests (${{ matrix.runner }})
@@ -141,6 +124,9 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.backend-matrix.outputs.independent) }}
     steps:
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c
+        with:
+          python-version: '3.12'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0

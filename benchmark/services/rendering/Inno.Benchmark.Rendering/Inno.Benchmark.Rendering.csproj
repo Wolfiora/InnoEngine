@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../../../Benchmark.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="../../../support/Inno.Benchmark.Services/Inno.Benchmark.Services.csproj" />
+    <ProjectReference Include="../../../../src/services/rendering/Inno.Rendering/Inno.Rendering.csproj" />
+    <ProjectReference Include="../../../../src/services/rendering/Inno.Rendering.Runtime/Inno.Rendering.Runtime.csproj" />
+    <ProjectReference Include="../../../../src/services/rendering/Inno.Rendering.Assets/Inno.Rendering.Assets.csproj" />
+    <ProjectReference Include="../../../../src/content/deployment/Inno.Content/Inno.Content.csproj" />
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Diagnostics/Inno.Core.Diagnostics.csproj" />
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
+    <ProjectReference Include="../../../../tests/support/Inno.Testing.Content/Inno.Testing.Content.csproj" />
+    <ProjectReference Include="../fixtures/Inno.Benchmark.Rendering.Fixtures/Inno.Benchmark.Rendering.Fixtures.csproj" />
+  </ItemGroup>
+</Project>

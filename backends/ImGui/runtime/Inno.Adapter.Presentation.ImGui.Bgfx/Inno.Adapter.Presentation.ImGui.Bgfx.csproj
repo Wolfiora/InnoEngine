@@ -20,11 +20,17 @@
     <ProjectReference Include="../../../../src/services/rendering/Inno.Rendering/Inno.Rendering.csproj" />
   </ItemGroup>
 
-  <Target Name="CompileImGuiShaderGraphs" DependsOnTargets="PrepareInnoBuildTaskHost" Condition="'$(_InnoConsumeBackend)' != 'true' and '$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true' and '$(InnoBuildPurpose)' != 'ApiReferences'">
+  <Target Name="ValidateImGuiShaderProfile">
+    <Error Condition="'$(InnoImGuiShaderTarget)' == '' or '@(_ImGuiShaderApi)' == ''" Text="ImGui shader compilation requires the Editor product's explicit shader platform and graphics API set." />
+  </Target>
+
+  <Target
+    Name="CompileImGuiShaderGraphs"
+    DependsOnTargets="ValidateImGuiShaderProfile;PrepareInnoBuildTaskHost"
+    Condition="'$(_InnoConsumeBackend)' != 'true' and '$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true' and '$(InnoBuildPurpose)' != 'ApiReferences'">
     <PropertyGroup>
       <_InnoShaderIntermediateRoot>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)', '$(MSBuildProjectDirectory)'))</_InnoShaderIntermediateRoot>
     </PropertyGroup>
-    <Error Condition="'$(InnoImGuiShaderTarget)' == '' or '@(_ImGuiShaderApi)' == ''" Text="ImGui shader compilation requires the Editor product's explicit shader platform and graphics API set." />
     <CompileShaderTask
       NativeDependencyManifestPath="$(InnoNativeDependencyManifest)"
       EngineRoot="$(InnoShaderToolSourceRoot)"
