@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Inno.Core.Execution;
+using Inno.Scripting.Api;
 
 namespace Inno.Runtime.Contracts;
 
@@ -231,6 +232,7 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
     /// <summary>
     /// Gets resources and cancellation owned exclusively by this subsystem.
     /// </summary>
+    [ScriptingApiIgnore]
     protected LifetimeScope lifetime => m_lifetime;
 
     /// <summary>

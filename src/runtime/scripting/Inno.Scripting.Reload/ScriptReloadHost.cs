@@ -1022,19 +1022,13 @@ public sealed class ScriptReloadHost : IDisposable
             return null;
         }
 
-        Dictionary<string, string> candidatePluginHashes = m_plugins.compilationPlugins
+        HashSet<string> candidatePluginIDs = m_plugins.compilationPlugins
             .Where(static plugin => plugin.containsCode)
-            .ToDictionary(
-                static plugin => plugin.manifest.pluginId,
-                static plugin => plugin.contentHash,
-                StringComparer.Ordinal
-            );
+            .Select(static plugin => plugin.manifest.pluginId)
+            .ToHashSet(StringComparer.Ordinal);
         HashSet<string> removedModuleNames = m_plugins.activePlugins
             .Where(static plugin => plugin.containsCode)
-            .Where(plugin => (
-                !candidatePluginHashes.TryGetValue(plugin.manifest.pluginId, out string? candidateHash)
-                || !string.Equals(plugin.contentHash, candidateHash, StringComparison.Ordinal)
-            ))
+            .Where(plugin => !candidatePluginIDs.Contains(plugin.manifest.pluginId))
             .Select(static plugin => "Plugin." + plugin.manifest.pluginId)
             .Where(m_pluginModules.ContainsKey)
             .ToHashSet(StringComparer.Ordinal);

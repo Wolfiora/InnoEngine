@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Inno.Core.Events;
 using Inno.Core.Identity;
@@ -67,16 +68,27 @@ public sealed partial class InputRuntime : RuntimeSubsystem, IInputService, IInp
     protected override void OnStop()
     {
         m_accepting = false;
-        try
+        List<Exception>? failures = null;
+        foreach (Connection device in m_connections.ToArray())
         {
-            foreach (Connection device in m_connections.ToArray())
+            try
             {
                 device.Dispose();
             }
+            catch (Exception exception)
+            {
+                (failures ??= []).Add(exception);
+            }
         }
-        finally
+        try
         {
             m_backend.Dispose();
         }
+        catch (Exception exception)
+        {
+            (failures ??= []).Add(exception);
+        }
+        m_changes.Clear();
+        if (failures is not null) throw new AggregateException("Input retirement failed.", failures);
     }
 }

@@ -7,6 +7,7 @@ using Inno.Core.Events;
 using Inno.Core.Execution;
 using Inno.Core.Identity;
 using Inno.Extensibility.Types;
+using Inno.Scripting.Api;
 
 namespace Inno.Runtime.Contracts;
 
@@ -45,6 +46,7 @@ public sealed class RuntimeSubsystemContext
     /// <exception cref="ArgumentNullException">
     /// A required foundation service is null.
     /// </exception>
+    [ScriptingApiIgnore]
     public RuntimeSubsystemContext(
         EventDispatcher events,
         DiagnosticHub diagnostics,
@@ -82,21 +84,25 @@ public sealed class RuntimeSubsystemContext
     /// <summary>
     /// Gets the shared diagnostic state owner.
     /// </summary>
+    [ScriptingApiIgnore]
     public DiagnosticHub diagnostics { get; }
 
     /// <summary>
     /// Gets the isolated live-object identity domain.
     /// </summary>
+    [ScriptingApiIgnore]
     public IdentityAllocator identities { get; }
 
     /// <summary>
     /// Gets the current foundation type catalog.
     /// </summary>
+    [ScriptingApiIgnore]
     public TypeCatalog types { get; }
 
     /// <summary>
     /// Gets resources owned by this pipeline, not by a global container.
     /// </summary>
+    [ScriptingApiIgnore]
     public LifetimeScope resources { get; }
 
     /// <summary>
