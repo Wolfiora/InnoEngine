@@ -12,9 +12,10 @@ namespace Inno.Runtime;
 /// <summary>
 /// Owns the dependency-ordered runtime subsystem generation for one Host or Session scope.
 /// </summary>
-public sealed class RuntimeSubsystemPipeline : IDisposable
+public sealed partial class RuntimeSubsystemPipeline : IDisposable
 {
-    private readonly List<Entry> m_entries = [];
+    private List<Entry> m_entries = [];
+    private ExtensionRegistry? m_extensions;
     private readonly LifetimeScope m_resources;
     private readonly RuntimeSubsystemContext m_context;
     private readonly List<Exception> m_retirementFailures = [];
@@ -264,6 +265,8 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
         }
         m_stopping = true;
         m_frameOpen = false;
+        m_extensions?.Dispose();
+        m_extensions = null;
         Release();
         try
         {
@@ -291,10 +294,9 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
         ArgumentNullException.ThrowIfNull(configuredFactories);
         try
         {
-            IRuntimeSubsystemFactory[] ordered = Order(
-                configuredFactories.Select(static factory =>
-                    (IRuntimeSubsystemFactory)new FactorySnapshot(factory)).ToArray()
-            );
+            var configured = configuredFactories.Select(static factory => (IRuntimeSubsystemFactory)new FactorySnapshot(factory)).ToArray();
+            m_extensions = new ExtensionRegistry(this, configured);
+            IRuntimeSubsystemFactory[] ordered = m_extensions.ordered;
             if (ordered.Any(factory => factory.descriptor.lifetime != m_context.lifetime))
             {
                 throw new InvalidOperationException($"Subsystem lifetime does not match its {m_context.lifetime} owner.");
@@ -320,20 +322,7 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
                 m_entries.Add(entry);
                 try
                 {
-                    var context = new RuntimeSubsystemContext(
-                        m_context.events,
-                        m_context.diagnostics,
-                        m_context.identities,
-                        m_context.types,
-                        entry.resources,
-                        m_context.lifetime,
-                        m_context.isEditMode,
-                        m_context.capabilities
-                    );
-                    entry.subsystem = factory.Create(context)
-                                      ?? throw new InvalidOperationException($"Runtime subsystem factory '{descriptor.id}' returned null.");
-                    entry.subsystem.Attach();
-                    entry.isAttached = true;
+                    Attach(entry, factory);
                 }
                 catch (Exception failure) when (descriptor.requirement == RuntimeSubsystemRequirement.Optional
                                                 && failure is not RetirementPendingException
@@ -367,6 +356,26 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
             m_stopping = true;
             throw;
         }
+    }
+
+    private void Attach(
+        Entry entry,
+        IRuntimeSubsystemFactory factory
+    ) {
+        var context = new RuntimeSubsystemContext(
+            m_context.events,
+            m_context.diagnostics,
+            m_context.identities,
+            m_context.types,
+            entry.resources,
+            m_context.lifetime,
+            m_context.isEditMode,
+            m_context.capabilities
+        );
+        entry.subsystem = factory.Create(context)
+                          ?? throw new InvalidOperationException($"Runtime subsystem factory '{entry.descriptor.id}' returned null.");
+        entry.subsystem.Attach();
+        entry.isAttached = true;
     }
 
     private void Release()
