@@ -56,6 +56,26 @@ public sealed class MiniAudioDeviceTests
     }
 
     [Fact]
+    public void FailedEffectSilencesOnlyItsBlockAndReportsItsIdentity()
+    {
+        using var device = new MiniAudioDevice(new MiniAudioDeviceOptions { noDevice = true, channels = 1 });
+        IAudioDevice backend = device;
+        AudioBusHandle master = backend.CreateBus(AudioBusID.master);
+        var configuration = new AudioProcessorConfiguration(new AudioProcessorID("fixture.throw-once"));
+        int calls = 0;
+        var effect = new FixtureProcessor(fill: true, () =>
+        {
+            if (++calls == 1) throw new InvalidOperationException("fixture block failed");
+        });
+        Assert.True(device.AddBlockProcessor(master, configuration, effect));
+        var samples = new float[512];
+        device.RenderOffline(samples);
+        Assert.All(samples[..256], value => Assert.Equal(0f, value));
+        Assert.All(samples[256..], value => Assert.Equal(0.5f, value));
+        Assert.Contains("fixture.throw-once", backend.statistics.lastProcessorFailure);
+    }
+
+    [Fact]
     public void StreamDecoderPreservesShortReadsAndSeeksEachPlaybackIndependently()
     {
         using var device = new MiniAudioDevice(new MiniAudioDeviceOptions { noDevice = true, channels = 1 });

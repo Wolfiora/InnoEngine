@@ -102,7 +102,18 @@ public sealed class ScriptCompilationTests : ScriptingPipelineFixture
         Assert.NotEqual(connected.instance, replacement.instance);
         Assert.Equal(0.75, replacement.controls["left"]);
 
-        source = source.Replace(
+        string workingSource = source;
+        source = source.Replace("dependencies = [", "requiresRestart = true, dependencies = [", StringComparison.Ordinal);
+        Install(fixture.projectRoot, fixture.host.serialization);
+        Assert.True(fixture.RefreshPlugins());
+        Assert.True(fixture.CompilePendingPluginReload(reload).success);
+        Exception exclusive = Assert.ThrowsAny<Exception>(() => reload.ApplyPendingReload());
+        Assert.Contains("requires a host restart", exclusive.ToString(), StringComparison.Ordinal);
+        CompleteUnloadVerification(reload);
+        session.Tick(0.016f);
+        Assert.Equal(replacement.instance, Assert.Single(input.snapshot.devices).instance);
+
+        source = workingSource.Replace(
             "=> new Controller(context.isEditMode)",
             "=> throw new InvalidOperationException(\"bad candidate\")",
             StringComparison.Ordinal
