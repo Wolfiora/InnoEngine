@@ -208,6 +208,40 @@ public sealed class InputSnapshot
     /// </returns>
     public bool WasMouseButtonReleased(MouseButton button) => m_mouseButtonsReleased.Contains(button);
 
+    /// <summary>
+    /// Gets the connected plugin devices at this frame boundary.
+    /// </summary>
+    public IReadOnlyList<InputDeviceState> devices { get; private set; } = [];
+
+    /// <summary>
+    /// Gets the ordered connection and control transitions since the previous capture.
+    /// </summary>
+    public IReadOnlyList<InputDeviceChange> deviceChanges { get; private set; } = [];
+
+    /// <summary>
+    /// Combines this backend capture with independently owned device input from the same frame.
+    /// </summary>
+    /// <param name="states">
+    /// Immutable states of currently connected devices.
+    /// </param>
+    /// <param name="changes">
+    /// Ordered device transitions to freeze.
+    /// </param>
+    /// <returns>
+    /// An independent snapshot sharing the frozen keyboard and pointer capture.
+    /// </returns>
+    public InputSnapshot WithDevices(
+        IEnumerable<InputDeviceState> states,
+        IEnumerable<InputDeviceChange> changes
+    ) {
+        ArgumentNullException.ThrowIfNull(states);
+        ArgumentNullException.ThrowIfNull(changes);
+        var result = (InputSnapshot)MemberwiseClone();
+        result.devices = Array.AsReadOnly(states.ToArray());
+        result.deviceChanges = Array.AsReadOnly(changes.ToArray());
+        return result;
+    }
+
     private static HashSet<TValue> Copy<TValue>(IEnumerable<TValue>? values)
         where TValue : struct, Enum
             => values is null ? [] : values.ToHashSet();

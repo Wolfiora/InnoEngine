@@ -6,6 +6,7 @@ using Inno.Adapter.Input;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Core.Events;
+using Inno.Core.Identity;
 using Inno.Core.Input;
 using Inno.Core.Logging;
 using Inno.Input.Runtime;
@@ -183,6 +184,39 @@ public sealed class InputRuntimeTests
         {
             Directory.Delete(root, recursive: true);
         }
+    }
+
+    [Fact]
+    public void DeviceFramesPreserveConnectionsAndOrderedChangesAfterRetirement()
+    {
+        var events = new EventDispatcher();
+        using var hub = events.CreateHub();
+        List<InputDeviceChange> observed = [];
+        using var subscription = hub.Listen<InputDeviceEvent>(evnt => observed.Add(evnt.change));
+        using var runtime = new InputRuntime(new EventInputBackend(0), new IdentityAllocator(), events);
+        runtime.Attach();
+
+        using InputDeviceConnection first = runtime.ConnectDevice("fixture.dial");
+        using InputDeviceConnection second = runtime.ConnectDevice("fixture.dial");
+        first.SetValue("pressed", 1);
+        first.SetValue("pressed", 0);
+        second.SetValue("position", 0.5);
+        runtime.BeginFrame(default);
+        InputSnapshot previous = Input.snapshot;
+        runtime.EndFrame(default);
+        first.Dispose();
+
+        runtime.BeginFrame(default);
+        InputSnapshot next = Input.snapshot;
+        runtime.EndFrame(default);
+        Assert.Equal(2, previous.devices.Count);
+        Assert.Equal(5, previous.deviceChanges.Count);
+        Assert.Equal(1, previous.deviceChanges[2].value);
+        Assert.Equal(0, previous.deviceChanges[3].value);
+        Assert.Equal(0.5, Assert.Single(next.devices).controls["position"]);
+        Assert.Equal(InputDeviceChangeKind.Disconnected, Assert.Single(next.deviceChanges).kind);
+        Assert.Equal(next.deviceChanges[0], observed[^1]);
+        Assert.Throws<ObjectDisposedException>(() => first.SetValue("pressed", 1));
     }
 
     private sealed class InputProbeFactory(List<bool> observations) : IRuntimeSubsystemFactory

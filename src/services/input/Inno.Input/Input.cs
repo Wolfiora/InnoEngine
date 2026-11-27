@@ -1,3 +1,4 @@
+using System;
 using Inno.Core.Input;
 using Inno.Core.Mathematics;
 
@@ -8,6 +9,23 @@ namespace Inno.Input;
 /// </summary>
 public static class Input
 {
+    /// <summary>
+    /// Connects a plugin device to the currently executing input session.
+    /// </summary>
+    /// <param name="typeID">
+    /// A stable device protocol identifier.
+    /// </param>
+    /// <returns>
+    /// A provider-owned connection that must retire with its device or plugin.
+    /// </returns>
+    /// <exception cref="NotSupportedException">
+    /// The selected input service cannot accept plugin devices.
+    /// </exception>
+    public static InputDeviceConnection ConnectDevice(string typeID)
+        => InputExecutionContext.current is IInputDeviceSource source
+           ? source.ConnectDevice(typeID)
+           : throw new NotSupportedException("The selected input service does not admit device connections.");
+
     /// <summary>
     /// Gets the complete immutable current-frame snapshot.
     /// </summary>
