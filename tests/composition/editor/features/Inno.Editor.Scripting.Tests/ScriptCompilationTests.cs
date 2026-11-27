@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Xml.Linq;
 using Xunit;
+using Inno.Adapter.Input;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Diagnostics;
@@ -23,7 +24,9 @@ using Inno.Editor.PlayMode;
 using Inno.Editor.Scene;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
+using Inno.Input.Runtime;
 using Inno.Plugins;
+using Inno.Runtime;
 using Inno.Scene;
 using Inno.Scene.Components;
 using Inno.Scripting.Compiler;
@@ -34,6 +37,141 @@ namespace Inno.Editor.Scripting.Tests;
 
 public sealed class ScriptCompilationTests : ScriptingPipelineFixture
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PluginContractsCompileFromTheInstalledPackage(bool runtimeDeployment)
+    {
+        using var fixture = new ScriptingFixture((
+            root,
+            serialization
+        ) => WritePluginPackage(
+            root,
+            "controller.iplugin",
+            serialization,
+            new PluginManifest { pluginId = "fixture.controller", displayName = "Controller and Audio" },
+            new Dictionary<string, byte[]>
+            {
+                ["Assets/Controller.cs"] = Encoding.UTF8.GetBytes("""
+                    using System;
+                    using System.Collections;
+                    using System.IO;
+                    using InnoEngine.Audio;
+                    using InnoEngine.Core;
+                    using InnoEngine.Coroutines;
+                    using InnoEngine.Input;
+                    using InnoEngine.Runtime;
+
+                    [RuntimeSubsystemExtension("fixture.controller", dependencies = ["inno.runtime.input"])]
+                    public sealed class ControllerFactory : IRuntimeSubsystemActivator
+                    {
+                        public IRuntimeSubsystem Create(RuntimeSubsystemContext context) => new Controller();
+                    }
+
+                    public sealed class Controller : RuntimeSubsystem
+                    {
+                        private InputDeviceConnection? m_connection;
+
+                        protected override void OnUpdate(RuntimeFrame frame)
+                        {
+                            m_connection ??= Input.ConnectDevice("fixture.two-knob");
+                            m_connection.SetValue("left", 0.5);
+                        }
+
+                        public void Play(AudioClipAsset clip) => SessionCoroutines.Start(this, PlayAndWait(clip));
+
+                        private IEnumerator PlayAndWait(AudioClipAsset clip)
+                        {
+                            AudioVoiceHandle voice = Audio.Play(clip);
+                            yield return new WaitForVoice(voice);
+                        }
+
+                        protected override void OnStop() => m_connection?.Dispose();
+                    }
+
+                    public sealed class WaitForVoice(AudioVoiceHandle voice) : YieldInstruction
+                    {
+                        protected override Func<double, ulong, bool> CreateWaiter()
+                            => (_, _) => Audio.TryGetVoiceState(voice, out _);
+                    }
+
+                    [AudioStreamDecoder("fixture/unsigned-pcm")]
+                    public sealed class UnsignedDecoder : AudioStreamDecoder
+                    {
+                        public override AudioStreamReader Open(Stream encoded, AudioClipDescriptor descriptor)
+                            => new Cursor(encoded, descriptor.channels);
+
+                        private sealed class Cursor(Stream stream, int channels) : AudioStreamReader
+                        {
+                            public override bool canSeek => stream.CanSeek;
+
+                            public override int Read(Span<float> samples)
+                            {
+                                int index = 0;
+                                while (index < samples.Length)
+                                {
+                                    int value = stream.ReadByte();
+                                    if (value < 0) break;
+                                    samples[index++] = (value - 128) / 128f;
+                                }
+                                if (index % channels != 0) throw new InvalidDataException();
+                                return index / channels;
+                            }
+
+                            public override bool Seek(long frame)
+                            {
+                                stream.Position = checked(frame * channels);
+                                return true;
+                            }
+
+                            public override void Dispose() {}
+                        }
+                    }
+
+                    [AudioBlockProcessor("fixture.half")]
+                    public sealed class HalfVolume : AudioBlockProcessor
+                    {
+                        public override void Process(Span<float> samples, int channels, int sampleRate, AudioProcessorConfiguration configuration)
+                        {
+                            for (int index = 0; index < samples.Length; index++) samples[index] *= 0.5f;
+                        }
+                    }
+                    """),
+                ["Assets/Controller.cs.imeta"] = CreateScriptSourceMeta(serialization, Guid.NewGuid())
+            }
+        ));
+        if (runtimeDeployment)
+        {
+            ScriptCompilationResult deployment = fixture.CompileRuntimeDeployment();
+            Assert.True(deployment.success, FormatDiagnostics(deployment));
+            Assert.Single(deployment.runtimeAssemblyPaths, static path => Path.GetFileName(path).StartsWith("Inno.Plugin.", StringComparison.Ordinal));
+            return;
+        }
+        using RuntimeSession session = fixture.host.CreateSession(new RuntimeSessionOptions
+        {
+            createSubsystems = _ => [new InputRuntimeFactory(_ => new EventInputBackend(1))]
+        });
+        using ScriptReloadHost reload = fixture.CreateReloadHost();
+        reload.Start();
+        ScriptCompilationResult result = fixture.CompilePending(reload);
+        Assert.True(result.success, FormatDiagnostics(result));
+        Assert.True(reload.ApplyPendingReload());
+        Assert.Contains(session.subsystems.descriptors, static descriptor => descriptor.id.value == "fixture.controller");
+        InputRuntime input = session.subsystems.GetRequiredSubsystem<InputRuntime>();
+        session.Tick(0.016f);
+        session.Tick(0.016f);
+        var connected = Assert.Single(input.snapshot.devices);
+        Assert.Equal(0.5, connected.controls["left"]);
+        File.Delete(Path.Combine(fixture.projectRoot, "Plugins", "controller.iplugin"));
+        Assert.True(fixture.RefreshPlugins());
+        Assert.True(fixture.CompilePendingPluginReload(reload).success);
+        Assert.True(reload.ApplyPendingReload());
+        session.Tick(0.016f);
+        Assert.Empty(input.snapshot.devices);
+        Assert.DoesNotContain(session.subsystems.descriptors, static descriptor => descriptor.id.value == "fixture.controller");
+        Assert.Equal(0.5, connected.controls["left"]);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

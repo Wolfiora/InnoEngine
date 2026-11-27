@@ -30,6 +30,7 @@
     <ProjectReference Include="../../../../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Inno.Editor.Panel.FileBrowser.csproj" />
     <ProjectReference Include="../../../../../src/composition/editor/framework/Inno.Editor.Graph/Inno.Editor.Graph.csproj" />
     <ProjectReference Include="../../../../../src/services/rendering/Inno.Rendering.Assets/Inno.Rendering.Assets.csproj" />
+    <ProjectReference Include="../../../../../src/services/input/Inno.Input.Runtime/Inno.Input.Runtime.csproj" />
     <ProjectReference Include="../../../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Tools/Inno.Build.Toolchains.Bgfx.Tools.csproj" />
     <ProjectReference Include="../../../../../src/services/rendering/Inno.Rendering.Shaders/Inno.Rendering.Shaders.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../../src/foundation/core/Inno.Core.Diagnostics/Inno.Core.Diagnostics.csproj" PrivateAssets="compile" />

@@ -12,6 +12,10 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Marks a reloadable render pipeline implementation with a stable extension identifier.
 /// </summary>
+/// <remarks>
+/// A pipeline contributes passes through the rendering runtime. Texture formats and vertex layouts must
+/// still be supported by the selected device and backend.
+/// </remarks>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
 [StableTypeID("bbaa3835-1ee7-5e0f-b690-304d4f6f98ed")]
 public sealed class RenderPipelineExtensionAttribute : Attribute

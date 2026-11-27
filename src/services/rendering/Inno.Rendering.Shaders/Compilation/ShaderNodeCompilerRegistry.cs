@@ -11,6 +11,10 @@ namespace Inno.Rendering.Shaders;
 /// <summary>
 /// Owns reloadable shader node compilers through the shared candidate, rollback and retirement protocol.
 /// </summary>
+/// <remarks>
+/// Node contributions lower to the shader representation understood by the selected compiler. Adding a
+/// node does not add a new GPU instruction or material value representation.
+/// </remarks>
 public sealed class ShaderNodeCompilerRegistry : TypeRegistry<ShaderNodeCompilerCatalog>
 {
     private readonly TypeCatalog m_types;
