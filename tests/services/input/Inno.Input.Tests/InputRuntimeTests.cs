@@ -219,6 +219,42 @@ public sealed class InputRuntimeTests
         Assert.Throws<ObjectDisposedException>(() => first.SetValue("pressed", 1));
     }
 
+    [Fact]
+    public void ReconnectingADeviceOnlyChangesItsOwningSession()
+    {
+        using var first = new InputRuntime(new EventInputBackend(1), new IdentityAllocator(), new EventDispatcher());
+        using var second = new InputRuntime(new EventInputBackend(1), new IdentityAllocator(), new EventDispatcher());
+        first.Attach();
+        second.Attach();
+        using InputDeviceConnection original = first.ConnectDevice("fixture.dial");
+        using InputDeviceConnection other = second.ConnectDevice("fixture.dial");
+        original.SetValue("position", 1);
+        other.SetValue("position", 2);
+        first.BeginFrame(default);
+        InputDeviceState prior = Assert.Single(Input.snapshot.devices);
+        first.EndFrame(default);
+        second.BeginFrame(default);
+        Assert.Equal(2, Assert.Single(Input.snapshot.devices).controls["position"]);
+        second.EndFrame(default);
+
+        original.Dispose();
+        using InputDeviceConnection replacement = first.ConnectDevice("fixture.dial");
+        first.BeginFrame(default);
+        Assert.NotEqual(prior.instance, Assert.Single(Input.snapshot.devices).instance);
+        Assert.Empty(Input.snapshot.devices[0].controls);
+        Assert.Collection(
+            Input.snapshot.deviceChanges,
+            removed => Assert.Equal(InputDeviceChangeKind.Disconnected, removed.kind),
+            connected => Assert.Equal(InputDeviceChangeKind.Connected, connected.kind)
+        );
+        first.EndFrame(default);
+        second.BeginFrame(default);
+        Assert.Empty(Input.snapshot.deviceChanges);
+        Assert.Equal(2, Assert.Single(Input.snapshot.devices).controls["position"]);
+        second.EndFrame(default);
+        Assert.Equal(1, prior.controls["position"]);
+    }
+
     private sealed class InputProbeFactory(List<bool> observations) : IRuntimeSubsystemFactory
     {
         public RuntimeSubsystemDescriptor descriptor { get; } = new(

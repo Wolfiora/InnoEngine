@@ -7,16 +7,17 @@ using InnoEngine.Assets;
 using InnoEngine.Audio;
 using InnoEngine.Core;
 using InnoEngine.Coroutines;
+using InnoEngine.Events;
 using InnoEngine.Input;
 using InnoEngine.Runtime;
 
 [RuntimeSubsystemExtension("fixture.controller", dependencies = ["inno.runtime.input"])]
 public sealed class ControllerFactory : IRuntimeSubsystemActivator
 {
-    public IRuntimeSubsystem Create(RuntimeSubsystemContext context) => new Controller(context.isEditMode);
+    public IRuntimeSubsystem Create(RuntimeSubsystemContext context) => new Controller(context.isEditMode, context.events);
 }
 
-public sealed class Controller(bool editing) : RuntimeSubsystem
+public sealed class Controller(bool editing, EventDispatcher events) : RuntimeSubsystem
 {
     private InputDeviceConnection? m_connection;
 
@@ -25,6 +26,7 @@ public sealed class Controller(bool editing) : RuntimeSubsystem
         if (m_connection is not null) return;
         m_connection = Input.ConnectDevice("fixture.two-knob");
         m_connection.SetValue("left", 0.5);
+        Console.WriteLine("Controller fixture input connected.");
         if (!editing)
         {
             Play(Assets.Load<AudioClipAsset>(Assets.LocalPath("Tone.knobpcm")));
@@ -37,7 +39,17 @@ public sealed class Controller(bool editing) : RuntimeSubsystem
     {
         AudioVoiceHandle voice = Audio.Play(clip);
         if (!voice.isValid) throw new InvalidOperationException("The fixture voice did not start.");
-        yield return new WaitForVoice(voice);
+        using EventHub hub = events.CreateHub();
+        AudioCompletionReason? completion = null;
+        using IDisposable subscription = hub.Listen<AudioVoiceCompletedEvent>(finished =>
+        {
+            if (finished.voice.Equals(voice)) completion = finished.reason;
+        });
+        yield return new WaitForVoice(() => completion.HasValue);
+        if (completion != AudioCompletionReason.NaturalEnd)
+        {
+            throw new InvalidOperationException("Fixture playback ended with " + completion);
+        }
         m_connection!.SetValue("complete", 1);
         Console.WriteLine("Controller fixture playback complete.");
     }
@@ -52,10 +64,10 @@ public sealed class ControllerMixer : AudioMixerExtension
         => builder.AddProcessor(AudioBusID.master, new AudioProcessorConfiguration(new AudioProcessorID("fixture.half")));
 }
 
-public sealed class WaitForVoice(AudioVoiceHandle voice) : YieldInstruction
+public sealed class WaitForVoice(Func<bool> completed) : YieldInstruction
 {
     protected override Func<double, ulong, bool> CreateWaiter()
-        => (_, _) => Audio.TryGetVoiceState(voice, out _);
+        => (_, _) => !completed();
 }
 
 [AudioStreamDecoder("fixture/unsigned-pcm")]
@@ -98,8 +110,18 @@ public sealed class UnsignedDecoder : AudioStreamDecoder
 [AudioBlockProcessor("fixture.half")]
 public sealed class HalfVolume : AudioBlockProcessor
 {
+    private bool m_sawSignal;
+
     public override void Process(Span<float> samples, int channels, int sampleRate, AudioProcessorConfiguration configuration)
     {
-        for (int index = 0; index < samples.Length; index++) samples[index] *= 0.5f;
+        for (int index = 0; index < samples.Length; index++)
+        {
+            samples[index] *= 0.5f;
+            if (!m_sawSignal && Math.Abs(samples[index]) > 0.001f)
+            {
+                m_sawSignal = true;
+                Console.WriteLine("Controller fixture processed audible PCM.");
+            }
+        }
     }
 }

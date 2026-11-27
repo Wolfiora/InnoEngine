@@ -114,7 +114,7 @@ public sealed class ScriptCompilationTests : ScriptingPipelineFixture
         Assert.Equal(replacement.instance, Assert.Single(input.snapshot.devices).instance);
 
         source = workingSource.Replace(
-            "=> new Controller(context.isEditMode)",
+            "=> new Controller(context.isEditMode, context.events)",
             "=> throw new InvalidOperationException(\"bad candidate\")",
             StringComparison.Ordinal
         );
