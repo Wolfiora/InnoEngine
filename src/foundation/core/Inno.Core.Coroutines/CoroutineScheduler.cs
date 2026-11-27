@@ -222,19 +222,6 @@ public sealed class CoroutineScheduler : IDisposable
         }
     }
 
-    internal double now => m_now;
-    internal ulong frame => m_frame;
-
-    internal bool Contains(CoroutineHandle handle)
-    {
-        if (handle.IsOwnedBy(this))
-        {
-            return IsHandleValid(handle.id);
-        }
-
-        return handle.isValid;
-    }
-
     internal bool IsHandleValid(long id) => Volatile.Read(ref m_disposed) == 0 && id > 0 && m_liveIDs.ContainsKey(id);
 
     private void ApplyPendingCommands()
@@ -338,7 +325,7 @@ public sealed class CoroutineScheduler : IDisposable
     {
         if (state.waiter is not null)
         {
-            bool waiting = state.waiter.Invoke(this);
+            bool waiting = state.waiter(m_now - state.waitStartTime, m_frame - state.waitStartFrame);
             if (state.retired)
             {
                 return false;
@@ -350,6 +337,12 @@ public sealed class CoroutineScheduler : IDisposable
             state.waiter = null;
         }
 
+        if (state.waitingTask is { IsCompleted: false } || state.waitingHandle.isValid)
+        {
+            return true;
+        }
+        state.waitingTask = null;
+        state.waitingHandle = default;
         return AdvanceCoroutine(state);
     }
 
@@ -380,8 +373,6 @@ public sealed class CoroutineScheduler : IDisposable
             }
             if (yielded is null)
             {
-                ulong targetFrame = m_frame + 1;
-                state.waiter = scheduler => scheduler.frame < targetFrame;
                 return true;
             }
 
@@ -400,19 +391,22 @@ public sealed class CoroutineScheduler : IDisposable
 
             if (yielded is YieldInstruction instruction)
             {
-                state.waiter = instruction.CreateWaiter(m_now, m_frame);
+                state.waitStartTime = m_now;
+                state.waitStartFrame = m_frame;
+                state.waiter = instruction.CreateWaiter()
+                               ?? throw new InvalidOperationException("A yield instruction returned no predicate.");
                 return true;
             }
 
             if (yielded is Task task)
             {
-                state.waiter = _ => !task.IsCompleted;
+                state.waitingTask = task;
                 return true;
             }
 
             if (yielded is CoroutineHandle handle)
             {
-                state.waiter = scheduler => scheduler.Contains(handle);
+                state.waitingHandle = handle;
                 return true;
             }
 
@@ -433,6 +427,8 @@ public sealed class CoroutineScheduler : IDisposable
         m_states.Remove(state.id);
         m_liveIDs.TryRemove(state.id, out _);
         state.waiter = null;
+        state.waitingTask = null;
+        state.waitingHandle = default;
         if (!state.executing)
         {
             DisposeStack(state);
@@ -631,7 +627,12 @@ public sealed class CoroutineScheduler : IDisposable
         /// <summary>
         /// Gets the current continuation predicate, or null when the coroutine can advance.
         /// </summary>
-        public CoroutineWaitDelegate? waiter { get; set; }
+        public Func<double, ulong, bool>? waiter { get; set; }
+
+        public double waitStartTime { get; set; }
+        public ulong waitStartFrame { get; set; }
+        public Task? waitingTask { get; set; }
+        public CoroutineHandle waitingHandle { get; set; }
 
         /// <summary>
         /// Gets whether a user callback is borrowing the enumerator stack.

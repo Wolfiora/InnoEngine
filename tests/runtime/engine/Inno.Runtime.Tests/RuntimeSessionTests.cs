@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Xunit;
@@ -84,6 +85,47 @@ public sealed class RuntimeSessionTests : IDisposable
     {
         Assert.Throws<InvalidOperationException>(() => _ = SceneManager.loadedScenes);
         Assert.Throws<InvalidOperationException>(() => _ = Time.deltaTime);
+    }
+
+    [Fact]
+    public void SessionCoroutineRetiresWithItsSceneScopeBeforeSessionShutdown()
+    {
+        using EngineHost host = CreateHost("Coroutine");
+        using RuntimeSession first = host.CreateSession(CreateOptions("first", RuntimeSessionKind.Play));
+        using RuntimeSession second = host.CreateSession(CreateOptions("second", RuntimeSessionKind.Play));
+        bool retired = false;
+        using (first.EnterExecutionScope())
+        {
+            SceneManager.LoadNewScene("Owner");
+            SessionCoroutines.Start(this, Routine());
+        }
+        second.Tick(0.02f);
+        first.Tick(0.02f);
+        using (second.EnterExecutionScope())
+        {
+            SessionCoroutines.StopAll(this);
+        }
+        Assert.False(retired);
+
+        first.Dispose();
+
+        Assert.True(retired);
+
+        IEnumerator Routine()
+        {
+            try
+            {
+                while (true)
+                {
+                    yield return null;
+                }
+            }
+            finally
+            {
+                Assert.Equal("Owner", Assert.Single(SceneManager.loadedScenes).name);
+                retired = true;
+            }
+        }
     }
 
     [Fact]

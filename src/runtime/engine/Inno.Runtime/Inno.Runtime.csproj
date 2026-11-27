@@ -10,9 +10,6 @@
     <ProjectReference
       Include="../../../foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj"
       PrivateAssets="compile" />
-    <ProjectReference
-      Include="../../../foundation/core/Inno.Core.Coroutines/Inno.Core.Coroutines.csproj"
-      PrivateAssets="compile" />
     <ProjectReference Include="../../../foundation/core/Inno.Core.Diagnostics/Inno.Core.Diagnostics.csproj" />
     <ProjectReference Include="../../../foundation/core/Inno.Core.Jobs/Inno.Core.Jobs.csproj" PrivateAssets="compile" />
     <ProjectReference
@@ -26,6 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="../../../content/assets/Inno.Assets/Inno.Assets.csproj" />
     <ProjectReference Include="../../../content/deployment/Inno.Content/Inno.Content.csproj" />
+    <ProjectReference Include="../../../foundation/core/Inno.Core.Coroutines/Inno.Core.Coroutines.csproj" />
     <ProjectReference Include="../../../foundation/core/Inno.Core.Events/Inno.Core.Events.csproj" />
     <ProjectReference Include="../../../foundation/core/Inno.Core.Identity/Inno.Core.Identity.csproj" />
     <ProjectReference Include="../../../foundation/core/Inno.Core.Logging/Inno.Core.Logging.csproj" />

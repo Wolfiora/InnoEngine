@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Inno.Assets;
@@ -23,7 +24,7 @@ public sealed class RuntimeSession : IDisposable
 {
     private readonly EngineHost m_host;
     private readonly IdentityAllocator m_identities;
-    private readonly CoroutineScheduler m_coroutines;
+    private readonly SessionCoroutineRegistry m_coroutines;
     private readonly RuntimeClock m_clock = new();
     private readonly RetirementBarrier m_retirement;
     private JobScheduler m_jobs = null!;
@@ -44,7 +45,7 @@ public sealed class RuntimeSession : IDisposable
         this.options = Validate(options);
         this.sessionID = LogSessionID.Create();
         m_identities = new IdentityAllocator();
-        m_coroutines = new CoroutineScheduler();
+        m_coroutines = new SessionCoroutineRegistry(host.types, this);
         this.events = new EventDispatcher();
         m_retirement = new RetirementBarrier($"Runtime session {sessionID}", host.retirementTimeout);
     }
@@ -129,7 +130,7 @@ public sealed class RuntimeSession : IDisposable
     public IDisposable EnterExecutionScope()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        var scopes = new List<IDisposable>(6);
+        var scopes = new List<IDisposable>(7);
         try
         {
             scopes.Add(m_host.logs.EnterScope());
@@ -137,6 +138,7 @@ public sealed class RuntimeSession : IDisposable
             scopes.Add(LogSessionContext.Enter(sessionID));
             scopes.Add(scenes.EnterScope());
             scopes.Add(m_clock.EnterScope());
+            scopes.Add(SessionCoroutines.EnterScope(this));
             if (m_assets is not null)
             {
                 scopes.Add(AssetExecutionContext.EnterScope(m_assets));
@@ -179,7 +181,7 @@ public sealed class RuntimeSession : IDisposable
             subsystemFrameActive = true;
             subsystems.BeginFrame(frame);
             events.Flush();
-            m_coroutines.Tick(frame.deltaTime);
+            m_coroutines.scheduler.Tick(frame.deltaTime);
             if (options.kind != RuntimeSessionKind.Edit && !frame.isPaused)
             {
                 m_fixedAccumulator += frame.deltaTime;
@@ -241,7 +243,7 @@ public sealed class RuntimeSession : IDisposable
     {
         ArgumentNullException.ThrowIfNull(owner);
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        m_coroutines.StopAllCoroutines(owner);
+        m_coroutines.scheduler.StopAllCoroutines(owner);
     }
 
     /// <summary>
@@ -264,6 +266,13 @@ public sealed class RuntimeSession : IDisposable
             }
         }
     }
+
+    internal CoroutineHandle StartCoroutine(
+        object owner,
+        IEnumerator routine
+    ) => m_coroutines.scheduler.StartCoroutine(owner, routine);
+
+    internal bool StopCoroutine(CoroutineHandle handle) => m_coroutines.scheduler.StopCoroutine(handle);
 
     internal void Start()
     {
@@ -371,6 +380,7 @@ public sealed class RuntimeSession : IDisposable
         try
         {
             using IDisposable? scope = scenes is null ? null : EnterExecutionScope();
+            DisposeStage(m_coroutines, ref m_retirementFailures);
             if (m_subsystems is not null)
             {
                 DisposeStage(m_subsystems, ref m_retirementFailures);
@@ -394,7 +404,6 @@ public sealed class RuntimeSession : IDisposable
             (m_retirementFailures ??= []).Add(exception);
         }
         m_disposed = true;
-        DisposeStage(m_coroutines, ref m_retirementFailures);
         if (m_jobs is not null)
         {
             DisposeStage(m_jobs, ref m_retirementFailures);

@@ -1,18 +1,19 @@
+using System;
+
 namespace Inno.Core.Coroutines;
 
 /// <summary>
-/// Base type for the scheduler's built-in coroutine wait instructions.
+/// Creates a wait condition each time a coroutine yields this instruction.
 /// </summary>
-/// <remarks>
-/// Waiter creation is internal to this assembly. External callers use the supplied instruction types
-/// or compose supported yields in an enumerator; this is not an externally implementable extension point.
-/// </remarks>
 public abstract class YieldInstruction
 {
-    internal abstract CoroutineWaitDelegate CreateWaiter(
-        double now,
-        ulong frame
-    );
+    /// <summary>
+    /// Creates the predicate for one suspension. Mutable progress belongs to this invocation.
+    /// </summary>
+    /// <returns>
+    /// A predicate receiving elapsed scheduler seconds and frames since suspension.
+    /// The scheduler polls from the next tick until the predicate returns false, the coroutine stops,
+    /// or the predicate throws. Stopping releases the predicate without polling it again.
+    /// </returns>
+    protected internal abstract Func<double, ulong, bool> CreateWaiter();
 }
-
-internal delegate bool CoroutineWaitDelegate(CoroutineScheduler scheduler);

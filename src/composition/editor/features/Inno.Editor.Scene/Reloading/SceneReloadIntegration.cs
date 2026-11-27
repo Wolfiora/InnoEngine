@@ -79,10 +79,6 @@ internal static class SceneReloadIntegration
         {
             using IDisposable scope = runtimeSession.EnterExecutionScope();
             migration.PrepareForActivation();
-            foreach (object retiredObject in migration.retiredObjects)
-            {
-                runtimeSession.StopCoroutines(retiredObject);
-            }
         }
 
         /// <summary>

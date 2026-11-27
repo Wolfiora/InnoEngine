@@ -10,13 +10,16 @@ namespace Inno.Core.Coroutines;
 /// </param>
 public sealed class WaitWhile(Func<bool> predicate) : YieldInstruction
 {
+    private readonly Func<double, ulong, bool> m_wait = (
+        _,
+        _
+    ) => predicate();
+
     /// <summary>
     /// Gets the predicate evaluated each tick.
     /// </summary>
     public Func<bool> predicate { get; } = predicate ?? throw new ArgumentNullException(nameof(predicate));
 
-    internal override CoroutineWaitDelegate CreateWaiter(
-        double now,
-        ulong frame
-    ) => _ => predicate.Invoke();
+    /// <inheritdoc/>
+    protected internal override Func<double, ulong, bool> CreateWaiter() => m_wait;
 }
