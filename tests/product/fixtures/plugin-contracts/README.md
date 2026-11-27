@@ -2,7 +2,7 @@
 
 `Controller.cs.txt` is the single runtime script used by the Editor reload regression and the published Player. `Tone.editor.cs.txt` imports the square-wave sample and the game mixer. The game template contains a serialized startup scene and a project setting selecting that mixer. Work in a fresh scratch directory so that product caches remain outside this fixture.
 
-From the engine root, set `$scratch` to an empty absolute path and `$support` to the local support-pack store. The example uses PowerShell and the Windows x64 product.
+From the engine root, set `$scratch` to an empty absolute path and `$support` to the local support-pack store. The example uses PowerShell and the Windows x64 product. Select a .NET 10 SDK with a serviced NativeAOT compiler. The verified Windows publication used SDK 10.0.404.
 
 ```powershell
 $fixture = Resolve-Path tests/product/fixtures/plugin-contracts
@@ -14,7 +14,10 @@ Copy-Item "$fixture/Controller.cs.txt" "$scratch/ControllerFixture/Assets/Contro
 Copy-Item "$fixture/Tone.editor.cs.txt" "$scratch/ControllerFixture/Assets/Tone.editor.cs"
 New-Item -ItemType Directory "$scratch/Game/Plugins" | Out-Null
 & $sdk run -c Release --project entry/InnoEngine.Build -- plugin --engine-root $engine --dotnet $sdk --tools-target windows-x64 --project "$scratch/ControllerFixture" --display-name "Controller Fixture" --output "$scratch/Game/Plugins/Controller.iplugin"
-& $sdk run -c Release --project entry/InnoEngine.Editor -- "$scratch/Game" --window-visible false --smoke-frames 600
+& $sdk run -c Release --project entry/InnoEngine.Editor -- "$scratch/Game" --window-visible false --smoke-frames 10000 *> "$scratch/editor.log"
+if ($LASTEXITCODE -ne 0 -or !(Select-String -Path "$scratch/editor.log" -SimpleMatch "Controller fixture input connected." -Quiet)) {
+    throw "The Editor smoke ended before the installed controller ran. See $scratch/editor.log."
+}
 & $sdk run -c Release --project entry/InnoEngine.Build -- game --engine-root $engine --dotnet $sdk --tools-target windows-x64 --target windows-x64 --deployment nativeaot --project "$scratch/Game" --support-packs $support --startup-scene Startup.iscene --output "$scratch/Published"
 ```
 
