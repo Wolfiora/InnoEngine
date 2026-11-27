@@ -14,7 +14,7 @@ namespace Inno.Adapter.Audio.MiniAudio;
 /// <summary>
 /// Implements the backend-neutral audio device contract with a private MiniAudio engine and node graph.
 /// </summary>
-public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
+public sealed unsafe partial class MiniAudioDevice : AudioDevice, IAudioDevice, IAudioBlockProcessorDevice, IAudioStreamClipDevice
 {
     private const uint C_PROCESS_BLOCK_FRAMES = 4096;
 
@@ -37,6 +37,9 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
     private double m_pendingProcessFrames;
     private ulong m_nextIdentity = 1;
     private bool m_engineInitialized;
+    private bool m_pumpingEffects;
+    private int m_bufferedEffects;
+    private long m_retiredUnderruns;
 
     /// <summary>
     /// Creates a MiniAudio device using the default operating-system output device.
@@ -76,7 +79,11 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
 
             m_engineInitialized = true;
             int actualSampleRate = checked((int)NativeApi.Raw.EngineGetSampleRate(m_engine));
-            this.capabilities = new AudioCapabilities(true, true, true, m_options.listenerCount, actualSampleRate);
+            this.capabilities = new AudioCapabilities(true, true, true, m_options.listenerCount, actualSampleRate)
+            {
+                supportsExternalDecoders = true,
+                externalProcessorBufferFrames = MiniAudioBufferedProcessor.C_CAPACITY
+            };
             if (m_options.noDevice)
             {
                 m_processBuffer = (float*)NativeMemory.AllocZeroed(
@@ -134,7 +141,11 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
                 .Where(static descriptor => descriptor.loadMode == AudioClipLoadMode.Decode)
                 .Sum(EstimateDecodedByteLength),
             0
-        );
+        )
+        {
+            processorUnderrunFrames = m_retiredUnderruns + m_buses.Values.Sum(static bus =>
+                bus.processors.Sum(static processor => processor.buffered?.underrunFrames ?? 0))
+        };
 
     /// <summary>
     /// Releases all sounds, buses, processor nodes, listeners, and the native engine in dependency order.
@@ -150,6 +161,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
             return;
         }
 
+        EnsureOutsideEffect();
         foreach (VoiceRecord voice in m_voices.Values.ToArray())
         {
             ReleaseVoice(voice);
@@ -210,6 +222,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         {
             return AudioClipState.Failed;
         }
+        if (m_streamClips.ContainsKey(identity.value)) return AudioClipState.Ready;
         if (!PrepareNativeClip(identity.value))
         {
             return m_failedClips.Contains(identity.value) ? AudioClipState.Failed : AudioClipState.Preparing;
@@ -262,7 +275,8 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         {
             return default;
         }
-        if (!PrepareNativeClip(clipIdentity.value))
+        bool streamed = m_streamClips.TryGetValue(clipIdentity.value, out StreamClip? streamClip);
+        if (!streamed && !PrepareNativeClip(clipIdentity.value))
         {
             return default;
         }
@@ -276,45 +290,35 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
             return default;
         }
 
-        string path = m_clipPreparations[clipIdentity.value].preparation.path;
-        int pathByteCount = Encoding.UTF8.GetByteCount(path);
-        Span<byte> pathBytes = pathByteCount < 1024
-                               ? stackalloc byte[1024]
-                               : new byte[checked(pathByteCount + 1)];
-        Encoding.UTF8.GetBytes(path, pathBytes);
-        pathBytes[pathByteCount] = 0;
+        MiniAudioDecoderBuffer? stream = streamed ? streamClip!.Take() : null;
+        if (options.loop && stream is not null && !stream.canSeek)
+        {
+            stream.Dispose();
+            return default;
+        }
         MaSound* sound = (MaSound*)NativeMemory.AllocZeroed((nuint)sizeof(MaSound));
         MaSound* soundPointer = sound;
-        uint flags = descriptor.loadMode == AudioClipLoadMode.Stream
-                     ? (uint)MaSoundFlags.MA_SOUND_FLAG_STREAM
-                     : (uint)MaSoundFlags.MA_SOUND_FLAG_DECODE;
-        flags |= (uint)MaSoundFlags.MA_SOUND_FLAG_ASYNC;
-        MaResult initResult;
+        MaResult initialization;
         try
         {
-            fixed (byte* pathPointer = pathBytes)
-            {
-                initResult = NativeApi.Raw.SoundInitFromFile(
-                    m_engine,
-                    (sbyte*)pathPointer,
-                    flags,
-                    busRecord.group,
-                    null,
-                    soundPointer
-                );
-            }
+            initialization = stream is null
+                              ? InitEncodedSound(clipIdentity, descriptor, busRecord, sound)
+                              : NativeApi.Raw.SoundInitFromDataSource(m_engine, stream.source, 0, busRecord.group, sound);
         }
         catch
         {
             NativeMemory.Free(sound);
+            stream?.Dispose();
             throw;
         }
-        if (initResult != MaResult.MA_SUCCESS)
+        if (initialization != MaResult.MA_SUCCESS)
         {
             NativeMemory.Free(sound);
+            stream?.Dispose();
             return default;
         }
 
+        bool admitted = false;
         try
         {
             ApplyVoiceParameters(soundPointer, new AudioVoiceParameters(options.volume, options.pitch, options.pan, options.spatial));
@@ -332,25 +336,51 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
             MaResult startResult = NativeApi.Raw.SoundStart(soundPointer);
             if (startResult != MaResult.MA_SUCCESS)
             {
-                NativeApi.Raw.SoundUninit(soundPointer);
-                NativeMemory.Free(sound);
                 return default;
             }
 
             ulong identity = m_nextIdentity++;
-            m_voices.Add(identity, new VoiceRecord(clipIdentity.value, busRecord, sound, playbackState, scheduledDspTime));
+            m_voices.Add(identity, new VoiceRecord(clipIdentity.value, busRecord, sound, playbackState, scheduledDspTime, stream, options));
+            admitted = true;
             return CreateVoiceHandle(identity, generation);
         }
-        catch
+        finally
         {
-            NativeApi.Raw.SoundUninit(soundPointer);
-            NativeMemory.Free(sound);
-            throw;
+            if (!admitted)
+            {
+                NativeApi.Raw.SoundUninit(soundPointer);
+                NativeMemory.Free(sound);
+                stream?.Dispose();
+            }
+        }
+    }
+
+    private MaResult InitEncodedSound(
+        DeviceHandleIdentity clipIdentity,
+        AudioClipDescriptor descriptor,
+        BusRecord busRecord,
+        MaSound* sound
+    ) {
+        string path = m_clipPreparations[clipIdentity.value].preparation.path;
+        int pathByteCount = Encoding.UTF8.GetByteCount(path);
+        Span<byte> pathBytes = pathByteCount < 1024
+                               ? stackalloc byte[1024]
+                               : new byte[checked(pathByteCount + 1)];
+        Encoding.UTF8.GetBytes(path, pathBytes);
+        pathBytes[pathByteCount] = 0;
+        uint flags = descriptor.loadMode == AudioClipLoadMode.Stream
+                     ? (uint)MaSoundFlags.MA_SOUND_FLAG_STREAM
+                     : (uint)MaSoundFlags.MA_SOUND_FLAG_DECODE;
+        flags |= (uint)MaSoundFlags.MA_SOUND_FLAG_ASYNC;
+        fixed (byte* pathPointer = pathBytes)
+        {
+            return NativeApi.Raw.SoundInitFromFile(m_engine, (sbyte*)pathPointer, flags, busRecord.group, null, sound);
         }
     }
 
     bool IAudioDevice.Stop(AudioDeviceVoiceHandle voice)
     {
+        EnsureOutsideEffect();
         if (!TryGetVoice(voice, out ulong identity, out VoiceRecord record))
         {
             return false;
@@ -394,11 +424,13 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         AudioDeviceVoiceHandle voice,
         TimeSpan position
     ) {
+        EnsureOutsideEffect();
         if (position < TimeSpan.Zero || !TryGetVoice(voice, out _, out VoiceRecord record))
         {
             return false;
         }
-        ulong frame = checked((ulong)Math.Round(position.TotalSeconds * capabilities.sampleRate));
+        ulong frame = checked((ulong)Math.Round(position.TotalSeconds * m_clips[record.clipIdentity].sampleRate));
+        if (record.stream is not null) return SeekStream(record, checked((long)frame));
         return NativeApi.Raw.SoundSeekToPcmFrame(record.sound, frame) == MaResult.MA_SUCCESS;
     }
 
@@ -415,6 +447,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
             return false;
         }
         ApplyVoiceParameters(record.sound, parameters);
+        record.parameters = parameters;
         return true;
     }
 
@@ -424,9 +457,9 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
     ) {
         if (TryGetVoice(voice, out _, out VoiceRecord record))
         {
-            MaResult preparation = NativeApi.Raw.ResourceManagerDataSourceResult(
-                record.sound->PResourceManagerDataSource
-            );
+            MaResult preparation = record.stream is null
+                                   ? NativeApi.Raw.ResourceManagerDataSourceResult(record.sound->PResourceManagerDataSource)
+                                   : MaResult.MA_SUCCESS;
             playbackState = preparation == MaResult.MA_BUSY ? AudioPlaybackState.Preparing : record.state;
             return true;
         }
@@ -491,6 +524,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         ) {
             return false;
         }
+        EnsureOutsideEffect();
         ReleaseBus(record);
         m_buses.Remove(identity);
         return true;
@@ -549,6 +583,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         AudioBusHandle bus,
         AudioProcessorConfiguration processor
     ) {
+        EnsureOutsideEffect();
         ArgumentNullException.ThrowIfNull(processor);
         if (!TryGetBus(bus, out _, out BusRecord record))
         {
@@ -574,6 +609,41 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         record.processors.Add(nativeProcessor);
         record.tail = nativeProcessor.node;
         return true;
+    }
+
+    /// <inheritdoc/>
+    public bool AddBlockProcessor(
+        AudioBusHandle bus,
+        AudioProcessorConfiguration configuration,
+        AudioBlockProcessor processor
+    ) {
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(processor);
+        EnsureOutsideEffect();
+        if (!TryGetBus(bus, out _, out BusRecord record)) return false;
+        var buffered = new MiniAudioBufferedProcessor(
+            NativeApi.Raw.EngineGetNodeGraph(m_engine),
+            m_options.channels,
+            capabilities.sampleRate,
+            configuration
+        );
+        try
+        {
+            if (!buffered.Attach(record.tail, record.target, NativeApi.Raw.EngineGetTimeInPcmFrames(m_engine), processor))
+            {
+                buffered.Dispose();
+                return false;
+            }
+            record.processors.Add(new NativeProcessor(buffered.output, false, buffered));
+            record.tail = buffered.output;
+            m_bufferedEffects++;
+            return true;
+        }
+        catch
+        {
+            buffered.Dispose();
+            throw;
+        }
     }
 
     AudioListenerHandle IAudioDevice.CreateListener(AudioListenerState state)
@@ -633,6 +703,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         }
         else
         {
+            PumpEffects(C_PROCESS_BLOCK_FRAMES);
             UpdateOutputDeviceState();
         }
 
@@ -644,9 +715,9 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         double currentTime = dspTime;
         foreach ((ulong identity, VoiceRecord record) in m_voices.ToArray())
         {
-            MaResult preparation = NativeApi.Raw.ResourceManagerDataSourceResult(
-                record.sound->PResourceManagerDataSource
-            );
+            MaResult preparation = record.stream is null
+                                   ? NativeApi.Raw.ResourceManagerDataSourceResult(record.sound->PResourceManagerDataSource)
+                                   : MaResult.MA_SUCCESS;
             if (preparation == MaResult.MA_BUSY)
             {
                 continue;
@@ -661,7 +732,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
             ) {
                 record.state = AudioPlaybackState.Playing;
             }
-            if (NativeApi.Raw.SoundAtEnd(record.sound) != 0)
+            if (record.stream?.drained ?? (NativeApi.Raw.SoundAtEnd(record.sound) != 0))
             {
                 CompleteVoice(identity, record, AudioCompletionReason.NaturalEnd);
             }
@@ -673,7 +744,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
 
     private bool PrepareNativeClip(ulong identity)
     {
-        if (m_clipSources.ContainsKey(identity))
+        if (m_streamClips.ContainsKey(identity) || m_clipSources.ContainsKey(identity))
         {
             return true;
         }
@@ -737,6 +808,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
 
     private void ReleaseClipSource(ulong identity)
     {
+        if (m_streamClips.Remove(identity, out StreamClip? streamClip)) streamClip.Dispose();
         if (m_clipSources.TryGetValue(identity, out nint pointer))
         {
             NativeApi.Raw.ResourceManagerDataSourceUninit((MaResourceManagerDataSource*)pointer);
@@ -898,6 +970,40 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         );
     }
 
+    /// <summary>
+    /// Renders interleaved output from the active mixer into a caller-owned buffer on a device-free engine.
+    /// </summary>
+    /// <param name="samples">
+    /// A writable buffer containing a whole number of output frames.
+    /// </param>
+    /// <exception cref="InvalidOperationException">
+    /// Hardware playback owns the graph, or the renderer failed to produce the requested frames.
+    /// </exception>
+    public void RenderOffline(Span<float> samples)
+    {
+        EnsureActive();
+        EnsureOutsideEffect();
+        if (!m_options.noDevice) throw new InvalidOperationException("Hardware playback owns the active render graph.");
+        if (samples.Length % m_options.channels != 0)
+        {
+            throw new ArgumentException("The buffer must hold complete audio frames.", nameof(samples));
+        }
+        while (!samples.IsEmpty)
+        {
+            uint count = Math.Min((uint)(samples.Length / m_options.channels), C_PROCESS_BLOCK_FRAMES);
+            PumpEffects(count);
+            ulong read = 0;
+            fixed (float* destination = samples)
+            {
+                if (NativeApi.Raw.EngineReadPcmFrames(m_engine, destination, count, &read) != MaResult.MA_SUCCESS || read != count)
+                {
+                    throw new InvalidOperationException("The offline graph could not render the requested frames.");
+                }
+            }
+            samples = samples[((int)count * m_options.channels)..];
+        }
+    }
+
     private void ProcessHeadlessFrames(float deltaTime)
     {
         m_pendingProcessFrames += deltaTime * capabilities.sampleRate;
@@ -905,6 +1011,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         {
             ulong requested = (ulong)Math.Min(Math.Floor(m_pendingProcessFrames), C_PROCESS_BLOCK_FRAMES);
             ulong read = 0;
+            PumpEffects((uint)requested);
             MaResult result = NativeApi.Raw.EngineReadPcmFrames(m_engine, m_processBuffer, requested, &read);
             if (result != MaResult.MA_SUCCESS)
             {
@@ -921,6 +1028,33 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
                 return;
             }
         }
+    }
+
+    private void PumpEffects(uint requested)
+    {
+        if (m_bufferedEffects == 0 && m_streamClips.Count == 0) return;
+        EnsureOutsideEffect();
+        m_pumpingEffects = true;
+        try
+        {
+            PumpStreams();
+            foreach (BusRecord bus in m_buses.Values.OrderByDescending(GetBusDepth))
+            {
+                foreach (NativeProcessor processor in bus.processors)
+                {
+                    processor.buffered?.Pump(requested);
+                }
+            }
+        }
+        finally
+        {
+            m_pumpingEffects = false;
+        }
+    }
+
+    private void EnsureOutsideEffect()
+    {
+        if (m_pumpingEffects) throw new InvalidOperationException("The audio graph cannot retire during block processing.");
     }
 
     private void UpdateOutputDeviceState()
@@ -1002,7 +1136,11 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
         NativeMemory.Free(bus.group);
     }
 
-    private void EnsureActive() => ObjectDisposedException.ThrowIf(m_state == AudioDeviceState.Disposed, this);
+    private void EnsureActive()
+    {
+        ObjectDisposedException.ThrowIf(m_state == AudioDeviceState.Disposed, this);
+        EnsureOutsideEffect();
+    }
 
     private static uint NextGeneration()
     {
@@ -1095,10 +1233,18 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
     {
         NativeApi.Raw.SoundUninit(record.sound);
         NativeMemory.Free(record.sound);
+        record.stream?.Dispose();
     }
 
-    private static void ReleaseProcessor(NativeProcessor processor)
+    private void ReleaseProcessor(NativeProcessor processor)
     {
+        if (processor.buffered is { } buffered)
+        {
+            m_retiredUnderruns += buffered.underrunFrames;
+            m_bufferedEffects--;
+            buffered.Dispose();
+            return;
+        }
         if (processor.isDelay)
         {
             NativeApi.Raw.DelayNodeUninit((MaDelayNode*)processor.node, null);
@@ -1139,7 +1285,10 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
     private sealed class VoiceRecord
     {
         internal readonly ulong clipIdentity;
-        internal readonly MaSound* sound;
+        internal MaSound* sound;
+        internal MiniAudioDecoderBuffer? stream;
+        internal AudioVoiceParameters parameters;
+        internal readonly bool loop;
         internal readonly double? scheduledDspTime;
         internal readonly BusRecord bus;
         internal AudioPlaybackState state;
@@ -1149,8 +1298,13 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
             BusRecord bus,
             MaSound* sound,
             AudioPlaybackState state,
-            double? scheduledDspTime
+            double? scheduledDspTime,
+            MiniAudioDecoderBuffer? stream,
+            AudioPlayOptions options
         ) {
+            this.stream = stream;
+            this.loop = options.loop;
+            this.parameters = new AudioVoiceParameters(options.volume, options.pitch, options.pan, options.spatial);
             this.clipIdentity = clipIdentity;
             this.bus = bus;
             this.sound = sound;
@@ -1161,13 +1315,16 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
 
     private sealed class NativeProcessor
     {
+        internal readonly MiniAudioBufferedProcessor? buffered;
         internal readonly bool isDelay;
         internal readonly void* node;
 
         internal NativeProcessor(
             void* node,
-            bool isDelay
+            bool isDelay,
+            MiniAudioBufferedProcessor? buffered = null
         ) {
+            this.buffered = buffered;
             this.node = node;
             this.isDelay = isDelay;
         }

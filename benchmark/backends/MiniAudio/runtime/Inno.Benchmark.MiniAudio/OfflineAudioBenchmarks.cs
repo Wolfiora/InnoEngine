@@ -49,6 +49,30 @@ public class OfflineAudioBenchmarks
     [IterationSetup(Target = nameof(MixDelay))]
     public void Delay() => PrepareMixer(AudioProcessorID.delay);
 
+    [IterationSetup(Target = nameof(MixExternal))]
+    public void PrepareExternal()
+    {
+        AudioBusHandle bus = PrepareMixer(null);
+        var configuration = new AudioProcessorConfiguration(new AudioProcessorID("benchmark.half"));
+        if (!((IAudioBlockProcessorDevice)m_device).AddBlockProcessor(bus, configuration, new HalfVolume()))
+        {
+            throw new InvalidOperationException("The external effect was rejected.");
+        }
+    }
+
+    [Benchmark]
+    public void MixExternal() => m_device.Update(0.01f);
+
+    [IterationSetup(Target = nameof(StreamFirstBlock))]
+    public void PrepareDecoder() => Open();
+
+    [Benchmark]
+    public AudioClipHandle StreamFirstBlock()
+        => ((IAudioStreamClipDevice)m_device).CreateStreamClip(
+            new AudioClipDescriptor(new AudioCodecID("benchmark/pcm"), AudioClipLoadMode.Stream, 1, C_RATE, C_FRAMES, m_source.length),
+            () => new WaveCursor(m_source.OpenRead())
+        );
+
     [Benchmark]
     public void MixDry() => m_device.Update(0.01f);
 
@@ -61,7 +85,7 @@ public class OfflineAudioBenchmarks
     [IterationCleanup]
     public void Close() => m_device.Dispose();
 
-    private void PrepareMixer(AudioProcessorID? processor)
+    private AudioBusHandle PrepareMixer(AudioProcessorID? processor)
     {
         Open();
         DecodeToReady();
@@ -75,6 +99,47 @@ public class OfflineAudioBenchmarks
             throw new InvalidOperationException("Failed to start the PCM source.");
         }
         m_device.Update(0.01f);
+        return bus;
+    }
+
+    private sealed class HalfVolume : AudioBlockProcessor
+    {
+        public override void Process(
+            Span<float> samples,
+            int channels,
+            int sampleRate,
+            AudioProcessorConfiguration configuration
+        ) {
+            for (int index = 0; index < samples.Length; index++) samples[index] *= 0.5f;
+        }
+    }
+
+    private sealed class WaveCursor : AudioStreamReader
+    {
+        private readonly BinaryReader m_pcm;
+
+        internal WaveCursor(Stream source)
+        {
+            m_pcm = new BinaryReader(source);
+            source.Position = 44;
+        }
+
+        public override bool canSeek => true;
+
+        public override bool Seek(long frame)
+        {
+            m_pcm.BaseStream.Position = 44 + frame * sizeof(short);
+            return true;
+        }
+
+        public override int Read(Span<float> samples)
+        {
+            int count = (int)Math.Min(samples.Length, (m_pcm.BaseStream.Length - m_pcm.BaseStream.Position) / sizeof(short));
+            for (int index = 0; index < count; index++) samples[index] = m_pcm.ReadInt16() / 32768f;
+            return count;
+        }
+
+        public override void Dispose() => m_pcm.Dispose();
     }
 
     private sealed class WaveSource : IAudioClipSource

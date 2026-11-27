@@ -8,6 +8,7 @@ namespace Inno.Audio.Runtime;
 internal sealed class AudioMixerOwner : IDisposable
 {
     private readonly IAudioDevice m_device;
+    private readonly AudioExtensionRegistry m_extensions;
     private readonly Action<Exception> m_retirementFailed;
     private readonly Action<Action> m_retire;
     private readonly List<Exception> m_retirementFailures = [];
@@ -20,19 +21,22 @@ internal sealed class AudioMixerOwner : IDisposable
 
     internal AudioMixerOwner(
         IAudioDevice device,
+        AudioExtensionRegistry extensions,
         Action<Exception> retirementFailed,
         Action<Action> retire
-    ) : this(device, new AudioMixerBuilder().Build(), null, false, retirementFailed, retire) {}
+    ) : this(device, new AudioMixerBuilder().Build(), null, false, extensions, retirementFailed, retire) {}
 
     private AudioMixerOwner(
         IAudioDevice device,
         AudioMixer mixer,
         IReadOnlyDictionary<AudioBusID, BusControlState>? controls,
         bool suspended,
+        AudioExtensionRegistry extensions,
         Action<Exception> retirementFailed,
         Action<Action> retire
     ) {
         m_device = device;
+        m_extensions = extensions;
         m_retirementFailed = retirementFailed;
         m_retire = retire;
         m_activeMixer = mixer;
@@ -95,7 +99,7 @@ internal sealed class AudioMixerOwner : IDisposable
     }
 
     internal AudioMixerOwner PrepareReplacement(IAudioDevice device)
-        => new(device, m_activeMixer, m_busControls, m_suspended, m_retirementFailed, m_retire);
+        => new(device, m_activeMixer, m_busControls, m_suspended, m_extensions, m_retirementFailed, m_retire);
 
     internal bool TryGetBus(
         AudioBusID id,
@@ -272,7 +276,7 @@ internal sealed class AudioMixerOwner : IDisposable
                 }
                 foreach (AudioProcessorConfiguration processor in bus.processors)
                 {
-                    if (!device.AddBusProcessor(handle, processor))
+                    if (!AddProcessor(device, handle, processor))
                     {
                         throw new InvalidOperationException($"The backend rejected processor '{processor.id}'.");
                     }
@@ -295,6 +299,29 @@ internal sealed class AudioMixerOwner : IDisposable
                 m_retirementFailed(cleanup);
                 throw new AggregateException("Audio mixer preparation and rollback failed.", failure, cleanup);
             }
+            throw;
+        }
+    }
+
+    private bool AddProcessor(
+        IAudioDevice device,
+        AudioBusHandle bus,
+        AudioProcessorConfiguration configuration
+    ) {
+        AudioBlockProcessor? processor = m_extensions.BindProcessor(configuration.id);
+        if (processor is null) return device.AddBusProcessor(bus, configuration);
+        try
+        {
+            if (device is IAudioBlockProcessorDevice buffered && buffered.AddBlockProcessor(bus, configuration, processor))
+            {
+                return true;
+            }
+            processor.Dispose();
+            return false;
+        }
+        catch
+        {
+            processor.Dispose();
             throw;
         }
     }

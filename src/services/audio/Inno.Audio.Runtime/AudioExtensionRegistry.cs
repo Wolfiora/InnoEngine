@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Inno.Core.Execution;
@@ -9,10 +10,14 @@ namespace Inno.Audio.Runtime;
 
 internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegistry.Snapshot>
 {
+    private readonly TypeCatalog m_types;
     private Exception? m_retirementFailure;
 
     internal AudioExtensionRegistry(TypeCatalog types)
-        : base(types) {}
+        : base(types)
+    {
+        m_types = types;
+    }
 
     internal Snapshot extensions => current;
 
@@ -47,8 +52,145 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
             Discover<AudioMixerExtensionAttribute, AudioMixerExtension>(types, static value => value.id, "mixer"),
             Discover<AudioMixerFeatureExtensionAttribute, AudioMixerFeature>(types, static value => value.id, "mixer feature"),
             Discover<AudioContentProviderExtensionAttribute, AudioContentProvider>(types, static value => value.id, "content provider"),
+            Discover<AudioBlockProcessorAttribute, AudioBlockProcessor>(types, static value => value.id, "block processor"),
+            Discover<AudioStreamDecoderAttribute, AudioStreamDecoder>(types, static value => value.id, "stream decoder"),
             CreateExtension<AudioContentProvider>
         );
+    }
+
+    internal AudioBlockProcessor? BindProcessor(AudioProcessorID id)
+        => extensions.HasProcessor(id.value) ? new BoundProcessor(this, id) : null;
+
+    internal AudioStreamReader OpenDecoder(
+        AudioClipDescriptor descriptor,
+        IAudioClipSource source
+    ) {
+        using IDisposable operation = AcquireOperation("Open plugin decoder");
+        Stream stream = source.OpenRead();
+        try
+        {
+            AudioStreamReader reader = extensions.CreateDecoder(descriptor.codec).Open(stream, descriptor)
+                                       ?? throw new InvalidDataException("The audio decoder did not supply a cursor.");
+            return new DecoderCursor(this, extensions.Track(new OwnedCursor(reader, stream)));
+        }
+        catch
+        {
+            stream.Dispose();
+            throw;
+        }
+    }
+
+    private sealed class OwnedCursor(
+        AudioStreamReader reader,
+        Stream stream
+    ) : IDisposable
+    {
+        internal AudioStreamReader decoder { get; } = reader;
+
+        public void Dispose()
+        {
+            try
+            {
+                decoder.Dispose();
+            }
+            finally
+            {
+                stream.Dispose();
+            }
+        }
+    }
+
+    private sealed class DecoderCursor(
+        AudioExtensionRegistry registry,
+        Lease<OwnedCursor> lease
+    ) : AudioStreamReader
+    {
+        private AudioStreamReader decoder => lease.resource?.decoder ?? throw new ObjectDisposedException("Audio decoder generation");
+
+        public override bool canSeek
+        {
+            get
+            {
+                using IDisposable operation = registry.AcquireOperation("Inspect plugin decoder");
+                return decoder.canSeek;
+            }
+        }
+
+        public override int Read(Span<float> samples)
+        {
+            using IDisposable operation = registry.AcquireOperation("Read plugin audio frames");
+            return decoder.Read(samples);
+        }
+
+        public override bool Seek(long frame)
+        {
+            using IDisposable operation = registry.AcquireOperation("Seek plugin audio frames");
+            return decoder.Seek(frame);
+        }
+
+        public override void Dispose() => lease.Dispose();
+    }
+
+    internal IDisposable AcquireOperation(string name) => m_types.AcquireOperation(name);
+
+    private sealed class BoundProcessor(
+        AudioExtensionRegistry registry,
+        AudioProcessorID id
+    ) : AudioBlockProcessor
+    {
+        private Lease<AudioBlockProcessor>? m_lease;
+        private bool m_disposed;
+
+        public override void Process(
+            Span<float> samples,
+            int channels,
+            int sampleRate,
+            AudioProcessorConfiguration configuration
+        ) {
+            ObjectDisposedException.ThrowIf(m_disposed, this);
+            using IDisposable operation = registry.AcquireOperation("Process plugin audio block");
+            if (m_lease?.resource is null) m_lease = registry.extensions.OpenProcessor(id.value);
+            m_lease.resource!.Process(samples, channels, sampleRate, configuration);
+        }
+
+        public override void Dispose()
+        {
+            m_disposed = true;
+            m_lease?.Dispose();
+            m_lease = null;
+        }
+    }
+
+    internal sealed class Lease<TResource>(
+        HashSet<IDisposable> active,
+        TResource value
+    ) : IDisposable
+        where TResource : class, IDisposable
+    {
+        private HashSet<IDisposable>? m_active = active;
+        internal TResource? resource { get; private set; } = value;
+
+        public void Dispose()
+        {
+            if (resource is not { } current) return;
+            try
+            {
+                current.Dispose();
+            }
+            catch (Exception exception) when (RetirementPendingException.Find(exception) is null)
+            {
+                Release();
+                throw;
+            }
+            Release();
+        }
+
+        private void Release()
+        {
+            resource = null;
+            m_active?.Remove(this);
+            m_active = null;
+        }
     }
 
     internal void RetireBackend(Action retire)
@@ -115,6 +257,9 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
         private readonly IReadOnlyDictionary<string, Type> m_features;
         private readonly IReadOnlyDictionary<string, Type> m_mixers;
         private readonly IReadOnlyDictionary<string, Type> m_providers;
+        private readonly IReadOnlyDictionary<string, Type> m_processors;
+        private readonly IReadOnlyDictionary<string, Type> m_decoders;
+        private readonly HashSet<IDisposable> m_active = [];
         private TypeCacheSnapshot? m_types;
 
         internal Snapshot(
@@ -122,9 +267,13 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
             IReadOnlyDictionary<string, Type> mixers,
             IReadOnlyDictionary<string, Type> features,
             IReadOnlyDictionary<string, Type> providers,
+            IReadOnlyDictionary<string, Type> processors,
+            IReadOnlyDictionary<string, Type> decoders,
             Func<Type, AudioContentProvider> createProvider
         ) {
             m_types = types;
+            m_processors = processors;
+            m_decoders = decoders;
             this.typeCacheVersion = types.version;
             m_mixers = mixers;
             m_features = features;
@@ -137,8 +286,21 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
         /// </summary>
         public void Dispose()
         {
+            List<Exception>? failures = null;
+            foreach (IDisposable instance in m_active.ToArray())
+            {
+                try
+                {
+                    instance.Dispose();
+                }
+                catch (Exception exception) when (RetirementPendingException.Find(exception) is null)
+                {
+                    (failures ??= []).Add(exception);
+                }
+            }
             providers.Dispose();
             m_types = null;
+            if (failures is not null) throw new AggregateException("Audio extension retirement failed.", failures);
         }
 
         internal long typeCacheVersion { get; }
@@ -181,6 +343,32 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
             }
             mixer = builder.Build();
             return true;
+        }
+
+        internal bool HasDecoder(AudioCodecID codec) => m_decoders.ContainsKey(codec.value);
+
+        internal AudioStreamDecoder CreateDecoder(AudioCodecID codec)
+            => m_decoders.TryGetValue(codec.value, out Type? type)
+               ? Create<AudioStreamDecoder>(type)
+               : throw new InvalidOperationException($"Audio decoder '{codec.value}' has retired.");
+
+        internal bool HasProcessor(string id) => m_processors.ContainsKey(id);
+
+        internal Lease<AudioBlockProcessor> OpenProcessor(string id)
+        {
+            if (!m_processors.TryGetValue(id, out Type? type))
+            {
+                throw new InvalidOperationException($"Audio processor '{id}' is missing from the active generation.");
+            }
+            return Track(Create<AudioBlockProcessor>(type));
+        }
+
+        internal Lease<TResource> Track<TResource>(TResource resource)
+            where TResource : class, IDisposable
+        {
+            var lease = new Lease<TResource>(m_active, resource);
+            m_active.Add(lease);
+            return lease;
         }
 
         private ProviderGeneration CreateProviders(Func<Type, AudioContentProvider> createProvider)
