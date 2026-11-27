@@ -67,6 +67,7 @@ internal sealed class EditorHost : ShellHost
     private EditorGameInputCapture? m_gameInputCapture;
     private bool m_shutdownStateSaved;
     private DiagnosticHub? m_diagnostics;
+    private Action? m_frameCompletion;
 
     private EditorHost(
         EditorLaunchOptions launch,
@@ -177,6 +178,19 @@ internal sealed class EditorHost : ShellHost
         if (frame.frameIndex == 0)
         {
             BootLog("First editor frame completed.");
+        }
+    }
+
+    /// <inheritdoc/>
+    protected override void OnFrameCompleted()
+    {
+        Action? completion = m_frameCompletion;
+        if (completion is null) return;
+        m_frameCompletion = null;
+        using (rendering.EnterExecutionScope())
+        using (audio.EnterExecutionScope(editSession))
+        {
+            completion();
         }
     }
 
@@ -470,7 +484,7 @@ internal sealed class EditorHost : ShellHost
         RuntimeSubsystemPipeline hostPipeline = engineHost.CreateHostPipeline(DefaultEngine.CreateHostSubsystems(renderingLayer));
         m_resources.Register(hostPipeline.Dispose);
         UseHostPipeline(hostPipeline);
-        var reloadCoordinator = new EditorReloadCoordinator();
+        var reloadCoordinator = new EditorReloadCoordinator(action => m_frameCompletion += action);
         EditorRenderingHostService renderingHost = m_resources.Acquire(
             () => new EditorRenderingHostService(renderingLayer, presentation, reloadCoordinator),
             static service => service.Dispose()
