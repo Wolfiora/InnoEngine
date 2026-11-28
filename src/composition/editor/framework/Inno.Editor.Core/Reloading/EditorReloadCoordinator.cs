@@ -17,6 +17,37 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
     private readonly List<ParticipantReference> m_participants = [];
     private readonly List<GuardReference> m_guards = [];
     private readonly object m_sync = new();
+    private readonly Action<Action> m_atBoundary;
+
+    /// <summary>
+    /// Creates a coordinator for a host that already drives script updates between runtime frames.
+    /// </summary>
+    public EditorReloadCoordinator()
+        : this(static action => action()) {}
+
+    /// <summary>
+    /// Creates a coordinator for a host that compiles scripts while a product frame is open.
+    /// </summary>
+    /// <param name="atBoundary">
+    /// Schedules a callback on the owner thread after all active host and session frames close.
+    /// </param>
+    public EditorReloadCoordinator(Action<Action> atBoundary)
+    {
+        ArgumentNullException.ThrowIfNull(atBoundary);
+        m_atBoundary = atBoundary;
+    }
+
+    /// <summary>
+    /// Schedules a completed candidate for consideration at the host's next safe activation point.
+    /// </summary>
+    /// <param name="activate">
+    /// The owner's callback, which must recheck admission when invoked.
+    /// </param>
+    public void AtFrameBoundary(Action activate)
+    {
+        ArgumentNullException.ThrowIfNull(activate);
+        m_atBoundary(activate);
+    }
 
     /// <summary>
     /// Registers a weak admission guard without stopping its owner or creating a generation transaction.

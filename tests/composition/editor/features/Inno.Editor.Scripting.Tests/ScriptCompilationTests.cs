@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Xml.Linq;
 using Xunit;
+using Inno.Adapter.Input;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Diagnostics;
@@ -23,7 +24,9 @@ using Inno.Editor.PlayMode;
 using Inno.Editor.Scene;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
+using Inno.Input.Runtime;
 using Inno.Plugins;
+using Inno.Runtime;
 using Inno.Scene;
 using Inno.Scene.Components;
 using Inno.Scripting.Compiler;
@@ -34,6 +37,129 @@ namespace Inno.Editor.Scripting.Tests;
 
 public sealed class ScriptCompilationTests : ScriptingPipelineFixture
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PluginContractsCompileFromTheInstalledPackage(bool runtimeDeployment)
+    {
+        string source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "PluginContracts", "Controller.cs.txt"));
+        Guid controllerID = Guid.NewGuid();
+        Guid importerID = Guid.NewGuid();
+        void Install(
+            string root,
+            SerializationRegistry serialization
+        ) => WritePluginPackage(
+            root,
+            "controller.iplugin",
+            serialization,
+            new PluginManifest { pluginId = "fixture.controller", displayName = "Controller and Audio" },
+            new Dictionary<string, byte[]>
+            {
+                ["Assets/Controller.cs"] = Encoding.UTF8.GetBytes(source),
+                ["Assets/Controller.cs.imeta"] = CreateScriptSourceMeta(serialization, controllerID),
+                ["Assets/Tone.editor.cs"] = File.ReadAllBytes(
+                    Path.Combine(AppContext.BaseDirectory, "PluginContracts", "Tone.editor.cs.txt")
+                ),
+                ["Assets/Tone.editor.cs.imeta"] = CreateScriptSourceMeta(serialization, importerID)
+            }
+        );
+        using var fixture = new ScriptingFixture(Install);
+        if (runtimeDeployment)
+        {
+            ScriptCompilationResult deployment = fixture.CompileRuntimeDeployment();
+            Assert.True(deployment.success, FormatDiagnostics(deployment));
+            Assert.Single(
+                deployment.runtimeAssemblyPaths,
+                static path => Path.GetFileName(path).StartsWith("Inno.Plugin.", StringComparison.Ordinal)
+            );
+            return;
+        }
+        fixture.Write("InputConsumer.cs", """
+            using InnoEngine.Input;
+            using InnoEngine.Runtime;
+            [RuntimeSubsystemExtension("fixture.consumer", dependencies = ["fixture.controller"])]
+            public sealed class ConsumerFactory : IRuntimeSubsystemActivator
+            {
+                public IRuntimeSubsystem Create(RuntimeSubsystemContext context) => new Consumer();
+            }
+            public sealed class Consumer : RuntimeSubsystem
+            {
+                private InputDeviceConnection? m_device;
+                protected override void OnUpdate(RuntimeFrame frame) => m_device ??= Input.ConnectDevice("fixture.consumer");
+                protected override void OnStop() => m_device?.Dispose();
+            }
+            """);
+        using RuntimeSession session = fixture.host.CreateSession(new RuntimeSessionOptions
+        {
+            createSubsystems = _ => [new InputRuntimeFactory(_ => new EventInputBackend(1))]
+        });
+        using ScriptReloadHost reload = fixture.CreateReloadHost();
+        reload.Start();
+        ScriptCompilationResult result = fixture.CompilePending(reload);
+        Assert.True(result.success, FormatDiagnostics(result));
+        Assert.True(reload.ApplyPendingReload());
+        Assert.Contains(session.subsystems.descriptors, static descriptor => descriptor.id.value == "fixture.controller");
+        InputRuntime input = session.subsystems.GetRequiredSubsystem<InputRuntime>();
+        Inno.Input.InputDeviceState Device(string typeID) => Assert.Single(input.snapshot.devices, device => device.typeID == typeID);
+        session.Tick(0.016f);
+        session.Tick(0.016f);
+        Inno.Input.InputDeviceState connected = Device("fixture.two-knob");
+        Inno.Input.InputDeviceState initialConsumer = Device("fixture.consumer");
+        Assert.Equal(0.5, connected.controls["left"]);
+        source = source.Replace("SetValue(\"left\", 0.5)", "SetValue(\"left\", 0.75)", StringComparison.Ordinal);
+        Install(fixture.projectRoot, fixture.host.serialization);
+        Assert.True(fixture.RefreshPlugins());
+        ScriptCompilationResult updated = fixture.CompilePendingPluginReload(reload);
+        Assert.True(updated.success, FormatDiagnostics(updated));
+        Assert.True(reload.ApplyPendingReload());
+        CompleteUnloadVerification(reload);
+        session.Tick(0.016f);
+        session.Tick(0.016f);
+        Inno.Input.InputDeviceState replacement = Device("fixture.two-knob");
+        Inno.Input.InputDeviceState replacementConsumer = Device("fixture.consumer");
+        Assert.NotEqual(initialConsumer.instance, replacementConsumer.instance);
+        Assert.NotEqual(connected.instance, replacement.instance);
+        Assert.Equal(0.75, replacement.controls["left"]);
+
+        string workingSource = source;
+        source = source.Replace("dependencies = [", "requiresRestart = true, dependencies = [", StringComparison.Ordinal);
+        Install(fixture.projectRoot, fixture.host.serialization);
+        Assert.True(fixture.RefreshPlugins());
+        Assert.True(fixture.CompilePendingPluginReload(reload).success);
+        Exception exclusive = Assert.ThrowsAny<Exception>(() => reload.ApplyPendingReload());
+        Assert.Contains("requires a host restart", exclusive.ToString(), StringComparison.Ordinal);
+        CompleteUnloadVerification(reload);
+        session.Tick(0.016f);
+        Assert.Equal(replacement.instance, Device("fixture.two-knob").instance);
+        Assert.Equal(replacementConsumer.instance, Device("fixture.consumer").instance);
+
+        source = workingSource.Replace(
+            "=> new Controller(context.isEditMode, context.events)",
+            "=> throw new InvalidOperationException(\"bad candidate\")",
+            StringComparison.Ordinal
+        );
+        Install(fixture.projectRoot, fixture.host.serialization);
+        Assert.True(fixture.RefreshPlugins());
+        ScriptCompilationResult bad = fixture.CompilePendingPluginReload(reload);
+        Assert.True(bad.success, FormatDiagnostics(bad));
+        Assert.ThrowsAny<Exception>(() => reload.ApplyPendingReload());
+        CompleteUnloadVerification(reload);
+        session.Tick(0.016f);
+        Assert.Equal(replacement.instance, Device("fixture.two-knob").instance);
+        Assert.Equal(replacementConsumer.instance, Device("fixture.consumer").instance);
+        File.Delete(Path.Combine(fixture.projectRoot, "Assets", "InputConsumer.cs"));
+        fixture.assets.Rescan();
+        File.Delete(Path.Combine(fixture.projectRoot, "Plugins", "controller.iplugin"));
+        Assert.True(fixture.RefreshPlugins());
+        Assert.True(fixture.CompilePendingPluginReload(reload).success);
+        Assert.True(reload.ApplyPendingReload());
+        CompleteUnloadVerification(reload);
+        session.Tick(0.016f);
+        Assert.Empty(input.snapshot.devices);
+        Assert.DoesNotContain(session.subsystems.descriptors, static descriptor => descriptor.id.value == "fixture.controller");
+        Assert.Equal(0.5, connected.controls["left"]);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

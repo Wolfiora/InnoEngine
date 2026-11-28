@@ -11,6 +11,7 @@ namespace Inno.Audio.Runtime;
 internal sealed class AudioClipCache : IDisposable
 {
     private readonly IAudioDevice m_device;
+    private readonly AudioExtensionRegistry m_extensions;
     private readonly IAssetArtifactLookup m_artifacts;
     private readonly AudioRuntimeOptions m_options;
     private readonly Action<Action> m_retireResources;
@@ -22,11 +23,13 @@ internal sealed class AudioClipCache : IDisposable
         IAudioDevice device,
         IAssetArtifactLookup artifacts,
         AudioRuntimeOptions options,
+        AudioExtensionRegistry extensions,
         Action<Action> retireResources
     ) {
         m_device = device;
         m_artifacts = artifacts;
         m_options = options;
+        m_extensions = extensions;
         m_retireResources = retireResources;
     }
 
@@ -148,8 +151,13 @@ internal sealed class AudioClipCache : IDisposable
         AudioClipMetadata metadata = clip.metadata
                                      ?? throw new InvalidOperationException("The audio clip has no imported runtime metadata.");
         AssetArtifactInfo artifact = clip.artifact;
+        bool externalDecoder = m_extensions.extensions.HasDecoder(metadata.codec);
+        if (externalDecoder && requestedMode == AudioClipLoadMode.Decode)
+        {
+            throw new NotSupportedException($"Decoder '{metadata.codec.value}' supports streamed playback.");
+        }
         AudioClipLoadMode resolvedMode = requestedMode == AudioClipLoadMode.Automatic
-                                         ? (artifact.length >= m_options.automaticStreamingThresholdBytes
+                                         ? (externalDecoder || artifact.length >= m_options.automaticStreamingThresholdBytes
                                             || WouldExceedDecodedBudget(EstimateDecodedByteLength(metadata, artifact.length))
                                             ? AudioClipLoadMode.Stream
                                             : AudioClipLoadMode.Decode)
@@ -172,17 +180,20 @@ internal sealed class AudioClipCache : IDisposable
                 $"Decoded audio clip '{clip.assetPath}' exceeds the configured cache budget."
             );
         }
-        AudioClipHandle handle = m_device.CreateClip(
-            new AudioClipDescriptor(
-                metadata.codec,
-                resolvedMode,
-                metadata.channels,
-                metadata.sampleRate,
-                metadata.frameCount,
-                artifact.length
-            ),
-            clip.source
+        var descriptor = new AudioClipDescriptor(
+            metadata.codec,
+            resolvedMode,
+            metadata.channels,
+            metadata.sampleRate,
+            metadata.frameCount,
+            artifact.length
         );
+        IAudioClipSource source = clip.source;
+        AudioClipHandle handle = externalDecoder
+                                 ? (m_device as IAudioStreamClipDevice
+                                    ?? throw new NotSupportedException("This device does not support external audio decoders."))
+                                     .CreateStreamClip(descriptor, () => m_extensions.OpenDecoder(descriptor, source))
+                                 : m_device.CreateClip(descriptor, source);
         if (!handle.isValid)
         {
             throw new InvalidOperationException("The audio backend rejected clip creation.");

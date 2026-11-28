@@ -6,4 +6,8 @@ namespace Inno.Build.Composition;
 /// <returns>
 /// A non-null packaging implementation retained by the pipeline without a separate lifetime.
 /// </returns>
+/// <remarks>
+/// The build distribution explicitly registers target factories and the required toolchains. Installing
+/// a runtime module does not select a new publication target.
+/// </remarks>
 public delegate IGameBuildTarget BuildTargetFactory();

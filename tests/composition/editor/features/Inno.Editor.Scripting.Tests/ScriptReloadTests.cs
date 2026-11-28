@@ -148,7 +148,7 @@ public sealed class ScriptReloadTests : ScriptingPipelineFixture
     [InlineData(false)]
     [InlineData(true)]
     [Trait("Acceptance", "Lifecycle")]
-    public void RemovedOrBrokenUpdatedPluginCommitsUnavailableGenerationAndRecovers(bool updateInPlace)
+    public void BrokenPluginReplacementKeepsActiveCodeAndRemovalRetiresDependents(bool updateInPlace)
     {
         using var fixture = new ScriptingFixture(WriteUnavailableGenerationPlugin);
         fixture.Write("DependentBehavior.cs", """
@@ -180,7 +180,6 @@ public sealed class ScriptReloadTests : ScriptingPipelineFixture
         AvailabilitySceneState state = CreateAvailabilitySceneState(fixture, scene);
         string installedPlugin = Path.Combine(fixture.projectRoot, "Plugins", "unavailability.iplugin");
         string detachedPlugin = Path.Combine(fixture.projectRoot, "UnavailabilityPlugin.detached");
-        byte[] validPluginPackage = File.ReadAllBytes(installedPlugin);
         if (updateInPlace)
         {
             WriteUnavailableGenerationPlugin(
@@ -198,12 +197,20 @@ public sealed class ScriptReloadTests : ScriptingPipelineFixture
         ScriptCompilationResult unavailable = fixture.CompilePendingPluginReload(reload);
         Assert.False(unavailable.success);
         Assert.Contains(unavailable.diagnostics, static diagnostic => diagnostic.severity == DiagnosticSeverity.Error);
+        if (updateInPlace)
+        {
+            Assert.False(reload.ApplyPendingReload());
+            Assert.Contains(fixture.host.modules.modules, static module => module.domain == AssemblyDomain.InnoPlugin);
+            AssertRecoveredAvailability(state);
+            Assert.Equal(GenerationState.Ready, fixture.host.modules.generations.state);
+            return;
+        }
         Assert.True(reload.ApplyPendingReload());
         Assert.DoesNotContain(
             fixture.host.modules.modules,
             static module => module.domain is AssemblyDomain.InnoPlugin or AssemblyDomain.InnoScripting
         );
-        Assert.Equal(updateInPlace ? 1 : 0, fixture.activePlugins.Count);
+        Assert.Empty(fixture.activePlugins);
         MissingGameComponent missingPlugin = Assert.IsType<MissingGameComponent>(
             state.pluginOwner.GetComponents().Single(component => component is not Transform)
         );
@@ -215,14 +222,7 @@ public sealed class ScriptReloadTests : ScriptingPipelineFixture
         Assert.Equal("UnavailabilityPlugin.PluginBehavior", missingPlugin.missingTypeName);
         Assert.Equal("DependentBehavior", missingScript.missingTypeName);
         CompleteUnloadVerification(reload);
-        if (updateInPlace)
-        {
-            File.WriteAllBytes(installedPlugin, validPluginPackage);
-        }
-        else
-        {
-            File.Move(detachedPlugin, installedPlugin);
-        }
+        File.Move(detachedPlugin, installedPlugin);
         Assert.True(fixture.RefreshPlugins());
         ScriptCompilationResult recoveredCompilation = fixture.CompilePendingPluginReload(reload);
         Assert.True(recoveredCompilation.success, FormatDiagnostics(recoveredCompilation));

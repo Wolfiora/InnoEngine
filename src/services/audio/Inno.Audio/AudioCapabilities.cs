@@ -65,4 +65,14 @@ public sealed record AudioCapabilities
     /// Gets the output sample rate in frames per second.
     /// </summary>
     public int sampleRate { get; }
+
+    /// <summary>
+    /// Gets whether registered external stream decoders can supply independent playback cursors.
+    /// </summary>
+    public bool supportsExternalDecoders { get; init; }
+
+    /// <summary>
+    /// Gets the maximum frames queued per external effect. Zero indicates an unsupported effect path.
+    /// </summary>
+    public int externalProcessorBufferFrames { get; init; }
 }

@@ -1,0 +1,127 @@
+using System;
+using System.Collections;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using InnoEngine.Assets;
+using InnoEngine.Audio;
+using InnoEngine.Core;
+using InnoEngine.Coroutines;
+using InnoEngine.Events;
+using InnoEngine.Input;
+using InnoEngine.Runtime;
+
+[RuntimeSubsystemExtension("fixture.controller", dependencies = ["inno.runtime.input"])]
+public sealed class ControllerFactory : IRuntimeSubsystemActivator
+{
+    public IRuntimeSubsystem Create(RuntimeSubsystemContext context) => new Controller(context.isEditMode, context.events);
+}
+
+public sealed class Controller(bool editing, EventDispatcher events) : RuntimeSubsystem
+{
+    private InputDeviceConnection? m_connection;
+
+    protected override void OnUpdate(RuntimeFrame frame)
+    {
+        if (m_connection is not null) return;
+        m_connection = Input.ConnectDevice("fixture.two-knob");
+        m_connection.SetValue("left", 0.5);
+        Console.WriteLine("Controller fixture input connected.");
+        if (!editing)
+        {
+            Play(Assets.Load<AudioClipAsset>(Assets.LocalPath("Tone.knobpcm")));
+        }
+    }
+
+    public void Play(AudioClipAsset clip) => SessionCoroutines.Start(this, PlayAndWait(clip));
+
+    private IEnumerator PlayAndWait(AudioClipAsset clip)
+    {
+        AudioVoiceHandle voice = Audio.Play(clip);
+        if (!voice.isValid) throw new InvalidOperationException("The fixture voice did not start.");
+        using EventHub hub = events.CreateHub();
+        AudioCompletionReason? completion = null;
+        using IDisposable subscription = hub.Listen<AudioVoiceCompletedEvent>(finished =>
+        {
+            if (finished.voice.Equals(voice)) completion = finished.reason;
+        });
+        yield return new WaitForVoice(() => completion.HasValue);
+        if (completion != AudioCompletionReason.NaturalEnd)
+        {
+            throw new InvalidOperationException("Fixture playback ended with " + completion);
+        }
+        m_connection!.SetValue("complete", 1);
+        Console.WriteLine("Controller fixture playback complete.");
+    }
+
+    protected override void OnStop() => m_connection?.Dispose();
+}
+
+[AudioMixerExtension("fixture.mixer")]
+public sealed class ControllerMixer : AudioMixerExtension
+{
+    public override void Build(AudioMixerBuilder builder, SerializedAudioExtensionState state)
+        => builder.AddProcessor(AudioBusID.master, new AudioProcessorConfiguration(new AudioProcessorID("fixture.half")));
+}
+
+public sealed class WaitForVoice(Func<bool> completed) : YieldInstruction
+{
+    protected override Func<double, ulong, bool> CreateWaiter()
+        => (_, _) => !completed();
+}
+
+[AudioStreamDecoder("fixture/unsigned-pcm")]
+public sealed class UnsignedDecoder : AudioStreamDecoder
+{
+    public override AudioStreamReader Open(Stream encoded, AudioClipDescriptor descriptor)
+        => new Cursor(encoded, descriptor.channels);
+
+    private sealed class Cursor(Stream stream, int channels) : AudioStreamReader
+    {
+        public override bool canSeek => stream.CanSeek;
+
+        public override ValueTask<int> ReadAsync(
+            Memory<float> output,
+            CancellationToken cancellationToken
+        ) {
+            cancellationToken.ThrowIfCancellationRequested();
+            Span<float> samples = output.Span;
+            int index = 0;
+            while (index < samples.Length)
+            {
+                int value = stream.ReadByte();
+                if (value < 0) break;
+                samples[index++] = (value - 128) / 128f;
+            }
+            if (index % channels != 0) throw new InvalidDataException();
+            return new ValueTask<int>(index / channels);
+        }
+
+        public override bool Seek(long frame)
+        {
+            stream.Position = checked(frame * channels);
+            return true;
+        }
+
+        public override void Dispose() {}
+    }
+}
+
+[AudioBlockProcessor("fixture.half")]
+public sealed class HalfVolume : AudioBlockProcessor
+{
+    private bool m_sawSignal;
+
+    public override void Process(Span<float> samples, int channels, int sampleRate, AudioProcessorConfiguration configuration)
+    {
+        for (int index = 0; index < samples.Length; index++)
+        {
+            samples[index] *= 0.5f;
+            if (!m_sawSignal && Math.Abs(samples[index]) > 0.001f)
+            {
+                m_sawSignal = true;
+                Console.WriteLine("Controller fixture processed audible PCM.");
+            }
+        }
+    }
+}

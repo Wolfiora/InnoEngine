@@ -6,6 +6,7 @@ using Inno.Adapter.Input;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Core.Events;
+using Inno.Core.Identity;
 using Inno.Core.Input;
 using Inno.Core.Logging;
 using Inno.Input.Runtime;
@@ -183,6 +184,75 @@ public sealed class InputRuntimeTests
         {
             Directory.Delete(root, recursive: true);
         }
+    }
+
+    [Fact]
+    public void DeviceFramesPreserveConnectionsAndOrderedChangesAfterRetirement()
+    {
+        var events = new EventDispatcher();
+        using EventHub hub = events.CreateHub();
+        List<InputDeviceChange> observed = [];
+        using IDisposable subscription = hub.Listen<InputDeviceEvent>(evnt => observed.Add(evnt.change));
+        using var runtime = new InputRuntime(new EventInputBackend(0), new IdentityAllocator(), events);
+        runtime.Attach();
+
+        using InputDeviceConnection first = runtime.ConnectDevice("fixture.dial");
+        using InputDeviceConnection second = runtime.ConnectDevice("fixture.dial");
+        first.SetValue("pressed", 1);
+        first.SetValue("pressed", 0);
+        second.SetValue("position", 0.5);
+        runtime.BeginFrame(default);
+        InputSnapshot previous = Input.snapshot;
+        runtime.EndFrame(default);
+        first.Dispose();
+
+        runtime.BeginFrame(default);
+        InputSnapshot next = Input.snapshot;
+        runtime.EndFrame(default);
+        Assert.Equal(2, previous.devices.Count);
+        Assert.Equal(5, previous.deviceChanges.Count);
+        Assert.Equal(1, previous.deviceChanges[2].value);
+        Assert.Equal(0, previous.deviceChanges[3].value);
+        Assert.Equal(0.5, Assert.Single(next.devices).controls["position"]);
+        Assert.Equal(InputDeviceChangeKind.Disconnected, Assert.Single(next.deviceChanges).kind);
+        Assert.Equal(next.deviceChanges[0], observed[^1]);
+        Assert.Throws<ObjectDisposedException>(() => first.SetValue("pressed", 1));
+    }
+
+    [Fact]
+    public void ReconnectingADeviceOnlyChangesItsOwningSession()
+    {
+        using var first = new InputRuntime(new EventInputBackend(1), new IdentityAllocator(), new EventDispatcher());
+        using var second = new InputRuntime(new EventInputBackend(1), new IdentityAllocator(), new EventDispatcher());
+        first.Attach();
+        second.Attach();
+        using InputDeviceConnection original = first.ConnectDevice("fixture.dial");
+        using InputDeviceConnection other = second.ConnectDevice("fixture.dial");
+        original.SetValue("position", 1);
+        other.SetValue("position", 2);
+        first.BeginFrame(default);
+        InputDeviceState prior = Assert.Single(Input.snapshot.devices);
+        first.EndFrame(default);
+        second.BeginFrame(default);
+        Assert.Equal(2, Assert.Single(Input.snapshot.devices).controls["position"]);
+        second.EndFrame(default);
+
+        original.Dispose();
+        using InputDeviceConnection replacement = first.ConnectDevice("fixture.dial");
+        first.BeginFrame(default);
+        Assert.NotEqual(prior.instance, Assert.Single(Input.snapshot.devices).instance);
+        Assert.Empty(Input.snapshot.devices[0].controls);
+        Assert.Collection(
+            Input.snapshot.deviceChanges,
+            removed => Assert.Equal(InputDeviceChangeKind.Disconnected, removed.kind),
+            connected => Assert.Equal(InputDeviceChangeKind.Connected, connected.kind)
+        );
+        first.EndFrame(default);
+        second.BeginFrame(default);
+        Assert.Empty(Input.snapshot.deviceChanges);
+        Assert.Equal(2, Assert.Single(Input.snapshot.devices).controls["position"]);
+        second.EndFrame(default);
+        Assert.Equal(1, prior.controls["position"]);
     }
 
     private sealed class InputProbeFactory(List<bool> observations) : IRuntimeSubsystemFactory

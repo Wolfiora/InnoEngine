@@ -1,3 +1,5 @@
+using System;
+
 namespace Inno.Core.Coroutines;
 
 /// <summary>
@@ -8,22 +10,16 @@ namespace Inno.Core.Coroutines;
 /// </param>
 public sealed class WaitForSeconds(float seconds) : YieldInstruction
 {
+    private readonly Func<double, ulong, bool> m_wait = (
+        elapsedSeconds,
+        _
+    ) => elapsedSeconds < seconds;
+
     /// <summary>
     /// Gets the configured wait time in seconds.
     /// </summary>
     public float seconds { get; } = seconds;
 
-    internal override CoroutineWaitDelegate CreateWaiter(
-        double now,
-        ulong frame
-    ) {
-        ulong targetFrame = frame + 1;
-        if (seconds <= 0f)
-        {
-            return scheduler => scheduler.frame < targetFrame;
-        }
-
-        double targetTime = now + seconds;
-        return scheduler => scheduler.now < targetTime;
-    }
+    /// <inheritdoc/>
+    protected internal override Func<double, ulong, bool> CreateWaiter() => m_wait;
 }

@@ -6,6 +6,7 @@ using Inno.Scripting.Api;
 [assembly: ScriptingApiExport(typeof(Audio), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AudioClipAsset), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AudioClipMetadata), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(AudioClipMetadataCodec), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(AudioClipLoadMode), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AudioDeviceState), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AudioPlaybackState), ScriptingApiScope.Runtime)]
@@ -44,3 +45,10 @@ using Inno.Scripting.Api;
 [assembly: ScriptingApiExport(typeof(AudioContentProviderExtensionAttribute), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AudioContentProviderContext), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AudioContentProvider), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(AudioBlockProcessor), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(AudioBlockProcessorAttribute), ScriptingApiScope.Runtime)]
+
+[assembly: ScriptingApiExport(typeof(AudioStreamDecoderAttribute), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(AudioStreamDecoder), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(AudioStreamReader), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(AudioClipDescriptor), ScriptingApiScope.Runtime)]

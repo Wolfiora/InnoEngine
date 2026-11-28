@@ -421,8 +421,8 @@ public sealed class ScriptReloadHost : IDisposable
     }
 
     /// <summary>
-    /// Applies the latest compiled generation, or commits a Plugin-unavailability generation when changed
-    /// Plugin code cannot produce a replacement, at a caller-controlled main-thread safe point.
+    /// Applies the latest compiled generation at a main-thread safe point. When compilation fails, removal
+    /// retires the unavailable modules and their dependents. A failed update to an installed module retains its active code.
     /// </summary>
     /// <returns>
     /// <see langword="true"/> when modules were replaced or retired; otherwise, <see langword="false"/>.
@@ -1022,19 +1022,13 @@ public sealed class ScriptReloadHost : IDisposable
             return null;
         }
 
-        Dictionary<string, string> candidatePluginHashes = m_plugins.compilationPlugins
+        HashSet<string> candidatePluginIDs = m_plugins.compilationPlugins
             .Where(static plugin => plugin.containsCode)
-            .ToDictionary(
-                static plugin => plugin.manifest.pluginId,
-                static plugin => plugin.contentHash,
-                StringComparer.Ordinal
-            );
+            .Select(static plugin => plugin.manifest.pluginId)
+            .ToHashSet(StringComparer.Ordinal);
         HashSet<string> removedModuleNames = m_plugins.activePlugins
             .Where(static plugin => plugin.containsCode)
-            .Where(plugin => (
-                !candidatePluginHashes.TryGetValue(plugin.manifest.pluginId, out string? candidateHash)
-                || !string.Equals(plugin.contentHash, candidateHash, StringComparison.Ordinal)
-            ))
+            .Where(plugin => !candidatePluginIDs.Contains(plugin.manifest.pluginId))
             .Select(static plugin => "Plugin." + plugin.manifest.pluginId)
             .Where(m_pluginModules.ContainsKey)
             .ToHashSet(StringComparer.Ordinal);

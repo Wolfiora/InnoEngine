@@ -1,3 +1,5 @@
+using System;
+
 namespace Inno.Core.Coroutines;
 
 /// <summary>
@@ -8,22 +10,16 @@ namespace Inno.Core.Coroutines;
 /// </param>
 public sealed class WaitForFrames(int frames) : YieldInstruction
 {
+    private readonly Func<double, ulong, bool> m_wait = (
+        _,
+        elapsedFrames
+    ) => elapsedFrames < (ulong)Math.Max(frames, 1);
+
     /// <summary>
     /// Gets the configured frame count.
     /// </summary>
     public int frames { get; } = frames;
 
-    internal override CoroutineWaitDelegate CreateWaiter(
-        double now,
-        ulong frame
-    ) {
-        ulong targetFrame = frame + 1;
-        if (frames <= 0)
-        {
-            return scheduler => scheduler.frame < targetFrame;
-        }
-
-        ulong target = frame + (ulong)frames;
-        return scheduler => scheduler.frame < target;
-    }
+    /// <inheritdoc/>
+    protected internal override Func<double, ulong, bool> CreateWaiter() => m_wait;
 }

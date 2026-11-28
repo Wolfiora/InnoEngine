@@ -97,10 +97,10 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
         m_contentScopeProvider = contentScopeProvider;
         m_deviceRecoveryFactory = deviceRecoveryFactory;
         m_extensions = new AudioExtensionRegistry(types);
-        m_clipCache = new AudioClipCache(m_device, m_artifacts, m_options, m_extensions.RetireBackend);
+        m_clipCache = new AudioClipCache(m_device, m_artifacts, m_options, m_extensions, m_extensions.RetireBackend);
         try
         {
-            m_mixer = new AudioMixerOwner(m_device, m_extensions.Fault, m_extensions.RetireBackend);
+            m_mixer = new AudioMixerOwner(m_device, m_extensions, m_extensions.Fault, m_extensions.RetireBackend);
         }
         catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
         {
@@ -152,7 +152,11 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     /// Gets current runtime resource statistics.
     /// </summary>
     public AudioStatistics statistics
-        => new(m_voices.count, m_clipCache.count, m_clipCache.decodedBytes, m_stolenVoiceCount + m_voices.stolenCount);
+        => new(m_voices.count, m_clipCache.count, m_clipCache.decodedBytes, m_stolenVoiceCount + m_voices.stolenCount)
+    {
+        processorUnderrunFrames = m_device.statistics.processorUnderrunFrames,
+        lastProcessorFailure = m_device.statistics.lastProcessorFailure
+    };
 
     /// <summary>
     /// Gets bounded provider admission counts from the most recent content collection on this device generation.
@@ -562,7 +566,7 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
         m_retirementStage = 0;
         m_stolenVoiceCount += m_voices.stolenCount;
         m_device = replacement;
-        m_clipCache = new AudioClipCache(m_device, m_artifacts, m_options, m_extensions.RetireBackend);
+        m_clipCache = new AudioClipCache(m_device, m_artifacts, m_options, m_extensions, m_extensions.RetireBackend);
         m_mixer = replacementMixer;
         m_voices = new AudioVoiceOwner(
             m_device,

@@ -48,6 +48,29 @@ public class CoroutineWaitBenchmarks
     [Benchmark(OperationsPerInvoke = 100)]
     public void TickWaiting() => m_scheduler.Tick(0.016f);
 
+    [IterationSetup(Target = nameof(CompleteWait))]
+    public void PrepareCompletion()
+    {
+        m_scheduler = new CoroutineScheduler();
+        Task ready = Task.CompletedTask;
+        object wait = kind switch
+        {
+            "frames" => new WaitForFrames(1),
+            "time" => new WaitForSeconds(0.01f),
+            "task" => ready,
+            "handle" => m_scheduler.StartCoroutine(Wait(null!)),
+            _ => throw new System.InvalidOperationException(kind)
+        };
+        for (int index = 0; index < 100; index++)
+        {
+            m_scheduler.StartCoroutine(Wait(wait));
+        }
+        m_scheduler.Tick(0.016f);
+    }
+
+    [Benchmark(OperationsPerInvoke = 100)]
+    public void CompleteWait() => m_scheduler.Tick(0.016f);
+
     [IterationCleanup]
     public void Cleanup() => m_scheduler.Dispose();
 

@@ -262,7 +262,10 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
         }
 
         m_reportedReloadWait = false;
-        CompleteCompilation();
+        if (m_compilation is { IsCompleted: true })
+        {
+            m_reloads.AtFrameBoundary(CompleteCompilation);
+        }
         if (m_manager is null || m_compilation is not null)
         {
             return;

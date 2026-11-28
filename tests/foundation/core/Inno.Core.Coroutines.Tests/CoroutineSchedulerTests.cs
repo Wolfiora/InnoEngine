@@ -314,6 +314,45 @@ public sealed class CoroutineSchedulerTests
         Assert.Throws<ObjectDisposedException>(() => scheduler.StartCoroutine(Loop(() => {})));
     }
 
+    [Fact]
+    public void SharedExternalInstructionCreatesIndependentWaits()
+    {
+        using var scheduler = new CoroutineScheduler();
+        var shared = new WaitTwoPolls();
+        CoroutineHandle first = scheduler.StartCoroutine(Wait());
+        scheduler.Tick(0.1f);
+        CoroutineHandle second = scheduler.StartCoroutine(Wait());
+        scheduler.Tick(0.1f);
+        scheduler.Tick(0.1f);
+
+        Assert.False(first.isValid);
+        Assert.True(second.isValid);
+        scheduler.Tick(0.1f);
+        Assert.False(second.isValid);
+
+        IEnumerator Wait()
+        {
+            yield return shared;
+        }
+    }
+
+    [Fact]
+    public void RetiringAnExternalWaitPreservesAnUnrelatedPendingRoutine()
+    {
+        using var scheduler = new CoroutineScheduler();
+        CoroutineHandle plugin = scheduler.StartCoroutine(Wait());
+        scheduler.Tick(0.01f);
+        CoroutineHandle unrelated = scheduler.StartCoroutine(Loop(static () => {}));
+        scheduler.StopCoroutinesUsing(static type => type == typeof(WaitTwoPolls));
+        Assert.False(plugin.isValid);
+        Assert.True(unrelated.isValid);
+
+        static IEnumerator Wait()
+        {
+            yield return new WaitTwoPolls();
+        }
+    }
+
     private static async Task RunTogetherAsync(Action<int> action)
     {
         using var start = new Barrier(2);
@@ -356,6 +395,18 @@ public sealed class CoroutineSchedulerTests
         {
             GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
             GC.WaitForPendingFinalizers();
+        }
+    }
+
+    private sealed class WaitTwoPolls : YieldInstruction
+    {
+        protected override Func<double, ulong, bool> CreateWaiter()
+        {
+            int polls = 0;
+            return (
+                _,
+                _
+            ) => ++polls < 2;
         }
     }
 }

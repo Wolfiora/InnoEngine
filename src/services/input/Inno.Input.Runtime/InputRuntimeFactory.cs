@@ -45,6 +45,6 @@ public sealed class InputRuntimeFactory : IRuntimeSubsystemFactory
         ArgumentNullException.ThrowIfNull(context);
         IInputBackend backend = m_backendFactory(context)
                                 ?? throw new InvalidOperationException("The input backend factory returned null.");
-        return new InputRuntime(backend);
+        return new InputRuntime(backend, context.identities, context.events);
     }
 }

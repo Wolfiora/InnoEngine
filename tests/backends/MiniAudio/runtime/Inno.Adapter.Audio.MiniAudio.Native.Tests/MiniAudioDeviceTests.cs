@@ -2,15 +2,123 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 using Inno.Adapter.Audio.MiniAudio;
 using Inno.Audio;
+using Inno.Core.Execution;
 using Inno.Core.Mathematics;
 
 namespace Inno.Adapter.Audio.MiniAudio.Native.Tests;
 
 public sealed class MiniAudioDeviceTests
 {
+    [Fact]
+    public void StoppingAnOutstandingDecodeCancelsBeforeReturningBorrowedMemory()
+    {
+        using var device = new MiniAudioDevice(new MiniAudioDeviceOptions { noDevice = true });
+        IAudioDevice backend = device;
+        var cursor = new PendingCursor();
+        var descriptor = new AudioClipDescriptor(new AudioCodecID("fixture/pending"), AudioClipLoadMode.Stream, 1, 48_000, 0, 4);
+        AudioClipHandle clip = device.CreateStreamClip(descriptor, () => cursor);
+        Assert.Equal(AudioClipState.Preparing, backend.GetClipState(clip));
+        AudioDeviceVoiceHandle voice = backend.Play(clip, backend.CreateBus(AudioBusID.master), AudioPlayOptions.defaultValue);
+        Assert.True(backend.TryGetVoiceState(voice, out AudioPlaybackState state));
+        Assert.Equal(AudioPlaybackState.Preparing, state);
+        Assert.True(backend.Stop(voice));
+        Assert.True(cursor.token.IsCancellationRequested);
+        Assert.False(cursor.disposed);
+        Assert.Throws<RetirementPendingException>(device.Dispose);
+        cursor.completion.SetCanceled();
+        device.Dispose();
+        Assert.True(cursor.disposed);
+    }
+
+    [Fact]
+    public void ExternalEffectsProcessKnownSamplesInBusOrderAndRetireWithTheBus()
+    {
+        using var device = new MiniAudioDevice(new MiniAudioDeviceOptions { noDevice = true });
+        IAudioDevice backend = device;
+        AudioBusHandle master = backend.CreateBus(AudioBusID.master);
+        var configuration = new AudioProcessorConfiguration(new AudioProcessorID("fixture.effect"), []);
+        var source = new FixtureProcessor(fill: true, () => Assert.Throws<InvalidOperationException>(device.Dispose));
+        var half = new FixtureProcessor(fill: false);
+        Assert.True(device.AddBlockProcessor(master, configuration, source));
+        Assert.True(device.AddBlockProcessor(master, configuration, half));
+        var samples = new float[512];
+
+        device.RenderOffline(samples);
+
+        Assert.All(samples, sample => Assert.Equal(0.25f, sample, precision: 5));
+        Assert.True(backend.DestroyBus(master));
+        Assert.True(source.disposed);
+        Assert.True(half.disposed);
+    }
+
+    [Fact]
+    public void FailedEffectSilencesOnlyItsBlockAndReportsItsIdentity()
+    {
+        using var device = new MiniAudioDevice(new MiniAudioDeviceOptions { noDevice = true, channels = 1 });
+        IAudioDevice backend = device;
+        AudioBusHandle master = backend.CreateBus(AudioBusID.master);
+        var configuration = new AudioProcessorConfiguration(new AudioProcessorID("fixture.throw-once"));
+        int calls = 0;
+        var effect = new FixtureProcessor(fill: true, () =>
+        {
+            if (++calls == 1) throw new InvalidOperationException("fixture block failed");
+        });
+        Assert.True(device.AddBlockProcessor(master, configuration, effect));
+        var samples = new float[512];
+        device.RenderOffline(samples);
+        Assert.All(samples[..256], value => Assert.Equal(0f, value));
+        Assert.All(samples[256..], value => Assert.Equal(0.5f, value));
+        Assert.Contains("fixture.throw-once", backend.statistics.lastProcessorFailure);
+    }
+
+    [Fact]
+    public void StreamDecoderPreservesShortReadsAndSeeksEachPlaybackIndependently()
+    {
+        using var device = new MiniAudioDevice(new MiniAudioDeviceOptions { noDevice = true, channels = 1 });
+        IAudioDevice backend = device;
+        AudioBusHandle master = backend.CreateBus(AudioBusID.master);
+        List<SampleCursor> opened = [];
+        var descriptor = new AudioClipDescriptor(new AudioCodecID("fixture/pcm"), AudioClipLoadMode.Stream, 1, 48_000, 1024, 1024);
+        AudioClipHandle clip = device.CreateStreamClip(descriptor, () =>
+        {
+            var cursor = new SampleCursor();
+            opened.Add(cursor);
+            return cursor;
+        });
+        Assert.Equal(256, Assert.Single(opened).position);
+        AudioDeviceVoiceHandle first = backend.Play(clip, master, AudioPlayOptions.defaultValue);
+        AudioDeviceVoiceHandle second = backend.Play(clip, master, AudioPlayOptions.defaultValue);
+        Assert.True(first.isValid && second.isValid);
+        Assert.Equal(2, opened.Count);
+        Assert.True(backend.Pause(second));
+        var samples = new float[32];
+        device.RenderOffline(samples);
+        // MiniAudio's pitch resampler primes its two-frame history on each fresh voice.
+        Assert.Equal(new float[2], samples[..2]);
+        Assert.All(samples[2..], sample => Assert.Equal(0.25f, sample, precision: 5));
+        device.RenderOffline(samples);
+        Assert.All(samples, sample => Assert.Equal(0.25f, sample, precision: 5));
+        Assert.True(backend.Seek(first, TimeSpan.FromSeconds(768d / 48_000)));
+        Assert.True(opened[0].disposed);
+        Assert.False(opened[1].disposed);
+        device.RenderOffline(samples);
+        Assert.All(samples[2..], sample => Assert.Equal(0.75f, sample, precision: 5));
+        backend.Update(0.02f);
+        Assert.True(backend.TryDequeueCompletion(out AudioDeviceCompletion done));
+        Assert.Equal(first, done.voice);
+        Assert.Equal(AudioCompletionReason.NaturalEnd, done.reason);
+        Assert.True(backend.Resume(second));
+        device.RenderOffline(samples);
+        Assert.All(samples[2..], sample => Assert.Equal(0.25f, sample, precision: 5));
+        Assert.True(backend.Stop(second));
+        Assert.True(backend.DestroyClip(clip));
+        Assert.All(opened, cursor => Assert.True(cursor.disposed));
+    }
+
     [Fact]
     public void NativeAdmissionIncludesUndeliveredCompletionsAndReopensAfterDrain()
     {
@@ -352,5 +460,86 @@ public sealed class MiniAudioDeviceTests
             writer.Write((short)(Math.Sin(phase) * short.MaxValue * 0.1d));
         }
         return path;
+    }
+
+    private sealed class PendingCursor : AudioStreamReader
+    {
+        public override bool canSeek => false;
+
+        public override ValueTask<int> ReadAsync(
+            Memory<float> samples,
+            CancellationToken cancellationToken
+        ) {
+            token = cancellationToken;
+            return new ValueTask<int>(completion.Task);
+        }
+
+        public override bool Seek(long frame) => false;
+
+        public override void Dispose() => disposed = true;
+
+        internal TaskCompletionSource<int> completion { get; } = new();
+        internal CancellationToken token { get; private set; }
+        internal bool disposed { get; private set; }
+    }
+
+    private sealed class SampleCursor : AudioStreamReader
+    {
+        public override bool canSeek => true;
+
+        public override ValueTask<int> ReadAsync(
+            Memory<float> output,
+            CancellationToken cancellationToken
+        ) {
+            cancellationToken.ThrowIfCancellationRequested();
+            Span<float> samples = output.Span;
+            ObjectDisposedException.ThrowIf(disposed, this);
+            int frames = Math.Min(7, Math.Min(samples.Length, 1024 - position));
+            for (int index = 0; index < frames; index++)
+            {
+                samples[index] = position++ < 512 ? 0.25f : 0.75f;
+            }
+            return new ValueTask<int>(frames);
+        }
+
+        public override bool Seek(long frame)
+        {
+            position = checked((int)frame);
+            return true;
+        }
+
+        public override void Dispose() => disposed = true;
+
+        internal int position { get; private set; }
+        internal bool disposed { get; private set; }
+    }
+
+    private sealed class FixtureProcessor(
+        bool fill,
+        Action? whileProcessing = null
+    ) : AudioBlockProcessor
+    {
+        public override void Process(
+            Span<float> samples,
+            int channels,
+            int sampleRate,
+            AudioProcessorConfiguration configuration
+        ) {
+            Assert.False(disposed);
+            whileProcessing?.Invoke();
+            if (fill)
+            {
+                samples.Fill(0.5f);
+                return;
+            }
+            for (int index = 0; index < samples.Length; index++)
+            {
+                samples[index] *= 0.5f;
+            }
+        }
+
+        public override void Dispose() => disposed = true;
+
+        internal bool disposed { get; private set; }
     }
 }

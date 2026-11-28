@@ -57,4 +57,14 @@ public readonly record struct AudioStatistics
     /// Gets voices reclaimed since runtime creation.
     /// </summary>
     public long stolenVoiceCount { get; }
+
+    /// <summary>
+    /// Gets the observed missing effect frames supplied as silence across this device's buses.
+    /// </summary>
+    public long processorUnderrunFrames { get; init; }
+
+    /// <summary>
+    /// Gets the last external processor failure on this device, including its stable ID, or null before the first failure.
+    /// </summary>
+    public string? lastProcessorFailure { get; init; }
 }

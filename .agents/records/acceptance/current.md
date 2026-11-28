@@ -2,6 +2,10 @@
 
 [Open work](../open-items.md) · [Implementation ledger](../plans/ENGLISH_DOCUMENTATION_MODERNIZATION.md) · [Historical evidence](README.md)
 
+## Third-party runtime plugins
+
+The [plugin acceptance record](PLUGIN_RUNTIME_CONTRACTS.md) traces the installed fixture, per-owner checks, benchmark inputs and extension boundaries for [PR #121](https://github.com/Wolfiora/InnoEngine/pull/121).
+
 The approved API draft/main replacement is **in progress**. Its current implementation and exact local evidence are recorded in [API draft pipeline acceptance](API_DRAFT_PIPELINE_2026_11_13.md). Mandatory paired PRs and the full-engine documentation publication certificate are retired responsibilities; they are no longer completion gates for this design. Current API producer, example preparation, remote draft synchronization and publication evidence remain outstanding.
 
 The following observations describe the preceding implementation and retain their original inputs. They are historical evidence, not certification of the replacement.

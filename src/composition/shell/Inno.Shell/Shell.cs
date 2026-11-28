@@ -387,6 +387,12 @@ public abstract class Shell : IDisposable
     protected virtual void OnPresentation(ShellFrame frame) {}
 
     /// <summary>
+    /// Commits product work after presentation and all host frame scopes have closed.
+    /// Runs on the shell owner thread after a successful frame, before the next event or frame.
+    /// </summary>
+    protected virtual void OnFrameCompleted() {}
+
+    /// <summary>
     /// Receives the final frame count only when a bounded smoke run reaches its requested frame limit.
     /// Closing a window or requesting an earlier exit does not report smoke completion.
     /// </summary>
@@ -506,6 +512,7 @@ public abstract class Shell : IDisposable
             {
                 m_subsystems?.EndFrame(runtimeFrame);
             }
+            OnFrameCompleted();
             m_previousTime = totalTime;
             m_frameCount++;
             hasCompletedFrame = true;

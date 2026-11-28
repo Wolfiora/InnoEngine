@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Inno.Assets;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
@@ -72,6 +73,8 @@ internal static class SceneReloadIntegration
         ISceneReloadStateTransfer migration
     ) : IGenerationChange
     {
+        private IReadOnlyList<object> m_retiredOwners = [];
+
         /// <summary>
         /// Builds and validates candidate state without changing the active generation.
         /// </summary>
@@ -79,10 +82,7 @@ internal static class SceneReloadIntegration
         {
             using IDisposable scope = runtimeSession.EnterExecutionScope();
             migration.PrepareForActivation();
-            foreach (object retiredObject in migration.retiredObjects)
-            {
-                runtimeSession.StopCoroutines(retiredObject);
-            }
+            m_retiredOwners = migration.retiredObjects;
         }
 
         /// <summary>
@@ -100,6 +100,11 @@ internal static class SceneReloadIntegration
         public void Complete()
         {
             using IDisposable scope = runtimeSession.EnterExecutionScope();
+            foreach (object retiredObject in m_retiredOwners)
+            {
+                runtimeSession.StopCoroutines(retiredObject);
+            }
+            m_retiredOwners = [];
             migration.Complete();
             SceneStateDiagnosticPublisher.PublishReload(migration.diagnostics);
             SceneStateDiagnosticPublisher.PublishMissingElements(runtimeSession.scenes.loadedScenes);
@@ -120,6 +125,7 @@ internal static class SceneReloadIntegration
         public void RestorePreviousState()
         {
             using IDisposable scope = runtimeSession.EnterExecutionScope();
+            m_retiredOwners = [];
             migration.RestorePreviousState();
             SceneStateDiagnosticPublisher.PublishMissingElements(runtimeSession.scenes.loadedScenes);
         }
